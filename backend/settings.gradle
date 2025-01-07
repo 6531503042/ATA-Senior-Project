@@ -1,0 +1,18 @@
+pluginManagement {
+    plugins {
+        id "io.freefair.lombok" version "8.4"
+    }
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+    }
+}
+
+dependencyResolutionManagement {
+    repositories {
+        mavenCentral()
+    }
+}
+
+rootProject.name = 'Senior-Project'
+include 'user-service'
