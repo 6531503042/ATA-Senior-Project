@@ -43,13 +43,13 @@ The **Confidential Feedback System** aims to provide a safe and effective way fo
 
 Here are mock-ups of the **Confidential Feedback System**:
 
-![Cover 1](./assets/cover-1.png)
+![Cover 1](./assets/cover-2.png)
 *Cover 1: Dashboard Overview*
 
-![Cover 2](./assets/cover-2.png)
+![Cover 2](./assets/emote.png)
 *Cover 2: Feedback Submission Form*
 
-![Cover 3](./assets/cover-3.png)
+![Cover 3](./assets/graph.png)
 *Cover 3: Sentiment Analysis*
 
 These mock-ups give a visual representation of the front-end design of the system.
