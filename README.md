@@ -65,9 +65,6 @@ These mock-ups give a visual representation of the front-end design of the syste
   - Java Spring Boot (Microservices Architecture)
 - **Database**: 
   - MongoDB
-- **Data Processing & Analytics**: 
-  - Apache Spark
-  - Fluentd (ETL for Logging)
 - **Authentication & Authorization**: 
   - JWT (JSON Web Token)
   - OAuth
