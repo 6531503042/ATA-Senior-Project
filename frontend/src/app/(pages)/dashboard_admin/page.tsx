@@ -2,9 +2,11 @@
 
 import React, { useState, Suspense, lazy } from "react";
 import SidebarAdmin from "@/app/components/sidebar_usermanagement/sidebar";
+import LoadingScreen from "@/app/components/loadingscreen/loadingscreen";
 
-const page = () => {
+const Page = () => {
   const [selectedComponent, setSelectedComponent] = useState("dashboard");
+  const [isLoading, setIsLoading] = useState(false);
 
   const renderContent = () => {
     const Component = lazy(() =>
@@ -12,20 +14,30 @@ const page = () => {
     );
 
     return (
-      <Suspense fallback={<div>Loading...</div>}>
+      <Suspense fallback={<LoadingScreen />}>
         <Component />
       </Suspense>
     );
   };
 
+  const handleOptionSelect = (component: string) => {
+    setIsLoading(true);
+    setTimeout(() => {
+      setSelectedComponent(component);
+      setIsLoading(false);
+    }, 1800);
+  };
+
   return (
-    <div className="flex flex-row">
-      <SidebarAdmin onOptionSelect={(component) => setSelectedComponent(component)} />
-      <div className="flex-1 p-6 bg-gray-100">
-        {renderContent()}
+    <div className="flex flex-row bg-gray-50">
+      <SidebarAdmin onOptionSelect={handleOptionSelect} />
+      <div className="flex-1 p-5 ">
+        <div className="p-6 border-2 border-red-600 rounded-md w-full h-full">
+          {isLoading ? <LoadingScreen /> : renderContent()}
+        </div>
       </div>
     </div>
   );
 };
 
-export default page;
+export default Page;
