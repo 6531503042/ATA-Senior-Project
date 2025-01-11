@@ -1,7 +1,23 @@
 package dev.bengi.feedbackservice.service;
 
-import org.springframework.stereotype.Service;
+import dev.bengi.feedbackservice.domain.model.Project;
+import dev.bengi.feedbackservice.domain.payload.request.CreateProjectRequest;
+import org.springframework.data.domain.Page;
+import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Mono;
 
-@Service
+import java.util.List;
+
 public interface ProjectService {
+    @Transactional
+    Project createProject(CreateProjectRequest createProjectRequest);
+
+    Project updatedProject(Long id, Project project);
+
+    void deleteProject(Long id);
+
+    Page<Project> getProjects(int page, int size);
+
+    @Transactional(readOnly = true)
+    Project getProjectById(Long id);
 }

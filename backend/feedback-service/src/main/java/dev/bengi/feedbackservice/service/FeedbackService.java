@@ -1,7 +1,8 @@
 package dev.bengi.feedbackservice.service;
 
-import org.springframework.stereotype.Service;
+import dev.bengi.feedbackservice.domain.model.Feedback;
+import dev.bengi.feedbackservice.domain.payload.request.CreateFeedbackRequest;
 
-@Service
 public interface FeedbackService {
+    Feedback createFeedback(CreateFeedbackRequest request);
 }
