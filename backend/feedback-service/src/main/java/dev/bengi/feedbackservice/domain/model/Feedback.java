@@ -1,6 +1,7 @@
 package dev.bengi.feedbackservice.domain.model;
 
 import dev.bengi.feedbackservice.domain.enums.PrivacyLevel;
+import dev.bengi.feedbackservice.domain.enums.QuestionCategory;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -25,7 +26,9 @@ public class Feedback {
 
     private String title;
     private String description;
-    private String category;
+
+    @Enumerated(EnumType.STRING)
+    private QuestionCategory category;
 
     @Enumerated(EnumType.STRING)
     private PrivacyLevel privacyLevel;
