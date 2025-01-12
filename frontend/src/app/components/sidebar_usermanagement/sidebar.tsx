@@ -23,23 +23,22 @@ const SidebarAdmin: React.FC<SidebarAdminProps> = ({ onOptionSelect }) => {
     onOptionSelect(option.component);
   };
 
-  const StyledLogo = styled.img`
-`;
+  const StyledLogo = styled.img``;
 
   return (
-    <div className="w-64 h-screen p-5  text-black">
-      <div className="flex flex-col h-full justify-between border-2 bg-white border-red-600 rounded-md">
-        <div className="flex flex-col">
-        <StyledLogo
-        src="https://ata-it-th.com/wp-content/uploads/2023/03/cropped-ata_bnc.png"
-        alt="ATA IT Logo"
-        className="h-full w-full p-4"
-      />
-          <ul className="flex-1">
+    <div className="w-80 h-screen text-black">
+      <div className="flex flex-col h-full justify-between bg-slate-200 ">
+        <div className="flex flex-col items-center pt-5">
+          <StyledLogo
+            src="https://ata-it-th.com/wp-content/uploads/2023/03/cropped-ata_bnc.png"
+            alt="ATA IT Logo"
+            className="h-full w-11/12 p-4"
+          />
+          <ul className="flex-1 w-full pt-5">
             {options.map((option) => (
               <li
                 key={option.name}
-                className={`m-4 p-4 cursor-pointer border text-sm rounded-md ${
+                className={`m-4 p-4 cursor-pointer border text-base rounded-md ${
                   selectedOption === option.name
                     ? "border-red-400 text-red-500 bg-red-50"
                     : "border-transparent hover:border-red-400"
