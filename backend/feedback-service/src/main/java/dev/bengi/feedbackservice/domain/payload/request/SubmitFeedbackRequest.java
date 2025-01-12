@@ -2,6 +2,7 @@ package dev.bengi.feedbackservice.domain.payload.request;
 
 import dev.bengi.feedbackservice.domain.enums.PrivacyLevel;
 import dev.bengi.feedbackservice.domain.enums.QuestionCategory;
+import dev.bengi.feedbackservice.domain.payload.response.FeedbackResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,7 +23,7 @@ public class SubmitFeedbackRequest {
 
     private QuestionCategory category;
     private PrivacyLevel privacyLevel;
-    private List<AnswerRequest> response;
+    private List<FeedbackResponse> response;
     private String additionalComments;
     private Instant submittedAt;
 }
