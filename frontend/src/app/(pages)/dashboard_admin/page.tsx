@@ -31,11 +31,12 @@ const Page = () => {
   };
 
   return (
-    <div className="flex flex-row bg-gray-50">
+    <div className="flex h-screen flex-row bg-gray-50">
       <SidebarAdmin
         onOptionSelect={handleOptionSelect}
         isLoading={isLoading}
       />
+      <div className="w-72 "></div>
       <div className="flex-1 flex">
         <div className="p-6 rounded-md w-full h-full">
           {isLoading ? <LoadingScreen /> : renderContent()}
