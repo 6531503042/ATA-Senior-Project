@@ -7,14 +7,15 @@ import {
   Building2,
   CalendarDays,
   Wallet,
-  LogOut
+  LogOut,
 } from "lucide-react";
 
 interface SidebarAdminProps {
   onOptionSelect: (content: string) => void;
+  isLoading: boolean; 
 }
 
-const SidebarAdmin: React.FC<SidebarAdminProps> = ({ onOptionSelect }) => {
+const SidebarAdmin: React.FC<SidebarAdminProps> = ({ onOptionSelect, isLoading }) => {
   const options = [
     { name: "Dashboard", component: "dashboard", icon: LayoutDashboard },
     { name: "User Management", component: "usermanagement", icon: Users },
@@ -26,8 +27,10 @@ const SidebarAdmin: React.FC<SidebarAdminProps> = ({ onOptionSelect }) => {
   const [selectedOption, setSelectedOption] = useState(options[0].name);
 
   const handleOptionClick = (option: (typeof options)[0]) => {
-    setSelectedOption(option.name);
-    onOptionSelect(option.component);
+    if (!isLoading) {
+      setSelectedOption(option.name);
+      onOptionSelect(option.component);
+    }
   };
 
   return (
@@ -44,22 +47,26 @@ const SidebarAdmin: React.FC<SidebarAdminProps> = ({ onOptionSelect }) => {
           <ul className="space-y-1">
             {options.map((option) => {
               const Icon = option.icon;
+              const isDisabled = isLoading; 
+              const isSelected = selectedOption === option.name;
               return (
                 <li key={option.name}>
                   <button
                     onClick={() => handleOptionClick(option)}
+                    disabled={isDisabled}
                     className={`w-full flex items-center px-4 py-3 text-sm transition-colors duration-150 ease-in-out
                       ${
-                        selectedOption === option.name
-                          ? "bg-blue-50 text-blue-600 border-r-4 border-blue-600 font-medium"
+                        isSelected
+                          ? "bg-red-50 text-red-600 border-r-4 border-red-600 font-medium"
                           : "text-gray-600 hover:bg-gray-50"
-                      }`}
+                      }
+                      ${isDisabled ? "cursor-not-allowed opacity-50" : ""}`}
                   >
-                    <Icon className={`h-5 w-5 mr-3 ${
-                      selectedOption === option.name
-                        ? "text-blue-600"
-                        : "text-gray-400"
-                    }`} />
+                    <Icon
+                      className={`h-5 w-5 mr-3 ${
+                        isSelected ? "text-red-600" : "text-gray-400"
+                      }`}
+                    />
                     {option.name}
                   </button>
                 </li>
@@ -69,7 +76,10 @@ const SidebarAdmin: React.FC<SidebarAdminProps> = ({ onOptionSelect }) => {
         </nav>
 
         <div className="border-t">
-          <button className="w-full flex items-center px-4 py-3 text-sm text-gray-600 hover:bg-gray-50 transition-colors duration-150">
+          <button
+            className="w-full flex items-center px-4 py-3 text-sm text-gray-600 hover:bg-gray-50 transition-colors duration-150"
+            disabled={isLoading}
+          >
             <LogOut className="h-5 w-5 mr-3 text-gray-400" />
             Logout
           </button>

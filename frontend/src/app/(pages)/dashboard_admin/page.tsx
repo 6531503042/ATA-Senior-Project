@@ -21,16 +21,21 @@ const Page = () => {
   };
 
   const handleOptionSelect = (component: string) => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setSelectedComponent(component);
-      setIsLoading(false);
-    }, 1800);
+    if (!isLoading && component !== selectedComponent) {
+      setIsLoading(true);
+      setTimeout(() => {
+        setSelectedComponent(component);
+        setIsLoading(false);
+      }, 1800);
+    }
   };
 
   return (
     <div className="flex flex-row bg-gray-50">
-      <SidebarAdmin onOptionSelect={handleOptionSelect} />
+      <SidebarAdmin
+        onOptionSelect={handleOptionSelect}
+        isLoading={isLoading}
+      />
       <div className="flex-1 flex">
         <div className="p-6 rounded-md w-full h-full">
           {isLoading ? <LoadingScreen /> : renderContent()}
