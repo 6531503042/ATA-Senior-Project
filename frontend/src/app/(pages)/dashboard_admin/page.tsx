@@ -31,7 +31,7 @@ const Page = () => {
   };
 
   return (
-    <div className="flex h-screen flex-row bg-gray-50">
+    <div className="flex h-screen flex-row bg-white">
       <SidebarAdmin
         onOptionSelect={handleOptionSelect}
         isLoading={isLoading}

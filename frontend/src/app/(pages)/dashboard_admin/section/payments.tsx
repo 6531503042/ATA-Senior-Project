@@ -2,7 +2,9 @@ import React from 'react'
 
 const payments = () => {
   return (
-    <div>payments</div>
+    <div className="p-6 space-y-6">
+      <h1 className="text-2xl font-bold">Payment</h1>
+    </div>
   )
 }
 
