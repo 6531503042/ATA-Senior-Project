@@ -12,6 +12,8 @@ public interface QuestionService {
     @Transactional
     QuestionResponse updateQuestion(Long id, CreateQuestionRequest request);
 
+    void deleteQuestion(Long id);
+
     Page<Question> getAllQuestions(int page, int size);
 
     Question getQuestionById(Long id);
