@@ -20,7 +20,11 @@ public class Answer {
     private String type;
     private Integer value;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "question_id", nullable = false)
     private Question question;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "feedback_id", nullable = false)
+    private Feedback feedback;
 }

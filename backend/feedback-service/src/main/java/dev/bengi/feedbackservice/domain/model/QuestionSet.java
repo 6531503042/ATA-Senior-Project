@@ -15,9 +15,12 @@ public class QuestionSet {
     @Id
     private Long id;
 
+    @Column(name = "project_id")
+    private Long projectId;
+
     private String name;
     private String description;
 
-    @OneToMany(mappedBy = "questionSet", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "questionSet", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Question> questions;
 }

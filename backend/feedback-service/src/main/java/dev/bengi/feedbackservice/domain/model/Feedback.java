@@ -13,6 +13,8 @@ import java.util.Map;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Getter
+@Setter
 @Table(name = "feedbacks")
 public class Feedback {
     @Id
@@ -43,6 +45,12 @@ public class Feedback {
     @MapKeyColumn(name = "question_id")
     @Column(name = "answer")
     private Map<Long, String> answers;
+
+    @ElementCollection
+    @CollectionTable(name = "feedback_response",
+            joinColumns = @JoinColumn(name = "feedback_id"))
+    @MapKeyColumn(name = "question_id")
+    private Map<Long, String> response;
 
     private Instant submittedAt;
 
