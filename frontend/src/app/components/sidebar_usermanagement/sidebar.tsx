@@ -4,12 +4,10 @@ import React, { useState } from "react";
 import {
   LayoutDashboard,
   Users,
-  Building2,
-  CalendarDays,
-  Wallet,
   LogOut,
   Menu,
   X,
+  MessageSquareText,
 } from "lucide-react";
 
 interface SidebarAdminProps {
@@ -24,9 +22,7 @@ const SidebarAdmin: React.FC<SidebarAdminProps> = ({ onOptionSelect, isLoading }
   const options = [
     { name: "Dashboard", component: "dashboard", icon: LayoutDashboard },
     { name: "User Management", component: "usermanagement", icon: Users },
-    { name: "Facility Management", component: "facility", icon: Building2 },
-    { name: "Booking Management", component: "bookings", icon: CalendarDays },
-    { name: "Payment Management", component: "payments", icon: Wallet },
+    { name: "Feedback Management", component: "feedback", icon: MessageSquareText },
   ];
 
   const [selectedOption, setSelectedOption] = useState(options[0].name);

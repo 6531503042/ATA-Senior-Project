@@ -3,7 +3,7 @@ import React from 'react'
 const facility = () => {
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold">Facility</h1>
+      <h1 className="text-2xl font-bold">Feedback</h1>
     </div>
   )
 }
