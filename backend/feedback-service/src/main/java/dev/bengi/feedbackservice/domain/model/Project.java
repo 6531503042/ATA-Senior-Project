@@ -18,7 +18,8 @@ public class Project {
     @Id
     private Long id;
 
-    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "project_id")
     private List<Question> questions = new ArrayList<>();
 
     private String name;
@@ -26,6 +27,8 @@ public class Project {
     private Integer totalEmployees;
     private Instant createdAt;
     private Instant updatedAt;
+
+
     private Instant feedbackStartDate;
     private Instant feedbackEndDate;
 }

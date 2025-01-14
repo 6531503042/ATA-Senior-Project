@@ -1,23 +1,24 @@
 package dev.bengi.feedbackservice.domain.model;
 
+import dev.bengi.feedbackservice.domain.enums.AnswerType;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Getter
+@Setter
 @Table(name = "answers")
 public class Answer {
 
     @Id
     private Long id;
 
-    private String type;
+    private AnswerType type;
+    private String text;
     private Integer value;
 
     @ManyToOne(fetch = FetchType.LAZY)

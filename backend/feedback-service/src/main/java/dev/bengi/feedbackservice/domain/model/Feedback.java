@@ -28,6 +28,7 @@ public class Feedback {
 
     private String title;
     private String description;
+    private String additionalComments;
 
     @Enumerated(EnumType.STRING)
     private QuestionCategory category;
@@ -35,9 +36,13 @@ public class Feedback {
     @Enumerated(EnumType.STRING)
     private PrivacyLevel privacyLevel;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "question_id")
     private Question question;
+
+    @ManyToOne
+    @JoinColumn(name = "question_set_id")
+    private QuestionSet questionSet;
 
     @ElementCollection
     @CollectionTable(name = "feedback_answers",
@@ -46,14 +51,19 @@ public class Feedback {
     @Column(name = "answer")
     private Map<Long, String> answers;
 
-    @ElementCollection
-    @CollectionTable(name = "feedback_response",
-            joinColumns = @JoinColumn(name = "feedback_id"))
-    @MapKeyColumn(name = "question_id")
-    private Map<Long, String> response;
-
     private Instant submittedAt;
 
+    public void addAnswer(Answer answer) {
+        answers.put(answer.getQuestion().getId(), String.valueOf(answer.getValue()));
+
+        if (this.question == null) {
+            this.question = answer.getQuestion();
+        }
+    }
+
+    public void removeAnswer(Answer answer) {
+        answers.remove(answer.getQuestion().getId());
+    }
 
 
 }

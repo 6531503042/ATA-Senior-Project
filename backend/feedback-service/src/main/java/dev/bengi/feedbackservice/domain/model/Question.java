@@ -10,6 +10,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -31,10 +32,7 @@ public class Question {
     @CollectionTable(name = "question_options",
             joinColumns = @JoinColumn(name = "question_id"))
     @Column(name = "option")
-    private List<String> options;
-
-    @Enumerated(EnumType.STRING)
-    private SentimentType sentimentType;
+    private List<String> options = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     private QuestionType type;
@@ -44,5 +42,11 @@ public class Question {
 
     @Enumerated(EnumType.STRING)
     private AnswerType answerType;
+
+    public void addAnswer(Answer answer) {
+
+
+
+    }
 
 }
