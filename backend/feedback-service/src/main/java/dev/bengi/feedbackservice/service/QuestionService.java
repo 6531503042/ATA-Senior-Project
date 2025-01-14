@@ -7,7 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
 
 public interface QuestionService {
-    Question createQuestion(Question question, CreateQuestionRequest request);
+    Question createQuestion(CreateQuestionRequest request);
 
     @Transactional
     QuestionResponse updateQuestion(Long id, CreateQuestionRequest request);
