@@ -1,5 +1,6 @@
 package dev.bengi.feedbackservice.service.impl;
 
+import dev.bengi.feedbackservice.domain.model.Answer;
 import dev.bengi.feedbackservice.domain.model.Question;
 import dev.bengi.feedbackservice.domain.payload.request.CreateQuestionRequest;
 import dev.bengi.feedbackservice.domain.payload.response.QuestionResponse;
@@ -20,13 +21,22 @@ public class QuestionServiceImpl implements QuestionService {
     private final QuestionRepository questionRepository;
 
     @Override
-    public Question createQuestion(Question question, CreateQuestionRequest request) {
-        Question.builder()
+    public Question createQuestion(CreateQuestionRequest request) {
+        Question question = Question.builder()
                 .text(request.getText())
                 .type(request.getType())
                 .category(request.getCategory())
-                .sentimentType(request.getSentimentType())
+                .answerType(request.getAnswerType())
                 .build();
+
+        if (request.getOptions() != null) {
+            request.getOptions().forEach(optionText -> {
+                Answer answer = Answer.builder()
+                        .text(optionText)
+                        .build();
+                question.add(answer);
+            });
+        }
         return questionRepository.save(question);
     }
 
