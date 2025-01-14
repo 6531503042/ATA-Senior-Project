@@ -13,8 +13,11 @@ import lombok.NoArgsConstructor;
 public class CreateFeedbackRequest {
     private Long projectId;
     private Long userId;
+    private Long questionSetId;
     private String title;
     private String description;
     private String category;
     private PrivacyLevel privacyLevel;
+    private String additionalComments;
+
 }
