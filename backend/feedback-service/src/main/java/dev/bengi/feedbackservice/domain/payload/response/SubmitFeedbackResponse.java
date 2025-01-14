@@ -1,5 +1,6 @@
 package dev.bengi.feedbackservice.domain.payload.response;
 
+import dev.bengi.feedbackservice.domain.enums.AnswerType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,6 +11,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SubmitFeedbackResponse {
-    private Long id;
-    private String message;
+    private AnswerType type;
+    private Integer value;
 }

@@ -12,6 +12,7 @@ public class QuestionResponse {
 
     private Long id;
     private String text;
+    private String content;
     private QuestionType type;
     private QuestionCategory category;
     private SentimentType sentimentType;

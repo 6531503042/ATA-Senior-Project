@@ -11,5 +11,5 @@ public class QuestionSetResponse {
     private Long id;
     private String title;
     private String description;
-    private List<Long> questions;
+    private List<Long> question;
 }
