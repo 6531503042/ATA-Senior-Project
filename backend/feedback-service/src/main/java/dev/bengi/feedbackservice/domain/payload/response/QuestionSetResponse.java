@@ -9,7 +9,7 @@ import java.util.List;
 @Builder
 public class QuestionSetResponse {
     private Long id;
-    private String title;
+    private String name;
     private String description;
     private List<Long> question;
 }
