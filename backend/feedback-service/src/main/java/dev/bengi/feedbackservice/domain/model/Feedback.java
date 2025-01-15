@@ -6,6 +6,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Map;
 
 @Data
@@ -51,7 +53,12 @@ public class Feedback {
     @Column(name = "answer")
     private Map<Long, String> answers;
 
-    private Instant submittedAt;
+    private ZonedDateTime submittedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        submittedAt = ZonedDateTime.now(ZoneId.of("Asia/Bangkok")); // Bangkok timezone
+    }
 
     public void addAnswer(Answer answer) {
         answers.put(answer.getQuestion().getId(), String.valueOf(answer.getValue()));

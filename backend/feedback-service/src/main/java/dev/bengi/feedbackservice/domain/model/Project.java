@@ -3,6 +3,9 @@ package dev.bengi.feedbackservice.domain.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.time.Instant;
@@ -25,10 +28,17 @@ public class Project {
     private String name;
     private String description;
     private Integer totalEmployees;
-    private Instant createdAt;
-    private Instant updatedAt;
 
+    private ZonedDateTime feedbackStartDate;
+    private ZonedDateTime feedbackEndDate;
+    private ZonedDateTime createdAt;
+    private ZonedDateTime updatedAt;
 
-    private Instant feedbackStartDate;
-    private Instant feedbackEndDate;
+    @PrePersist
+    protected void onCreate() {
+        feedbackStartDate = ZonedDateTime.now(ZoneId.of("Asia/Bangkok")); // Bangkok timezone
+        feedbackEndDate = ZonedDateTime.now(ZoneId.of("Asia/Bangkok"));
+        createdAt = ZonedDateTime.now(ZoneId.of("Asia/Bangkok")); // Bangkok timezone
+        updatedAt = ZonedDateTime.now(ZoneId.of("Asia/Bangkok"));
+    }
 }

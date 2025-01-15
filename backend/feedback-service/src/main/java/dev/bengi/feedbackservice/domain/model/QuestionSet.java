@@ -16,20 +16,23 @@ public class QuestionSet {
     @Id
     private Long id;
 
-    @Column(name = "project_id")
-    private Long projectId;
-
     private String name;
     private String description;
 
+
     @ElementCollection
-    @CollectionTable(name = "question_options",
+    @CollectionTable(name = "question_set_answers",
             joinColumns = @JoinColumn(name = "question_set_id"))
-    private List<String> options = new ArrayList<>();
+    @MapKeyColumn(name = "question_id")
+    @Column(name = "answer")
+    private List<String> answers = new ArrayList<>();
 
     @OneToMany(mappedBy = "questionSet", cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "question_set_id")
     private List<Question> questions;
 
 
+    public void addQuestion(Question question) {
+        questions.add(question);
+    }
 }

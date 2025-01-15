@@ -28,11 +28,11 @@ public class Question {
     private String content;
     private boolean required;
 
+
     @ElementCollection
-    @CollectionTable(name = "question_options",
+    @CollectionTable(name = "question_answers",
             joinColumns = @JoinColumn(name = "question_id"))
-    @Column(name = "option")
-    private List<String> options = new ArrayList<>();
+    private List<String> answers = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     private QuestionType type;
@@ -44,8 +44,12 @@ public class Question {
     private AnswerType answerType;
 
     public void addAnswer(Answer answer) {
+        if (answers == null) {
+            answers = new ArrayList<>();
+        }
 
-
+        answers.add(String.valueOf(answer));
+        answer.setQuestion(this);
 
     }
 
