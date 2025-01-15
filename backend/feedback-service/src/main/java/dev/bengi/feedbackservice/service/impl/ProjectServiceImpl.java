@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.time.ZonedDateTime;
 
 @RequiredArgsConstructor
 @Service
@@ -58,11 +59,11 @@ public class ProjectServiceImpl implements ProjectService {
         Project project = Project.builder()
                 .name(createProjectRequest.getName())
                 .description(createProjectRequest.getDescription())
-                .feedbackStartDate(createProjectRequest.getFeedbackStartDate())
-                .feedbackEndDate(createProjectRequest.getFeedbackEndDate())
+                .feedbackStartDate(ZonedDateTime.from(createProjectRequest.getFeedbackStartDate()))
+                .feedbackEndDate(ZonedDateTime.from(createProjectRequest.getFeedbackEndDate()))
                 .totalEmployees(createProjectRequest.getTotalEmployees())
-                .createdAt(Instant.now())
-                .updatedAt(Instant.now())
+                .createdAt(ZonedDateTime.now())
+                .updatedAt(null)
                 .build();
         return projectRepository.save(project);
     }
@@ -78,7 +79,7 @@ public class ProjectServiceImpl implements ProjectService {
         existingProject.setFeedbackStartDate(project.getFeedbackStartDate());
         existingProject.setFeedbackEndDate(project.getFeedbackEndDate());
         existingProject.setTotalEmployees(project.getTotalEmployees());
-        existingProject.setUpdatedAt(Instant.now());
+        existingProject.setUpdatedAt(ZonedDateTime.now());
         return projectRepository.save(existingProject);
     }
 

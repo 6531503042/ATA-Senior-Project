@@ -13,6 +13,7 @@ import dev.bengi.feedbackservice.service.FeedbackService;
 import lombok.RequiredArgsConstructor;
 
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 @RequiredArgsConstructor
@@ -40,7 +41,7 @@ public class FeedbackServiceImpl implements FeedbackService {
                 .description(request.getDescription())
                 .category(category)
                 .privacyLevel(request.getPrivacyLevel())
-                .submittedAt(Instant.now())
+                .submittedAt(ZonedDateTime.now())
                 .build();
     }
      @Override
@@ -49,11 +50,6 @@ public class FeedbackServiceImpl implements FeedbackService {
         //Validate exist question-set
         QuestionSet set = questionSetRepository.findById(request.getQuestionSetId())
                 .orElseThrow(() -> new RuntimeException("Question set not found"));
-
-        //Validate exist project
-        if (!set.getProjectId().equals(request.getProjectId())) {
-            throw new RuntimeException("Project not found");
-        }
 
         Feedback feedback = Feedback.builder()
                 .projectId(request.getProjectId())
@@ -65,7 +61,7 @@ public class FeedbackServiceImpl implements FeedbackService {
                 .category(request.getCategory() != null ?
                         QuestionCategory.valueOf(String.valueOf(request.getCategory())) : null)
                 .privacyLevel(request.getPrivacyLevel())
-                .submittedAt(Instant.now())
+                .submittedAt(ZonedDateTime.now())
                 .build();
 
         //Add answer after builder feedback
