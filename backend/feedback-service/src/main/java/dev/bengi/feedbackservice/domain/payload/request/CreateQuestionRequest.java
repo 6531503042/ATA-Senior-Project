@@ -22,6 +22,6 @@ public class CreateQuestionRequest {
     private QuestionType type;
     private QuestionCategory category;
     private AnswerType answerType;
-    private List<String> options;
+    private List<String> answers;
 
 }

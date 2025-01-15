@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class CreateQuestionSetRequest {
-    private String title;
+    private String name;
     private String description;
     private List<Long> questionIds; // question id
 }
