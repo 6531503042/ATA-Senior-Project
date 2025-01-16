@@ -28,3 +28,6 @@ replay_pid*
 .config
 # Node.js module files
 node_modules/
+.idea/discord.xml
+.idea/workspace.xml
+.idea/vcs.xml
