@@ -1,8 +1,10 @@
 package dev.bengi.feedbackservice.domain.payload.response;
 
+import dev.bengi.feedbackservice.domain.model.Project;
 import lombok.Builder;
 import lombok.Data;
 import java.time.Instant;
+import java.time.ZonedDateTime;
 
 @Data
 @Builder
@@ -11,8 +13,8 @@ public class ProjectResponse {
     private String name;
     private String description;
     private Integer totalEmployees;
-    private Instant feedbackStartDate;
-    private Instant feedbackEndDate;
-    private Instant createdAt;
-    private Instant updatedAt;
+    private ZonedDateTime feedbackStartDate;
+    private ZonedDateTime feedbackEndDate;
+    private ZonedDateTime createdAt;
+    private ZonedDateTime updatedAt;
 }
