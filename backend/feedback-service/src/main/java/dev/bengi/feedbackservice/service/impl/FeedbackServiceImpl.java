@@ -11,12 +11,16 @@ import dev.bengi.feedbackservice.repository.FeedbackRepository;
 import dev.bengi.feedbackservice.repository.QuestionSetRepository;
 import dev.bengi.feedbackservice.service.FeedbackService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
 import java.time.ZonedDateTime;
-import java.util.*;
 
 @RequiredArgsConstructor
+@Service
 public class FeedbackServiceImpl implements FeedbackService {
 
     private final FeedbackRepository feedbackRepository;
@@ -43,6 +47,21 @@ public class FeedbackServiceImpl implements FeedbackService {
                 .privacyLevel(request.getPrivacyLevel())
                 .submittedAt(ZonedDateTime.now())
                 .build();
+    }
+
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<Feedback> getAllFeedbacks(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return feedbackRepository.findAll(pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Feedback getFeedbackById(Long id) {
+        return feedbackRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Feedback not found"));
     }
      @Override
     public Feedback submitFeedback(Long userId, SubmitFeedbackRequest request) {

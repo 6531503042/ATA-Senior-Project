@@ -2,10 +2,13 @@ package dev.bengi.feedbackservice.service.impl;
 
 import dev.bengi.feedbackservice.domain.model.Project;
 import dev.bengi.feedbackservice.domain.payload.request.CreateProjectRequest;
+import dev.bengi.feedbackservice.domain.payload.response.ProjectResponse;
+import dev.bengi.feedbackservice.exception.ProjectAlreadyExistsException;
 import dev.bengi.feedbackservice.repository.ProjectRepository;
 import dev.bengi.feedbackservice.service.ProjectService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -52,7 +55,7 @@ public class ProjectServiceImpl implements ProjectService {
 
         // Check condition
         if (projectRepository.existsByNameIgnoreCase(createProjectRequest.getName())) {
-            throw new RuntimeException("Project with name " + createProjectRequest.getName() + " already exists");
+            throw new ProjectAlreadyExistsException("Project with name " + createProjectRequest.getName() + " already exists");
         }
 
         // Create a new Project Instance
@@ -65,7 +68,27 @@ public class ProjectServiceImpl implements ProjectService {
                 .createdAt(ZonedDateTime.now())
                 .updatedAt(null)
                 .build();
-        return projectRepository.save(project);
+
+        // Save Project
+        try {
+            return projectRepository.save(project);
+        } catch (DataAccessException e) {
+            throw new RuntimeException("Failed to create project", e);
+        }
+
+    }
+
+    private ProjectResponse mapToResponse(Project project) {
+        return ProjectResponse.builder()
+                .id(project.getId())
+                .name(project.getName())
+                .description(project.getDescription())
+                .feedbackStartDate(project.getFeedbackStartDate())
+                .feedbackEndDate(project.getFeedbackEndDate())
+                .totalEmployees(project.getTotalEmployees())
+                .createdAt(project.getCreatedAt())
+                .updatedAt(project.getUpdatedAt())
+                .build();
     }
 
     @Override
