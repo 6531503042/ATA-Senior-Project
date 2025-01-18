@@ -9,20 +9,28 @@ import {
   X,
   MessageSquareText,
 } from "lucide-react";
+import Link from "next/link";
 
 interface SidebarAdminProps {
   onOptionSelect: (content: string) => void;
   isLoading: boolean;
 }
 
-const SidebarAdmin: React.FC<SidebarAdminProps> = ({ onOptionSelect, isLoading }) => {
+const SidebarAdmin: React.FC<SidebarAdminProps> = ({
+  onOptionSelect,
+  isLoading,
+}) => {
   const [isOpen, setIsOpen] = useState(true);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   const options = [
     { name: "Dashboard", component: "dashboard", icon: LayoutDashboard },
     { name: "User Management", component: "usermanagement", icon: Users },
-    { name: "Feedback Management", component: "feedback", icon: MessageSquareText },
+    {
+      name: "Feedback Management",
+      component: "feedback",
+      icon: MessageSquareText,
+    },
   ];
 
   const [selectedOption, setSelectedOption] = useState(options[0].name);
@@ -56,7 +64,9 @@ const SidebarAdmin: React.FC<SidebarAdminProps> = ({ onOptionSelect, isLoading }
       {/* Desktop Toggle Button - Only visible when sidebar is open */}
       <button
         onClick={toggleSidebar}
-        className={`fixed top-4 ${isOpen ? "left-64" : "left-4"} z-50 p-2 rounded-lg bg-white shadow-lg hidden md:block transition-all duration-300`}
+        className={`fixed top-4 ${
+          isOpen ? "left-64" : "left-4"
+        } z-50 p-2 rounded-lg bg-white shadow-lg hidden md:block transition-all duration-300`}
       >
         {isOpen ? (
           <X className="h-6 w-6 text-gray-600" />
@@ -79,7 +89,11 @@ const SidebarAdmin: React.FC<SidebarAdminProps> = ({ onOptionSelect, isLoading }
           ${isOpen ? "md:w-72" : "md:w-20"} 
           ${isMobileOpen ? "w-72" : ""}
           transition-all duration-300 md:translate-x-0
-          ${isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
+          ${
+            isMobileOpen
+              ? "translate-x-0"
+              : "-translate-x-full md:translate-x-0"
+          }`}
       >
         <div className="flex flex-col h-full">
           {/* Logo Section */}
@@ -92,7 +106,9 @@ const SidebarAdmin: React.FC<SidebarAdminProps> = ({ onOptionSelect, isLoading }
                   ${!isOpen && "md:h-8"}`}
               />
             ) : (
-              <span className="text-xl font-semibold text-center cursor-pointer">ATA</span>
+              <span className="text-xl font-semibold text-center cursor-pointer">
+                ATA
+              </span>
             )}
           </div>
 
@@ -109,13 +125,21 @@ const SidebarAdmin: React.FC<SidebarAdminProps> = ({ onOptionSelect, isLoading }
                       onClick={() => handleOptionClick(option)}
                       disabled={isDisabled}
                       className={`w-full flex items-center px-4 py-3 text-xs md:text-sm transition-colors duration-150 ease-in-out whitespace-nowrap
-                        ${isSelected ? "bg-red-50 text-red-600 border-r-4 border-red-600 font-medium" : "text-gray-600 hover:bg-gray-50"}
+                        ${
+                          isSelected
+                            ? "bg-red-50 text-red-600 border-r-4 border-red-600 font-medium"
+                            : "text-gray-600 hover:bg-gray-50"
+                        }
                         ${isDisabled ? "cursor-not-allowed opacity-50" : ""}`}
                     >
                       <Icon
-                        className={`h-5 w-5 ${isOpen ? "mr-3" : "mx-auto"} ${isSelected ? "text-red-600" : "text-gray-400"}`}
+                        className={`h-5 w-5 ${isOpen ? "mr-3" : "mx-auto"} ${
+                          isSelected ? "text-red-600" : "text-gray-400"
+                        }`}
                       />
-                      <span className={`${!isOpen && "md:hidden"}`}>{option.name}</span>
+                      <span className={`${!isOpen && "md:hidden"}`}>
+                        {option.name}
+                      </span>
                     </button>
                   </li>
                 );
@@ -126,13 +150,23 @@ const SidebarAdmin: React.FC<SidebarAdminProps> = ({ onOptionSelect, isLoading }
           {/* Footer Section */}
           <div className="border-t">
             <button
-              className={`w-full flex items-center px-4 py-3 text-sm text-gray-600 hover:bg-gray-50 transition-colors duration-150 ${!isOpen && "md:justify-center"}`}
+              className={`w-full flex items-center px-4 py-3 text-sm text-gray-600 hover:bg-gray-50 transition-colors duration-150 ${
+                !isOpen && "md:justify-center"
+              }`}
               disabled={isLoading}
             >
-              <LogOut className="h-5 w-5 mr-3 text-gray-400" />
-              <span className={`${!isOpen && "md:hidden"}`}>Logout</span>
+              <Link href="/dashboard" className="flex flex-row text-nowrap">
+                <LogOut className="h-5 w-5 mr-3 text-gray-400" />
+                <span className={`${!isOpen && "md:hidden"}`}>
+                  Logout (Go throught Dashboard)
+                </span>
+              </Link>
             </button>
-            <div className={`px-4 py-3 text-center text-xs text-gray-500 ${!isOpen && "md:hidden"}`}>
+            <div
+              className={`px-4 py-3 text-center text-xs text-gray-500 ${
+                !isOpen && "md:hidden"
+              }`}
+            >
               © 2025 ATA Senior
             </div>
           </div>

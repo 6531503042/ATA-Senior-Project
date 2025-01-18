@@ -1,10 +1,9 @@
-import Image from "next/image";
-import DashboardAdmin from "@/app/(pages)/dashboard_admin/page"
+import Dashboard from "@/app/(pages)/dashboard/page"
 
 export default function Home() {
   return (
-    <div className="">
-      <DashboardAdmin/>
+    <div>
+      <Dashboard/>
     </div>
   );
 }
