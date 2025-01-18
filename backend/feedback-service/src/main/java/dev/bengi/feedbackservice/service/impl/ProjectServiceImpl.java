@@ -112,8 +112,6 @@ public class ProjectServiceImpl implements ProjectService {
         projectRepository.deleteById(id);
     }
 
-
-
     @Override
     @Transactional(readOnly = true)
     public Page<Project> getProjects(int page, int size) {
