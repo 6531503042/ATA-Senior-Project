@@ -7,7 +7,7 @@ import Link from "next/link";
 
 const navbar = () => {
   return (
-    <div className="w-full p-3 border-b flex justify-center">
+    <div className="w-full p-3 border-b flex justify-center fixed top-0 bg-white z-50">
       <div className="inline-flex flex-row justify-between items-center w-3/4 ">
         <h1 className="font-bold text-2xl cursor-pointer animate-[animation-r6madp_10s_infinite] bg-gradient-to-r from-red-400 via-teal-400 to-green-400 bg-clip-text text-transparent">
           Feedback System

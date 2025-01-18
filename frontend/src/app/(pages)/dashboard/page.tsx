@@ -11,7 +11,8 @@ const page = () => {
   return (
     <div className="h-screen w-screen items-center flex gap-5 flex-col bg-white">
       <Navbar />
-      <div className="w-4/5 h-auto border rounded-lg border-slate-50 shadow-lg">
+      <div className="p-5">{/*spacing*/}</div>
+      <div className="w-4/5 h-auto border rounded-lg border-slate-50 shadow-lg mt-5">
         <AiPowerInsight/>
         <HrDocumentation/>
         <PreviewCard/>
