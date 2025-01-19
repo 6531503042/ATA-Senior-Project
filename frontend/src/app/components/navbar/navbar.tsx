@@ -1,25 +1,29 @@
-"use client"
+"use client";
 
 import React from "react";
 import { Eclipse } from "lucide-react";
 import Logo from "@/app/assets/ata-logo.png";
 import Link from "next/link";
 
-const navbar = () => {
+const Navbar = () => {
   return (
-    <div className="w-full p-3 border-b flex justify-center fixed top-0 bg-white z-50">
-      <div className="inline-flex flex-row justify-between items-center w-3/4 ">
-        <h1 className="font-bold text-2xl cursor-pointer animate-[animation-r6madp_10s_infinite] bg-gradient-to-r from-red-400 via-teal-400 to-green-400 bg-clip-text text-transparent">
+    <div className="w-full fixed top-0 bg-white z-50 border-b">
+      <div className="max-w-[1945px] mx-auto w-full px-4 md:px-8 lg:px-12 flex justify-between items-center py-3">
+        {/* Title */}
+        <h1 className="font-bold text-nowrap md:text-2xl text-lg cursor-pointer bg-gradient-to-r from-red-400 via-teal-400 to-green-400 bg-clip-text text-transparent animate-[animation-r6madp_10s_infinite]">
           Feedback System
         </h1>
 
-        <p className="flex flex-row items-center space-x-10 cursor-pointer">
-          <Link href="/dashboard_admin"> <img src={Logo.src} className="w-auto h-10" /></Link>
-          <Eclipse className="text-zinc-800" />
-        </p>
+        {/* Logo & Icon */}
+        <div className="flex items-center gap-x-6 md:gap-x-12 cursor-pointer">
+          <Link href="/dashboard_admin">
+            <img src={Logo.src} className="w-auto md:h-10 h-5" />
+          </Link>
+          <Eclipse className="text-zinc-800 h-3 w-3 md:h-5 md:w-5" />
+        </div>
       </div>
     </div>
   );
 };
 
-export default navbar;
+export default Navbar;

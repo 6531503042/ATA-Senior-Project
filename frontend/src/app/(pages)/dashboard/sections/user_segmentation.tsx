@@ -1,6 +1,7 @@
-import { Download, TrendingDown, TrendingUp } from "lucide-react";
-import { ArrowUpIcon, ArrowDownIcon } from "lucide-react";
-import React from "react";
+"use client";
+
+import { ChevronRight, Download, TrendingDown, TrendingUp } from "lucide-react";
+import React, { useState } from "react";
 
 interface Segment {
   name: string;
@@ -10,6 +11,8 @@ interface Segment {
 }
 
 const UserSegmentation: React.FC = () => {
+  const [hoveredSegment, setHoveredSegment] = useState<string | null>(null);
+
   const segments: Segment[] = [
     { name: "Highly Engaged", count: 273, change: 3, color: "bg-emerald-500" },
     { name: "Satisfied", count: 108, change: 5, color: "bg-blue-500" },
@@ -52,7 +55,12 @@ const UserSegmentation: React.FC = () => {
       </div>
       <div className="flex flex-col gap-6">
         {segments.map((segment) => (
-          <div key={segment.name} className="space-y-4 hover:bg-slate-50 rounded-lg duration-100 p-3">
+          <div
+            key={segment.name}
+            onMouseEnter={() => setHoveredSegment(segment.name)}
+            onMouseLeave={() => setHoveredSegment(null)}
+            className="space-y-4 hover:bg-slate-50 rounded-lg duration-150 p-3 hover:shadow-xl"
+          >
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
                 <div className={`w-2 h-2 rounded-full ${segment.color}`} />
@@ -64,7 +72,7 @@ const UserSegmentation: React.FC = () => {
                 <span className="font-semibold">{segment.count}</span>
                 {segment.change !== 0 && (
                   <div
-                    className={`flex items-center gap-1 ${
+                    className={`flex items-center gap-2 ${
                       segment.change > 0
                         ? "text-green-500 text-sm"
                         : "text-red-500 text-sm"
@@ -78,6 +86,11 @@ const UserSegmentation: React.FC = () => {
                     <span>{Math.abs(segment.change)}%</span>
                   </div>
                 )}
+                {hoveredSegment === segment.name ? (
+                  <ChevronRight className="cursor-pointer w-8 h-8 p-1 rounded-full hover:bg-zinc-200 text-zinc-600 duration-150" />
+                ) : (
+                  <ChevronRight className="cursor-pointer w-8 h-8 p-1 rounded-full hover:bg-zinc-200 text-zinc-600 invisible" />
+                ) }
               </div>
             </div>
             <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -90,7 +103,9 @@ const UserSegmentation: React.FC = () => {
         ))}
       </div>
       <div className="p-6 bg-fuchsia-100 rounded-lg flex flex-col gap-3">
-        <h1 className="font-semibold text-violet-700 text-lg">Project Breakdown</h1>
+        <h1 className="font-semibold text-violet-700 text-lg">
+          Project Breakdown
+        </h1>
         <div className="grid grid-cols-2 gap-4 text-base">
           <div className="flex flex-row justify-between text-zinc-700">
             <p className="font-thin">Engineering</p>

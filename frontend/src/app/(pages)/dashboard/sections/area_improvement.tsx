@@ -1,6 +1,21 @@
-import { Download, Building2, MessageSquare, TrendingUp, Scale, Users, Crown } from "lucide-react";
+import {
+  Download,
+  Building2,
+  MessageSquare,
+  TrendingUp,
+  Scale,
+  Users,
+  Crown,
+} from "lucide-react";
 import React from "react";
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip  } from "recharts";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  ResponsiveContainer,
+  Tooltip,
+} from "recharts";
 
 interface MetricData {
   name: string;
@@ -113,9 +128,7 @@ const AreaImprovement: React.FC = () => {
             className="bg-purple-50 p-4 rounded-lg flex flex-col gap-4 hover:shadow-xl shadow-sm transition-all duration-200"
           >
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                {metric.icon}
-              </div>
+              <div className="p-2 bg-purple-100 rounded-lg">{metric.icon}</div>
               <span className="font-medium text-sm">{metric.name}</span>
             </div>
 
@@ -157,42 +170,51 @@ const AreaImprovement: React.FC = () => {
       </div>
 
       <div className="w-full h-[400px]">
-        <ResponsiveContainer width="100%" height="100%" >
+        <ResponsiveContainer width="100%" height="100%">
           <BarChart
             data={chartData}
             margin={{ top: 20, right: 30, left: 20, bottom: 70 }}
-            
           >
-            <XAxis 
-              dataKey="name" 
+            <XAxis
+              dataKey="name"
               angle={-45}
               textAnchor="end"
               height={60}
               interval={0}
-              tick={{ fill: '#666', fontSize: 10 }}
+              tick={{ fill: "#666", fontSize: 10 }}
             />
-            <YAxis 
-              domain={[0, 100]}
-              tick={{ fill: '#666', fontSize: 11 }}
-            />
-            <Tooltip 
-              content={CustomTooltip}
-              cursor={{ fill: 'transparent' }}
-            />
-            <Bar 
-              dataKey="Current Score" 
-              fill="#C084FC" 
+            <YAxis domain={[0, 100]} tick={{ fill: "#666", fontSize: 11 }} />
+            <Tooltip content={CustomTooltip} cursor={{ fill: "transparent" }} />
+            <Bar
+              dataKey="Current Score"
+              fill="#C084FC"
               shape={<RoundedBar />}
               radius={[10, 10, 0, 0]}
             />
-            <Bar 
-              dataKey="Target Score" 
-              fill="#93C5FD" 
+            <Bar
+              dataKey="Target Score"
+              fill="#93C5FD"
               shape={<RoundedBar />}
               radius={[10, 10, 0, 0]}
             />
           </BarChart>
         </ResponsiveContainer>
+      </div>
+      <div className="w-full flex flex-row justify-center gap-5 text-zinc-600 text-sm">
+        <div className="flex flex-row items-center gap-1">
+          <div
+            style={{ backgroundColor: "#C084FC" }}
+            className=" h-4 w-4 rounded-sm"
+          ></div>
+          <span>Current Score</span>
+        </div>
+        <div className="flex flex-row items-center gap-1">
+          <div
+            style={{ backgroundColor: "#93C5FD" }}
+            className=" h-4 w-4 rounded-sm"
+          ></div>
+          <span>Target Score</span>
+        </div>
       </div>
     </div>
   );
