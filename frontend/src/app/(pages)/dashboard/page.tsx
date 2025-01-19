@@ -8,6 +8,7 @@ import AdvanceDataAnalytics from "@/app/(pages)/dashboard/sections/advance_data_
 import AreaImprovement from "@/app/(pages)/dashboard/sections/area_improvement";
 import UserSegmentation from "@/app/(pages)/dashboard/sections/user_segmentation";
 import SatisfactionOverview from "@/app/(pages)/dashboard/sections/satisfaction_overview";
+import FeedbackTrends from "@/app/(pages)/dashboard/sections/feedback_trends";
 import Testing from "@/app/(pages)/dashboard/sections/testing";
 import PreviewCard from "@/app/components/card/card_preview";
 
@@ -28,7 +29,8 @@ const page = () => {
           </div>
         </div>
         <SatisfactionOverview/>
-        <Testing/>
+        <FeedbackTrends/>
+        {/* <Testing/> */}
       </div>
     </div>
   );

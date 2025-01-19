@@ -13,8 +13,12 @@ export default function SatisfactionDashboard() {
   return (
     <div className="bg-gray-100 p-6 rounded-lg shadow-md max-w-xl mx-auto">
       {/* Title */}
-      <h2 className="text-2xl font-bold text-purple-600">Satisfaction Overview</h2>
-      <p className="text-gray-500">Year-over-year satisfaction analysis and sentiment distribution</p>
+      <h2 className="text-2xl font-bold text-purple-600">
+        Satisfaction Overview
+      </h2>
+      <p className="text-gray-500">
+        Year-over-year satisfaction analysis and sentiment distribution
+      </p>
 
       {/* Gauge Chart */}
       <div className="my-6 flex flex-col items-center">
@@ -51,10 +55,15 @@ export default function SatisfactionDashboard() {
       </div>
 
       {/* Sentiment Distribution */}
-      <h3 className="text-xl font-bold text-gray-700 mt-6">Sentiment Distribution</h3>
+      <h3 className="text-xl font-bold text-gray-700 mt-6">
+        Sentiment Distribution
+      </h3>
       <div className="flex justify-center gap-4 mt-4">
         {sentimentData.map((item, index) => (
-          <div key={index} className="bg-white shadow-md p-4 rounded-lg text-center w-24">
+          <div
+            key={index}
+            className="bg-white shadow-md p-4 rounded-lg text-center w-24"
+          >
             <div className="text-3xl">{item.emoji}</div>
             <p className={`text-xl font-bold ${item.color}`}>{item.value}</p>
             <p className="text-gray-500">{item.label}</p>
