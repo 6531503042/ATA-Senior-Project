@@ -16,7 +16,7 @@ const card_preview = () => {
                 <p className="text-sm font-medium text-gray-500">
                   Total Feedback
                 </p>
-                <h3 className="text-2xl font-bold">490</h3>
+                <h3 className="text-2xl font-semibold">490</h3>
               </div>
             </div>
           </CardContent>
@@ -32,7 +32,7 @@ const card_preview = () => {
                 <p className="text-sm font-medium text-gray-500">
                   Positive Rate
                 </p>
-                <h3 className="text-2xl font-bold">78%</h3>
+                <h3 className="text-2xl font-semibold">78%</h3>
               </div>
             </div>
           </CardContent>
@@ -46,7 +46,7 @@ const card_preview = () => {
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-500">Avg Rating</p>
-                <h3 className="text-2xl font-bold">4.5</h3>
+                <h3 className="text-2xl font-semibold">4.5</h3>
               </div>
             </div>
           </CardContent>
@@ -62,7 +62,7 @@ const card_preview = () => {
                 <p className="text-sm font-medium text-gray-500">
                   Response Rate
                 </p>
-                <h3 className="text-2xl font-bold">92%</h3>
+                <h3 className="text-2xl font-semibold">92%</h3>
               </div>
             </div>
           </CardContent>

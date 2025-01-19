@@ -7,7 +7,7 @@ import Link from "next/link";
 
 const Navbar = () => {
   return (
-    <div className="w-full fixed top-0 bg-white z-50 border-b">
+    <div className="w-full fixed top-0 bg-white z-40 border-b">
       <div className="max-w-[1945px] mx-auto w-full px-4 md:px-8 lg:px-12 flex justify-between items-center py-3">
         {/* Title */}
         <h1 className="font-bold text-nowrap md:text-2xl text-lg cursor-pointer bg-gradient-to-r from-red-400 via-teal-400 to-green-400 bg-clip-text text-transparent animate-[animation-r6madp_10s_infinite]">
