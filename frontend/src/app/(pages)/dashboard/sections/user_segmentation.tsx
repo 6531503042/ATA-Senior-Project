@@ -6,7 +6,7 @@ const user_segmentation = () => {
     <div className="flex w-full h-auto py-3 px-5 rounded-xl border shadow-lg">
       <div className="flex flex-row w-full items-center justify-between">
         <div className="flex flex-col">
-          <h1 className="text-2xl font-bold text-violet-800">
+          <h1 className="text-2xl font-bold text-violet-700">
             User Segmentation
           </h1>
           <span className="text-sm font-thin text-zinc-600">
@@ -15,7 +15,7 @@ const user_segmentation = () => {
         </div>
         <div className="flex flex-col">
           <h1 className="text-sm font-thin text-zinc-600">Total Employees</h1>
-          <p className="text-xl font-bold text-violet-800">2933</p>
+          <p className="text-xl font-bold text-violet-700">2933</p>
         </div>
         <button className="flex-row flex gap-3 items-center bg-black hover:bg-slate-600 transition-all duration-200 text-white text-sm py-2 px-3 rounded-xl">
           Export

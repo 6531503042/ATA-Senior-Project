@@ -6,7 +6,7 @@ const area_improvement = () => {
     <div className="flex w-full h-auto py-3 px-5 rounded-xl border shadow-lg">
       <div className="flex flex-row w-full items-center justify-between">
         <div className="flex flex-col">
-          <h1 className="text-2xl font-bold text-violet-800">
+          <h1 className="text-2xl font-bold text-violet-700">
           Areas for Improvement
           </h1>
           <span className="text-sm font-thin text-zinc-600">
