@@ -21,7 +21,9 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JwtTokenFilter extends OncePerRequestFilter {
 
-    private final JwtProvider jwtPro;
+    private final JwtProvider jwtProvider;
+    private final UserClient userClient;
+    
     /**
      * @param request
      * @param response
@@ -35,43 +37,43 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain) throws ServletException, IOException {
 
-        String token = extractToken(request);
         try {
-            if (token != null && JwtProvider.validateToken(token)) {
-                Authentication auth = jwtPro.getAuthentication(token);
-                SecurityContextHolder.getContext().setAuthentication(auth);
+            String token = extractTokenFromRequest(request);
+            if (token != null) {
+                UserDto user = userClient.validateToken("Bearer " + token);
+                
+                if (user != null) {
+                    // Set user context
+                    UserContext.setCurrentUser(user);
+                    UserContext.setCurrentToken(token);
 
-                // Set JWT token in request attribute
-                request.setAttribute("JWT_TOKEN", token);
-
-                filterChain.doFilter(request, response);
-            } else {
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid JWT token");
+                    // Set Spring Security context
+                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                            user, null, Collections.emptyList()
+                    );
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
             }
-        } catch (ExpiredJwtException e) {
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Expired JWT token");
-        } catch (MalformedJwtException e) {
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid JWT token");
+        } catch (Exception e) {
+            // Log error or handle token validation failure
+            logger.error("Token validation error", e);
         }
 
+        try {
+            filterChain.doFilter(request, response);
+        } finally {
+            // Always clear the context after request
+            UserContext.clear();
+        }
     }
 
-    private String extractToken(HttpServletRequest request) {
-        String authHeader = request.getHeader("Authorization");
-        if (authHeader != null && authHeader.startsWith("Bearer")) {
-            return authHeader.replace("Bearer", "");
+    private String extractTokenFromRequest(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
         }
-        return null;
-    }
-
-    public static String getTokenFromRequest() {
-        ServletRequestAttributes servletRequestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-
-        if (servletRequestAttributes != null) {
-            HttpServletRequest request = servletRequestAttributes.getRequest();
-            return (String) request.getAttribute("JWT_TOKEN");
-        }
-
         return null;
     }
 }
+
