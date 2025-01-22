@@ -28,17 +28,17 @@ public class FeedbackServiceImpl implements FeedbackService {
 
 
     @Override
+    @Transactional
     public Feedback createFeedback(CreateFeedbackRequest request) {
-        QuestionCategory category = null;
-        if (request.getCategory() != null) {
-            try {
-                category = QuestionCategory.valueOf(String.valueOf(request.getCategory()));
-            } catch (IllegalArgumentException e) {
-                throw new RuntimeException("Invalid category: "+ request.getCategory());
-            }
-        }
+        log.info("Creating feedback for project: {}", request.getProjectId());
+        
+        // Validate project existence
+        validateProject(request.getProjectId());
 
-        return Feedback.builder()
+        QuestionCategory category = parseCategory(request.getCategory());
+
+        try {
+            Feedback feedback = Feedback.builder()
                 .projectId(request.getProjectId())
                 .userId(request.getUserId())
                 .title(request.getTitle())
@@ -47,13 +47,25 @@ public class FeedbackServiceImpl implements FeedbackService {
                 .privacyLevel(request.getPrivacyLevel())
                 .submittedAt(ZonedDateTime.now())
                 .build();
+
+            Feedback savedFeedback = feedbackRepository.save(feedback);
+            log.info("Feedback created successfully with ID: {}", savedFeedback.getId());
+            return savedFeedback;
+        } catch (Exception e) {
+            log.error("Error creating feedback: {}", e.getMessage(), e);
+            throw new FeedbackValidationException("Failed to create feedback", e);
+        }
     }
 
 
     @Override
-    @Transactional(readOnly = true)
-    public Page<Feedback> getAllFeedbacks(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
+    public Page<Feedback> getAllFeedbacks(int page, int size, String status) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("submittedAt").descending());
+        
+        if (status != null && !status.isEmpty()) {
+            return feedbackRepository.findByStatus(status, pageable);
+        }
+        
         return feedbackRepository.findAll(pageable);
     }
 
@@ -63,6 +75,42 @@ public class FeedbackServiceImpl implements FeedbackService {
         return feedbackRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Feedback not found"));
     }
+
+    @Override
+    public Feedback updateFeedbackStatus(Long feedbackId, UpdateFeedbackStatusRequest request) {
+        Feedback feedback = feedbackRepository.findById(feedbackId)
+            .orElseThrow(() -> new FeedbackValidationException("Feedback not found"));
+        
+        feedback.setStatus(request.getStatus());
+        feedback.setAdminComment(request.getAdminComment());
+        
+        return feedbackRepository.save(feedback);
+    }
+
+    @Override
+    public void deleteFeedback(Long feedbackId) {
+        if (!feedbackRepository.existsById(feedbackId)) {
+            throw new FeedbackValidationException("Feedback not found");
+        }
+        feedbackRepository.deleteById(feedbackId);
+    }
+
+    @Override
+    public Page<Feedback> getFeedbacksByUser(Long userId, int page, int size) {
+    Pageable pageable = PageRequest.of(page, size, Sort.by("submittedAt").descending());
+    return feedbackRepository.findByUserId(userId, pageable);
+}
+
+    
+
+    @Cacheable(value = "feedbackCache", key = "#projectId")
+    @Override
+    public Page<Feedback> getFeedbackByProject(Long projectId, int page, int size) {
+        log.info("Retrieving feedback for project: {} (Page: {}, Size: {})", projectId, page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by("submittedAt").descending());
+        return feedbackRepository.findByProjectId(projectId, pageable);
+    }
+
      @Override
     public Feedback submitFeedback(Long userId, SubmitFeedbackRequest request) {
 
@@ -95,5 +143,22 @@ public class FeedbackServiceImpl implements FeedbackService {
          }
 
         return feedbackRepository.save(feedback);
+    }
+
+    private QuestionCategory parseCategory(String category) {
+        if (category != null) return null;
+
+        try {
+            return QuestionCategory.valueOf(category);
+        } catch (IllegalArgumentException e) {
+            log.warn("Invalid category: {}", categoryStr);
+            throw new FeedbackValidationException("Invalid feedback category: " + categoryStr);
+        }
+    }
+
+    private void validateProject(Long projectId) {
+        if (!projectRepository.existsById(projectId)) {
+            throw new RuntimeException("Project not found");
+        }
     }
 }
