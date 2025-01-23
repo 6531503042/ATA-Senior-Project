@@ -28,7 +28,7 @@ public class Question {
     private String content;
     private boolean required;
 
-
+    @Builder.Default // Add this annotation
     @ElementCollection
     @CollectionTable(name = "question_answers",
             joinColumns = @JoinColumn(name = "question_id"))
@@ -44,13 +44,8 @@ public class Question {
     private AnswerType answerType;
 
     public void addAnswer(Answer answer) {
-        if (answers == null) {
-            answers = new ArrayList<>();
-        }
-
+        // The null check is now redundant and can be removed
         answers.add(String.valueOf(answer));
         answer.setQuestion(this);
-
     }
-
 }

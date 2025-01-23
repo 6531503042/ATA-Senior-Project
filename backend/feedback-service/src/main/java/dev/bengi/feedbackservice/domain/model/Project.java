@@ -23,6 +23,7 @@ public class Project {
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "project_id")
+    @Builder.Default
     private List<Question> questions = new ArrayList<>();
 
     private String name;

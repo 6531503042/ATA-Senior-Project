@@ -25,10 +25,12 @@ public class QuestionSet {
             joinColumns = @JoinColumn(name = "question_set_id"))
     @MapKeyColumn(name = "question_id")
     @Column(name = "answer")
+    @Builder.Default
     private List<String> answers = new ArrayList<>();
 
     @OneToMany(mappedBy = "questionSet", cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "question_set_id")
+    @Builder.Default
     private List<Question> questions;
 
 
