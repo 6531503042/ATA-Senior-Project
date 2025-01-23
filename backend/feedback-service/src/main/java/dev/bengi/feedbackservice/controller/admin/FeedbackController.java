@@ -2,7 +2,6 @@ package dev.bengi.feedbackservice.controller.admin;
 
 import dev.bengi.feedbackservice.domain.model.Feedback;
 import dev.bengi.feedbackservice.domain.payload.request.CreateFeedbackRequest;
-import dev.bengi.feedbackservice.domain.payload.request.UpdateFeedbackStatusRequest;
 import dev.bengi.feedbackservice.dto.CollectionResponse;
 import dev.bengi.feedbackservice.service.FeedbackService;
 import jakarta.validation.Valid;
@@ -35,34 +34,34 @@ public class FeedbackController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String status) {
         log.info("Admin retrieving all feedbacks - Page: {}, Size: {}", page, size);
-        Page<Feedback> feedbackPage = feedbackService.getAllFeedbacks(page, size, status);
-        
+        Page<Feedback> feedbackPage = feedbackService.getAllFeedbacks(page, size);
+
         CollectionResponse<Feedback> response = CollectionResponse.<Feedback>builder()
-            .content(feedbackPage.getContent())
-            .page(page)
-            .size(size)
-            .totalElements(feedbackPage.getTotalElements())
-            .totalPages(feedbackPage.getTotalPages())
-            .build();
-        
+                .items(feedbackPage.getContent())
+                .page(page)
+                .size(size)
+                .totalElements(feedbackPage.getTotalElements())
+                .totalPages(feedbackPage.getTotalPages())
+                .build();
+
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/{feedbackId}/status")
-    public ResponseEntity<Feedback> updateFeedbackStatus(
-            @PathVariable Long feedbackId,
-            @Valid @RequestBody UpdateFeedbackStatusRequest request) {
-        log.info("Admin updating feedback status: {} to {}", feedbackId, request.getStatus());
-        Feedback updatedFeedback = feedbackService.updateFeedbackStatus(feedbackId, request);
-        return ResponseEntity.ok(updatedFeedback);
-    }
+//    @PutMapping("/{feedbackId}/status")
+//    public ResponseEntity<Feedback> updateFeedbackStatus(
+//            @PathVariable Long feedbackId,
+//            @Valid @RequestBody UpdateFeedbackStatusRequest request) {
+//        log.info("Admin updating feedback status: {} to {}", feedbackId, request.getStatus());
+//        Feedback updatedFeedback = feedbackService.updateFeedbackStatus(feedbackId, request);
+//        return ResponseEntity.ok(updatedFeedback);
+//    }
 
-    @DeleteMapping("/{feedbackId}")
-    public ResponseEntity<Void> deleteFeedback(@PathVariable Long feedbackId) {
-        log.info("Admin deleting feedback: {}", feedbackId);
-        feedbackService.deleteFeedback(feedbackId);
-        return ResponseEntity.noContent().build();
-    }
+//    @DeleteMapping("/{feedbackId}")
+//    public ResponseEntity<Void> deleteFeedback(@PathVariable Long feedbackId) {
+//        log.info("Admin deleting feedback: {}", feedbackId);
+//        feedbackService.deleteFeedback(feedbackId);
+//        return ResponseEntity.noContent().build();
+//    }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleException(Exception e) {
