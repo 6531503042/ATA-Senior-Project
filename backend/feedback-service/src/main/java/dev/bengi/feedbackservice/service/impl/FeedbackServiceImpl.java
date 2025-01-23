@@ -11,9 +11,12 @@ import dev.bengi.feedbackservice.repository.FeedbackRepository;
 import dev.bengi.feedbackservice.repository.QuestionSetRepository;
 import dev.bengi.feedbackservice.service.FeedbackService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +24,7 @@ import java.time.ZonedDateTime;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class FeedbackServiceImpl implements FeedbackService {
 
     private final FeedbackRepository feedbackRepository;
@@ -76,24 +80,24 @@ public class FeedbackServiceImpl implements FeedbackService {
                 .orElseThrow(() -> new RuntimeException("Feedback not found"));
     }
 
-    @Override
-    public Feedback updateFeedbackStatus(Long feedbackId, UpdateFeedbackStatusRequest request) {
-        Feedback feedback = feedbackRepository.findById(feedbackId)
-            .orElseThrow(() -> new FeedbackValidationException("Feedback not found"));
-        
-        feedback.setStatus(request.getStatus());
-        feedback.setAdminComment(request.getAdminComment());
-        
-        return feedbackRepository.save(feedback);
-    }
-
-    @Override
-    public void deleteFeedback(Long feedbackId) {
-        if (!feedbackRepository.existsById(feedbackId)) {
-            throw new FeedbackValidationException("Feedback not found");
-        }
-        feedbackRepository.deleteById(feedbackId);
-    }
+//    @Override
+//    public Feedback updateFeedbackStatus(Long feedbackId, UpdateFeedbackStatusRequest request) {
+//        Feedback feedback = feedbackRepository.findById(feedbackId)
+//            .orElseThrow(() -> new FeedbackValidationException("Feedback not found"));
+//
+//        feedback.setStatus(request.getStatus());
+//        feedback.setAdminComment(request.getAdminComment());
+//
+//        return feedbackRepository.save(feedback);
+//    }
+//
+//    @Override
+//    public void deleteFeedback(Long feedbackId) {
+//        if (!feedbackRepository.existsById(feedbackId)) {
+//            throw new FeedbackValidationException("Feedback not found");
+//        }
+//        feedbackRepository.deleteById(feedbackId);
+//    }
 
     @Override
     public Page<Feedback> getFeedbacksByUser(Long userId, int page, int size) {
@@ -145,16 +149,16 @@ public class FeedbackServiceImpl implements FeedbackService {
         return feedbackRepository.save(feedback);
     }
 
-    private QuestionCategory parseCategory(String category) {
-        if (category != null) return null;
-
-        try {
-            return QuestionCategory.valueOf(category);
-        } catch (IllegalArgumentException e) {
-            log.warn("Invalid category: {}", categoryStr);
-            throw new FeedbackValidationException("Invalid feedback category: " + categoryStr);
-        }
-    }
+//    private QuestionCategory parseCategory(String category) {
+//        if (category != null) return null;
+//
+//        try {
+//            return QuestionCategory.valueOf(category);
+//        } catch (IllegalArgumentException e) {
+//            log.warn("Invalid category: {}", categoryStr);
+//            throw new FeedbackValidationException("Invalid feedback category: " + categoryStr);
+//        }
+//    }
 
     private void validateProject(Long projectId) {
         if (!projectRepository.existsById(projectId)) {
