@@ -1,5 +1,6 @@
 package dev.bengi.feedbackservice.repository;
 
+import dev.bengi.feedbackservice.domain.enums.AnswerType;
 import dev.bengi.feedbackservice.domain.model.Feedback;
 import dev.bengi.feedbackservice.domain.enums.QuestionCategory;
 import org.springframework.data.jpa.repository.JpaRepository;
