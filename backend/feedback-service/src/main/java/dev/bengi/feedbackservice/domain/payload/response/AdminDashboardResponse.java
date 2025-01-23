@@ -10,16 +10,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AdminDashboardResponse {
-    // Sentiment Analysis
     private SentimentAnalysis sentimentAnalysis;
-    
-    // Feedback Overview
     private FeedbackOverview feedbackOverview;
-    
-    // Question Set Performance
     private List<QuestionSetPerformance> questionSetPerformances;
-    
-    // Recent Activities
     private List<RecentActivity> recentActivities;
 
     @Data
