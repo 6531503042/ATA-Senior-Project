@@ -26,6 +26,8 @@ security:
     expiration: 86400
     refresh-expiration: 86400
 
+
+
 # Token refresh endpoint URL
 refresh:
   token:
@@ -50,20 +52,6 @@ springdoc:
     syntaxHighlight:
       activated: true
 
-# Enable or disable OpenAPI documentation
-springdoc:
-  api-docs:
-    enabled: true
-  swagger-ui:
-    enabled: true
-
-# Groups
-springdoc:
-  group-configs[0]:
-    group: user-management
-    paths-to-match: /api/manager/**
-    packages-to-scan: dev.bengi.userservice.controller
-
 # Email Configuration
 spring.mail.host: smtp.gmail.com
 spring.mail.port: 587
@@ -77,3 +65,8 @@ app.frontend-url: http://localhost:3000
 
 # Reset Password Token Configuration
 app.reset-password.token.expiration: 900000
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
