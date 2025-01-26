@@ -1,21 +1,22 @@
 package dev.bengi.userservice.service;
 
 import dev.bengi.userservice.domain.model.User;
-import dev.bengi.userservice.payload.request.AddUserRequest;
-import dev.bengi.userservice.payload.request.ChangePasswordRequest;
-import dev.bengi.userservice.payload.request.ForgotPasswordRequest;
-import dev.bengi.userservice.payload.request.LoginRequest;
-import dev.bengi.userservice.payload.request.RegisterRequest;
-import dev.bengi.userservice.payload.response.AuthResponse;
-import dev.bengi.userservice.payload.response.JwtResponse;
+import dev.bengi.userservice.domain.payload.request.AddUserRequest;
+import dev.bengi.userservice.domain.payload.request.ChangePasswordRequest;
+import dev.bengi.userservice.domain.payload.request.ForgotPasswordRequest;
+import dev.bengi.userservice.domain.payload.request.LoginRequest;
+import dev.bengi.userservice.domain.payload.request.RegisterRequest;
+import dev.bengi.userservice.domain.payload.response.AuthResponse;
+import dev.bengi.userservice.domain.payload.response.JwtResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import reactor.core.publisher.Mono;
 
+import javax.management.relation.RoleNotFoundException;
 import java.util.Optional;
 
 public interface UserService {
-    Mono<User> register(RegisterRequest register);
+    Mono<User> register(RegisterRequest register) throws RoleNotFoundException;
 
     Mono<Void> deleteUser(Long userId);
 
@@ -40,8 +41,6 @@ public interface UserService {
     Mono<Page<AuthResponse>> findAllUser(Pageable pageable);
 
     String textSendEmailChangePasswordSuccessfully(String username);
-
-    Mono<Void> forgotPassword(ForgotPasswordRequest request);
     
     Mono<Void> resetPassword(String token, String newPassword);
 }
