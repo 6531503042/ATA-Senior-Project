@@ -1,7 +1,7 @@
 package dev.bengi.userservice.config;
 
 import dev.bengi.userservice.domain.model.User;
-import dev.bengi.userservice.payload.request.RegisterRequest;
+import dev.bengi.userservice.domain.payload.request.RegisterRequest;
 import dev.bengi.userservice.repository.UserRepository;
 import dev.bengi.userservice.security.userPrinciple.UserPrinciple;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +13,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
