@@ -3,18 +3,19 @@ package dev.bengi.userservice.service.impl;
 import dev.bengi.userservice.domain.model.Role;
 import dev.bengi.userservice.domain.enums.RoleName;
 import dev.bengi.userservice.domain.model.User;
+import dev.bengi.userservice.domain.payload.request.*;
 import dev.bengi.userservice.exception.EmailOrUsernameNotFoundException;
 import dev.bengi.userservice.exception.RoleNotFoundException;
 import dev.bengi.userservice.exception.wrapper.UserNotFoundException;
-import dev.bengi.userservice.payload.request.*;
-import dev.bengi.userservice.payload.response.AuthResponse;
-import dev.bengi.userservice.payload.response.JwtResponse;
+import dev.bengi.userservice.domain.payload.response.AuthResponse;
+import dev.bengi.userservice.domain.payload.response.JwtResponse;
 import dev.bengi.userservice.repository.UserRepository;
 import dev.bengi.userservice.security.jwt.JwtProvider;
 import dev.bengi.userservice.service.RoleService;
 import dev.bengi.userservice.service.UserService;
 import dev.bengi.userservice.service.EmailService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +36,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
@@ -43,10 +45,9 @@ public class UserServiceImpl implements UserService {
     private final RoleService roleService;
     private final JwtProvider jwtProvider;
     private final AuthenticationManager authenticationManager;
-    private final EmailService emailService;
+//    private final EmailService emailService;
     @Value("${app.reset-password.token.expiration:900000}")
     private long resetPasswordTokenExpiration;
-    private static final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
 
     // Helper methods
     private String getTemporaryProfileImageUrl(String email) {
@@ -88,13 +89,13 @@ public class UserServiceImpl implements UserService {
         return userRepository.findByUserName(username);
     }
 
-    // Core business logic methods
+//     Core business logic methods
     @Override
     public Mono<User> register(RegisterRequest register) {
         return Mono.defer(() -> {
             try {
                 log.info("Starting registration for user: {}", register.getUsername());
-                
+
                 if (userRepository.existsByUserName(register.getUsername())) {
                     log.warn("Registration failed: Username {} is already taken", register.getUsername());
                     return Mono.error(new EmailOrUsernameNotFoundException("Username is already taken."));
@@ -122,6 +123,7 @@ public class UserServiceImpl implements UserService {
             }
         });
     }
+
 
     @Override
     public Mono<User> addNewUser(AddUserRequest user) {
@@ -373,30 +375,30 @@ public class UserServiceImpl implements UserService {
                 """, username);
     }
 
-    @Override
-    public Mono<Void> forgotPassword(ForgotPasswordRequest request) {
-        return Mono.defer(() -> {
-            try {
-                User user = userRepository.findByEmail(request.getEmail())
-                    .orElseThrow(() -> new UserNotFoundException("User not found with email: " + request.getEmail()));
-
-                String resetToken = jwtProvider.createPasswordResetToken(user.getUsername());
-                // Store the reset token with expiration
-                user.setResetPasswordToken(resetToken);
-                user.setResetPasswordTokenExpiry(new Date(System.currentTimeMillis() + resetPasswordTokenExpiration));
-                userRepository.save(user);
-
-                // Send email asynchronously
-                emailService.sendPasswordResetEmail(user.getEmail(), resetToken);
-                log.info("Password reset email sent to: {}", user.getEmail());
-
-                return Mono.empty();
-            } catch (Exception e) {
-                log.error("Error in forgot password process: {}", e.getMessage());
-                return Mono.error(e);
-            }
-        });
-    }
+//    @Override
+//    public Mono<Void> forgotPassword(ForgotPasswordRequest request) {
+//        return Mono.defer(() -> {
+//            try {
+//                User user = userRepository.findByEmail(request.getEmail())
+//                    .orElseThrow(() -> new UserNotFoundException("User not found with email: " + request.getEmail()));
+//
+//                String resetToken = jwtProvider.createPasswordResetToken(user.getUsername());
+//                // Store the reset token with expiration
+//                user.setResetPasswordToken(resetToken);
+//                user.setResetPasswordTokenExpiry(new Date(System.currentTimeMillis() + resetPasswordTokenExpiration));
+//                userRepository.save(user);
+//
+//                // Send email asynchronously
+//                emailService.sendPasswordResetEmail(user.getEmail(), resetToken);
+//                log.info("Password reset email sent to: {}", user.getEmail());
+//
+//                return Mono.empty();
+//            } catch (Exception e) {
+//                log.error("Error in forgot password process: {}", e.getMessage());
+//                return Mono.error(e);
+//            }
+//        });
+//    }
 
     @Override
     public Mono<Void> resetPassword(String token, String newPassword) {
