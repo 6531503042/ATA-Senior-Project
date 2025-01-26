@@ -1,13 +1,12 @@
 package dev.bengi.userservice.controller;
 
-import dev.bengi.userservice.domain.model.User;
-import dev.bengi.userservice.payload.request.ForgotPasswordRequest;
-import dev.bengi.userservice.payload.request.LoginRequest;
-import dev.bengi.userservice.payload.request.RegisterRequest;
-import dev.bengi.userservice.payload.response.AuthResponse;
-import dev.bengi.userservice.payload.response.JwtResponse;
-import dev.bengi.userservice.payload.response.ResponseMessage;
-import dev.bengi.userservice.payload.response.TokenValidationResponse;
+import dev.bengi.userservice.domain.payload.request.ForgotPasswordRequest;
+import dev.bengi.userservice.domain.payload.request.LoginRequest;
+import dev.bengi.userservice.domain.payload.request.RegisterRequest;
+import dev.bengi.userservice.domain.payload.response.AuthResponse;
+import dev.bengi.userservice.domain.payload.response.JwtResponse;
+import dev.bengi.userservice.domain.payload.response.ResponseMessage;
+import dev.bengi.userservice.domain.payload.response.TokenValidationResponse;
 import dev.bengi.userservice.security.jwt.JwtProvider;
 import dev.bengi.userservice.security.validate.AuthorityToken;
 import dev.bengi.userservice.security.validate.TokenValidate;
@@ -23,6 +22,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
+import javax.management.relation.RoleNotFoundException;
 import java.util.List;
 
 @RestController
@@ -37,7 +37,7 @@ public class AuthController {
     private final AuthorityToken authorityToken;
 
     @PostMapping({"/register", "/signup"})
-    public Mono<ResponseMessage> register(@Valid @RequestBody RegisterRequest register) {
+    public Mono<ResponseMessage> register(@Valid @RequestBody RegisterRequest register) throws RoleNotFoundException {
         return userService.register(register)
                 .map(user -> new ResponseMessage("Create user: " + register.getUsername() + " successfully."))
                 .onErrorResume(error -> Mono.just(new ResponseMessage("Error occurred while creating the account.")));
@@ -104,16 +104,16 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/forgot-password")
-    @Operation(summary = "Forgot password", description = "Request a password reset email")
-    public Mono<ResponseEntity<ResponseMessage>> forgotPassword(
-            @Valid @RequestBody ForgotPasswordRequest request) {
-        log.info("Received forgot password request for email: {}", request.getEmail());
-        return userService.forgotPassword(request)
-                .then(Mono.just(ResponseEntity.ok()
-                        .body(new ResponseMessage("Password reset email sent successfully"))))
-                .doOnError(error -> log.error("Error in forgot password: {}", error.getMessage()));
-    }
+//    @PostMapping("/forgot-password")
+//    @Operation(summary = "Forgot password", description = "Request a password reset email")
+//    public Mono<ResponseEntity<ResponseMessage>> forgotPassword(
+//            @Valid @RequestBody ForgotPasswordRequest request) {
+//        log.info("Received forgot password request for email: {}", request.getEmail());
+//        return userService.forgotPassword(request)
+//                .then(Mono.just(ResponseEntity.ok()
+//                        .body(new ResponseMessage("Password reset email sent successfully"))))
+//                .doOnError(error -> log.error("Error in forgot password: {}", error.getMessage()));
+//    }
 
     @PostMapping("/reset-password")
     @Operation(summary = "Reset password", description = "Reset password using token")
