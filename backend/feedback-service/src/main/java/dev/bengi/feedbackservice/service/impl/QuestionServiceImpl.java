@@ -1,6 +1,7 @@
 package dev.bengi.feedbackservice.service.impl;
 
 import dev.bengi.feedbackservice.domain.model.Answer;
+import dev.bengi.feedbackservice.domain.model.AnswerOption;
 import dev.bengi.feedbackservice.domain.model.Question;
 import dev.bengi.feedbackservice.domain.model.QuestionSet;
 import dev.bengi.feedbackservice.domain.payload.request.CreateQuestionRequest;
@@ -11,44 +12,79 @@ import dev.bengi.feedbackservice.repository.QuestionRepository;
 import dev.bengi.feedbackservice.repository.QuestionSetRepository;
 import dev.bengi.feedbackservice.service.QuestionService;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
-
+/**
+ * Implementation of the QuestionService interface.
+ */
 @Service
 @RequiredArgsConstructor
 public class QuestionServiceImpl implements QuestionService {
 
     private final QuestionRepository questionRepository;
     private final QuestionSetRepository questionSetRepository;
+    private static final Logger log = LoggerFactory.getLogger(QuestionServiceImpl.class);
 
     @Override
+    @Transactional
     public Question createQuestion(CreateQuestionRequest request) {
+        // Validate input
+        if (request == null) {
+            throw new IllegalArgumentException("Question request cannot be null");
+        }
+
+        log.info("Creating question with request: {}", request);
+
+        // Build the Question entity
         Question question = Question.builder()
                 .text(request.getText())
                 .content(request.getContent())
                 .type(request.getType())
                 .category(request.getCategory())
                 .answerType(request.getAnswerType())
+                .required(false) // Set a default value if not specified
                 .build();
 
-        //Answer exists
-        if (request.getAnswers() != null) {
-            request.getAnswers().forEach(answerText -> {
-                Answer answer = Answer.builder()
-                        .text(answerText)
-                        .build();
-                question.addAnswer(answer);
-            });
-        }
-        return questionRepository.save(question);
-    }
+        log.info("Built Question entity: {}", question);
 
+        // If there are answers, create Answer entities from AnswerOptions
+        if (request.getAnswerOptions() != null && !request.getAnswerOptions().isEmpty()) {
+            List<Answer> answers = request.getAnswerOptions().stream()
+                    .map(option -> {
+                        // Ensure option is of the correct type
+                        return Answer.builder()
+                                .text(option.getText())
+                                .value(String.valueOf(option.getValue())) // Convert to String if necessary
+                                .question(question)
+                                .build();
+                    })
+                    .collect(Collectors.toList());
+
+            question.setAnswers(answers);
+        }
+
+        // Save the question entity with answers
+        try {
+            return questionRepository.save(question);
+        } catch (DataIntegrityViolationException e) {
+            log.error("Data integrity violation while creating question: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to create question due to data integrity issues", e);
+        } catch (Exception e) {
+            log.error("Error creating question: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to create question", e);
+        }
+    }
 
     @Override
     @Transactional
@@ -61,12 +97,9 @@ public class QuestionServiceImpl implements QuestionService {
         List<Question> questions = questionRepository.findAllById(request.getQuestionIds());
         questions.forEach(set::addQuestion);
 
-
         QuestionSet savedSet = questionSetRepository.save(set);
         return Collections.singletonList(mapToResponse(savedSet));
     }
-
-
 
     @Override
     @Transactional
@@ -77,16 +110,6 @@ public class QuestionServiceImpl implements QuestionService {
         question.setContent(request.getContent());
         question.setType(request.getType());
         question.setCategory(request.getCategory());
-
-        //Answer exists
-        if (request.getAnswers() != null) {
-            request.getAnswers().forEach(answerText -> {
-                Answer answer = Answer.builder()
-                        .text(answerText)
-                        .build();
-                question.addAnswer(answer);
-            });
-        }
 
         return QuestionResponse.builder()
                 .id(question.getId())
@@ -124,7 +147,6 @@ public class QuestionServiceImpl implements QuestionService {
         questionSetRepository.deleteById(id);
     }
 
-
     @Override
     public Page<Question> getAllQuestions(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
@@ -145,7 +167,7 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     @Override
-    public  Question getQuestionById(Long id) {
+    public Question getQuestionById(Long id) {
         return questionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Question not found"));
     }

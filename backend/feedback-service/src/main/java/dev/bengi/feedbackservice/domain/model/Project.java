@@ -1,5 +1,6 @@
 package dev.bengi.feedbackservice.domain.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,11 +15,13 @@ import java.util.ArrayList;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@Builder(toBuilder = true)
 @Entity
 @Table(name = "projects")
 public class Project {
+
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)  // Auto-increment ID
     private Long id;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
@@ -28,18 +31,27 @@ public class Project {
 
     private String name;
     private String description;
-    private Integer totalEmployees;
+    
+    @ElementCollection
+    private List<Long> memberIds; // Store user IDs instead of User objects
 
-    private ZonedDateTime feedbackStartDate;
-    private ZonedDateTime feedbackEndDate;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX", timezone = "Asia/Bangkok")
+    private ZonedDateTime projectStartDate;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX", timezone = "Asia/Bangkok")
+    private ZonedDateTime projectEndDate;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX", timezone = "Asia/Bangkok")
     private ZonedDateTime createdAt;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX", timezone = "Asia/Bangkok")
     private ZonedDateTime updatedAt;
 
     @PrePersist
     protected void onCreate() {
-        feedbackStartDate = ZonedDateTime.now(ZoneId.of("Asia/Bangkok")); // Bangkok timezone
-        feedbackEndDate = ZonedDateTime.now(ZoneId.of("Asia/Bangkok"));
-        createdAt = ZonedDateTime.now(ZoneId.of("Asia/Bangkok")); // Bangkok timezone
+        projectStartDate = ZonedDateTime.now(ZoneId.of("Asia/Bangkok"));
+        projectEndDate = ZonedDateTime.now(ZoneId.of("Asia/Bangkok"));
+        createdAt = ZonedDateTime.now(ZoneId.of("Asia/Bangkok"));
         updatedAt = ZonedDateTime.now(ZoneId.of("Asia/Bangkok"));
     }
 }

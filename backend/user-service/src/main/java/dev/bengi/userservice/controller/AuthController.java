@@ -32,7 +32,6 @@ import java.util.List;
 public class AuthController {
 
     private final UserService userService;
-    private final JwtProvider jwtProvider;
     private final TokenValidate tokenValidate;
     private final AuthorityToken authorityToken;
 

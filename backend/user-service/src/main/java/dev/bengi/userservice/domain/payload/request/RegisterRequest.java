@@ -10,7 +10,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 @AllArgsConstructor
 public class RegisterRequest {
-    private String fullName;
+    private String fullname;
     private String username;
     private String password;
     private String email;

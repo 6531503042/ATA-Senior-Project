@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,19 +25,22 @@ public class QuestionController {
     private final QuestionService questionService;
 
     @PostMapping("/create")
-    public ResponseEntity<Question> createQuestion(
-            @Valid @RequestBody CreateQuestionRequest request) {
-                try {
-                    var questionResponse = questionService.createQuestion(request);
-                    return ResponseEntity.ok(questionResponse);
-                } catch (Exception e) {
-                    log.error("Failed to create question", e);
-                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-                }
-            }
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Question> createQuestion(@Valid @RequestBody CreateQuestionRequest request) {
+        log.info("Received CreateQuestionRequest: {}", request);
+        try {
+            var questionResponse = questionService.createQuestion(request);
+            return ResponseEntity.ok(questionResponse);
+        } catch (Exception e) {
+            log.error("Failed to create question", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
 
 
     @PostMapping("/create-set")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<QuestionSet> createQuestionSet(
             @Valid @RequestBody CreateQuestionSetRequest request
     )        {
@@ -51,6 +55,7 @@ public class QuestionController {
 
 
     @GetMapping("/questions")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<Question>> getAllQuestion() {
         try {
             var questions = questionService.getAllQuestions(0, 10);
@@ -61,7 +66,9 @@ public class QuestionController {
     }
 
 
+    
     @GetMapping("/question-sets")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<QuestionSetResponse>> getAllQuestionSet() {
         try {
             var questionSets = questionService.getAllQuestionSet(0, 10);
@@ -73,6 +80,7 @@ public class QuestionController {
 
 
     @GetMapping("/question-set/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<QuestionSetResponse> getQuestionSet(@PathVariable("id") Long id) {
         try {
             var questionSet = questionService.getQuestionSetId(id);
@@ -83,6 +91,7 @@ public class QuestionController {
     }
 
     @GetMapping("/question/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Question> getQuestion(@PathVariable("id") Long id) {
         try {
             var question = questionService.getQuestionById(id);
@@ -94,6 +103,7 @@ public class QuestionController {
 
 
     @PutMapping("/question/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<QuestionResponse> updateQuestion(@Valid @RequestBody CreateQuestionRequest question, @PathVariable("id") Long id) {
         try {
             var questionResponse = questionService.updateQuestion(id, question);
@@ -105,6 +115,7 @@ public class QuestionController {
 
 
     @PutMapping("/question-set/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<QuestionSetResponse> updateQuestionSet(@Valid @RequestBody CreateQuestionSetRequest questionSet, @PathVariable("id") Long id) {
         try {
             var questionSetResponse = questionService.updatedQuestionSet(id, questionSet);
@@ -116,6 +127,7 @@ public class QuestionController {
 
 
     @DeleteMapping("/question/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteQuestion(@PathVariable("id") Long id) {
         try {
             questionService.deleteQuestion(id);
@@ -127,6 +139,7 @@ public class QuestionController {
 
 
     @DeleteMapping("/question-set/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteQuestionSet(@PathVariable("id") Long id) {
         try {
             questionService.deleteQuestionSet(id);

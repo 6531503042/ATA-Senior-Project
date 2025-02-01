@@ -13,12 +13,9 @@ import dev.bengi.userservice.repository.UserRepository;
 import dev.bengi.userservice.security.jwt.JwtProvider;
 import dev.bengi.userservice.service.RoleService;
 import dev.bengi.userservice.service.UserService;
-import dev.bengi.userservice.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -108,10 +105,24 @@ public class UserServiceImpl implements UserService {
                 User user = modelMapper.map(register, User.class);
                 user.setPassword(passwordEncoder.encode(register.getPassword()));
                 user.setAvatar(getTemporaryProfileImageUrl(register.getEmail()));
-                user.setFullname(register.getFullName());
+                
+                // Logging to track fullname mapping
+                log.info("Registering user - Username: {}, Fullname from request: {}", 
+                    register.getUsername(), register.getFullname());
+                
+                // Explicitly set fullname and gender to ensure they are mapped correctly
+                user.setFullname(register.getFullname());
+                user.setGender(register.getGender());
 
-                Role defaultRole = roleService.findByName(RoleName.USER)
-                        .orElseThrow(() -> new RoleNotFoundException("Default role not found in the database."));
+                // Determine role based on input
+                Role defaultRole;
+                if (register.getRoles() != null && register.getRoles().contains("ADMIN")) {
+                    defaultRole = roleService.findByName(RoleName.ADMIN)
+                            .orElseThrow(() -> new RoleNotFoundException("Admin role not found in the database."));
+                } else {
+                    defaultRole = roleService.findByName(RoleName.USER)
+                            .orElseThrow(() -> new RoleNotFoundException("Default role not found in the database."));
+                }
                 user.setRoles(Collections.singleton(defaultRole));
 
                 log.info("Saving new user: {}", user.getUsername());

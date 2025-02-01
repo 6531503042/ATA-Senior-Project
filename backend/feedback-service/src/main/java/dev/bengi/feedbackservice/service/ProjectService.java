@@ -16,7 +16,10 @@ public interface ProjectService {
 
     void deleteProject(Long id);
 
-    Page<Project> getProjects(int page, int size);
+//    Page<Project> getProjects(int page, int size);
+
+    @Transactional(readOnly = true)
+    List<Project> getProjects();
 
     @Transactional(readOnly = true)
     Project getProjectById(Long id);

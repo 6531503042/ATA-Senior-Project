@@ -8,7 +8,10 @@ import lombok.*;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 @Data
 @Builder
@@ -28,23 +31,24 @@ public class Feedback {
     @Column(name = "user_id")
     private Long userId;
 
+    @Column(name = "question_ids")
+    private List<Long> questionIds;
+
     private String title;
     private String description;
     private String additionalComments;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX", timezone = "Asia/Bangkok")
+    private ZonedDateTime feedbackStartDate;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX", timezone = "Asia/Bangkok")
+    private ZonedDateTime feedbackEndDate;
 
     @Enumerated(EnumType.STRING)
     private QuestionCategory category;
 
     @Enumerated(EnumType.STRING)
     private PrivacyLevel privacyLevel;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "question_id")
-    private Question question;
-
-    @ManyToOne
-    @JoinColumn(name = "question_set_id")
-    private QuestionSet questionSet;
 
     @ElementCollection
     @CollectionTable(name = "feedback_answers",
@@ -58,15 +62,10 @@ public class Feedback {
     @PrePersist
     protected void onCreate() {
         submittedAt = ZonedDateTime.now(ZoneId.of("Asia/Bangkok")); // Bangkok timezone
+        feedbackStartDate = ZonedDateTime.now(ZoneId.of("Asia/Bangkok"));
+        feedbackEndDate = ZonedDateTime.now(ZoneId.of("Asia/Bangkok"));
     }
 
-    public void addAnswer(Answer answer) {
-        answers.put(answer.getQuestion().getId(), String.valueOf(answer.getValue()));
-
-        if (this.question == null) {
-            this.question = answer.getQuestion();
-        }
-    }
 
     public void removeAnswer(Answer answer) {
         answers.remove(answer.getQuestion().getId());

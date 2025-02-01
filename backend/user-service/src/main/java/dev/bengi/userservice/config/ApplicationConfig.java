@@ -61,11 +61,13 @@ public class ApplicationConfig {
                 .setSkipNullEnabled(true)
                 .setFieldMatchingEnabled(true)
                 .setFieldAccessLevel(org.modelmapper.config.Configuration.AccessLevel.PRIVATE);
-        
-        // Add custom mapping for fullName to fullname
+    
+        // Explicit mapping to handle camelCase difference
         modelMapper.createTypeMap(RegisterRequest.class, User.class)
-                .addMappings(mapper -> mapper.map(RegisterRequest::getFullName, User::setFullname));
-        
+                .addMappings(mapper -> {
+                    mapper.map(RegisterRequest::getFullname, User::setFullname);
+                });
+    
         return modelMapper;
     }
 

@@ -1,5 +1,8 @@
 package dev.bengi.feedbackservice.domain.payload.request;
 
+import java.time.ZonedDateTime;
+import java.util.List;
+
 import dev.bengi.feedbackservice.domain.enums.PrivacyLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,11 +16,12 @@ import lombok.NoArgsConstructor;
 public class CreateFeedbackRequest {
     private Long projectId;
     private Long userId;
-    private Long questionSetId;
+    private List<Long> questionIds;
     private String title;
     private String description;
     private String category;
     private PrivacyLevel privacyLevel;
     private String additionalComments;
-
+    private ZonedDateTime feedbackStartDate;
+    private ZonedDateTime feedbackEndDate;
 }

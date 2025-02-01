@@ -16,8 +16,8 @@ public interface RoleRepository extends JpaRepository<Role, Long> {
     @Query("SELECT r FROM Role r WHERE r.name = :name")
     Optional<Role> findByName(@Param("name") RoleName name);
 
-    @Query("SELECT u.roles FROM User u WHERE u.id = :id")
-    List<Role> findByUserId(Long userId);
+    @Query("SELECT u.roles FROM User u WHERE u.id = :userId")
+    List<Role> findByUserId(@Param("userId") Long userId);
 
     @Query("SELECT CASE WHEN COUNT(r) > 0 THEN true ELSE false END FROM Role r WHERE r.name = :name")
     boolean existsByName(@Param("name") RoleName name);
