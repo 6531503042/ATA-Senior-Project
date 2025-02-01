@@ -10,8 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 public interface FeedbackService {
     Feedback createFeedback(CreateFeedbackRequest request);
 
-    Page<Feedback> getAllFeedbacks(int page, int size);
-
     Page<Feedback> getAllFeedbacks(int page, int size, String status);
 
     @Transactional(readOnly = true)
@@ -22,5 +20,5 @@ public interface FeedbackService {
     @Cacheable(value = "feedbackCache", key = "#projectId")
     Page<Feedback> getFeedbackByProject(Long projectId, int page, int size);
 
-    Feedback submitFeedback(Long userId, SubmitFeedbackRequest request);
+    // Feedback submitFeedback(Long userId, SubmitFeedbackRequest request);
 }
