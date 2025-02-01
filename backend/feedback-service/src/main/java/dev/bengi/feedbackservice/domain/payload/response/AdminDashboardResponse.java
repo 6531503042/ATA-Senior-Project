@@ -1,9 +1,15 @@
 package dev.bengi.feedbackservice.domain.payload.response;
 
+import dev.bengi.feedbackservice.domain.enums.AnswerType;
+import dev.bengi.feedbackservice.domain.enums.QuestionCategory;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Map;
 
 @Data
 @Builder

@@ -13,5 +13,10 @@ import java.util.Collection;
 @Builder
 public class CollectionResponse<T> {
 
-    private Collection<T> collection;
+    private Collection<T> items;
+    private String content;
+    private int page;
+    private int size;
+    private long totalElements;
+    private int totalPages;
 }
