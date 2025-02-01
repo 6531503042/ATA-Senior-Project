@@ -10,9 +10,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-@RestController
+@RestController("employeeFeedbackController")
 @RequiredArgsConstructor
 @RequestMapping("api/v1/employee/feedback")
 @Slf4j
@@ -21,6 +22,7 @@ public class FeedbackController {
     private final FeedbackService feedbackService;
 
     @PostMapping("/create")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Feedback> createFeedback(
             @Valid @RequestBody CreateFeedbackRequest request,
             @RequestHeader("X-User-Id") Long userId) {
@@ -31,6 +33,7 @@ public class FeedbackController {
     }
 
     @GetMapping("/my-feedbacks")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<CollectionResponse<Feedback>> getMyFeedbacks(
             @RequestHeader("X-User-Id") Long userId,
             @RequestParam(defaultValue = "0") int page,
@@ -39,7 +42,7 @@ public class FeedbackController {
         Page<Feedback> feedbackPage = feedbackService.getFeedbacksByUser(userId, page, size);
         
         CollectionResponse<Feedback> response = CollectionResponse.<Feedback>builder()
-            .content(feedbackPage.getContent())
+            .content(feedbackPage.getContent().toString())
             .page(page)
             .size(size)
             .totalElements(feedbackPage.getTotalElements())
@@ -50,6 +53,7 @@ public class FeedbackController {
     }
 
     @GetMapping("/{feedbackId}")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Feedback> getFeedbackDetails(
             @PathVariable Long feedbackId,
             @RequestHeader("X-User-Id") Long userId) {
