@@ -6,8 +6,8 @@ import lombok.*;
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
 @Builder
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
@@ -19,7 +19,6 @@ public class QuestionSet {
     private String name;
     private String description;
 
-
     @ElementCollection
     @CollectionTable(name = "question_set_answers",
             joinColumns = @JoinColumn(name = "question_set_id"))
@@ -29,10 +28,8 @@ public class QuestionSet {
     private List<String> answers = new ArrayList<>();
 
     @OneToMany(mappedBy = "questionSet", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "question_set_id")
     @Builder.Default
-    private List<Question> questions;
-
+    private List<Question> questions = new ArrayList<>();
 
     public void addQuestion(Question question) {
         questions.add(question);
