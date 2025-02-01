@@ -1,4 +1,4 @@
-package dev.bemgi.feedbackservice.foreign;
+package dev.bengi.feedbackservice.foreign;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

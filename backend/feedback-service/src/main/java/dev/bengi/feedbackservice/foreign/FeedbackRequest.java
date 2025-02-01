@@ -1,4 +1,4 @@
-package dev.bengi.feedbackservice.payload;
+package dev.bengi.feedbackservice.foreign;
 
 import dev.bengi.feedbackservice.dto.UserDto;
 import jakarta.validation.constraints.NotBlank;

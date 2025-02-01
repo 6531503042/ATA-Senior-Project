@@ -8,7 +8,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
-    Page<Feedback> findByStatus(String status, Pageable pageable);
 
     Page<Feedback> findByUserId(Long userId, Pageable pageable);
 
