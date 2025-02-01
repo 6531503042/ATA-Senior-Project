@@ -1,13 +1,13 @@
 server:
-  port: 8081
+  port: 8084
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:3307/user
+    url: jdbc:postgresql://localhost:3307/feedback
     username: postgres
     password: 6531503042
   application:
-    name: user-service
+    name: feedback-service
   jpa:
     hibernate:
       ddl-auto: update
@@ -24,3 +24,11 @@ security:
   jwt:
     secret: L8KwmXTT/ByT7e9ZiO0s5cGedE7cSfS5YKpC0Qn/qO8=
     expiration: 86400
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8087/eureka/  # Match Eureka Server port
+
+user-service:
+  url: http://localhost:8081  # Correct port for user service
