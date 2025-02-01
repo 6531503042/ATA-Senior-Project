@@ -3,11 +3,15 @@ package dev.bengi.feedbackservice.service.impl;
 import dev.bengi.feedbackservice.domain.enums.QuestionCategory;
 import dev.bengi.feedbackservice.domain.model.Answer;
 import dev.bengi.feedbackservice.domain.model.Feedback;
+import dev.bengi.feedbackservice.domain.model.Question;
 import dev.bengi.feedbackservice.domain.model.QuestionSet;
 import dev.bengi.feedbackservice.domain.payload.request.CreateFeedbackRequest;
 import dev.bengi.feedbackservice.domain.payload.request.SubmitFeedbackRequest;
 
+import dev.bengi.feedbackservice.exception.FeedbackValidationException;
 import dev.bengi.feedbackservice.repository.FeedbackRepository;
+import dev.bengi.feedbackservice.repository.ProjectRepository;
+import dev.bengi.feedbackservice.repository.QuestionRepository;
 import dev.bengi.feedbackservice.repository.QuestionSetRepository;
 import dev.bengi.feedbackservice.service.FeedbackService;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 
 @RequiredArgsConstructor
 @Service
@@ -28,8 +33,9 @@ import java.time.ZonedDateTime;
 public class FeedbackServiceImpl implements FeedbackService {
 
     private final FeedbackRepository feedbackRepository;
+    private final ProjectRepository projectRepository;
     private final QuestionSetRepository questionSetRepository;
-
+    private final QuestionRepository questionRepository;
 
     @Override
     @Transactional
@@ -39,19 +45,21 @@ public class FeedbackServiceImpl implements FeedbackService {
         // Validate project existence
         validateProject(request.getProjectId());
 
-        QuestionCategory category = parseCategory(request.getCategory());
-
         try {
             Feedback feedback = Feedback.builder()
                 .projectId(request.getProjectId())
                 .userId(request.getUserId())
+                .feedbackStartDate(request.getFeedbackStartDate())
+                .feedbackEndDate(request.getFeedbackEndDate())
                 .title(request.getTitle())
                 .description(request.getDescription())
-                .category(category)
-                .privacyLevel(request.getPrivacyLevel())
-                .submittedAt(ZonedDateTime.now())
+                .category(parseCategory(request.getCategory()))
                 .build();
 
+
+                if (request.getQuestionIds() != null && !request.getQuestionIds().isEmpty()) {
+                    feedback.setQuestionIds(request.getQuestionIds());
+                }
             Feedback savedFeedback = feedbackRepository.save(feedback);
             log.info("Feedback created successfully with ID: {}", savedFeedback.getId());
             return savedFeedback;
@@ -64,12 +72,8 @@ public class FeedbackServiceImpl implements FeedbackService {
 
     @Override
     public Page<Feedback> getAllFeedbacks(int page, int size, String status) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("submittedAt").descending());
-        
-        if (status != null && !status.isEmpty()) {
-            return feedbackRepository.findByStatus(status, pageable);
-        }
-        
+        log.info("Fetching all feedbacks with page {} and size {}", page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
         return feedbackRepository.findAll(pageable);
     }
 
@@ -115,50 +119,49 @@ public class FeedbackServiceImpl implements FeedbackService {
         return feedbackRepository.findByProjectId(projectId, pageable);
     }
 
-     @Override
-    public Feedback submitFeedback(Long userId, SubmitFeedbackRequest request) {
+    //  @Override
+    // public Feedback submitFeedback(Long userId, SubmitFeedbackRequest request) {
 
-        //Validate exist question-set
-        QuestionSet set = questionSetRepository.findById(request.getQuestionSetId())
-                .orElseThrow(() -> new RuntimeException("Question set not found"));
+    //     //Validate exist question-set
+    //     QuestionSet set = questionSetRepository.findById(request.getQuestionSetId())
+    //             .orElseThrow(() -> new RuntimeException("Question set not found"));
 
-        Feedback feedback = Feedback.builder()
-                .projectId(request.getProjectId())
-                .userId(userId)
-                .questionSet(set)
-                .title(request.getTitle())
-                .description(request.getDescription())
-                .additionalComments(request.getAdditionalComments())
-                .category(request.getCategory() != null ?
-                        QuestionCategory.valueOf(String.valueOf(request.getCategory())) : null)
-                .privacyLevel(request.getPrivacyLevel())
-                .submittedAt(ZonedDateTime.now())
-                .build();
+    //     Feedback feedback = Feedback.builder()
+    //             .projectId(request.getProjectId())
+    //             .userId(userId)
+    //             .questionIds(request.getQuestionIds())
+    //             .title(request.getTitle())
+    //             .description(request.getDescription())
+    //             .additionalComments(request.getAdditionalComments())
+    //             .category(request.getCategory() != null ?
+    //                     QuestionCategory.valueOf(String.valueOf(request.getCategory())) : null)
+    //             .privacyLevel(request.getPrivacyLevel())
+    //             .submittedAt(ZonedDateTime.now())
+    //             .build();
 
-        //Add answer after builder feedback
-         if (request.getResponse() != null) {
-             request.getResponse().forEach(response -> {
-                 Answer answer = Answer.builder()
-                         .type(response.getType())
-                         .value(response.getValue())
-                         .build();
-                 feedback.addAnswer(answer);
-             });
-         }
+    //     //Add answer after builder feedback
+    //      if (request.getResponse() != null) {
+    //          request.getResponse().forEach(response -> {
+    //              Answer answer = Answer.builder()
+    //                      .type(response.getType())
+    //                      .build();
+    //              feedback.addAnswer(answer);
+    //          });
+    //      }
 
-        return feedbackRepository.save(feedback);
+    //     return feedbackRepository.save(feedback);
+    // }
+
+    private QuestionCategory parseCategory(String category) {
+        if (category != null) return null;
+
+        try {
+            return QuestionCategory.valueOf(category);
+        } catch (IllegalArgumentException e) {
+            log.warn("Invalid category: {}", category);
+            throw new FeedbackValidationException("Invalid feedback category: " + category);
+        }
     }
-
-//    private QuestionCategory parseCategory(String category) {
-//        if (category != null) return null;
-//
-//        try {
-//            return QuestionCategory.valueOf(category);
-//        } catch (IllegalArgumentException e) {
-//            log.warn("Invalid category: {}", categoryStr);
-//            throw new FeedbackValidationException("Invalid feedback category: " + categoryStr);
-//        }
-//    }
 
     private void validateProject(Long projectId) {
         if (!projectRepository.existsById(projectId)) {
