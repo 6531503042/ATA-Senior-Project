@@ -21,10 +21,10 @@ import java.util.List;
 @Slf4j
 public class JwtProvider {
 
-    @Value("${jwt.secret}")
+    @Value("${security.jwt.secret}")
     private static String jwtSecret;
 
-    @Value("${jwt.expiration}")
+    @Value("${security.jwt.expiration}")
     private int jwtExpiration;
 
     public Authentication getAuthentication(String token) {
@@ -36,6 +36,10 @@ public class JwtProvider {
         String username = claims.getSubject();
         List<GrantedAuthority> authorities = extractAuthorities(claims);
         return new UsernamePasswordAuthenticationToken(username, null, authorities);
+    }
+
+    public String getJwtSecret() {
+        return jwtSecret;
     }
 
     private List<GrantedAuthority> extractAuthorities(Claims claims) {
