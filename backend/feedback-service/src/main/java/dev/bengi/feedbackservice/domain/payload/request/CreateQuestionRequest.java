@@ -26,8 +26,6 @@ public class CreateQuestionRequest {
     private QuestionCategory category;
     private AnswerType answerType;
 
-    private List<Long> questionIds; // List of question IDs associated with the feedback
-
     // Ensure these fields are defined
     private ZonedDateTime feedbackStartDate; 
     private ZonedDateTime feedbackEndDate; 
