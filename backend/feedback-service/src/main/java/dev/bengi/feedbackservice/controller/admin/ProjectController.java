@@ -1,125 +1,126 @@
 package dev.bengi.feedbackservice.controller.admin;
 
-import dev.bengi.feedbackservice.domain.model.Project;
+import dev.bengi.feedbackservice.domain.payload.request.AddProjectMemberRequest;
 import dev.bengi.feedbackservice.domain.payload.request.CreateProjectRequest;
 import dev.bengi.feedbackservice.domain.payload.response.ProjectResponse;
-import dev.bengi.feedbackservice.exception.ProjectAlreadyExistsException;
 import dev.bengi.feedbackservice.service.ProjectService;
 import jakarta.validation.Valid;
-import jakarta.validation.ValidationException;
-import jakarta.ws.rs.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
-@Slf4j
-@RequestMapping("api/v1/admin/project")
+@RequestMapping("api/v1/admin/projects")
+@PreAuthorize("hasRole('ADMIN')")
 public class ProjectController {
     private final ProjectService projectService;
 
     @PostMapping("/create")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Project> createProject(
-            @RequestBody @Valid CreateProjectRequest request) {
+    public ResponseEntity<ProjectResponse> createProject(@Valid @RequestBody CreateProjectRequest request) {
         try {
-            var projectResponse = projectService.createProject(request);
-            return ResponseEntity.ok(projectResponse);
-        } catch (ValidationException e) {
-            return ResponseEntity.badRequest().build();
-        } catch (ProjectAlreadyExistsException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+            log.info("Creating new project with name: {}", request.getName());
+            ProjectResponse response = projectService.createProject(request);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (Exception e) {
-            log.error("Failed to create project", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            log.error("Error creating project: {}", e.getMessage(), e);
+            throw e;
         }
     }
 
-//    @GetMapping("/all")
-//    @PreAuthorize("hasRole('ADMIN')")
-//    @Transactional(readOnly = true)
-//    public ResponseEntity<List<ProjectResponse>> getAllProject() {
-//        try {
-//            var projects = projectService.getProjects(0, 10);
-//            List<ProjectResponse> projectResponses = projects.getContent().stream()
-//                    .map(ProjectResponse::new)
-//                    .toList();
-//            return ResponseEntity.ok(projectResponses);
-//        } catch (NotFoundException e) {
-//            return ResponseEntity.notFound().build();
-//        } catch (Exception e) {
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-//        }
-//    }
+    @PutMapping("/{id}")
+    public ResponseEntity<ProjectResponse> updateProject(
+            @PathVariable Long id,
+            @Valid @RequestBody CreateProjectRequest request) {
+        try {
+            log.info("Updating project with ID: {}", id);
+            ProjectResponse response = projectService.updateProject(id, request);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Error updating project: {}", e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteProject(@PathVariable Long id) {
+        try {
+            log.info("Deleting project with ID: {}", id);
+            projectService.deleteProject(id);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            log.error("Error deleting project: {}", e.getMessage(), e);
+            throw e;
+        }
+    }
 
     @GetMapping("/all")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<Project>> getAllProject() {
+    public ResponseEntity<List<ProjectResponse>> getAllProjects() {
         try {
-            var projects = projectService.getProjects();
-            return ResponseEntity.ok(projects);
-        } catch (NotFoundException e) {
-            return ResponseEntity.notFound().build();
+            log.info("Fetching all projects");
+            List<ProjectResponse> responses = projectService.getAllProjects();
+            return ResponseEntity.ok(responses);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            log.error("Error fetching projects: {}", e.getMessage(), e);
+            throw e;
         }
     }
 
-
-    @GetMapping("/get/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Project> getProject(@PathVariable("id") Long id) {
+    @GetMapping("/{id}")
+    public ResponseEntity<ProjectResponse> getProjectById(@PathVariable Long id) {
         try {
-            var project = projectService.getProjectById(id);
-            return ResponseEntity.ok(project);
-        } catch (NotFoundException e) {
-            return ResponseEntity.notFound().build();
+            log.info("Fetching project with ID: {}", id);
+            ProjectResponse response = projectService.getProjectById(id);
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            log.error("Error fetching project: {}", e.getMessage(), e);
+            throw e;
         }
     }
 
-    @DeleteMapping("/delete/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deleteProject(@PathVariable("id") Long id) {
+    @PostMapping("/{projectId}/members")
+    public ResponseEntity<ProjectResponse> addProjectMembers(
+            @PathVariable Long projectId,
+            @Valid @RequestBody AddProjectMemberRequest request) {
         try {
-            projectService.deleteProject(id);
-            return ResponseEntity.ok().build();
-        } catch (NotFoundException e) {
-            return ResponseEntity.notFound().build();
+            log.info("Adding members to project ID: {}", projectId);
+            ProjectResponse response = projectService.addProjectMembers(projectId, request);
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            log.error("Error adding members to project: {}", e.getMessage(), e);
+            throw e;
         }
     }
 
-
-    @PutMapping("/update/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Project> updateProject(@Valid @RequestBody Project pro, @PathVariable("id") Long id) {
+    @DeleteMapping("/{projectId}/members")
+    public ResponseEntity<ProjectResponse> removeProjectMembers(
+            @PathVariable Long projectId,
+            @RequestBody List<Long> memberIds) {
         try {
-            var projectResponse = projectService.updatedProject(id, pro);
-            return ResponseEntity.ok(projectResponse);
-        } catch (ValidationException e) {
-            return ResponseEntity.badRequest().build();
-        } catch (NotFoundException e) {
-            return ResponseEntity.notFound().build();
+            log.info("Removing members from project ID: {}", projectId);
+            ProjectResponse response = projectService.removeProjectMembers(projectId, memberIds);
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
-            log.error("Failed to update project", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            log.error("Error removing members from project: {}", e.getMessage(), e);
+            throw e;
         }
     }
 
-
-
-
-
+    @GetMapping("/member/{memberId}")
+    public ResponseEntity<List<ProjectResponse>> getProjectsByMemberId(@PathVariable Long memberId) {
+        try {
+            log.info("Fetching projects for member ID: {}", memberId);
+            List<ProjectResponse> responses = projectService.getProjectsByMemberId(memberId);
+            return ResponseEntity.ok(responses);
+        } catch (Exception e) {
+            log.error("Error fetching projects for member: {}", e.getMessage(), e);
+            throw e;
+        }
+    }
 }

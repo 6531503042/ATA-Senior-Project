@@ -1,75 +1,77 @@
-// package dev.bengi.feedbackservice.controller.admin;
+package dev.bengi.feedbackservice.controller.admin;
 
-// import dev.bengi.feedbackservice.domain.model.Feedback;
-// import dev.bengi.feedbackservice.domain.payload.request.CreateFeedbackRequest;
-// import dev.bengi.feedbackservice.dto.CollectionResponse;
-// import dev.bengi.feedbackservice.service.FeedbackService;
-// import jakarta.validation.Valid;
-// import lombok.RequiredArgsConstructor;
-// import lombok.extern.slf4j.Slf4j;
-// import org.springframework.data.domain.Page;
-// import org.springframework.http.HttpStatus;
-// import org.springframework.http.ResponseEntity;
-// import org.springframework.security.access.prepost.PreAuthorize;
-// import org.springframework.web.bind.annotation.*;
+import dev.bengi.feedbackservice.domain.payload.request.CreateFeedbackRequest;
+import dev.bengi.feedbackservice.domain.payload.response.FeedbackResponse;
+import dev.bengi.feedbackservice.service.FeedbackService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
-// @RestController("adminFeedbackController")
-// @RequiredArgsConstructor
-// @RequestMapping("api/v1/admin/feedback")
-// @Slf4j
-// public class FeedbackController {
+import java.util.List;
 
-//     private final FeedbackService feedbackService;
+@RestController
+@RequestMapping("/api/v1/admin/feedbacks")
+@RequiredArgsConstructor
+@Slf4j
+@PreAuthorize("hasRole('ADMIN')")
+public class FeedbackController {
 
-//     @PostMapping("/create")
-//     @PreAuthorize("hasRole('ADMIN')")
-//     public ResponseEntity<Feedback> createFeedback(
-//             @Valid @RequestBody CreateFeedbackRequest request) {
-//         log.info("Admin creating feedback: {}", request);
-//         Feedback feedbackResponse = feedbackService.createFeedback(request);
-//         return ResponseEntity.status(HttpStatus.CREATED).body(feedbackResponse);
-//     }
+    private final FeedbackService feedbackService;
 
-//     @GetMapping("/all")
-//     @PreAuthorize("hasRole('ADMIN')")
-//     public ResponseEntity<CollectionResponse<Feedback>> getAllFeedbacks(
-//             @RequestParam(defaultValue = "0") int page,
-//             @RequestParam(defaultValue = "10") int size,
-//             @RequestParam(required = false) String status) {
-//         log.info("Admin retrieving all feedbacks - Page: {}, Size: {}", page, size);
-//         Page<Feedback> feedbackPage = feedbackService.getAllFeedbacks(page, size, status);
+    @PostMapping
+    public ResponseEntity<FeedbackResponse> createFeedback(@Valid @RequestBody CreateFeedbackRequest request) {
+        log.info("Creating new feedback with name: {}", request.getName());
+        FeedbackResponse response = feedbackService.createFeedback(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
 
-//         CollectionResponse<Feedback> response = CollectionResponse.<Feedback>builder()
-//                 .items(feedbackPage.getContent())
-//                 .page(page)
-//                 .size(size)
-//                 .totalElements(feedbackPage.getTotalElements())
-//                 .totalPages(feedbackPage.getTotalPages())
-//                 .build();
+    @PutMapping("/{id}")
+    public ResponseEntity<FeedbackResponse> updateFeedback(
+            @PathVariable Long id,
+            @Valid @RequestBody CreateFeedbackRequest request) {
+        log.info("Updating feedback with ID: {}", id);
+        FeedbackResponse response = feedbackService.updateFeedback(id, request);
+        return ResponseEntity.ok(response);
+    }
 
-//         return ResponseEntity.ok(response);
-//     }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteFeedback(@PathVariable Long id) {
+        log.info("Deleting feedback with ID: {}", id);
+        feedbackService.deleteFeedback(id);
+        return ResponseEntity.noContent().build();
+    }
 
-// //    @PutMapping("/{feedbackId}/status")
-// //    public ResponseEntity<Feedback> updateFeedbackStatus(
-// //            @PathVariable Long feedbackId,
-// //            @Valid @RequestBody UpdateFeedbackStatusRequest request) {
-// //        log.info("Admin updating feedback status: {} to {}", feedbackId, request.getStatus());
-// //        Feedback updatedFeedback = feedbackService.updateFeedbackStatus(feedbackId, request);
-// //        return ResponseEntity.ok(updatedFeedback);
-// //    }
+    @GetMapping("/{id}")
+    public ResponseEntity<FeedbackResponse> getFeedbackById(@PathVariable Long id) {
+        log.info("Fetching feedback with ID: {}", id);
+        FeedbackResponse response = feedbackService.getFeedbackById(id);
+        return ResponseEntity.ok(response);
+    }
 
-// //    @DeleteMapping("/{feedbackId}")
-// //    public ResponseEntity<Void> deleteFeedback(@PathVariable Long feedbackId) {
-// //        log.info("Admin deleting feedback: {}", feedbackId);
-// //        feedbackService.deleteFeedback(feedbackId);
-// //        return ResponseEntity.noContent().build();
-// //    }
+    @GetMapping
+    public ResponseEntity<List<FeedbackResponse>> getAllFeedbacks() {
+        log.info("Fetching all feedbacks");
+        List<FeedbackResponse> responses = feedbackService.getAllFeedbacks();
+        return ResponseEntity.ok(responses);
+    }
 
-//     @ExceptionHandler(Exception.class)
-//     public ResponseEntity<String> handleException(Exception e) {
-//         log.error("Admin feedback controller error: {}", e.getMessage(), e);
-//         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-//             .body("An error occurred: " + e.getMessage());
-//     }
-// }
+    @GetMapping("/project/{projectId}")
+    public ResponseEntity<List<FeedbackResponse>> getFeedbacksByProjectId(@PathVariable Long projectId) {
+        log.info("Fetching feedbacks for project ID: {}", projectId);
+        List<FeedbackResponse> responses = feedbackService.getFeedbacksByProjectId(projectId);
+        return ResponseEntity.ok(responses);
+    }
+
+    @PostMapping("/{id}/questions")
+    public ResponseEntity<FeedbackResponse> addQuestionsToFeedback(
+            @PathVariable Long id,
+            @RequestBody List<Long> questionIds) {
+        log.info("Adding questions to feedback ID: {}", id);
+        FeedbackResponse response = feedbackService.addQuestionsToFeedback(id, questionIds);
+        return ResponseEntity.ok(response);
+    }
+}

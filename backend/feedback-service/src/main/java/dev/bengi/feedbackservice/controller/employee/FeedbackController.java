@@ -1,64 +1,51 @@
 package dev.bengi.feedbackservice.controller.employee;
 
-import dev.bengi.feedbackservice.domain.model.Feedback;
-import dev.bengi.feedbackservice.domain.payload.request.CreateFeedbackRequest;
-import dev.bengi.feedbackservice.dto.CollectionResponse;
+import dev.bengi.feedbackservice.domain.payload.response.FeedbackResponse;
 import dev.bengi.feedbackservice.service.FeedbackService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController("employeeFeedbackController")
 @RequiredArgsConstructor
-@RequestMapping("api/v1/employee/feedback")
+@RequestMapping("api/v1/employee/feedbacks")
 @Slf4j
+@PreAuthorize("hasRole('USER')")
 public class FeedbackController {
 
     private final FeedbackService feedbackService;
 
-    @PostMapping("/create")
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Feedback> createFeedback(
-            @Valid @RequestBody CreateFeedbackRequest request,
-            @RequestHeader("X-User-Id") Long userId) {
-        log.info("User {} creating feedback", userId);
-        request.setUserId(userId);
-        Feedback feedbackResponse = feedbackService.createFeedback(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(feedbackResponse);
-    }
-
     @GetMapping("/my-feedbacks")
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<CollectionResponse<Feedback>> getMyFeedbacks(
+    public ResponseEntity<List<FeedbackResponse>> getMyFeedbacks(
             @RequestHeader("X-User-Id") Long userId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         log.info("User {} retrieving personal feedbacks", userId);
-        Page<Feedback> feedbackPage = feedbackService.getFeedbacksByUser(userId, page, size);
-        
-        CollectionResponse<Feedback> response = CollectionResponse.<Feedback>builder()
-            .content(feedbackPage.getContent().toString())
-            .page(page)
-            .size(size)
-            .totalElements(feedbackPage.getTotalElements())
-            .totalPages(feedbackPage.getTotalPages())
-            .build();
-        
-        return ResponseEntity.ok(response);
+        List<FeedbackResponse> feedbacks = feedbackService.getFeedbacksByUser(userId, page, size);
+        return ResponseEntity.ok(feedbacks);
+    }
+
+    @GetMapping("/project/{projectId}")
+    public ResponseEntity<List<FeedbackResponse>> getProjectFeedbacks(
+            @PathVariable Long projectId,
+            @RequestHeader("X-User-Id") Long userId) {
+        log.info("User {} retrieving feedbacks for project {}", userId, projectId);
+        List<FeedbackResponse> feedbacks = feedbackService.getFeedbacksByProjectId(projectId);
+        return ResponseEntity.ok(feedbacks);
     }
 
     @GetMapping("/{feedbackId}")
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Feedback> getFeedbackDetails(
+    public ResponseEntity<FeedbackResponse> getFeedbackDetails(
             @PathVariable Long feedbackId,
             @RequestHeader("X-User-Id") Long userId) {
         log.info("User {} retrieving feedback details for {}", userId, feedbackId);
-        Feedback feedback = feedbackService.getFeedbackById(feedbackId);
+        FeedbackResponse feedback = feedbackService.getFeedbackById(feedbackId);
         return ResponseEntity.ok(feedback);
     }
 
