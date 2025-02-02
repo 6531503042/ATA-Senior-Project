@@ -4,10 +4,9 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import dev.bengi.feedbackservice.domain.enums.AnswerType;
 import dev.bengi.feedbackservice.domain.enums.QuestionCategory;
 import dev.bengi.feedbackservice.domain.enums.QuestionType;
-import dev.bengi.feedbackservice.domain.enums.SentimentType;
-import dev.bengi.feedbackservice.domain.model.AnswerOption;
 import lombok.Builder;
 import lombok.Data;
 
@@ -18,13 +17,12 @@ public class QuestionResponse {
     private Long id;
     private String text;
     private String content;
+    private boolean required;
     private QuestionType type;
     private QuestionCategory category;
-    private SentimentType sentimentType;
-    private ZonedDateTime feedbackStartDate;
-    private ZonedDateTime feedbackEndDate;
-    private List<AnswerOption> answerOptions = new ArrayList<>();
-    private List<Long> questionIds;
+    private AnswerType answerType;
+    @Builder.Default
+    private List<AnswerOptionResponse> answers = new ArrayList<>();
     private ZonedDateTime createdAt;
     private ZonedDateTime updatedAt;
 }
