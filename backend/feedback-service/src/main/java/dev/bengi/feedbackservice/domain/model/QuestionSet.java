@@ -1,37 +1,40 @@
 package dev.bengi.feedbackservice.domain.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-@Builder
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "question_sets")
 public class QuestionSet {
+    
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;
     private String description;
+    private ZonedDateTime createdAt;
+    private ZonedDateTime updatedAt;
 
-    @ElementCollection
-    @CollectionTable(name = "question_set_answers",
-            joinColumns = @JoinColumn(name = "question_set_id"))
-    @MapKeyColumn(name = "question_id")
-    @Column(name = "answer")
+    @OneToMany(mappedBy = "questionSet", cascade = CascadeType.ALL)
     @Builder.Default
-    private List<String> answers = new ArrayList<>();
-
-    @OneToMany(mappedBy = "questionSet", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
+    @JsonManagedReference
     private List<Question> questions = new ArrayList<>();
 
     public void addQuestion(Question question) {
         questions.add(question);
+        question.setQuestionSet(this);
     }
 }

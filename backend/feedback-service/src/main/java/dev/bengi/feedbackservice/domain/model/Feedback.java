@@ -23,6 +23,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 @Table(name = "feedbacks")
 public class Feedback {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "project_id")
@@ -70,6 +71,4 @@ public class Feedback {
     public void removeAnswer(Answer answer) {
         answers.remove(answer.getQuestion().getId());
     }
-
-
 }
