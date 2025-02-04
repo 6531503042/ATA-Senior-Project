@@ -1,24 +1,33 @@
 package dev.bengi.feedbackservice.service;
 
-import dev.bengi.feedbackservice.domain.model.Feedback;
 import dev.bengi.feedbackservice.domain.payload.request.CreateFeedbackRequest;
-import dev.bengi.feedbackservice.domain.payload.request.SubmitFeedbackRequest;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.Page;
+import dev.bengi.feedbackservice.domain.payload.response.FeedbackResponse;
 import org.springframework.transaction.annotation.Transactional;
 
-public interface FeedbackService {
-    Feedback createFeedback(CreateFeedbackRequest request);
+import java.util.List;
 
-    Page<Feedback> getAllFeedbacks(int page, int size, String status);
+public interface FeedbackService {
+    @Transactional
+    FeedbackResponse createFeedback(CreateFeedbackRequest request);
+
+    @Transactional
+    FeedbackResponse updateFeedback(Long id, CreateFeedbackRequest request);
+
+    @Transactional
+    void deleteFeedback(Long id);
 
     @Transactional(readOnly = true)
-    Feedback getFeedbackById(Long id);
+    FeedbackResponse getFeedbackById(Long id);
 
-    Page<Feedback> getFeedbacksByUser(Long userId, int page, int size);
+    @Transactional(readOnly = true)
+    List<FeedbackResponse> getAllFeedbacks();
 
-    @Cacheable(value = "feedbackCache", key = "#projectId")
-    Page<Feedback> getFeedbackByProject(Long projectId, int page, int size);
+    @Transactional(readOnly = true)
+    List<FeedbackResponse> getFeedbacksByProjectId(Long projectId);
 
-    // Feedback submitFeedback(Long userId, SubmitFeedbackRequest request);
+    @Transactional
+    FeedbackResponse addQuestionsToFeedback(Long feedbackId, List<Long> questionIds);
+
+    @Transactional(readOnly = true)
+    List<FeedbackResponse> getFeedbacksByUser(Long userId, int page, int size);
 }
