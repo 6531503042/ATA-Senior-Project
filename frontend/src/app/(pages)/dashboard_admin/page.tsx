@@ -1,46 +1,45 @@
 "use client";
 
-import React, { useState, Suspense, lazy } from "react";
-import SidebarAdmin from "@/app/components/sidebar_usermanagement/sidebar";
-import LoadingScreen from "@/app/components/loadingscreen/loadingscreen_admin";
+import React, { useState } from 'react';
+import Sidebar from "@/app/components/sidebar/sidebar";
+import Navbar from "@/app/components/navbar/navbar";
+import Overview from '@/app/(pages)/dashboard_admin/section/overview';
+import ProjectDashboard from '@/app/(pages)/dashboard_admin/section/project_dashboard';
+import ProjectManage from '@/app/(pages)/dashboard_admin/section/project_manage';
+import QuestionDashboard from '@/app/(pages)/dashboard_admin/section/question_dashboard';
+import QuestionManage from '@/app/(pages)/dashboard_admin/section/question_manage';
+import FeedbackDashboard from '@/app/(pages)/dashboard_admin/section/feedback_dashboard';
+import FeedbackManage from '@/app/(pages)/dashboard_admin/section/feedback_manage';
+
+const ComponentMap = {
+  overview: Overview,
+  project_dashboard: ProjectDashboard,
+  project_manage: ProjectManage,
+  question_dashboard: QuestionDashboard,
+  question_manage: QuestionManage,
+  feedback_dashboard: FeedbackDashboard,
+  feedback_manage: FeedbackManage,
+};
 
 const Page = () => {
-  const [selectedComponent, setSelectedComponent] = useState("dashboard");
-  const [isLoading, setIsLoading] = useState(false);
+  const [currentComponent, setCurrentComponent] = useState('overview');
 
-  const renderContent = () => {
-    const Component = lazy(
-      () => import(`@/app/(pages)/dashboard_admin/section/${selectedComponent}`)
-    );
-
-    return (
-      <Suspense fallback={<LoadingScreen />}>
-        <Component />
-      </Suspense>
-    );
+  // This function will be passed to Sidebar as a prop
+  const handleComponentChange = (componentName: string) => {
+    setCurrentComponent(componentName);
   };
 
-  const handleOptionSelect = (component: string) => {
-    if (!isLoading && component !== selectedComponent) {
-      setIsLoading(true);
-      setTimeout(() => {
-        setSelectedComponent(component);
-        setIsLoading(false);
-      }, 1800);
-    }
-  };
+  // Dynamically render the selected component
+  const CurrentComponent = ComponentMap[currentComponent as keyof typeof ComponentMap];
 
   return (
-    <div className="flex h-screen flex-row bg-white">
-      <SidebarAdmin
-        onOptionSelect={handleOptionSelect}
-        isLoading={isLoading}
-      />
-      <div className="w-72 "></div>
-      <div className="flex-1 flex">
-        <div className="p-6 rounded-md w-full h-full">
-          {isLoading ? <LoadingScreen /> : renderContent()}
-        </div>
+    <div className='w-screen h-screen flex flex-row'>
+      <Sidebar onComponentChange={handleComponentChange} />
+      <div className='flex-1 flex flex-col'>
+        <Navbar />
+        <main className='flex-1 p-6'>
+          {CurrentComponent && <CurrentComponent />}
+        </main>
       </div>
     </div>
   );

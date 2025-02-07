@@ -15,7 +15,7 @@ import {
 import {
   Star,
 } from 'lucide-react';
-import CardPreview from "@/app/components/card/card_preview_admin"
+import CardPreview from "@/app/components/old/card/card_preview_admin"
 
 const Dashboard = () => {
   // Mock data - replace with real data
