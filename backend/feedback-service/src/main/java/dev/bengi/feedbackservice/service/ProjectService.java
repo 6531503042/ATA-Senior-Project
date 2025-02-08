@@ -1,26 +1,34 @@
 package dev.bengi.feedbackservice.service;
 
-import dev.bengi.feedbackservice.domain.model.Project;
+import dev.bengi.feedbackservice.domain.payload.request.AddProjectMemberRequest;
 import dev.bengi.feedbackservice.domain.payload.request.CreateProjectRequest;
-import org.springframework.data.domain.Page;
+import dev.bengi.feedbackservice.domain.payload.response.ProjectResponse;
 import org.springframework.transaction.annotation.Transactional;
-import reactor.core.publisher.Mono;
 
 import java.util.List;
 
 public interface ProjectService {
     @Transactional
-    Project createProject(CreateProjectRequest createProjectRequest);
+    ProjectResponse createProject(CreateProjectRequest request);
 
-    Project updatedProject(Long id, Project project);
+    @Transactional
+    ProjectResponse updateProject(Long id, CreateProjectRequest request);
 
+    @Transactional
     void deleteProject(Long id);
 
-//    Page<Project> getProjects(int page, int size);
+    @Transactional(readOnly = true)
+    ProjectResponse getProjectById(Long id);
 
     @Transactional(readOnly = true)
-    List<Project> getProjects();
+    List<ProjectResponse> getAllProjects();
+
+    @Transactional
+    ProjectResponse addProjectMembers(Long projectId, AddProjectMemberRequest request);
+
+    @Transactional
+    ProjectResponse removeProjectMembers(Long projectId, List<Long> memberIds);
 
     @Transactional(readOnly = true)
-    Project getProjectById(Long id);
+    List<ProjectResponse> getProjectsByMemberId(Long memberId);
 }
