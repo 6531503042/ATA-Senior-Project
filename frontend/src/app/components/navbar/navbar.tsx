@@ -17,11 +17,11 @@ const Navbar = () => {
         />
         <div className="flex flex-row  h-full items-center justify-center text-center gap-x-3 md:gap-x-5 cursor-pointer">
           <div className="hover:bg-blue-50 p-2.5 rounded-lg transition-all">
-            <Bell className="text-zinc-500 h-3 w-3 md:h-5 md:w-5" />
+            <Bell className="text-zinc-700 h-3 w-3 md:h-5 md:w-5" />
           </div>
-          <div className="h-3 w-[1.5px] bg-zinc-300 "></div>
+          <div className="h-5 w-[1px] bg-zinc-300 "></div>
           <div className="hover:bg-blue-50 p-2.5 rounded-lg transition-all">
-            <Sun className="text-zinc-500 h-3 w-3 md:h-5 md:w-5" />
+            <Sun className="text-zinc-700 h-3 w-3 md:h-5 md:w-5" />
           </div>
         </div>
       </div>

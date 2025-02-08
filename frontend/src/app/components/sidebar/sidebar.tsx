@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { LayoutDashboard, MessageSquareText, Users, ChevronRight } from "lucide-react";
+import { ChevronRight, MessageCircle, CircleHelp, LucideIcon, FolderOpenDot, LayoutDashboard } from "lucide-react";
 import Logo from "@/app/assets/ata-logo.png"
 
 interface SubMenuItem {
@@ -13,7 +13,7 @@ interface SubMenuItem {
 interface MenuOption {
   name: string;
   component: string;
-  icon: React.ElementType;
+  icon: LucideIcon;
   subMenu?: SubMenuItem[];
 }
 
@@ -24,17 +24,19 @@ interface SidebarProps {
 const Sidebar = ({ onComponentChange }: SidebarProps) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null);
+  const [activeComponent, setActiveComponent] = useState<string>("overview");
+  const [activeMainMenu, setActiveMainMenu] = useState<string>("Overview");
 
   const options: MenuOption[] = [
     { 
       name: "Overview", 
       component: "overview", 
-      icon: LayoutDashboard
+      icon: LayoutDashboard,
     },
     { 
       name: "Projects", 
       component: "project", 
-      icon: Users,
+      icon: FolderOpenDot,
       subMenu: [
         { name: "Dashboard", component: "project_dashboard" },
         { name: "Management", component: "project_manage" },
@@ -43,7 +45,7 @@ const Sidebar = ({ onComponentChange }: SidebarProps) => {
     { 
       name: "Questions", 
       component: "question", 
-      icon: MessageSquareText,
+      icon: CircleHelp,
       subMenu: [
         { name: "Dashboard", component: "question_dashboard" },
         { name: "Management", component: "question_manage" },
@@ -52,7 +54,7 @@ const Sidebar = ({ onComponentChange }: SidebarProps) => {
     { 
       name: "Feedback", 
       component: "feedback", 
-      icon: MessageSquareText,
+      icon: MessageCircle,
       subMenu: [
         { name: "Dashboard", component: "feedback_dashboard" },
         { name: "Management", component: "feedback_manage" },
@@ -60,25 +62,28 @@ const Sidebar = ({ onComponentChange }: SidebarProps) => {
     }
   ];
 
-  const [selectedOption, setSelectedOption] = useState<string>(options[0].name);
-
   const handleMenuClick = (option: MenuOption): void => {
     if (option.subMenu) {
-      // Toggle submenu
-      if (activeSubmenu === option.name) {
-        setActiveSubmenu(null);
-      } else {
-        setActiveSubmenu(option.name);
-      }
+      setActiveSubmenu(activeSubmenu === option.name ? null : option.name);
     } else {
-      // Switch component directly
       onComponentChange(option.component);
+      setActiveComponent(option.component);
+      setActiveMainMenu(option.name);
+      setActiveSubmenu(null);
     }
-    setSelectedOption(option.name);
   };
 
-  const handleSubmenuClick = (component: string) => {
+  const handleSubmenuClick = (component: string, mainMenuName: string) => {
     onComponentChange(component);
+    setActiveComponent(component);
+    setActiveMainMenu(mainMenuName);
+  };
+
+  const isComponentActive = (option: MenuOption, subItem?: SubMenuItem) => {
+    if (subItem) {
+      return activeComponent === subItem.component;
+    }
+    return activeComponent === option.component;
   };
 
   return (
@@ -95,7 +100,7 @@ const Sidebar = ({ onComponentChange }: SidebarProps) => {
             {options.map((option) => {
               const Icon = option.icon;
               const hasSubmenu = option.subMenu && option.subMenu.length > 0;
-              const isActive = selectedOption === option.name;
+              const isActive = isComponentActive(option);
               const isSubmenuOpen = activeSubmenu === option.name;
 
               return (
@@ -132,8 +137,12 @@ const Sidebar = ({ onComponentChange }: SidebarProps) => {
                         {option.subMenu.map((subItem) => (
                           <li key={subItem.component}>
                             <div
-                              onClick={() => handleSubmenuClick(subItem.component)}
-                              className="block py-2 px-3 text-sm text-gray-600 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition cursor-pointer"
+                              onClick={() => handleSubmenuClick(subItem.component, option.name)}
+                              className={`block py-2 px-3 text-sm rounded-lg transition cursor-pointer ${
+                                isComponentActive(option, subItem)
+                                  ? "bg-blue-100 text-blue-600 font-semibold"
+                                  : "text-gray-600 hover:bg-gray-100"
+                              }`}
                             >
                               {subItem.name}
                             </div>
