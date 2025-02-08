@@ -1,6 +1,8 @@
 server:
   port: 8084
 spring:
+  main:
+    allow-bean-definition-overriding: true
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:3307/feedback
@@ -28,7 +30,16 @@ security:
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8087/eureka/  # Match Eureka Server port
+      defaultZone: http://localhost:8087/eureka/
+  instance:
+    prefer-ip-address: true
 
-user-service:
-  url: http://localhost:8081  # Correct port for user service
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 5000
+        loggerLevel: basic
+  user-service:
+    url: http://localhost:8081
