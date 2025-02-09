@@ -119,7 +119,7 @@ const Sidebar = ({ onComponentChange }: SidebarProps) => {
                     className={`flex items-center justify-between p-3 rounded-lg cursor-pointer transition text-sm ${
                       isActive
                         ? "bg-blue-100 text-blue-600 font-semibold"
-                        : "text-gray-600 hover:bg-gray-100"
+                        : "text-gray-600 font-medium hover:bg-gray-100"
                     }`}
                     onClick={() => handleMenuClick(option)}
                   >
@@ -143,7 +143,7 @@ const Sidebar = ({ onComponentChange }: SidebarProps) => {
                         isSubmenuOpen ? "max-h-48" : "max-h-0"
                       }`}
                     >
-                      <ul className="pl-12 mt-2 space-y-2">
+                      <ul className="pl-8 mt-2 space-y-2">
                         {option.subMenu.map((subItem) => (
                           <li key={subItem.component}>
                             <div
@@ -153,10 +153,10 @@ const Sidebar = ({ onComponentChange }: SidebarProps) => {
                                   option.name
                                 )
                               }
-                              className={`block py-2 px-3 text-sm rounded-lg transition cursor-pointer ${
+                              className={`flex py-2 px-5 text-sm rounded-lg transition cursor-pointer ${
                                 isComponentActive(option, subItem)
-                                  ? "bg-blue-100 text-blue-600 font-semibold"
-                                  : "text-gray-600 hover:bg-gray-100"
+                                  ? "bg-blue-50 text-blue-600 font-medium"
+                                  : "text-gray-600 hover:bg-gray-200"
                               }`}
                             >
                               {subItem.name}
