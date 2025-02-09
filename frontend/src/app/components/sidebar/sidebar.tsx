@@ -2,8 +2,15 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ChevronRight, MessageCircle, CircleHelp, LucideIcon, FolderOpenDot, LayoutDashboard } from "lucide-react";
-import Logo from "@/app/assets/ata-logo.png"
+import {
+  ChevronRight,
+  MessageCircle,
+  CircleHelp,
+  LucideIcon,
+  FolderOpenDot,
+  LayoutDashboard,
+} from "lucide-react";
+import Logo from "@/app/assets/ata-logo.png";
 
 interface SubMenuItem {
   name: string;
@@ -28,38 +35,38 @@ const Sidebar = ({ onComponentChange }: SidebarProps) => {
   const [activeMainMenu, setActiveMainMenu] = useState<string>("Overview");
 
   const options: MenuOption[] = [
-    { 
-      name: "Overview", 
-      component: "overview", 
+    {
+      name: "Overview",
+      component: "overview",
       icon: LayoutDashboard,
     },
-    { 
-      name: "Projects", 
-      component: "project", 
+    {
+      name: "Projects",
+      component: "project",
       icon: FolderOpenDot,
       subMenu: [
         { name: "Dashboard", component: "project_dashboard" },
         { name: "Management", component: "project_manage" },
-      ]
+      ],
     },
-    { 
-      name: "Questions", 
-      component: "question", 
+    {
+      name: "Questions",
+      component: "question",
       icon: CircleHelp,
       subMenu: [
         { name: "Dashboard", component: "question_dashboard" },
         { name: "Management", component: "question_manage" },
-      ]
+      ],
     },
-    { 
-      name: "Feedback", 
-      component: "feedback", 
+    {
+      name: "Feedback",
+      component: "feedback",
       icon: MessageCircle,
       subMenu: [
         { name: "Dashboard", component: "feedback_dashboard" },
         { name: "Management", component: "feedback_manage" },
-      ]
-    }
+      ],
+    },
   ];
 
   const handleMenuClick = (option: MenuOption): void => {
@@ -87,7 +94,7 @@ const Sidebar = ({ onComponentChange }: SidebarProps) => {
   };
 
   return (
-    <div className="w-64 h-full relative bg-white shadow-xl">
+    <div className="w-64 h-full overflow-y-auto bg-white shadow-xl">
       <div className="w-full h-full flex flex-col items-center p-5 gap-10">
         {/* Logo */}
         <Link href="/dashboard_old">
@@ -100,7 +107,10 @@ const Sidebar = ({ onComponentChange }: SidebarProps) => {
             {options.map((option) => {
               const Icon = option.icon;
               const hasSubmenu = option.subMenu && option.subMenu.length > 0;
-              const isActive = isComponentActive(option);
+              const isActive =
+                isComponentActive(option) ||
+                (option.subMenu && option.subMenu.some(subItem => activeComponent === subItem.component));
+
               const isSubmenuOpen = activeSubmenu === option.name;
 
               return (
@@ -118,14 +128,14 @@ const Sidebar = ({ onComponentChange }: SidebarProps) => {
                       <span>{option.name}</span>
                     </div>
                     {hasSubmenu && (
-                      <ChevronRight 
+                      <ChevronRight
                         className={`w-4 h-4 transition-transform ${
                           isSubmenuOpen ? "rotate-90" : ""
                         }`}
                       />
                     )}
                   </div>
-                  
+
                   {/* Submenu */}
                   {hasSubmenu && option.subMenu && (
                     <div
@@ -137,7 +147,12 @@ const Sidebar = ({ onComponentChange }: SidebarProps) => {
                         {option.subMenu.map((subItem) => (
                           <li key={subItem.component}>
                             <div
-                              onClick={() => handleSubmenuClick(subItem.component, option.name)}
+                              onClick={() =>
+                                handleSubmenuClick(
+                                  subItem.component,
+                                  option.name
+                                )
+                              }
                               className={`block py-2 px-3 text-sm rounded-lg transition cursor-pointer ${
                                 isComponentActive(option, subItem)
                                   ? "bg-blue-100 text-blue-600 font-semibold"
