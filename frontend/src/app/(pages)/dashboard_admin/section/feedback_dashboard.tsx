@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageSquare, ThumbsUp, ThumbsDown, Clock } from "lucide-react";
+import { MessageSquare, ThumbsUp, ThumbsDown, Clock, Brain } from "lucide-react";
 import React from "react";
 
 const FeedbackDashboard = () => {
@@ -44,13 +44,13 @@ const FeedbackDashboard = () => {
       background: "bg-red-50",
     },
     {
-      title: "Average Response Time",
-      number: "2.4 days",
-      trend: "↓ 0.8 days faster",
-      icon: Clock,
-      color: "text-purple-500",
-      subtitle: "Time to address feedback",
-      background: "bg-purple-50",
+      title: "Sentiment Score",
+      number: "84%",
+      trend: "+2% vs last month",
+      icon: Brain,
+      color: "text-amber-500",
+      subtitle: "Overall sentiment score",
+      background: "bg-amber-50",
     },
   ];
 
@@ -61,7 +61,7 @@ const FeedbackDashboard = () => {
           <h1 className="text-3xl font-bold text-red-600">
             Feedback Analytics
           </h1>
-          <p className="text-base text-gray-500 font-medium">
+          <p className="text-base text-gray-500 font-normal">
             Monitor feedback trends and sentiment analysis
           </p>
         </div>

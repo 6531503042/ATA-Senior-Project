@@ -61,10 +61,10 @@ const Overview = () => {
   return (
     <div className="px-3 w-full h-full overflow-x-auto">
       <div className="w-full h-full">
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2">
           <h1 className="text-3xl font-bold text-blue-600">Welcome back!</h1>
           <div className="flex flex-col gap-1">
-            <p className="text-base text-gray-600 font-medium">
+            <p className="text-base text-gray-600 font-normal">
               Here's your feedback system overview
             </p>
             {/* NOT NEED TO USE YET*/}

@@ -70,7 +70,7 @@ const ProjectDashboard = () => {
           <h1 className="text-3xl font-bold text-violet-600">
             Project Analytics
           </h1>
-          <p className="text-base text-gray-500 font-medium">
+          <p className="text-base text-gray-500 font-normal">
             Monitor project performance and team productivity
           </p>
         </div>

@@ -61,7 +61,7 @@ const QuestionDashboard = () => {
           <h1 className="text-3xl font-bold text-amber-500">
             Question Analytics
           </h1>
-          <p className="text-base text-gray-500 font-medium">
+          <p className="text-base text-gray-500 font-normal">
             Monitor question performance and feedback insights
           </p>
         </div>

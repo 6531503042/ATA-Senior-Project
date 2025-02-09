@@ -15,6 +15,7 @@ import Logo from "@/app/assets/ata-logo.png";
 interface SubMenuItem {
   name: string;
   component: string;
+  color?: string;
 }
 
 interface MenuOption {
@@ -22,6 +23,7 @@ interface MenuOption {
   component: string;
   icon: LucideIcon;
   subMenu?: SubMenuItem[];
+  color?: string,
 }
 
 interface SidebarProps {
@@ -39,6 +41,7 @@ const Sidebar = ({ onComponentChange }: SidebarProps) => {
       name: "Overview",
       component: "overview",
       icon: LayoutDashboard,
+      color: "text-blue-500",
     },
     {
       name: "Projects",
@@ -94,15 +97,15 @@ const Sidebar = ({ onComponentChange }: SidebarProps) => {
   };
 
   return (
-    <div className="w-64 h-full overflow-y-auto bg-white shadow-xl">
-      <div className="w-full h-full flex flex-col items-center p-5 gap-10">
+    <div className="w-64 h-full overflow-y-auto bg-white shadow-xl border-r border-opacity-5 border-r-black">
+      <div className="w-full h-full flex flex-col items-center">
         {/* Logo */}
-        <Link href="/dashboard_old">
-          <img src={Logo.src} className="w-auto md:h-10 h-5" alt="Logo" />
+        <Link href="/dashboard_old" className="p-3">
+          <img src={Logo.src} className="w-auto md:h-10 h-5 " alt="Logo" />
         </Link>
-
+        <div className="bg-zinc-100 h-[1px] w-full"></div>
         {/* Sidebar Menu */}
-        <div className="w-full">
+        <div className="w-full p-5">
           <ul className="w-full flex flex-col gap-2">
             {options.map((option) => {
               const Icon = option.icon;
@@ -118,7 +121,7 @@ const Sidebar = ({ onComponentChange }: SidebarProps) => {
                   <div
                     className={`flex items-center justify-between p-3 rounded-lg cursor-pointer transition text-sm ${
                       isActive
-                        ? "bg-blue-100 text-blue-600 font-semibold"
+                        ? " text-blue-600 font-semibold"
                         : "text-gray-600 font-medium hover:bg-gray-100"
                     }`}
                     onClick={() => handleMenuClick(option)}
@@ -129,8 +132,8 @@ const Sidebar = ({ onComponentChange }: SidebarProps) => {
                     </div>
                     {hasSubmenu && (
                       <ChevronRight
-                        className={`w-4 h-4 transition-transform ${
-                          isSubmenuOpen ? "rotate-90" : ""
+                        className={`w-4 h-4 transition-transform  ${
+                          isSubmenuOpen ? "rotate-90 " : ""
                         }`}
                       />
                     )}
