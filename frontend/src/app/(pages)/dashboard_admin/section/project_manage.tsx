@@ -1,6 +1,13 @@
 "use client";
 
-import { Users, Calendar, FolderOpen } from "lucide-react";
+import {
+  Users,
+  Calendar,
+  FolderOpen,
+  CircleDot,
+  SlidersHorizontal,
+  Search,
+} from "lucide-react";
 import React from "react";
 
 const ProjectManage = () => {
@@ -42,18 +49,23 @@ const ProjectManage = () => {
       background: "bg-green-50",
     },
   ];
-  
 
   return (
-    <div className="px-3 w-full h-full overflow-x-auto">
-      <div className="w-full h-full">
-        <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-bold text-violet-600">
-            Projects Dashboard
-          </h1>
-          <p className="text-base text-gray-500 font-normal">
-            Manage and track your feedback collection projects
-          </p>
+    <div className="px-3 w-full h-full">
+      <div className="w-full h-full flex flex-col">
+        <div className="flex flex-row w-full h-auto items-center justify-between">
+          <div className="flex flex-col gap-2">
+            <h1 className="text-3xl font-bold text-violet-600">
+              Projects Dashboard
+            </h1>
+            <p className="text-base text-gray-500 font-normal">
+              Manage and track your feedback collection projects
+            </p>
+          </div>
+          <button className="flex flex-row gap-2 text-white bg-violet-600 p-2.5 rounded-xl text-sm font-semibold items-center shadow-lg hover:shadow-xl transition-all">
+            <CircleDot className="w-4 h-4" />
+            <p>New Project</p>
+          </button>
         </div>
         <div className="w-full h-auto mt-9">
           <ul className="grid 2xl:grid-cols-3 lg:grid-cols-2 grid-cols-1 gap-5">
@@ -74,9 +86,7 @@ const ProjectManage = () => {
                         {option.subnumber}
                       </p>
                     </span>
-                    <p
-                      className={`text-sm font-normal text-zinc-500`}
-                    >
+                    <p className={`text-sm font-normal text-zinc-500`}>
                       {option.subtitle}
                     </p>
                   </div>
@@ -89,6 +99,19 @@ const ProjectManage = () => {
               );
             })}
           </ul>
+        </div>
+        <div className="flex flex-row gap-5 items-center my-5">
+          <div className="relative w-[640px]">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <input
+              type="text"
+              placeholder="Search projects..."
+              className="pl-10 pr-5 text-sm py-2 w-full border border-black border-opacity-10 shadow-sm bg-white rounded-lg outline-none focus:ring-[0.5px] focus:ring-zinc-200"
+            />
+          </div>
+          <button className="hover:shadow-lg transition-all shadow-sm p-2 border border-black rounded-lg border-opacity-10">
+            <SlidersHorizontal className="text-black text-opacity-80 w-4 h-4" />
+          </button>
         </div>
       </div>
     </div>

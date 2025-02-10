@@ -59,7 +59,7 @@ const Overview = () => {
   ];
 
   return (
-    <div className="px-3 w-full h-full overflow-x-auto">
+    <div className="px-3 w-full h-full">
       <div className="w-full h-full">
         <div className="flex flex-col gap-2">
           <h1 className="text-3xl font-bold text-blue-600">Welcome back!</h1>

@@ -9,6 +9,8 @@ import {
   LucideIcon,
   FolderOpenDot,
   LayoutDashboard,
+  Folder,
+  FolderClosed,
 } from "lucide-react";
 import Logo from "@/app/assets/ata-logo.png";
 
@@ -46,7 +48,7 @@ const Sidebar = ({ onComponentChange }: SidebarProps) => {
     {
       name: "Projects",
       component: "project",
-      icon: FolderOpenDot,
+      icon: FolderClosed,
       subMenu: [
         { name: "Dashboard", component: "project_dashboard" },
         { name: "Management", component: "project_manage" },

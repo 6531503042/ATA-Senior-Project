@@ -33,11 +33,11 @@ const Page = () => {
   const CurrentComponent = ComponentMap[currentComponent as keyof typeof ComponentMap];
 
   return (
-    <div className='w-screen h-screen flex flex-row '>
+    <div className='w-full h-screen flex flex-row '>
       <Sidebar onComponentChange={handleComponentChange} />
       <div className='flex-1 flex flex-col justify-center overflow-y-auto overflow-x-auto'>
         <Navbar />
-        <main className='flex-1 p-6 w-full'>
+        <main className='flex-1 p-12 w-full'>
           {CurrentComponent && <CurrentComponent />}
         </main>
       </div>
