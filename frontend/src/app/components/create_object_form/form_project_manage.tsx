@@ -16,8 +16,8 @@ interface form_project_manage {
 
 const form_project_manage: React.FC<form_project_manage> = ({ setIsOpen }) => {
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-15">
-      <div className="bg-white shadow-2xl rounded-lg p-5 flex flex-col gap-3 w-[720px] h-auto overflow-y-auto">
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-15 ">
+      <div className="bg-white shadow-2xl rounded-lg p-5 flex flex-col gap-3 w-max max-h-full overflow-y-auto">
         {/* Close Button and Title*/}
         <div className="flex flex-row">
           <div className="w-full flex flex-col gap-1 mt-2">
