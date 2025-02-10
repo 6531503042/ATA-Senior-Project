@@ -8,7 +8,9 @@ import {
   SlidersHorizontal,
   Search,
 } from "lucide-react";
-import React from "react";
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import FormPop from "@/app/components/create_object_form/form_project_manage"
 
 const ProjectManage = () => {
   interface MenuOption {
@@ -50,6 +52,9 @@ const ProjectManage = () => {
     },
   ];
 
+  const [formPop, SetFormPop] = useState(false);
+  const router = useRouter();
+
   return (
     <div className="px-3 w-full h-full">
       <div className="w-full h-full flex flex-col">
@@ -62,7 +67,7 @@ const ProjectManage = () => {
               Manage and track your feedback collection projects
             </p>
           </div>
-          <button className="flex flex-row gap-2 text-white bg-violet-600 p-2.5 rounded-xl text-sm font-semibold items-center shadow-lg hover:shadow-xl transition-all">
+          <button onClick={() => SetFormPop(true)} className="flex flex-row gap-2 text-white bg-violet-600 p-2.5 rounded-xl text-sm font-semibold items-center shadow-lg hover:shadow-xl transition-all">
             <CircleDot className="w-4 h-4" />
             <p>New Project</p>
           </button>
@@ -114,7 +119,9 @@ const ProjectManage = () => {
           </button>
         </div>
       </div>
+      {formPop && <FormPop setIsOpen={SetFormPop} />}
     </div>
+    
   );
 };
 
