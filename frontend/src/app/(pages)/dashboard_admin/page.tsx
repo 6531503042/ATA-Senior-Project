@@ -35,9 +35,9 @@ const Page = () => {
   return (
     <div className='w-full h-screen flex flex-row '>
       <Sidebar onComponentChange={handleComponentChange} />
-      <div className='flex-1 flex flex-col overflow-y-auto overflow-x-auto'>
-        <Navbar />
-        <main className='p-12 max-w-full max-h-full'>
+      <div className='flex-1 flex w-full flex-col overflow-y-auto overflow-x-auto'>
+        <Navbar/>
+        <main className='p-12 max-w-full max-h-full min-w-[320px]'>
           {CurrentComponent && <CurrentComponent />}
         </main>
       </div>
