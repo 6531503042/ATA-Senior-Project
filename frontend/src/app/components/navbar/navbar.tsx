@@ -2,9 +2,6 @@
 
 import React from "react";
 import { Bell, Sun } from "lucide-react";
-import Logo from "@/app/assets/ata-logo.png";
-import Link from "next/link";
-import { color } from "framer-motion";
 
 const Navbar = () => {
   return (

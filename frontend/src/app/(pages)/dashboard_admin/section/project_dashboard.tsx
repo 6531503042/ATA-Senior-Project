@@ -67,7 +67,7 @@ const ProjectDashboard = () => {
     <div className="px-3 w-full h-full">
       <div className="w-full h-full">
         <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-bold text-violet-600">
+          <h1 className="text-3xl font-bold text-blue-600">
             Project Analytics
           </h1>
           <p className="text-base text-gray-500 font-normal">

@@ -58,7 +58,7 @@ const QuestionDashboard = () => {
     <div className="px-3 w-full h-full">
       <div className="w-full h-full">
         <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-bold text-amber-500">
+          <h1 className="text-3xl font-bold text-violet-500">
             Question Analytics
           </h1>
           <p className="text-base text-gray-500 font-normal">

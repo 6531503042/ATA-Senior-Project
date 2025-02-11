@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import FormPop from "@/app/components/create_object_form/form_project_manage"
+import FormPop from "@/app/components/forms/form_project_manage"
 
 
 const ProjectManage = () => {
@@ -61,14 +61,14 @@ const ProjectManage = () => {
       <div className="w-full h-full flex flex-col">
         <div className="flex flex-row w-full h-auto items-center justify-between">
           <div className="flex flex-col gap-2">
-            <h1 className="text-3xl font-bold text-violet-600">
-              Projects Dashboard
+            <h1 className="text-3xl font-bold text-blue-600">
+              Project Managemaent
             </h1>
             <p className="text-base text-gray-500 font-normal">
               Manage and track your feedback collection projects
             </p>
           </div>
-          <button onClick={() => SetFormPop(true)} className="flex flex-row gap-2 text-white bg-violet-600 p-2.5 rounded-xl text-sm font-semibold items-center shadow-lg hover:shadow-xl transition-all">
+          <button onClick={() => SetFormPop(true)} className="flex flex-row gap-2 text-white bg-blue-600 p-2.5 rounded-xl text-sm font-semibold items-center shadow-lg hover:shadow-xl transition-all">
             <CircleDot className="w-4 h-4" />
             <p>New Project</p>
           </button>
