@@ -6,36 +6,40 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Star, MessageSquare, ListChecks, CheckSquare } from 'lucide-react';
 
-const SelectWithIcons = () => {
-  const [value, setValue] = React.useState('');
+interface Option {
+  value: string;
+  label: string;
+  icon: React.FC<any>; 
+}
 
-  const options = [
-    { value: 'rating', label: 'Rating', icon: <Star className="h-4 w-4" /> },
-    { value: 'text', label: 'Text', icon: <MessageSquare className="h-4 w-4" /> },
-    { value: 'multichoice', label: 'Multi Choice', icon: <ListChecks className="h-4 w-4" /> },
-    { value: 'singlechoice', label: 'Single Choice', icon: <CheckSquare className="h-4 w-4" /> },
-  ];
+interface SelectWithIconsProps {
+  options: Option[];
+  value: string;
+  title?: string;
+  onChange: (value: string) => void;
+}
 
-  // Find the selected option to get its icon and label
+const SelectWithIcons: React.FC<SelectWithIconsProps> = ({ options, value, title , onChange }) => {
   const selectedOption = options.find(option => option.value === value);
 
   return (
-    <Select value={value} onValueChange={setValue}>
-      <SelectTrigger className="w-full">
-        <SelectValue placeholder="Select Type" className=''>
-          {/* Render icon and label */}
-          <div className='flex flex-row gap-2 items-center'>
-          {selectedOption?.icon}
-          {selectedOption?.label}
+    <Select value={value} onValueChange={onChange}>
+      <SelectTrigger className="w-full text-zinc-700">
+        <SelectValue placeholder={title || "Select Type"} >
+          <div className="flex items-center gap-2">
+            {selectedOption && <selectedOption.icon className="h-4 w-4" />}
+            {selectedOption?.label}
           </div>
         </SelectValue>
       </SelectTrigger>
       <SelectContent>
         {options.map(option => (
-          <SelectItem key={option.value} value={option.value} icon={option.icon}>
-            {option.label}
+          <SelectItem key={option.value} value={option.value}>
+            <div className="flex items-center gap-2 text-zinc-700">
+              <option.icon className="h-4 w-4" />
+              {option.label}
+            </div>
           </SelectItem>
         ))}
       </SelectContent>

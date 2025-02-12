@@ -3,20 +3,15 @@
 import {
   X,
   FolderPlus,
-  AlertTriangle,
-  AlertCircle,
-  CheckCircle2,
-  Plus,
   Rocket,
-  Trash2,
   CalendarIcon,
   CheckSquare,
   ListChecks,
   MessageSquare,
   Star,
+  MessageCircleQuestion,
 } from "lucide-react";
 import React, { useState } from "react";
-import GroupsIcon from "@mui/icons-material/Groups";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
@@ -25,14 +20,7 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import SelectWithIcon from "@/app/components/SelectWithIcon"
+import SelectWithIcon from "@/app/components/SelectWithIcon";
 
 interface form_project_manage {
   setIsOpen: (isOpen: boolean) => void;
@@ -41,6 +29,14 @@ interface form_project_manage {
 const form_project_manage: React.FC<form_project_manage> = ({ setIsOpen }) => {
   const [startDate, setStartDate] = useState<Date>();
   const [dueDate, setDueDate] = useState<Date>();
+  const [selectedType, setSelectedType] = useState("");
+
+  const options = [
+    { value: "rating", label: "Rating", icon: Star },
+    { value: "text", label: "Text", icon: MessageSquare },
+    { value: "multichoice", label: "Multi Choice", icon: ListChecks },
+    { value: "singlechoice", label: "Single Choice", icon: CheckSquare },
+  ];
 
   const DatePickerWithPresets = ({
     date,
@@ -92,7 +88,7 @@ const form_project_manage: React.FC<form_project_manage> = ({ setIsOpen }) => {
         <div className="flex flex-row">
           <div className="w-full flex flex-col gap-1 mt-2">
             <div className="flex flex-row gap-2 items-center">
-              <FolderPlus className="h-6 w-6 text-violet-500" />
+              <MessageCircleQuestion className="h-6 w-6 text-violet-500" />
               <h1 className="text-2xl font-semibold">Create New Question</h1>
             </div>
             <p className="text-zinc-400 text-sm font-normal">
@@ -110,7 +106,13 @@ const form_project_manage: React.FC<form_project_manage> = ({ setIsOpen }) => {
         <form className="flex flex-col gap-6 mt-5">
           <div className="flex w-full flex-col">
             <h3 className="text-sm font-medium mb-2">Question Type</h3>
-            <SelectWithIcon/>
+            <div className="">
+              <SelectWithIcon
+                options={options}
+                value={selectedType}
+                onChange={setSelectedType}
+              />
+            </div>
           </div>
           {/* Rest of the form remains the same */}
           <div className="w-full flex flex-col">
