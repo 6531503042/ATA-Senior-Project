@@ -13,7 +13,9 @@ import org.springframework.data.domain.Pageable;
 import reactor.core.publisher.Mono;
 
 import javax.management.relation.RoleNotFoundException;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface UserService {
     Mono<User> register(RegisterRequest register) throws RoleNotFoundException;
@@ -40,7 +42,20 @@ public interface UserService {
 
     Mono<Page<AuthResponse>> findAllUser(Pageable pageable);
 
+    Mono<List<User>> findAllUsers();
+
     String textSendEmailChangePasswordSuccessfully(String username);
     
     Mono<Void> resetPassword(String token, String newPassword);
+
+    // Project authority methods
+    Mono<Boolean> hasProjectAuthority(Long userId, Long projectId);
+    
+    Mono<Set<Long>> getUserProjectAuthorities(Long userId);
+    
+    Mono<Boolean> addProjectAuthority(Long userId, Long projectId);
+    
+    Mono<Boolean> removeProjectAuthority(Long userId, Long projectId);
+    
+    Mono<Set<User>> getUsersByProjectId(Long projectId);
 }

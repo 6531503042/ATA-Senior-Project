@@ -28,6 +28,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -117,10 +118,10 @@ public class UserServiceImpl implements UserService {
                 // Determine role based on input
                 Role defaultRole;
                 if (register.getRoles() != null && register.getRoles().contains("ADMIN")) {
-                    defaultRole = roleService.findByName(RoleName.ADMIN)
+                    defaultRole = roleService.findByName(RoleName.ROLE_ADMIN)
                             .orElseThrow(() -> new RoleNotFoundException("Admin role not found in the database."));
                 } else {
-                    defaultRole = roleService.findByName(RoleName.USER)
+                    defaultRole = roleService.findByName(RoleName.ROLE_USER)
                             .orElseThrow(() -> new RoleNotFoundException("Default role not found in the database."));
                 }
                 user.setRoles(Collections.singleton(defaultRole));
@@ -359,16 +360,31 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Mono<Page<AuthResponse>> findAllUser(Pageable pageable) {
-        return Mono.fromCallable(() -> {
-            Page<User> userPage = userRepository.findAll(pageable);
-            return userPage.map(user -> {
+        try {
+            Page<User> users = userRepository.findAll(pageable);
+            Page<AuthResponse> authResponses = users.map(user -> {
                 AuthResponse response = modelMapper.map(user, AuthResponse.class);
                 response.setRoles(user.getRoles().stream()
                         .map(role -> role.getName().name())
                         .collect(Collectors.toList()));
                 return response;
             });
-        });
+            return Mono.just(authResponses);
+        } catch (Exception e) {
+            log.error("Error fetching users: {}", e.getMessage());
+            return Mono.error(e);
+        }
+    }
+
+    @Override
+    public Mono<List<User>> findAllUsers() {
+        try {
+            List<User> users = userRepository.findAll();
+            return Mono.just(users);
+        } catch (Exception e) {
+            log.error("Error fetching all users: {}", e.getMessage());
+            return Mono.error(e);
+        }
     }
 
     @Override
@@ -440,6 +456,97 @@ public class UserServiceImpl implements UserService {
                 return Mono.empty();
             } catch (Exception e) {
                 log.error("Error resetting password: {}", e.getMessage());
+                return Mono.error(e);
+            }
+        });
+    }
+
+    @Override
+    @Transactional
+    public Mono<Boolean> addProjectAuthority(Long userId, Long projectId) {
+        return Mono.defer(() -> {
+            try {
+                User user = findById(userId)
+                        .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
+
+                user.getProjectAuthorities().add(projectId);
+                userRepository.save(user);
+                log.info("Added project authority {} to user {}", projectId, userId);
+                return Mono.just(true);
+            } catch (Exception e) {
+                log.error("Error adding project authority: {}", e.getMessage());
+                return Mono.error(e);
+            }
+        });
+    }
+
+    @Override
+    @Transactional
+    public Mono<Boolean> removeProjectAuthority(Long userId, Long projectId) {
+        return Mono.defer(() -> {
+            try {
+                User user = findById(userId)
+                        .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
+
+                user.getProjectAuthorities().remove(projectId);
+                userRepository.save(user);
+                log.info("Removed project authority {} from user {}", projectId, userId);
+                return Mono.just(true);
+            } catch (Exception e) {
+                log.error("Error removing project authority: {}", e.getMessage());
+                return Mono.error(e);
+            }
+        });
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Mono<Boolean> hasProjectAuthority(Long userId, Long projectId) {
+        return Mono.defer(() -> {
+            try {
+                User user = findById(userId)
+                        .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
+
+                boolean hasAuthority = user.getProjectAuthorities().contains(projectId);
+                log.debug("User {} {} project authority {}", userId, hasAuthority ? "has" : "does not have", projectId);
+                return Mono.just(hasAuthority);
+            } catch (Exception e) {
+                log.error("Error checking project authority: {}", e.getMessage());
+                return Mono.error(e);
+            }
+        });
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Mono<Set<Long>> getUserProjectAuthorities(Long userId) {
+        return Mono.defer(() -> {
+            try {
+                User user = findById(userId)
+                        .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
+
+                Set<Long> authorities = new HashSet<>(user.getProjectAuthorities());
+                log.debug("Found {} project authorities for user {}", authorities.size(), userId);
+                return Mono.just(authorities);
+            } catch (Exception e) {
+                log.error("Error getting user project authorities: {}", e.getMessage());
+                return Mono.error(e);
+            }
+        });
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Mono<Set<User>> getUsersByProjectId(Long projectId) {
+        return Mono.defer(() -> {
+            try {
+                Set<User> users = userRepository.findAll().stream()
+                        .filter(user -> user.getProjectAuthorities().contains(projectId))
+                        .collect(Collectors.toSet());
+                log.debug("Found {} users for project {}", users.size(), projectId);
+                return Mono.just(users);
+            } catch (Exception e) {
+                log.error("Error getting users by project id: {}", e.getMessage());
                 return Mono.error(e);
             }
         });
