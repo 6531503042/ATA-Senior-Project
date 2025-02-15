@@ -1,6 +1,6 @@
 package dev.bengi.feedbackservice.security;
 
-import dev.bengi.feedbackservice.dto.UserDto;
+import dev.bengi.feedbackservice.domain.payload.response.UserDto;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass

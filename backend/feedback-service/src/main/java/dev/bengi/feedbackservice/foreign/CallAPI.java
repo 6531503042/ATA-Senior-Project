@@ -1,6 +1,6 @@
 package dev.bengi.feedbackservice.foreign;
 
-import dev.bengi.feedbackservice.dto.UserDto;
+import dev.bengi.feedbackservice.domain.payload.response.UserDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
