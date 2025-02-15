@@ -8,8 +8,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Data
-@Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
@@ -28,13 +26,37 @@ public class User {
     private Date resetPasswordTokenExpiry;
     private String gender;
     private String avatar;
+    private String department;
+    private String position;
+    private boolean active;
 
-//    @ManyToMany(fetch = FetchType.EAGER)
-//    @JoinTable(name = "user_role",
-//            joinColumns = @JoinColumn(name = "user_id"),
-//            inverseJoinColumns = @JoinColumn(name = "role_id")
-//    )
-//    private Set<Role> roles = new HashSet<>();
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_project_authorities", 
+        joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "project_id")
+    private Set<Long> projectAuthorities = new HashSet<>();
+
     @ManyToMany(fetch = FetchType.EAGER)
     private Set<Role> roles = new HashSet<>();
+
+    @PrePersist
+    protected void onCreate() {
+        this.active = true;
+        if (this.projectAuthorities == null) {
+            this.projectAuthorities = new HashSet<>();
+        }
+        if (this.roles == null) {
+            this.roles = new HashSet<>();
+        }
+    }
+
+    // Custom constructor for creating a new user
+    public User(String username, String email, String password) {
+        this.username = username;
+        this.email = email;
+        this.password = password;
+        this.active = true;
+        this.projectAuthorities = new HashSet<>();
+        this.roles = new HashSet<>();
+    }
 }
