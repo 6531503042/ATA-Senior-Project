@@ -1,12 +1,15 @@
 package dev.bengi.feedbackservice.domain.enums;
 
 public enum QuestionCategory {
-    GENERAL,
-    TECHNICAL,
-    PROCESS,
+    WORK_ENVIRONMENT,
+    WORK_LIFE_BALANCE,
+    TEAM_COLLABORATION,
+    PROJECT_MANAGEMENT,
+    PROJECT_SATISFACTION,
+    TECHNICAL_SKILLS,
     COMMUNICATION,
     LEADERSHIP,
-    TEAMWORK,
-    PERFORMANCE,
-    OTHER
+    INNOVATION,
+    PERSONAL_GROWTH,
+    GENERAL
 }
