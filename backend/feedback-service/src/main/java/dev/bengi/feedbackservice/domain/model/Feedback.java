@@ -1,74 +1,81 @@
 package dev.bengi.feedbackservice.domain.model;
 
-import dev.bengi.feedbackservice.domain.enums.PrivacyLevel;
-import dev.bengi.feedbackservice.domain.enums.QuestionCategory;
-import jakarta.persistence.*;
-import lombok.*;
-
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.ArrayList;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Data
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
 @Entity
-@Getter
-@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "feedbacks")
 public class Feedback {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "project_id")
-    private Long projectId;
-
-    @Column(name = "user_id")
-    private Long userId;
-
-    @Column(name = "question_ids")
-    private List<Long> questionIds;
-
+    @Column(nullable = false)
     private String title;
+
+    @Column(nullable = false, length = 1000)
     private String description;
-    private String additionalComments;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX", timezone = "Asia/Bangkok")
-    private ZonedDateTime feedbackStartDate;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "project_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private Project project;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX", timezone = "Asia/Bangkok")
-    private ZonedDateTime feedbackEndDate;
-
-    @Enumerated(EnumType.STRING)
-    private QuestionCategory category;
-
-    @Enumerated(EnumType.STRING)
-    private PrivacyLevel privacyLevel;
-
-    @ElementCollection
-    @CollectionTable(name = "feedback_answers",
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "feedback_questions",
             joinColumns = @JoinColumn(name = "feedback_id"))
-    @MapKeyColumn(name = "question_id")
-    @Column(name = "answer")
-    private Map<Long, String> answers;
+    @Column(name = "question_id")
+    @Builder.Default
+    private List<Long> questionIds = new ArrayList<>();
 
-    private ZonedDateTime submittedAt;
+    @Column(name = "start_date", nullable = false)
+    private LocalDateTime startDate;
+
+    @Column(name = "end_date", nullable = false)
+    private LocalDateTime endDate;
+
+    @Column(name = "created_by", nullable = false)
+    private String createdBy;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean active = true;
+
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
     @PrePersist
     protected void onCreate() {
-        submittedAt = ZonedDateTime.now(ZoneId.of("Asia/Bangkok")); // Bangkok timezone
-        feedbackStartDate = ZonedDateTime.now(ZoneId.of("Asia/Bangkok"));
-        feedbackEndDate = ZonedDateTime.now(ZoneId.of("Asia/Bangkok"));
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+        if (questionIds == null) questionIds = new ArrayList<>();
     }
 
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 
-    public void removeAnswer(Answer answer) {
-        answers.remove(answer.getQuestion().getId());
+    // Helper method to get allowed users directly from project
+    @Transient
+    public Set<Long> getAllowedUserIds() {
+        return project != null ? project.getMemberIds() : new HashSet<>();
     }
 }

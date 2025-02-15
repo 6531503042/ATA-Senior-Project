@@ -1,14 +1,17 @@
 package dev.bengi.feedbackservice.domain.model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -22,7 +25,6 @@ public class Project {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @JsonIgnore
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id")
     @Builder.Default
@@ -32,35 +34,38 @@ public class Project {
     private String name;
     private String description;
     
-    @ElementCollection
-    @CollectionTable(name = "project_member_ids",
-            joinColumns = @JoinColumn(name = "project_id"))
-    @Column(name = "member_ids")
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "project_members", 
+        joinColumns = @JoinColumn(name = "project_id"))
+    @Column(name = "member_id")
     @Builder.Default
-    private List<Long> memberIds = new ArrayList<>();
+    private Set<Long> memberIds = new HashSet<>();
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX", timezone = "Asia/Bangkok")
     @Column(name = "project_start_date")
     private ZonedDateTime projectStartDate;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX", timezone = "Asia/Bangkok")
     @Column(name = "project_end_date")
     private ZonedDateTime projectEndDate;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX", timezone = "Asia/Bangkok")
-    @Column(name = "created_at")
+    @Column(name = "created_at", updatable = false)
     private ZonedDateTime createdAt;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX", timezone = "Asia/Bangkok")
     @Column(name = "updated_at")
     private ZonedDateTime updatedAt;
 
     @PrePersist
     protected void onCreate() {
-        projectStartDate = ZonedDateTime.now(ZoneId.of("Asia/Bangkok"));
-        projectEndDate = ZonedDateTime.now(ZoneId.of("Asia/Bangkok"));
+        if (projectStartDate == null) {
+            projectStartDate = ZonedDateTime.now(ZoneId.of("Asia/Bangkok"));
+        }
+        if (projectEndDate == null) {
+            projectEndDate = ZonedDateTime.now(ZoneId.of("Asia/Bangkok"));
+        }
         createdAt = ZonedDateTime.now(ZoneId.of("Asia/Bangkok"));
         updatedAt = ZonedDateTime.now(ZoneId.of("Asia/Bangkok"));
+        if (memberIds == null) {
+            memberIds = new HashSet<>();
+        }
     }
 
     @PreUpdate
