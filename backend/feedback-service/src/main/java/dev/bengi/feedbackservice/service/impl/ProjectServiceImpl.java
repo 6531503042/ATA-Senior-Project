@@ -7,6 +7,7 @@ import dev.bengi.feedbackservice.domain.payload.request.CreateProjectRequest;
 import dev.bengi.feedbackservice.domain.payload.response.ProjectResponse;
 import dev.bengi.feedbackservice.repository.ProjectRepository;
 import dev.bengi.feedbackservice.service.ProjectService;
+import dev.bengi.feedbackservice.service.ProjectMemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -16,7 +17,11 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -26,13 +31,14 @@ public class ProjectServiceImpl implements ProjectService {
 
     private final ProjectRepository projectRepository;
     private final UserClient userClient;
+    private final ProjectMemberService projectMemberService;
 
     private ProjectResponse mapToProjectResponse(Project project) {
         return ProjectResponse.builder()
                 .id(project.getId())
                 .name(project.getName())
                 .description(project.getDescription())
-                .memberIds(project.getMemberIds())
+                .memberIds(new ArrayList<>(project.getMemberIds()))
                 .projectStartDate(project.getProjectStartDate())
                 .projectEndDate(project.getProjectEndDate())
                 .createdAt(project.getCreatedAt())
@@ -43,24 +49,18 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     @Transactional
     public ProjectResponse createProject(CreateProjectRequest request) {
-        log.info("Creating new project with name: {}", request.getName());
-
+        log.debug("Creating new project: {}", request.getName());
+        
         Project project = Project.builder()
                 .name(request.getName())
                 .description(request.getDescription())
-                .memberIds(new ArrayList<>())
                 .projectStartDate(request.getProjectStartDate())
                 .projectEndDate(request.getProjectEndDate())
                 .build();
 
-        try {
-            Project savedProject = projectRepository.save(project);
-            log.info("Project created successfully with ID: {}", savedProject.getId());
-            return mapToProjectResponse(savedProject);
-        } catch (Exception e) {
-            log.error("Error creating project: {}", e.getMessage(), e);
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to create project");
-        }
+        Project savedProject = projectRepository.save(project);
+        log.info("Created new project with ID: {}", savedProject.getId());
+        return mapToProjectResponse(savedProject);
     }
 
     @Override
@@ -81,7 +81,7 @@ public class ProjectServiceImpl implements ProjectService {
 
         try {
             Project updatedProject = projectRepository.save(existingProject);
-            log.info("Project updated successfully with ID: {}", updatedProject.getId());
+            log.info("Project updated successfully with ID: {}", id);
             return mapToProjectResponse(updatedProject);
         } catch (Exception e) {
             log.error("Error updating project: {}", e.getMessage(), e);
@@ -94,14 +94,15 @@ public class ProjectServiceImpl implements ProjectService {
     public void deleteProject(Long id) {
         log.info("Deleting project with ID: {}", id);
 
-        if (!projectRepository.existsById(id)) {
-            log.error("Project not found with ID: {}", id);
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found");
-        }
-
         try {
+            if (!projectRepository.existsById(id)) {
+                log.error("Project not found with ID: {}", id);
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found");
+            }
             projectRepository.deleteById(id);
             log.info("Project deleted successfully with ID: {}", id);
+        } catch (ResponseStatusException e) {
+            throw e;
         } catch (Exception e) {
             log.error("Error deleting project: {}", e.getMessage(), e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to delete project");
@@ -143,68 +144,53 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     @Transactional
     public ProjectResponse addProjectMembers(Long projectId, AddProjectMemberRequest request) {
-        log.info("Adding members to project ID: {}", projectId);
-
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> {
-                    log.error("Project not found with ID: {}", projectId);
-                    return new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found");
-                });
-
-        // Verify all users exist
-        request.getMemberIds().forEach(userId -> {
-            try {
-                if (!userClient.checkUserExists(userId).getBody()) {
-                    log.error("User not found with ID: {}", userId);
-                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with ID: " + userId);
-                }
-            } catch (Exception e) {
-                log.error("Error checking user existence: {}", e.getMessage(), e);
-                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to verify user existence");
-            }
-        });
-
-        // Add new members
-        List<Long> currentMembers = project.getMemberIds();
-        request.getMemberIds().forEach(memberId -> {
-            if (!currentMembers.contains(memberId)) {
-                currentMembers.add(memberId);
-            }
-        });
-
-        try {
-            Project updatedProject = projectRepository.save(project);
-            log.info("Members added successfully to project ID: {}", projectId);
-            return mapToProjectResponse(updatedProject);
-        } catch (Exception e) {
-            log.error("Error adding members to project: {}", e.getMessage(), e);
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to add members to project");
+        log.debug("Adding members to project ID: {}", projectId);
+        
+        Project project = getProject(projectId);
+        Set<Long> newMemberIds = new HashSet<>(request.getMemberIds());
+        
+        // Add new members through user service
+        boolean syncSuccess = projectMemberService.syncProjectMembers(
+            projectId, 
+            newMemberIds
+        );
+        
+        if (!syncSuccess) {
+            log.error("Failed to sync project members for project: {}", projectId);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to sync project members");
         }
+
+        // Update project's memberIds
+        project.setMemberIds(newMemberIds);
+        project = projectRepository.save(project);
+
+        log.info("Successfully added members to project ID: {}", projectId);
+        return mapToProjectResponse(project);
     }
 
     @Override
     @Transactional
     public ProjectResponse removeProjectMembers(Long projectId, List<Long> memberIds) {
-        log.info("Removing members from project ID: {}", projectId);
-
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> {
-                    log.error("Project not found with ID: {}", projectId);
-                    return new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found");
-                });
-
-        // Remove members
-        List<Long> currentMembers = project.getMemberIds();
+        log.debug("Removing members from project ID: {}", projectId);
+        
+        Project project = getProject(projectId);
+        
+        // Get current members
+        Set<Long> currentMembers = projectMemberService.getProjectMembers(projectId);
+        
+        // Remove specified members
         currentMembers.removeAll(memberIds);
-
-        try {
-            Project updatedProject = projectRepository.save(project);
-            log.info("Members removed successfully from project ID: {}", projectId);
-            return mapToProjectResponse(updatedProject);
-        } catch (Exception e) {
-            log.error("Error removing members from project: {}", e.getMessage(), e);
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to remove members from project");
+        
+        // Sync updated member list
+        boolean syncSuccess = projectMemberService.syncProjectMembers(projectId, currentMembers);
+        
+        if (!syncSuccess) {
+            log.error("Failed to sync project members for project: {}", projectId);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to sync project members");
         }
+
+        log.info("Successfully removed members from project ID: {}", projectId);
+        return mapToProjectResponse(project);
     }
 
     @Override
@@ -213,15 +199,94 @@ public class ProjectServiceImpl implements ProjectService {
         log.info("Fetching projects for member ID: {}", memberId);
 
         try {
-            List<Project> projects = projectRepository.findByMemberIdsContaining(memberId);
-            List<ProjectResponse> responses = projects.stream()
-                    .map(this::mapToProjectResponse)
-                    .collect(Collectors.toList());
+            // Get all projects
+            List<Project> allProjects = projectRepository.findAll();
+            
+            // Filter projects where user is a member
+            List<Project> memberProjects = allProjects.stream()
+                .filter(project -> projectMemberService.isProjectMember(memberId, project.getId()))
+                .collect(Collectors.toList());
+
+            List<ProjectResponse> responses = memberProjects.stream()
+                .map(this::mapToProjectResponse)
+                .collect(Collectors.toList());
+
             log.info("Found {} projects for member ID: {}", responses.size(), memberId);
             return responses;
         } catch (Exception e) {
             log.error("Error fetching projects for member: {}", e.getMessage(), e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to fetch projects for member");
         }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Project> getActiveProjects() {
+        return projectRepository.findAll().stream()
+                .filter(p -> p.getProjectEndDate().isAfter(ZonedDateTime.now()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Project> getCompletedProjects() {
+        return projectRepository.findAll().stream()
+                .filter(p -> p.getProjectEndDate().isBefore(ZonedDateTime.now()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Map<String, Long> getProjectStatistics() {
+        Map<String, Long> statistics = new HashMap<>();
+        statistics.put("total", projectRepository.count());
+        statistics.put("active", projectRepository.countActiveProjects());
+        statistics.put("completed", projectRepository.countCompletedProjects());
+        return statistics;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Project> getRecentProjects() {
+        return projectRepository.findAll().stream()
+                .sorted((p1, p2) -> p2.getCreatedAt().compareTo(p1.getCreatedAt()))
+                .limit(5)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Map<String, Long> getProjectsByStatus() {
+        Map<String, Long> statusMap = new HashMap<>();
+        Long activeCount = projectRepository.countActiveProjects();
+        Long completedCount = projectRepository.countCompletedProjects();
+        
+        statusMap.put("active", activeCount);
+        statusMap.put("completed", completedCount);
+        return statusMap;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Project getProject(Long id) {
+        return projectRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Project not found"));
+    }
+
+    @Override
+    @Transactional
+    public Project updateProject(Long id, Project project) {
+        Project existingProject = getProject(id);
+        project.setId(id);
+        project.setUpdatedAt(ZonedDateTime.now());
+        return projectRepository.save(project);
+    }
+
+    @Override
+    @Transactional
+    public Project createProject(Project project) {
+        project.setCreatedAt(ZonedDateTime.now());
+        project.setUpdatedAt(ZonedDateTime.now());
+        return projectRepository.save(project);
     }
 }
