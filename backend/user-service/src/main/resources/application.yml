@@ -1,6 +1,8 @@
 server:
   port: 8081
 spring:
+  main:
+    allow-bean-definition-overriding: true
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:3307/user
@@ -25,8 +27,6 @@ security:
     secret: ofBra2CqJO2JOC7CmN80hbaGdjZJqsBR2UqXxJh5Coo=
     expiration: 86400
     refresh-expiration: 604800
-
-
 
 # Token refresh endpoint URL
 refresh:
