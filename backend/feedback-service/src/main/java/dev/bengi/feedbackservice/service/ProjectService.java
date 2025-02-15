@@ -1,11 +1,13 @@
 package dev.bengi.feedbackservice.service;
 
+import dev.bengi.feedbackservice.domain.model.Project;
 import dev.bengi.feedbackservice.domain.payload.request.AddProjectMemberRequest;
 import dev.bengi.feedbackservice.domain.payload.request.CreateProjectRequest;
 import dev.bengi.feedbackservice.domain.payload.response.ProjectResponse;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 
 public interface ProjectService {
     @Transactional
@@ -31,4 +33,15 @@ public interface ProjectService {
 
     @Transactional(readOnly = true)
     List<ProjectResponse> getProjectsByMemberId(Long memberId);
+
+    Project createProject(Project project);
+    Project updateProject(Long id, Project project);
+    Project getProject(Long id);
+    List<Project> getActiveProjects();
+    List<Project> getCompletedProjects();
+    
+    // Dashboard methods
+    Map<String, Long> getProjectStatistics();
+    List<Project> getRecentProjects();
+    Map<String, Long> getProjectsByStatus();
 }
