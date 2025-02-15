@@ -25,6 +25,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -32,7 +33,8 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/manager")
 @RequiredArgsConstructor
 @Tag(name = "User Management", description = "APIs for managing users")
-@SecurityRequirement(name = "bearerAuth")
+@CrossOrigin(origins = "*", maxAge = 3600)
+@PreAuthorize("hasAuthority('ROLE_ADMIN')")
 public class UserManagementController {
     private final UserService userService;
     private final ModelMapper modelMapper;
@@ -40,7 +42,6 @@ public class UserManagementController {
     private final HeaderGenerator headerGenerator;
 
     @PostMapping("/create-user")
-    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Create new user", description = "Create a new user with specified roles (Admin only)")
     public Mono<ResponseEntity<ResponseMessage>> createUser(
             @Valid @RequestBody AddUserRequest request) {
@@ -53,7 +54,6 @@ public class UserManagementController {
     }
 
     @DeleteMapping("/delete-user/{userId}")
-    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Delete user", description = "Delete a user by ID (Admin only)")
     public Mono<ResponseEntity<ResponseMessage>> deleteUser(
             @Parameter(description = "User ID to delete")
@@ -67,7 +67,6 @@ public class UserManagementController {
     }
 
     @PutMapping("/update-user/{userId}")
-    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Update user", description = "Update a user's information by ID (Admin only)")
     public Mono<ResponseEntity<User>> updateUser(
             @Parameter(description = "User ID to update")
@@ -82,7 +81,6 @@ public class UserManagementController {
     }
 
     @GetMapping("/user/{userId}")
-    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Get user by ID", description = "Retrieve a user's information by ID (Admin only)")
     public Mono<ResponseEntity<AuthResponse>> getUserById(
             @Parameter(description = "User ID to retrieve")
@@ -102,27 +100,44 @@ public class UserManagementController {
     }
 
     @GetMapping("/all")
-    @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Get all users", description = "Retrieve all users with pagination (Admin only)")
-    public Mono<ResponseEntity<Page<AuthResponse>>> getAllUsers(
-            @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") int page,
-            @Parameter(description = "Page size") @RequestParam(defaultValue = "10") int size,
-            @Parameter(description = "Sort field") @RequestParam(defaultValue = "id") String sortBy,
-            @Parameter(description = "Sort direction") @RequestParam(defaultValue = "ASC") String sortOrder) {
+    @Operation(summary = "Get all users with pagination", description = "Retrieve all users with pagination (Admin only)")
+    public Mono<ResponseEntity<Page<AuthResponse>>> getAllUsersWithPagination(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "ASC") String sortOrder) {
         
         log.info("Fetching users page {} with size {}", page, size);
         Sort.Direction direction = sortOrder.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
         PageRequest pageRequest = PageRequest.of(page, size, Sort.by(direction, sortBy));
         
         return userService.findAllUser(pageRequest)
-                .map(userPage -> ResponseEntity.ok()
-                        .headers(headerGenerator.getHeadersForSuccessGetMethod())
-                        .body(userPage))
+                .map(ResponseEntity::ok)
+                .doOnError(error -> log.error("Error fetching users: {}", error.getMessage()));
+    }
+
+    @GetMapping("/all/list")
+    @Operation(summary = "Get all users without pagination", description = "Retrieve all users without pagination (Admin only)")
+    public Mono<ResponseEntity<List<AuthResponse>>> getAllUsers() {
+        log.info("Fetching all users without pagination");
+        return userService.findAllUsers()
+                .map(users -> {
+                    List<AuthResponse> responses = users.stream()
+                            .map(user -> {
+                                AuthResponse response = modelMapper.map(user, AuthResponse.class);
+                                response.setRoles(user.getRoles().stream()
+                                        .map(role -> role.getName().name())
+                                        .collect(Collectors.toList()));
+                                return response;
+                            })
+                            .collect(Collectors.toList());
+                    return ResponseEntity.ok(responses);
+                })
                 .doOnError(error -> log.error("Error fetching users: {}", error.getMessage()));
     }
 
     @GetMapping("/info")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     @Operation(summary = "Get user info", description = "Get current user's information")
     public Mono<ResponseEntity<AuthResponse>> getUserInfo(
             @Parameter(description = "JWT token with Bearer prefix")
@@ -151,5 +166,25 @@ public class UserManagementController {
             log.error("Error retrieving user information: {}", e.getMessage());
             return Mono.error(new UserNotFoundException("Error retrieving user information: " + e.getMessage()));
         }
+    }
+
+    @GetMapping("/exists/{userId}")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER')")
+    @Operation(summary = "Check if user exists", description = "Check if a user exists by ID")
+    public ResponseEntity<Boolean> checkUserExists(
+            @Parameter(description = "User ID to check")
+            @PathVariable Long userId) {
+        log.debug("Checking if user exists with ID: {}", userId);
+        return ResponseEntity.ok(userService.findById(userId).isPresent());
+    }
+
+    @GetMapping("/validate-username/{username}")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER')")
+    @Operation(summary = "Check if username exists", description = "Check if a user exists by username")
+    public ResponseEntity<Boolean> checkUsernameExists(
+            @Parameter(description = "Username to check")
+            @PathVariable String username) {
+        log.debug("Checking if user exists with username: {}", username);
+        return ResponseEntity.ok(userService.findByUsername(username).isPresent());
     }
 }
