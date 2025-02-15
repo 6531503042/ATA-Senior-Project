@@ -1,35 +1,35 @@
 package dev.bengi.feedbackservice.domain.payload.request;
 
-import dev.bengi.feedbackservice.domain.enums.AnswerType;
 import dev.bengi.feedbackservice.domain.enums.QuestionCategory;
 import dev.bengi.feedbackservice.domain.enums.QuestionType;
-import dev.bengi.feedbackservice.domain.enums.SentimentType;
-import dev.bengi.feedbackservice.domain.model.AnswerOption;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class CreateQuestionRequest {
-    private String text;
-    private String content;
+    @NotBlank(message = "Title is required")
+    private String title;
 
-    private QuestionType type;
+    private String description;
+
+    @NotNull(message = "Question type is required")
+    private QuestionType questionType;
+
+    @NotNull(message = "Category is required")
     private QuestionCategory category;
-    private AnswerType answerType;
 
-    // Ensure these fields are defined
-    private ZonedDateTime feedbackStartDate; 
-    private ZonedDateTime feedbackEndDate; 
+    private List<String> choices;
 
-    @Builder.Default
-    private List<AnswerOption> answerOptions = new ArrayList<>();  // Correct field name
+    private boolean required = true;
+
+    private String validationRules;
 }
