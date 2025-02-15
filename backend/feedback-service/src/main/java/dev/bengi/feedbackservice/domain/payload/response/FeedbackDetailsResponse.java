@@ -7,25 +7,21 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class FeedbackResponse {
+public class FeedbackDetailsResponse {
     private Long id;
     private String title;
     private String description;
-    private ProjectResponse project;
+    private String projectName;
     private List<QuestionResponse> questions;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
-    private Set<UserDto> allowedUsers;
     private boolean active;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-    private int totalSubmissions;
-    private int pendingReviews;
-    private double averageScore;
-}
+    private boolean alreadySubmitted;
+    private Map<String, Object> validationRules;
+} 

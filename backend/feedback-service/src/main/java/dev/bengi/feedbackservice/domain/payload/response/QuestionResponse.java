@@ -7,11 +7,15 @@ import java.util.List;
 import dev.bengi.feedbackservice.domain.enums.AnswerType;
 import dev.bengi.feedbackservice.domain.enums.QuestionCategory;
 import dev.bengi.feedbackservice.domain.enums.QuestionType;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class QuestionResponse {
 
     private Long id;
@@ -25,4 +29,6 @@ public class QuestionResponse {
     private List<AnswerOptionResponse> answers = new ArrayList<>();
     private ZonedDateTime createdAt;
     private ZonedDateTime updatedAt;
+    private String description;
+    private String validationRules;
 }

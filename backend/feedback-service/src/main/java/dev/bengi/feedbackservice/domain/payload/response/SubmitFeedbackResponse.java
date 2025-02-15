@@ -1,16 +1,27 @@
-package dev.bengi.feedbackservice.domain.payload.response;
+// package dev.bengi.feedbackservice.domain.payload.response;
 
-import dev.bengi.feedbackservice.domain.enums.AnswerType;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+// import java.time.ZonedDateTime;
+// import java.util.Map;
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class SubmitFeedbackResponse {
-    private AnswerType type;
-    private Integer value;
-}
+// import dev.bengi.feedbackservice.domain.model.AdminFeedback;
+// import lombok.AllArgsConstructor;
+// import lombok.Builder;
+// import lombok.Data;
+// import lombok.NoArgsConstructor;
+
+// @Data
+// @Builder
+// @NoArgsConstructor
+// @AllArgsConstructor
+// public class SubmitFeedbackResponse {
+    
+//     private Long id;
+
+//     private AdminFeedback adminFeedback;
+
+//     private Long submittedBy;
+
+//     private ZonedDateTime submittedAt;
+
+//     private Map<Long, String> answers;
+// }
