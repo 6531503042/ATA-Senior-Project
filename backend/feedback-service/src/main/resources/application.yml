@@ -14,13 +14,10 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
-    database: postgresql
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
-    generate-ddl: true
-    open-in-view: false
     properties:
       hibernate:
         format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
 
 security:
   jwt:
@@ -41,5 +38,9 @@ feign:
         connectTimeout: 5000
         readTimeout: 5000
         loggerLevel: basic
+  user-service:
+    url: http://localhost:8081
+
+services:
   user-service:
     url: http://localhost:8081
