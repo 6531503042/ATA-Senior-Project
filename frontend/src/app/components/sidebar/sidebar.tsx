@@ -11,6 +11,7 @@ import {
   LayoutDashboard,
   Folder,
   FolderClosed,
+  Star,
 } from "lucide-react";
 import Logo from "@/app/assets/ata-logo.png";
 
@@ -71,6 +72,11 @@ const Sidebar = ({ onComponentChange }: SidebarProps) => {
         { name: "Dashboard", component: "feedback_dashboard" },
         { name: "Management", component: "feedback_manage" },
       ],
+    },
+    {
+      name: "Score",
+      component: "score_overall",
+      icon: Star,
     },
   ];
 

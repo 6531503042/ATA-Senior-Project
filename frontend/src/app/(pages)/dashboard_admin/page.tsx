@@ -10,9 +10,11 @@ import QuestionDashboard from '@/app/(pages)/dashboard_admin/section/question_da
 import QuestionManage from '@/app/(pages)/dashboard_admin/section/question_manage';
 import FeedbackDashboard from '@/app/(pages)/dashboard_admin/section/feedback_dashboard';
 import FeedbackManage from '@/app/(pages)/dashboard_admin/section/feedback_manage';
+import Score from './section/score_overall';
 
 const ComponentMap = {
   overview: Overview,
+  score_overall: Score,
   project_dashboard: ProjectDashboard,
   project_manage: ProjectManage,
   question_dashboard: QuestionDashboard,
