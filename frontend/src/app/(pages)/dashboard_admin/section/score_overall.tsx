@@ -1,8 +1,7 @@
 "use client";
 
-import { BarChart2, Users, Star, Clock } from "lucide-react";
+import { FileText, UserPlus, ThumbsUp, Hourglass } from "lucide-react";
 import React from "react";
-
 
 const score_overall = () => {
   interface MenuOption {
@@ -18,41 +17,41 @@ const score_overall = () => {
 
   const options: MenuOption[] = [
     {
-      title: "Total Responses",
+      title: "Total Feedback Submissions",
       number: "1,847",
       trend: "+234 this week",
       subtitle: "85% completion rate",
-      icon: BarChart2,
+      icon: FileText,
       color: "text-blue-500",
       background: "bg-blue-50",
       subtitle_color: "text-blue-600",
     },
     {
-      title: "Active Users",
+      title: "Engaged Participants",
       number: "526",
       trend: "+48 new users",
       subtitle: "92% engagement rate",
-      icon: Users,
+      icon: UserPlus,
       color: "text-violet-500",
       background: "bg-violet-50",
       subtitle_color: "text-violet-600",
     },
     {
-      title: "Average Rating",
+      title: "Average Feedback Score",
       number: "4.8",
       trend: "↑ 0.3 vs last month",
       subtitle: "From 2,456 ratings",
-      icon: Star,
+      icon: ThumbsUp,
       color: "text-amber-500",
       background: "bg-amber-50",
       subtitle_color: "text-amber-600",
     },
     {
-      title: "Response Time",
+      title: "Average Feedback Resolution Time",
       number: "1.2h",
       trend: "↓ 0.5h faster",
       subtitle: "Average resolution time",
-      icon: Clock,
+      icon: Hourglass,
       color: "text-green-500",
       background: "bg-green-50",
       subtitle_color: "text-green-600",
@@ -63,10 +62,10 @@ const score_overall = () => {
     <div className="px-3 w-full h-full">
       <div className="w-full h-full">
         <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-bold text-blue-600">Score Dashboard</h1>
+          <h1 className="text-3xl font-bold text-blue-600">Score Analytics</h1>
           <div className="flex flex-col gap-1">
             <p className="text-base text-gray-600 font-normal">
-              Description
+              A quick overview of feedback statistics and engagement.
             </p>
           </div>
         </div>
@@ -88,9 +87,7 @@ const score_overall = () => {
                       <p className="text-xs font-medium text-green-500">
                         {option.trend}
                       </p>
-                      <p
-                        className={`text-xs font-medium text-gray-500`}
-                      >
+                      <p className="text-xs font-medium text-gray-500">
                         {option.subtitle}
                       </p>
                     </div>
