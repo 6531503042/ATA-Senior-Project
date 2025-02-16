@@ -4,7 +4,9 @@ import dev.bengi.feedbackservice.domain.model.FeedbackScore;
 import dev.bengi.feedbackservice.domain.model.FeedbackSubmission;
 import dev.bengi.feedbackservice.domain.model.Question;
 import dev.bengi.feedbackservice.domain.enums.QuestionCategory;
+import dev.bengi.feedbackservice.domain.enums.QuestionType;
 import dev.bengi.feedbackservice.domain.payload.request.FeedbackScoreRequest;
+import dev.bengi.feedbackservice.domain.payload.response.AnswerOptionResponse;
 import dev.bengi.feedbackservice.domain.payload.response.FeedbackScoreResponse;
 import dev.bengi.feedbackservice.domain.payload.response.QuestionResponse;
 import dev.bengi.feedbackservice.repository.FeedbackScoreRepository;
@@ -20,11 +22,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.DoubleSummaryStatistics;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.DoubleSummaryStatistics;
 
 @Slf4j
 @Service
@@ -165,7 +167,7 @@ public class FeedbackScoreServiceImpl implements FeedbackScoreService {
         
         Map<Integer, Long> priorityCounts = scores.stream()
                 .collect(Collectors.groupingBy(
-                    FeedbackScore::getPriorityScore,
+                    score -> score.getPriorityScore().intValue(),
                     Collectors.counting()
                 ));
         
@@ -368,7 +370,11 @@ public class FeedbackScoreServiceImpl implements FeedbackScoreService {
                         .required(q.isRequired())
                         .type(q.getQuestionType())
                         .category(q.getCategory())
-                        .choices(q.getChoices())
+                        .answers(q.getChoices().stream()
+                                .<AnswerOptionResponse>map(choice -> AnswerOptionResponse.builder()
+                                        .text(choice)
+                                        .build())
+                                .collect(Collectors.toList()))
                         .validationRules(q.getValidationRules())
                         .createdAt(q.getCreatedAt().atZone(ZoneId.systemDefault()))
                         .updatedAt(q.getUpdatedAt() != null ? q.getUpdatedAt().atZone(ZoneId.systemDefault()) : null)
@@ -408,7 +414,11 @@ public class FeedbackScoreServiceImpl implements FeedbackScoreService {
                         .required(q.isRequired())
                         .type(q.getQuestionType())
                         .category(q.getCategory())
-                        .choices(q.getChoices())
+                        .answers(q.getChoices().stream()
+                                .<AnswerOptionResponse>map(choice -> AnswerOptionResponse.builder()
+                                        .text(choice)
+                                        .build())
+                                .collect(Collectors.toList()))
                         .validationRules(q.getValidationRules())
                         .createdAt(q.getCreatedAt().atZone(ZoneId.systemDefault()))
                         .updatedAt(q.getUpdatedAt() != null ? q.getUpdatedAt().atZone(ZoneId.systemDefault()) : null)

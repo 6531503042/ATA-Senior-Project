@@ -1,5 +1,6 @@
 package dev.bengi.feedbackservice.domain.payload.request;
 
+import dev.bengi.feedbackservice.domain.enums.QuestionCategory;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;

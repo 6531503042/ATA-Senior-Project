@@ -1,5 +1,6 @@
 package dev.bengi.feedbackservice.domain.model;
 
+import dev.bengi.feedbackservice.domain.enums.QuestionCategory;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
