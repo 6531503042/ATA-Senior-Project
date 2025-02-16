@@ -18,9 +18,9 @@ const score_overall = () => {
   const options: MenuOption[] = [
     {
       title: "Total Feedback Submissions",
-      number: "1,847",
-      trend: "+234 this week",
-      subtitle: "85% completion rate",
+      number: "2,153",
+      trend: "+306 this week",
+      subtitle: "87% completion rate",
       icon: FileText,
       color: "text-blue-500",
       background: "bg-blue-50",
@@ -28,9 +28,9 @@ const score_overall = () => {
     },
     {
       title: "Engaged Participants",
-      number: "526",
-      trend: "+48 new users",
-      subtitle: "92% engagement rate",
+      number: "612",
+      trend: "+56 new users",
+      subtitle: "94% engagement rate",
       icon: UserPlus,
       color: "text-violet-500",
       background: "bg-violet-50",
@@ -38,9 +38,9 @@ const score_overall = () => {
     },
     {
       title: "Average Feedback Score",
-      number: "4.8",
-      trend: "↑ 0.3 vs last month",
-      subtitle: "From 2,456 ratings",
+      number: "4.6",
+      trend: "↓ 0.2 vs last month",
+      subtitle: "From 2,892 ratings",
       icon: ThumbsUp,
       color: "text-amber-500",
       background: "bg-amber-50",
@@ -48,8 +48,8 @@ const score_overall = () => {
     },
     {
       title: "Average Feedback Resolution Time",
-      number: "1.2h",
-      trend: "↓ 0.5h faster",
+      number: "1.8h",
+      trend: "↑ 0.6h slower",
       subtitle: "Average resolution time",
       icon: Hourglass,
       color: "text-green-500",
@@ -57,6 +57,7 @@ const score_overall = () => {
       subtitle_color: "text-green-600",
     },
   ];
+  
 
   return (
     <div className="px-3 w-full h-full">
