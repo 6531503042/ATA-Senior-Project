@@ -36,7 +36,7 @@ const QuestionDashboard = () => {
     },
     {
       title: "Top Performing",
-      number: "Customer Service",
+      number: "Customer Support",
       trend: "92% response rate",
       icon: BarChart2,
       color: "text-purple-500",

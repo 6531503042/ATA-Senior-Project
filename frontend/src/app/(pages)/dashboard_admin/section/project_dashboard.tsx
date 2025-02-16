@@ -107,7 +107,7 @@ const ProjectDashboard = () => {
                   <div
                     className={`${option.background} p-3 rounded-lg hidden sm:block ${option.color}`}
                   >
-                    <Icon className={``} strokeWidth={2} />
+                    <Icon className={``} strokeWidth={2.4} />
                   </div>
                 </li>
               );

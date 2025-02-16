@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import FormPop from "@/app/components/forms/form_project_manage"
+import FormPop from "@/app/components/forms/create_project_manage"
 
 
 const ProjectManage = () => {
@@ -99,7 +99,7 @@ const ProjectManage = () => {
                   <div
                     className={`${option.background} p-3 rounded-lg hidden sm:block ${option.color}`}
                   >
-                    <Icon className={``} strokeWidth={2} />
+                    <Icon className={``} strokeWidth={2.4} />
                   </div>
                 </li>
               );

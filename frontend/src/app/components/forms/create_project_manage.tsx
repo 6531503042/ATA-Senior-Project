@@ -22,11 +22,11 @@ import {
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 
-interface form_project_manage {
+interface create_project_manage {
   setIsOpen: (isOpen: boolean) => void;
 }
 
-const form_project_manage: React.FC<form_project_manage> = ({ setIsOpen }) => {
+const create_project_manage: React.FC<create_project_manage> = ({ setIsOpen }) => {
   const [teamMembers, setTeamMembers] = useState<string[]>([""]);
   const [selectedPriority, setSelectedPriority] = useState<
     "high" | "medium" | "low" | null
@@ -62,7 +62,7 @@ const form_project_manage: React.FC<form_project_manage> = ({ setIsOpen }) => {
           <PopoverTrigger asChild>
             <button
               className={cn(
-                "w-full border border-zinc-200 outline-none p-3 rounded-xl mt-2 text-sm focus:shadow-sm text-left flex items-center",
+                "w-full border border-zinc-200 outline-none p-3 rounded-lg mt-2 text-sm focus:shadow-sm text-left flex items-center hover:bg-gray-50",
                 !date && "text-gray-400"
               )}
             >
@@ -174,7 +174,7 @@ const form_project_manage: React.FC<form_project_manage> = ({ setIsOpen }) => {
             <input
               type="text"
               placeholder="e.g., Website Redesign"
-              className="w-full border border-zinc-200 outline-none p-3 rounded-xl mt-2 text-sm focus:shadow-sm"
+              className="w-full border border-zinc-200 outline-none p-3 rounded-lg mt-2 text-sm focus:shadow-sm"
               required
             />
           </div>
@@ -182,7 +182,7 @@ const form_project_manage: React.FC<form_project_manage> = ({ setIsOpen }) => {
             <h3 className="text-sm font-medium">Description</h3>
             <textarea
               placeholder="Describe the project goals and objectives"
-              className="w-full border border-zinc-200 outline-none p-3 rounded-xl mt-2 text-sm focus:shadow-sm"
+              className="w-full border border-zinc-200 outline-none p-3 rounded-lg mt-2 text-sm focus:shadow-sm"
             />
           </div>
           <div className="w-full flex flex-row gap-5">
@@ -257,4 +257,4 @@ const form_project_manage: React.FC<form_project_manage> = ({ setIsOpen }) => {
   );
 };
 
-export default form_project_manage;
+export default create_project_manage;
