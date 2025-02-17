@@ -3,6 +3,7 @@ package dev.bengi.feedbackservice.service.impl;
 import dev.bengi.feedbackservice.domain.model.Feedback;
 import dev.bengi.feedbackservice.domain.model.FeedbackSubmission;
 import dev.bengi.feedbackservice.domain.model.Question;
+import dev.bengi.feedbackservice.domain.enums.PrivacyLevel;
 import dev.bengi.feedbackservice.domain.payload.request.FeedbackSubmissionRequest;
 import dev.bengi.feedbackservice.domain.payload.response.FeedbackSubmissionResponse;
 import dev.bengi.feedbackservice.domain.payload.response.QuestionDetailsResponse;
@@ -53,6 +54,9 @@ public class FeedbackSubmissionServiceImpl implements FeedbackSubmissionService 
             log.error("Feedback {} is not active or outside submission window", feedback.getId());
             throw new IllegalArgumentException("Feedback is not active or outside submission window");
         }
+
+        // Validate privacy level based on user role and feedback settings
+        validatePrivacyLevel(request.getPrivacyLevel(), userId, feedback);
         
         // Create submission
         FeedbackSubmission submission = FeedbackSubmission.builder()
@@ -60,6 +64,7 @@ public class FeedbackSubmissionServiceImpl implements FeedbackSubmissionService 
                 .submittedBy(request.getUserId())
                 .responses(request.getResponses())
                 .overallComments(request.getOverallComments())
+                .privacyLevel(request.getPrivacyLevel())
                 .submittedAt(now)
                 .reviewed(false)
                 .build();
@@ -68,6 +73,48 @@ public class FeedbackSubmissionServiceImpl implements FeedbackSubmissionService 
         log.info("Successfully saved feedback submission with ID: {}", savedSubmission.getId());
         
         return mapToResponse(savedSubmission);
+    }
+
+    private void validatePrivacyLevel(PrivacyLevel privacyLevel, Long userId, Feedback feedback) {
+        // Check if user has permission for the selected privacy level
+        switch (privacyLevel) {
+            case CONFIDENTIAL:
+                if (!hasConfidentialPermission(userId, feedback)) {
+                    log.error("User {} does not have permission to submit confidential feedback", userId);
+                    throw new IllegalArgumentException("You do not have permission to submit confidential feedback");
+                }
+                break;
+            case PRIVATE:
+                if (!hasPrivatePermission(userId, feedback)) {
+                    log.error("User {} does not have permission to submit private feedback", userId);
+                    throw new IllegalArgumentException("You do not have permission to submit private feedback");
+                }
+                break;
+            case ANONYMOUS:
+                if (!feedback.isAllowAnonymous()) {
+                    log.error("Anonymous feedback is not allowed for feedback {}", feedback.getId());
+                    throw new IllegalArgumentException("Anonymous feedback is not allowed for this feedback");
+                }
+                break;
+            case PUBLIC:
+                // Public feedback is always allowed for project members
+                break;
+            default:
+                log.error("Invalid privacy level: {}", privacyLevel);
+                throw new IllegalArgumentException("Invalid privacy level");
+        }
+    }
+
+    private boolean hasConfidentialPermission(Long userId, Feedback feedback) {
+        // Check if user has manager/admin role or specific confidential permission
+        return feedback.getProject().getManagerIds().contains(userId) ||
+               feedback.getConfidentialUserIds().contains(userId);
+    }
+
+    private boolean hasPrivatePermission(Long userId, Feedback feedback) {
+        // Check if user has elevated role (e.g., team lead, manager)
+        return feedback.getProject().getManagerIds().contains(userId) ||
+               feedback.getProject().getTeamLeadIds().contains(userId);
     }
 
     @Override
@@ -282,10 +329,11 @@ public class FeedbackSubmissionServiceImpl implements FeedbackSubmissionService 
         return FeedbackSubmissionResponse.builder()
                 .id(submission.getId())
                 .feedbackId(submission.getFeedback().getId())
-                .submittedBy(submission.getSubmittedBy())
+                .submittedBy(submission.getPrivacyLevel() == PrivacyLevel.ANONYMOUS ? null : submission.getSubmittedBy())
                 .responses(submission.getResponses())
                 .questionDetails(questionDetails)
                 .overallComments(submission.getOverallComments())
+                .privacyLevel(submission.getPrivacyLevel())
                 .submittedAt(submission.getSubmittedAt())
                 .updatedAt(submission.getUpdatedAt())
                 .build();

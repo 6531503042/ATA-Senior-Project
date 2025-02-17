@@ -1,5 +1,6 @@
 package dev.bengi.feedbackservice.domain.payload.request;
 
+import dev.bengi.feedbackservice.domain.enums.PrivacyLevel;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -24,4 +25,7 @@ public class FeedbackSubmissionRequest {
 
     @NotBlank(message = "Overall comments are required")
     private String overallComments;
+
+    @NotNull(message = "Privacy level is required")
+    private PrivacyLevel privacyLevel;
 }

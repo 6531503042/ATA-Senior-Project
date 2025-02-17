@@ -1,5 +1,6 @@
 package dev.bengi.feedbackservice.domain.payload.response;
 
+import dev.bengi.feedbackservice.domain.enums.PrivacyLevel;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +21,7 @@ public class FeedbackSubmissionResponse {
     private Map<Long, String> responses;
     private List<QuestionDetailsResponse> questionDetails;
     private String overallComments;
+    private PrivacyLevel privacyLevel;
     private LocalDateTime submittedAt;
     private LocalDateTime updatedAt;
 }

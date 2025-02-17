@@ -41,6 +41,20 @@ public class Project {
     @Builder.Default
     private Set<Long> memberIds = new HashSet<>();
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "project_managers",
+            joinColumns = @JoinColumn(name = "project_id"))
+    @Column(name = "manager_id")
+    @Builder.Default
+    private Set<Long> managerIds = new HashSet<>();
+
+    @ElementCollection
+    @CollectionTable(name = "project_team_leads",
+            joinColumns = @JoinColumn(name = "project_id"))
+    @Column(name = "user_id")
+    @Builder.Default
+    private Set<Long> teamLeadIds = new HashSet<>();
+
     @Column(name = "project_start_date")
     private ZonedDateTime projectStartDate;
 

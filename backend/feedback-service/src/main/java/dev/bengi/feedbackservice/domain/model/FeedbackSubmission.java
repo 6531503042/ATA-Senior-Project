@@ -1,5 +1,6 @@
 package dev.bengi.feedbackservice.domain.model;
 
+import dev.bengi.feedbackservice.domain.enums.PrivacyLevel;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -36,6 +37,10 @@ public class FeedbackSubmission {
 
     @Column(name = "overall_comments", nullable = false, length = 1000)
     private String overallComments;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "privacy_level", nullable = false)
+    private PrivacyLevel privacyLevel;
 
     @Column(name = "submitted_at", nullable = false)
     private LocalDateTime submittedAt;
