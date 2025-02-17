@@ -1,6 +1,7 @@
 package dev.bengi.feedbackservice.domain.payload.response;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 import lombok.AllArgsConstructor;
@@ -17,6 +18,7 @@ public class FeedbackSubmissionResponse {
     private Long feedbackId;
     private String submittedBy;
     private Map<Long, String> responses;
+    private List<QuestionDetailsResponse> questionDetails;
     private String overallComments;
     private LocalDateTime submittedAt;
     private LocalDateTime updatedAt;

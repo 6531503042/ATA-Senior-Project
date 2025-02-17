@@ -73,7 +73,6 @@ public class Feedback {
         updatedAt = LocalDateTime.now();
     }
 
-    // Helper method to get allowed users directly from project
     @Transient
     public Set<Long> getAllowedUserIds() {
         return project != null ? project.getMemberIds() : new HashSet<>();

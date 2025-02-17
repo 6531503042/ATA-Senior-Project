@@ -5,6 +5,7 @@ import dev.bengi.feedbackservice.domain.model.FeedbackSubmission;
 import dev.bengi.feedbackservice.domain.model.Question;
 import dev.bengi.feedbackservice.domain.payload.request.FeedbackSubmissionRequest;
 import dev.bengi.feedbackservice.domain.payload.response.FeedbackSubmissionResponse;
+import dev.bengi.feedbackservice.domain.payload.response.QuestionDetailsResponse;
 import dev.bengi.feedbackservice.repository.FeedbackRepository;
 import dev.bengi.feedbackservice.repository.FeedbackSubmissionRepository;
 import dev.bengi.feedbackservice.repository.QuestionRepository;
@@ -264,13 +265,29 @@ public class FeedbackSubmissionServiceImpl implements FeedbackSubmissionService 
     }
 
     private FeedbackSubmissionResponse mapToResponse(FeedbackSubmission submission) {
+        List<Question> questions = questionRepository.findAllById(submission.getFeedback().getQuestionIds());
+        
+        List<QuestionDetailsResponse> questionDetails = questions.stream()
+                .map(question -> QuestionDetailsResponse.builder()
+                        .id(question.getId())
+                        .text(question.getText())
+                        .description(question.getDescription())
+                        .questionType(question.getQuestionType())
+                        .category(question.getCategory().toString())
+                        .choices(question.getChoices())
+                        .response(submission.getResponses().get(question.getId()))
+                        .build())
+                .collect(Collectors.toList());
+
         return FeedbackSubmissionResponse.builder()
                 .id(submission.getId())
                 .feedbackId(submission.getFeedback().getId())
                 .submittedBy(submission.getSubmittedBy())
                 .responses(submission.getResponses())
+                .questionDetails(questionDetails)
                 .overallComments(submission.getOverallComments())
                 .submittedAt(submission.getSubmittedAt())
+                .updatedAt(submission.getUpdatedAt())
                 .build();
     }
 } 
