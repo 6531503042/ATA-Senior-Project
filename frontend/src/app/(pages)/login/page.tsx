@@ -51,13 +51,13 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-white to-purple-100 relative">
+    <div className="flex items-center justify-center w-screen min-h-screen bg-gradient-to-br from-white to-purple-100 relative">
       {/* Background Image */}
       <div className="absolute inset-0 overflow-hidden">
         <Image
           src={Background}
           alt="Background"
-          className="w-full h-full object-cover opacity-50"
+          className="object-none opacity-40"
           layout="fill"
           priority
         />
@@ -66,7 +66,7 @@ const LoginPage: React.FC = () => {
       {/* Login Form */}
       <div className="relative z-10 bg-white shadow-lg rounded-2xl p-8 w-96">
         <div className="flex justify-center mb-4">
-          <Image src={Logo} alt="Logo" className="h-10" width={120} height={40} priority />
+          <Image src={Logo} alt="Logo" className=" w-56 h-auto" priority />
         </div>
 
         <h2 className="text-center text-2xl font-semibold text-gray-800">
