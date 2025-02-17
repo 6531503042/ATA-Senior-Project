@@ -50,3 +50,9 @@ replay_pid*
 
 # Node.js dependencies
 node_modules/
+
+# Backend
+/backend
+backend/user-service/src/main/resources/application.yml
+backend/feedback-service/src/main/resources/application.yml
+.vscode/settings.json
