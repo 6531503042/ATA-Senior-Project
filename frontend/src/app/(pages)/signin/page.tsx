@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { AlertCircle, CheckCircle, Info } from "lucide-react";
-import ATA from "@/app/assets/ata-logo.png"
-import Background from "@/app/assets/background.png"
+import ATA from "@/app/assets/ata-logo.png";
+import Background from "@/app/assets/background.png";
 import { useRouter } from "next/navigation";
 
 const SignIn = () => {
@@ -23,8 +23,7 @@ const SignIn = () => {
   const handleChange = (e: { target: { name: any; value: any } }) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-    
-    // Clear error for this field when user starts typing
+
     if (errors[name]) {
       setErrors({ ...errors, [name]: "" });
     }
@@ -32,11 +31,11 @@ const SignIn = () => {
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    
+
     if (!formData.username.trim()) newErrors.username = "Username is required";
     if (!formData.password.trim()) newErrors.password = "Password is required";
     if (formData.password.length < 6) newErrors.password = "Password must be at least 6 characters";
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -66,34 +65,34 @@ const SignIn = () => {
 
   const handleSubmit = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       showNotification("Please fix the errors in the form", "error");
       return;
     }
-    
+
     try {
       const data = await loginUser({
         username: formData.username,
         password: formData.password
       });
-      
+
       if (data.access_token) {
         showNotification("Login successful!", "success");
-        
-        // Store the token and user info in localStorage
+
         localStorage.setItem('token', data.access_token);
         localStorage.setItem('user', JSON.stringify(data.user_info));
-        
-        // Redirect based on role
         setTimeout(() => {
-          if (data.user_info.roles && data.user_info.roles.includes('ADMIN')) {
+          const roles = data.user_info.roles;
+          if (roles && roles.includes("ROLE_ADMIN")) {
             router.push('/dashboard_admin');
+          } else if (roles && roles.includes("ROLE_USER")) {
+            router.push('/dashboard_user');
           } else {
-            router.push('/');
+            router.push('/');  
           }
-        }, 1000); // Small delay to show success message
-        
+        }, 1000); 
+
       } else {
         showNotification(data.message || "Login failed. Please check your credentials.", "error");
       }
@@ -158,11 +157,11 @@ const SignIn = () => {
             Login
           </button>
         </form>
-        
+
         <div className="mt-4 text-center text-gray-600">
           <a href="#" className="text-blue-600 hover:underline">Forgot password?</a>
         </div>
-        
+
         <p className="mt-6 text-center text-gray-600">
           Don't have an account? <a href="/signup" className="text-blue-600 hover:underline">Sign up</a>
         </p>
