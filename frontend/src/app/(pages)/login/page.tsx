@@ -33,7 +33,6 @@ const LoginPage: React.FC = () => {
 
       const data = await response.json();
 
-      // Store tokens inside `useEffect`
       useEffect(() => {
         if (typeof window !== "undefined") {
           localStorage.setItem("access_token", data.access_token);
@@ -57,7 +56,7 @@ const LoginPage: React.FC = () => {
         <Image
           src={Background}
           alt="Background"
-          className="object-none opacity-40"
+          className="w-full h-full object-cover opacity-50"
           layout="fill"
           priority
         />
