@@ -2,83 +2,173 @@
 
 import {
   X,
-  FolderPlus,
   Rocket,
-  CalendarIcon,
   CheckSquare,
   ListChecks,
   MessageSquare,
   Star,
   MessageCircleQuestion,
+  Plus,
+  Trash2,
 } from "lucide-react";
 import React, { useState } from "react";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
-import { format } from "date-fns";
 import SelectWithIcon from "@/app/components/SelectWithIcon";
 
 interface form_project_manage {
   setIsOpen: (isOpen: boolean) => void;
 }
 
-const form_project_manage: React.FC<form_project_manage> = ({ setIsOpen }) => {
-  const [startDate, setStartDate] = useState<Date>();
-  const [dueDate, setDueDate] = useState<Date>();
-  const [selectedType, setSelectedType] = useState("");
+interface OptionItem {
+  text: string;
+}
 
-  const options = [
+const form_project_manage: React.FC<form_project_manage> = ({ setIsOpen }) => {
+  const [selectedType, setSelectedType] = useState("");
+  const [options, setOptions] = useState<OptionItem[]>([{ text: "" }]);
+  const [ratingMax, setRatingMax] = useState(5);
+
+  const questionTypeOptions = [
     { value: "rating", label: "Rating", icon: Star },
     { value: "text", label: "Text", icon: MessageSquare },
     { value: "multichoice", label: "Multi Choice", icon: ListChecks },
     { value: "singlechoice", label: "Single Choice", icon: CheckSquare },
   ];
 
-  const DatePickerWithPresets = ({
-    date,
-    setDate,
-    label,
-  }: {
-    date?: Date;
-    setDate: (date: Date | undefined) => void;
-    label: string;
-  }) => {
-    return (
-      <div className="flex flex-col w-1/2">
-        <h3 className="text-sm font-medium">{label}</h3>
-        <Popover>
-          <PopoverTrigger asChild>
+  const handleAddOption = () => {
+    setOptions([...options, { text: "" }]);
+  };
+
+  const handleRemoveOption = (index: number) => {
+    const newOptions = [...options];
+    newOptions.splice(index, 1);
+    setOptions(newOptions);
+  };
+
+  const handleOptionChange = (index: number, value: string) => {
+    const newOptions = [...options];
+    newOptions[index].text = value;
+    setOptions(newOptions);
+  };
+
+  // Renders different form fields based on selected question type
+  const renderDynamicFields = () => {
+    switch (selectedType) {
+      case "rating":
+        return (
+          <div className="w-full flex flex-col">
+            <h3 className="text-sm font-medium mb-2">Rating Scale</h3>
+            <div className="flex flex-row items-center gap-3">
+              <select
+                value={ratingMax}
+                onChange={(e) => setRatingMax(parseInt(e.target.value))}
+                className="border border-zinc-200 outline-none p-3 rounded-md text-sm focus:shadow-sm"
+              >
+                <option value={3}>1-3</option>
+                <option value={5}>1-5</option>
+                <option value={10}>1-10</option>
+              </select>
+              <div className="flex items-center gap-1">
+                <Star className="h-4 w-4 text-yellow-500" />
+                <span className="text-sm font-medium">Max: {ratingMax}</span>
+              </div>
+            </div>
+          </div>
+        );
+
+      case "singlechoice":
+      case "multichoice":
+        return (
+          <div className="w-full flex flex-col gap-4">
+            <h3 className="text-sm font-medium mb-2">Answer Options</h3>
+            <p className="text-sm text-zinc-500">
+              Add possible answers for selection:
+            </p>
+            {options.map((option, index) => (
+              <div key={index} className="flex flex-row items-center gap-2">
+                <span className="text-sm font-medium text-zinc-500 w-8">
+                  {index + 1}.
+                </span>
+                <input
+                  type="text"
+                  value={option.text}
+                  onChange={(e) => handleOptionChange(index, e.target.value)}
+                  placeholder={`Option ${index + 1}`}
+                  className="flex-1 border border-zinc-200 outline-none p-3 rounded-md text-sm focus:shadow-sm"
+                />
+                {options.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveOption(index)}
+                    className="p-2 text-red-500 hover:bg-red-50 rounded-md"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+            ))}
             <button
-              className={cn(
-                "w-full border border-zinc-200 outline-none p-3 rounded-xl mt-2 text-sm focus:shadow-sm text-left flex items-center",
-                !date && "text-gray-400"
-              )}
+              type="button"
+              onClick={handleAddOption}
+              className="flex items-center gap-2 text-violet-600 p-2 border border-dashed border-violet-300 rounded-md hover:bg-violet-50 transition-colors"
             >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {date ? format(date, "PPP") : "Pick a date"}
+              <Plus className="h-4 w-4" />
+              <span className="text-sm font-medium">Add Option</span>
             </button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={date}
-              onSelect={setDate}
-              disabled={(date) => {
-                if (label === "Due Date" && startDate) {
-                  return date < startDate;
-                }
-                return date < new Date();
-              }}
-              initialFocus
-            />
-          </PopoverContent>
-        </Popover>
-      </div>
-    );
+            {selectedType === "multichoice" && (
+              <p className="text-sm text-zinc-500 italic mt-2">
+                Users will be able to select multiple options from this list.
+              </p>
+            )}
+            {selectedType === "singlechoice" && (
+              <p className="text-sm text-zinc-500 italic mt-2">
+                Users will select only one option from this list.
+              </p>
+            )}
+          </div>
+        );
+
+      case "text":
+        return (
+          <div className="w-full flex flex-col">
+            <h3 className="text-sm font-medium mb-2">Text Response Settings</h3>
+            <div className="flex flex-col gap-2">
+              <p className="text-sm text-zinc-500">
+                Users will provide a text response to this question.
+              </p>
+              <div className="mt-2 border border-zinc-200 p-3 rounded-md bg-zinc-50">
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <MessageSquare className="h-4 w-4 text-zinc-500" />
+                    <span className="text-sm font-medium">Response Format</span>
+                  </div>
+                  <div className="flex gap-3">
+                    <label className="flex items-center gap-2 text-sm">
+                      <input
+                        type="radio"
+                        name="textFormat"
+                        defaultChecked
+                        className="accent-violet-600"
+                      />
+                      <span>Single line</span>
+                    </label>
+                    <label className="flex items-center gap-2 text-sm">
+                      <input
+                        type="radio"
+                        name="textFormat"
+                        className="accent-violet-600"
+                      />
+                      <span>Multi-line</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      default:
+        return null;
+    }
   };
 
   return (
@@ -108,13 +198,18 @@ const form_project_manage: React.FC<form_project_manage> = ({ setIsOpen }) => {
             <h3 className="text-sm font-medium mb-2">Question Type</h3>
             <div className="">
               <SelectWithIcon
-                options={options}
+                options={questionTypeOptions}
                 value={selectedType}
-                onChange={setSelectedType}
+                onChange={(value) => {
+                  setSelectedType(value);
+                  // Reset form state when changing question type
+                  if (value === "singlechoice" || value === "multichoice") {
+                    setOptions([{ text: "" }]);
+                  }
+                }}
               />
             </div>
           </div>
-          {/* Rest of the form remains the same */}
           <div className="w-full flex flex-col">
             <h3 className="text-sm font-medium">Question Text</h3>
             <input
@@ -131,9 +226,10 @@ const form_project_manage: React.FC<form_project_manage> = ({ setIsOpen }) => {
               className="w-full border border-zinc-200 outline-none p-3 rounded-md mt-2 text-sm focus:shadow-sm"
             />
           </div>
-          <div className="w-full flex flex-row gap-5">
-            Change Follow the selectItem
-          </div>
+
+          {/* Dynamic fields based on selected question type */}
+          <div className="w-full">{renderDynamicFields()}</div>
+
           <div className="flex flex-col gap-3"></div>
           <div className="w-full flex flex-row justify-end gap-3">
             <button

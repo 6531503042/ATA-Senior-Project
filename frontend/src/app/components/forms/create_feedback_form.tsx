@@ -33,13 +33,14 @@ import {
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import SelectWithIcon from "@/app/components/SelectWithIcon";
+import {Checkbox} from "@heroui/checkbox";
+
 
 interface form_project_manage {
   setIsOpen: (isOpen: boolean) => void;
 }
 
 const form_project_manage: React.FC<form_project_manage> = ({ setIsOpen }) => {
-
   const [selectedType, setSelectedType] = useState("");
 
   const options = [
@@ -57,7 +58,9 @@ const form_project_manage: React.FC<form_project_manage> = ({ setIsOpen }) => {
   const [startDate, setStartDate] = useState<Date>();
   const [dueDate, setDueDate] = useState<Date>();
 
-  const handleFeedbackType = (priority: "satisfaction survey" | "feature feedback" | "general feedback") => {
+  const handleFeedbackType = (
+    priority: "satisfaction survey" | "feature feedback" | "general feedback"
+  ) => {
     setFeedbackType(priority);
   };
 
@@ -145,7 +148,9 @@ const form_project_manage: React.FC<form_project_manage> = ({ setIsOpen }) => {
                 <div className="p-2 bg-white bg-opacity-60 w-max h-max rounded-lg">
                   <AlertTriangle className="h-6 w-6 text-red-500" />
                 </div>
-                <p className="text-base font-medium mt-2">Satisfaction survey</p>
+                <p className="text-base font-medium mt-2">
+                  Satisfaction survey
+                </p>
                 <p className="text-sm font-light text-zinc-400 w-full">
                   Measure user satisfaction and happiness
                 </p>
@@ -193,21 +198,23 @@ const form_project_manage: React.FC<form_project_manage> = ({ setIsOpen }) => {
               <input
                 type="text"
                 placeholder="e.g., Product Satisfaction Survey"
-                className="w-full border border-zinc-200 outline-none p-3 rounded-xl mt-2 text-sm focus:shadow-sm"
+                className="w-full border border-zinc-200 outline-none p-3 rounded-md mt-2 text-sm focus:shadow-sm"
                 required
               />
             </div>
             <div className="flex-1 flex flex-col">
-            <h3 className="text-sm font-medium mb-2 text-zinc-700">Select Category</h3>
-            <div className="">
-              <SelectWithIcon
-                options={options}
-                value={selectedType}
-                onChange={setSelectedType}
-                title="Select Category"
-              />
+              <h3 className="text-sm font-medium mb-2 text-zinc-700">
+                Select Category
+              </h3>
+              <div className="">
+                <SelectWithIcon
+                  options={options}
+                  value={selectedType}
+                  onChange={setSelectedType}
+                  title="Select Category"
+                />
+              </div>
             </div>
-          </div>
           </div>
           <div className="w-full flex flex-col">
             <h3 className="text-sm font-medium text-zinc-700">Description</h3>
@@ -228,6 +235,17 @@ const form_project_manage: React.FC<form_project_manage> = ({ setIsOpen }) => {
               label="Due Date"
             />
           </div>
+          <div className="w-full flex flex-col">
+            <h3 className="text-xl font-semibold text-zinc-700">
+              Select Questions
+            </h3>
+            <div className="w-full h-auto items-center flex flex-row mt-2 p-3 border rounded-md gap-1">
+              <Checkbox className="flex"/>
+              <div className="flex flex-col ">
+                <h3 className="text-base font-medium text-zinc-700">How satisfied are you with your work environment?</h3>
+              </div>
+            </div>
+          </div>
           <div className="w-full flex flex-row justify-end gap-3">
             <button
               type="button"
@@ -245,6 +263,7 @@ const form_project_manage: React.FC<form_project_manage> = ({ setIsOpen }) => {
               <p>Create Form</p>
             </button>
           </div>
+          
         </form>
       </div>
     </div>

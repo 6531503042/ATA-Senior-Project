@@ -108,7 +108,7 @@ const Sidebar = ({ onComponentChange }: SidebarProps) => {
     <div className="w-64 h-full overflow-y-auto bg-white shadow-xl border-r border-opacity-5 border-r-black">
       <div className="w-full h-full flex flex-col items-center">
         {/* Logo */}
-        <Link href="/dashboard_old" className="p-3">
+        <Link href="/dashboard_admin" className="p-3">
           <img src={Logo.src} className="w-auto md:h-10 h-5 " alt="Logo" />
         </Link>
         <div className="bg-zinc-100 h-[1px] w-full"></div>
