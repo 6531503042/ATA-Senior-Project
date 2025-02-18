@@ -22,11 +22,10 @@ spring:
       hibernate:
         format_sql: true
 
-security:
-  jwt:
-    secret: ofBra2CqJO2JOC7CmN80hbaGdjZJqsBR2UqXxJh5Coo=
-    expiration: 86400
-    refresh-expiration: 604800
+jwt:
+  secret: ofBra2CqJO2JOC7CmN80hbaGdjZJqsBR2UqXxJh5Coo=
+  expiration: 86400
+  refresh-expiration: 604800
 
 # Token refresh endpoint URL
 refresh:

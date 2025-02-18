@@ -61,6 +61,17 @@ public class Feedback {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(name = "allow_anonymous")
+    @Builder.Default
+    private boolean allowAnonymous = true;
+
+    @ElementCollection
+    @CollectionTable(name = "feedback_confidential_users",
+            joinColumns = @JoinColumn(name = "feedback_id"))
+    @Column(name = "user_id")
+    @Builder.Default
+    private Set<Long> confidentialUserIds = new HashSet<>();
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
@@ -73,7 +84,6 @@ public class Feedback {
         updatedAt = LocalDateTime.now();
     }
 
-    // Helper method to get allowed users directly from project
     @Transient
     public Set<Long> getAllowedUserIds() {
         return project != null ? project.getMemberIds() : new HashSet<>();

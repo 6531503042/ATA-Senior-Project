@@ -1,6 +1,8 @@
 package dev.bengi.feedbackservice.domain.payload.response;
 
+import dev.bengi.feedbackservice.domain.enums.PrivacyLevel;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 import lombok.AllArgsConstructor;
@@ -17,7 +19,9 @@ public class FeedbackSubmissionResponse {
     private Long feedbackId;
     private String submittedBy;
     private Map<Long, String> responses;
+    private List<QuestionDetailsResponse> questionDetails;
     private String overallComments;
+    private PrivacyLevel privacyLevel;
     private LocalDateTime submittedAt;
     private LocalDateTime updatedAt;
 }

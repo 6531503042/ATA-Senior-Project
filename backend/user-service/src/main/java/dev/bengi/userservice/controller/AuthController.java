@@ -103,28 +103,4 @@ public class AuthController {
         }
     }
 
-//    @PostMapping("/forgot-password")
-//    @Operation(summary = "Forgot password", description = "Request a password reset email")
-//    public Mono<ResponseEntity<ResponseMessage>> forgotPassword(
-//            @Valid @RequestBody ForgotPasswordRequest request) {
-//        log.info("Received forgot password request for email: {}", request.getEmail());
-//        return userService.forgotPassword(request)
-//                .then(Mono.just(ResponseEntity.ok()
-//                        .body(new ResponseMessage("Password reset email sent successfully"))))
-//                .doOnError(error -> log.error("Error in forgot password: {}", error.getMessage()));
-//    }
-
-    @PostMapping("/reset-password")
-    @Operation(summary = "Reset password", description = "Reset password using token")
-    public Mono<ResponseEntity<ResponseMessage>> resetPassword(
-            @Parameter(description = "Reset token received via email")
-            @RequestParam String token,
-            @Parameter(description = "New password")
-            @RequestParam String newPassword) {
-        log.info("Received password reset request");
-        return userService.resetPassword(token, newPassword)
-                .then(Mono.just(ResponseEntity.ok()
-                        .body(new ResponseMessage("Password reset successfully"))))
-                .doOnError(error -> log.error("Error in reset password: {}", error.getMessage()));
-    }
 }

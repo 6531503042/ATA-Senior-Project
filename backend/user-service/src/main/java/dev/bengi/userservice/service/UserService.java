@@ -10,6 +10,7 @@ import dev.bengi.userservice.domain.payload.response.AuthResponse;
 import dev.bengi.userservice.domain.payload.response.JwtResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 
 import javax.management.relation.RoleNotFoundException;
@@ -30,27 +31,23 @@ public interface UserService {
 
     Mono<Void> logout();
 
-    Mono<String> changePassword(ChangePasswordRequest request);
-
     Mono<JwtResponse> login(LoginRequest loginRequest);
-
-    Mono<JwtResponse> refreshToken(String refreshToken);
 
     Optional<User> findById(Long userId);
 
     Optional<User> findByUsername(String username);
+
+    Mono<JwtResponse> refreshToken(String refreshToken);
 
     Mono<Page<AuthResponse>> findAllUser(Pageable pageable);
 
     Mono<List<User>> findAllUsers();
 
     String textSendEmailChangePasswordSuccessfully(String username);
-    
-    Mono<Void> resetPassword(String token, String newPassword);
 
-    // Project authority methods
+    @Transactional(readOnly = true)
     Mono<Boolean> hasProjectAuthority(Long userId, Long projectId);
-    
+
     Mono<Set<Long>> getUserProjectAuthorities(Long userId);
     
     Mono<Boolean> addProjectAuthority(Long userId, Long projectId);

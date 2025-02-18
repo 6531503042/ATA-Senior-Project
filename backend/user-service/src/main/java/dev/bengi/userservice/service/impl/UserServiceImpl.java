@@ -16,7 +16,6 @@ import dev.bengi.userservice.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -43,9 +42,6 @@ public class UserServiceImpl implements UserService {
     private final RoleService roleService;
     private final JwtProvider jwtProvider;
     private final AuthenticationManager authenticationManager;
-//    private final EmailService emailService;
-    @Value("${app.reset-password.token.expiration:900000}")
-    private long resetPasswordTokenExpiration;
 
     // Helper methods
     private String getTemporaryProfileImageUrl(String email) {
@@ -307,29 +303,6 @@ public class UserServiceImpl implements UserService {
         });
     }
 
-    @Override
-    public Mono<String> changePassword(ChangePasswordRequest request) {
-        return Mono.defer(() -> {
-            try {
-                Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-                String username = auth.getName();
-
-                User user = findByUsername(username)
-                        .orElseThrow(() -> new UserNotFoundException("User not found"));
-
-                if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
-                    return Mono.error(new BadCredentialsException("Current password is incorrect"));
-                }
-
-                user.setPassword(passwordEncoder.encode(request.getNewPassword()));
-                userRepository.save(user);
-
-                return Mono.just(textSendEmailChangePasswordSuccessfully(username));
-            } catch (Exception e) {
-                return Mono.error(e);
-            }
-        });
-    }
 
     @Override
     public Mono<JwtResponse> refreshToken(String refreshToken) {
@@ -380,12 +353,14 @@ public class UserServiceImpl implements UserService {
     public Mono<List<User>> findAllUsers() {
         try {
             List<User> users = userRepository.findAll();
+            log.debug("Fetched {} users from the database", users.size());
             return Mono.just(users);
         } catch (Exception e) {
             log.error("Error fetching all users: {}", e.getMessage());
             return Mono.error(e);
         }
     }
+
 
     @Override
     public String textSendEmailChangePasswordSuccessfully(String username) {
@@ -402,64 +377,6 @@ public class UserServiceImpl implements UserService {
                 """, username);
     }
 
-//    @Override
-//    public Mono<Void> forgotPassword(ForgotPasswordRequest request) {
-//        return Mono.defer(() -> {
-//            try {
-//                User user = userRepository.findByEmail(request.getEmail())
-//                    .orElseThrow(() -> new UserNotFoundException("User not found with email: " + request.getEmail()));
-//
-//                String resetToken = jwtProvider.createPasswordResetToken(user.getUsername());
-//                // Store the reset token with expiration
-//                user.setResetPasswordToken(resetToken);
-//                user.setResetPasswordTokenExpiry(new Date(System.currentTimeMillis() + resetPasswordTokenExpiration));
-//                userRepository.save(user);
-//
-//                // Send email asynchronously
-//                emailService.sendPasswordResetEmail(user.getEmail(), resetToken);
-//                log.info("Password reset email sent to: {}", user.getEmail());
-//
-//                return Mono.empty();
-//            } catch (Exception e) {
-//                log.error("Error in forgot password process: {}", e.getMessage());
-//                return Mono.error(e);
-//            }
-//        });
-//    }
-
-    @Override
-    public Mono<Void> resetPassword(String token, String newPassword) {
-        return Mono.defer(() -> {
-            try {
-                if (!jwtProvider.validateToken(token)) {
-                    return Mono.error(new BadCredentialsException("Invalid or expired reset token"));
-                }
-
-                String username = jwtProvider.getUserNameFromToken(token);
-                User user = findByUsername(username)
-                    .orElseThrow(() -> new UserNotFoundException("User not found"));
-
-                // Verify token hasn't expired
-                if (user.getResetPasswordTokenExpiry() == null || 
-                    user.getResetPasswordTokenExpiry().before(new Date()) ||
-                    !token.equals(user.getResetPasswordToken())) {
-                    return Mono.error(new BadCredentialsException("Invalid or expired reset token"));
-                }
-
-                // Update password
-                user.setPassword(passwordEncoder.encode(newPassword));
-                user.setResetPasswordToken(null);
-                user.setResetPasswordTokenExpiry(null);
-                userRepository.save(user);
-
-                log.info("Password reset successful for user: {}", username);
-                return Mono.empty();
-            } catch (Exception e) {
-                log.error("Error resetting password: {}", e.getMessage());
-                return Mono.error(e);
-            }
-        });
-    }
 
     @Override
     @Transactional
