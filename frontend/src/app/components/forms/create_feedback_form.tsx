@@ -33,15 +33,57 @@ import {
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import SelectWithIcon from "@/app/components/SelectWithIcon";
-import {Checkbox} from "@heroui/checkbox";
-
+import { Checkbox } from "@heroui/checkbox";
 
 interface form_project_manage {
   setIsOpen: (isOpen: boolean) => void;
 }
 
+interface PlusIconProps {
+  size?: number;
+  height?: number;
+  width?: number;
+  [x: string]: any;
+}
+
+export const PlusIcon: React.FC<PlusIconProps> = ({
+  size,
+  height,
+  width,
+  ...props
+}) => {
+  return (
+    <svg
+      fill="none"
+      height={size || height || 24}
+      viewBox="0 0 24 24"
+      width={size || width || 24}
+      xmlns="http://www.w3.org/2000/svg"
+      {...props}
+
+    >
+      <path
+        d="M6 12H18"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="3"
+      />
+      <path
+        d="M12 18V6"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="3"
+      />
+      
+    </svg>
+  );
+};
+
 const form_project_manage: React.FC<form_project_manage> = ({ setIsOpen }) => {
   const [selectedType, setSelectedType] = useState("");
+  const [checked, setChecked] = useState(false);
 
   const options = [
     { value: "Product", label: "Product", icon: Box },
@@ -239,12 +281,33 @@ const form_project_manage: React.FC<form_project_manage> = ({ setIsOpen }) => {
             <h3 className="text-xl font-semibold text-zinc-700">
               Select Questions
             </h3>
-            <div className="w-full h-auto items-center flex flex-row mt-2 p-3 border rounded-md gap-1">
-              <Checkbox className="flex"/>
-              <div className="flex flex-col ">
-                <h3 className="text-base font-medium text-zinc-700">How satisfied are you with your work environment?</h3>
+            <label
+              className={`w-full flex flex-row items-start mt-3 p-4 border-2 rounded-md gap-1 cursor-pointer transition-colors ${
+                checked
+                  ? "bg-purple-50 border-purple-500"
+                  : "bg-white border-gray-300"
+              }`}
+              onClick={() => setChecked(!checked)}
+            >
+              <Checkbox
+                size="lg"
+                className="flex p-3 pointer-events-none"
+                icon={<PlusIcon />}
+                checked={checked}
+              />
+              <div className="flex flex-col gap-1">
+                <h3 className="text-base font-medium text-zinc-700">
+                  How satisfied are you with your work environment?
+                </h3>
+                <p  className={`rounded-lg w-max text-xs py-1 px-2 ${
+                checked
+                  ? "bg-white bg-opacity-90"
+                  : "bg-gray-100 bg-opacity-50"
+              }`}>
+                  SENTIMENT
+                </p>
               </div>
-            </div>
+            </label>
           </div>
           <div className="w-full flex flex-row justify-end gap-3">
             <button
@@ -263,7 +326,6 @@ const form_project_manage: React.FC<form_project_manage> = ({ setIsOpen }) => {
               <p>Create Form</p>
             </button>
           </div>
-          
         </form>
       </div>
     </div>
