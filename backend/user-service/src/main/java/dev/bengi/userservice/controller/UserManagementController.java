@@ -25,6 +25,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -106,15 +107,18 @@ public class UserManagementController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id") String sortBy,
             @RequestParam(defaultValue = "ASC") String sortOrder) {
-        
+
         log.info("Fetching users page {} with size {}", page, size);
         Sort.Direction direction = sortOrder.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
         PageRequest pageRequest = PageRequest.of(page, size, Sort.by(direction, sortBy));
-        
+
         return userService.findAllUser(pageRequest)
                 .map(ResponseEntity::ok)
-                .doOnError(error -> log.error("Error fetching users: {}", error.getMessage()));
+                .doOnError(error -> log.error("Error fetching users with pagination: {}", error.getMessage()))
+                .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(null))); // Handle error case gracefully
     }
+
 
     @GetMapping("/all/list")
     @Operation(summary = "Get all users without pagination", description = "Retrieve all users without pagination (Admin only)")
@@ -128,13 +132,17 @@ public class UserManagementController {
                                 response.setRoles(user.getRoles().stream()
                                         .map(role -> role.getName().name())
                                         .collect(Collectors.toList()));
+                                log.debug("Mapped user {} to response {}", user.getUsername(), response);
                                 return response;
                             })
                             .collect(Collectors.toList());
                     return ResponseEntity.ok(responses);
                 })
-                .doOnError(error -> log.error("Error fetching users: {}", error.getMessage()));
+                .doOnError(error -> log.error("Error fetching users without pagination: {}", error.getMessage()))
+                .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(Collections.emptyList()))); // Return empty list on error
     }
+
 
     @GetMapping("/info")
     @PreAuthorize("hasAuthority('ROLE_USER')")

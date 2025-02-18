@@ -23,50 +23,50 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtProvider jwtProvider;
+    private final JwtService jwtService;
     private final UserDetailService userDetailService;
 
     @Override
-    protected void doFilterInternal(
-            @NonNull HttpServletRequest request,
-            @NonNull HttpServletResponse response,
-            @NonNull FilterChain filterChain) throws ServletException, IOException {
-        try {
-            String jwt = getJwt(request);
-            log.debug("Processing token: {}", jwt);
-
-            if (jwt != null && jwtProvider.validateToken(jwt)) {
-                String username = jwtProvider.getUserNameFromToken(jwt);
-                log.debug("Token is valid for user: {}", username);
-
-                UserDetails userDetails = userDetailService.loadUserByUsername(username);
-                log.debug("User authorities: {}", userDetails.getAuthorities());
-
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,
-                                userDetails.getAuthorities());
-
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-                
-                log.debug("Successfully set authentication in security context for user: {} with authorities: {}", 
-                    username, userDetails.getAuthorities());
-            } else {
-                log.debug("No valid JWT token found in request");
-            }
-        } catch (Exception e) {
-            log.error("Cannot set user authentication -> Message: {}", e.getMessage());
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
+        
+        if (shouldSkipAuthentication(request)) {
+            filterChain.doFilter(request, response);
+            return;
         }
 
+        try {
+            String jwt = getJwtFromRequest(request);
+            if (jwt != null && jwtService.validateToken(jwt)) {
+                String username = jwtService.getUsernameFromToken(jwt);
+                UserDetails userDetails = userDetailService.loadUserByUsername(username);
+                
+                UsernamePasswordAuthenticationToken authentication = 
+                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            }
+        } catch (Exception e) {
+            log.error("Cannot set user authentication: {}", e.getMessage());
+        }
+        
         filterChain.doFilter(request, response);
     }
 
-    private String getJwt(HttpServletRequest request) {
-        String authHeader = request.getHeader("Authorization");
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            return authHeader.substring(7);
+    private boolean shouldSkipAuthentication(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        return path.startsWith("/api/auth/register") ||
+               path.startsWith("/api/auth/login") ||
+               path.startsWith("/api/auth/validate") ||
+               path.startsWith("/swagger-ui/") ||
+               path.startsWith("/v3/api-docs/");
+    }
+
+    private String getJwtFromRequest(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
         }
         return null;
     }

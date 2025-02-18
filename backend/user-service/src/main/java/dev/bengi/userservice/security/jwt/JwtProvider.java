@@ -1,5 +1,16 @@
 package dev.bengi.userservice.security.jwt;
 
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import javax.crypto.SecretKey;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.stereotype.Component;
+
 import dev.bengi.userservice.domain.model.User;
 import dev.bengi.userservice.security.userPrinciple.UserPrinciple;
 import io.jsonwebtoken.Claims;
@@ -8,28 +19,18 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.stereotype.Component;
-
-import javax.crypto.SecretKey;
-import java.time.Instant;
-import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 @Slf4j
 public class JwtProvider {
 
-    @Value("${security.jwt.secret}")
+    @Value("${jwt.secret}")
     private String jwtSecret;
 
-    @Value("${security.jwt.expiration}")
+    @Value("${jwt.expiration}")
     private int jwtExpiration;
 
-    @Value("${security.jwt.refresh-expiration}")
+    @Value("${jwt.refresh-expiration}")
     private Long jwtRefreshExpiration;
 
     private SecretKey key;
