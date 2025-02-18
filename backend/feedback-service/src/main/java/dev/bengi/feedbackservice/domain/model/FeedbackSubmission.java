@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.HashMap;
 
 @Data
 @Entity
@@ -21,14 +22,14 @@ public class FeedbackSubmission {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "feedback_id", nullable = false)
     private Feedback feedback;
 
     @Column(name = "submitted_by", nullable = false)
     private String submittedBy;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "feedback_submission_responses",
             joinColumns = @JoinColumn(name = "submission_id"))
     @MapKeyColumn(name = "question_id")
@@ -62,6 +63,9 @@ public class FeedbackSubmission {
         submittedAt = LocalDateTime.now();
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
+        if (responses == null) {
+            responses = new HashMap<>();
+        }
     }
 
     @PreUpdate

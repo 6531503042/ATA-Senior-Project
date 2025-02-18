@@ -107,14 +107,13 @@ public class FeedbackSubmissionServiceImpl implements FeedbackSubmissionService 
 
     private boolean hasConfidentialPermission(Long userId, Feedback feedback) {
         // Check if user has manager/admin role or specific confidential permission
-        return feedback.getProject().getManagerIds().contains(userId) ||
+        return feedback.getProject().getMemberIds().contains(userId) ||
                feedback.getConfidentialUserIds().contains(userId);
     }
 
     private boolean hasPrivatePermission(Long userId, Feedback feedback) {
         // Check if user has elevated role (e.g., team lead, manager)
-        return feedback.getProject().getManagerIds().contains(userId) ||
-               feedback.getProject().getTeamLeadIds().contains(userId);
+        return feedback.getProject().getMemberIds().contains(userId);
     }
 
     @Override

@@ -120,7 +120,7 @@ public class UserManagementController {
     }
 
 
-    @GetMapping("/all/list")
+    @GetMapping("/list")
     @Operation(summary = "Get all users without pagination", description = "Retrieve all users without pagination (Admin only)")
     public Mono<ResponseEntity<List<AuthResponse>>> getAllUsers() {
         log.info("Fetching all users without pagination");

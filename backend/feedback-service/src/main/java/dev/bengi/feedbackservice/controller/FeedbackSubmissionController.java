@@ -29,7 +29,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 @RestController
 @RequestMapping("/api/v1/feedback-submissions")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*", maxAge = 3600)
+@CrossOrigin(origins = "http://localhost:3000", 
+             allowedHeaders = {"Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin", 
+                             "Access-Control-Request-Method", "Access-Control-Request-Headers"},
+             exposedHeaders = {"Authorization", "Refresh-Token"},
+             methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, 
+                       RequestMethod.DELETE, RequestMethod.OPTIONS, RequestMethod.PATCH},
+             allowCredentials = "true",
+             maxAge = 3600)
 public class FeedbackSubmissionController {
     private final FeedbackSubmissionService submissionService;
     private final FeedbackPermissionService permissionService;
