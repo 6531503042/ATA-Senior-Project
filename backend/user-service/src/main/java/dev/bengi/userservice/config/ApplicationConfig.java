@@ -6,7 +6,6 @@ import dev.bengi.userservice.repository.UserRepository;
 import dev.bengi.userservice.security.userPrinciple.UserPrinciple;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -69,14 +68,5 @@ public class ApplicationConfig {
                 });
     
         return modelMapper;
-    }
-
-    @Bean
-    public KafkaSender<String, String> kafkaSender(KafkaProperties properties) {
-        Map<String, Object> props = new HashMap<>();
-        props.put("bootstrap.servers", properties.getBootstrapServers());
-        props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        return KafkaSender.create(SenderOptions.create(props));
     }
 }

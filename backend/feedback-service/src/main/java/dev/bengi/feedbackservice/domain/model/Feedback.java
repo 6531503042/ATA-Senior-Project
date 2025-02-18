@@ -30,9 +30,9 @@ public class Feedback {
     @Column(nullable = false, length = 1000)
     private String description;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "project_id", nullable = false)
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "questions"})
     private Project project;
 
     @ElementCollection(fetch = FetchType.EAGER)
@@ -65,7 +65,7 @@ public class Feedback {
     @Builder.Default
     private boolean allowAnonymous = true;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "feedback_confidential_users",
             joinColumns = @JoinColumn(name = "feedback_id"))
     @Column(name = "user_id")

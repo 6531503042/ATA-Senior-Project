@@ -1,21 +1,23 @@
 package dev.bengi.feedbackservice.controller.admin;
 
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import dev.bengi.feedbackservice.domain.payload.response.FeedbackSubmissionResponse;
 import dev.bengi.feedbackservice.service.FeedbackSubmissionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/admin/submissions")
+@RequestMapping({"/api/v1/admin/submissions", "/api/admin/submissions"})
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
 public class AdminFeedbackSubmissionController {
     private final FeedbackSubmissionService submissionService;
 
