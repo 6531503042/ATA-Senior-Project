@@ -26,7 +26,7 @@ interface OptionItem {
 const FormProjectManage: React.FC<FormProjectManageProps> = ({ setIsOpen }) => {
   const [selectedType, setSelectedType] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string>("GENERAL"); // Add this
-  const [options, setOptions] = useState<OptionItem[]>([]);
+  const [options, setOptions] = useState<OptionItem[]>([{ text: "" }]);
   const [text, setText] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [required, setRequired] = useState<boolean>(true);
@@ -49,11 +49,7 @@ const FormProjectManage: React.FC<FormProjectManageProps> = ({ setIsOpen }) => {
 
   // Rest of the helper functions remain the same
   const handleAddOption = () => {
-    if (options.length >= 1) {
-      setOptions([...options, { text: "" }]);
-    } else {
-      setOptions([...options, { text: "" }, { text: "" }]);
-    }
+    setOptions([...options, { text: "" }]);
   };
   
 
