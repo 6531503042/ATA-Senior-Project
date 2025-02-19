@@ -2,6 +2,7 @@
 
 import { Folders, Users, MessageSquare, HelpCircle } from "lucide-react";
 import React from "react";
+import MenuOption from "@/app/components/MenuOption";
 
 const ProjectDashboard = () => {
   interface MenuOption {
@@ -16,7 +17,7 @@ const ProjectDashboard = () => {
     trend?: string;
   }
 
-  const options: MenuOption[] = [
+  const options = [
     {
       title: "Active Projects",
       number: "12",
@@ -75,43 +76,20 @@ const ProjectDashboard = () => {
           </p>
         </div>
         <div className="w-full h-auto mt-9">
-          <ul className="grid 2xl:grid-cols-4 lg:grid-cols-2 grid-cols-1 gap-5">
-            {options.map((option, index) => {
-              const Icon = option.icon;
-              return (
-                <li
-                  key={index}
-                  className="flex-1 p-6 flex flex-row items-center justify-between border border-opacity-5 border-black rounded-lg shadow-md hover:shadow-xl transition-all duration-200"
-                >
-                  <div className="flex flex-col">
-                    <p className="text-sm font-medium text-zinc-600">
-                      {option.title}
-                    </p>
-                    <span className="flex flex-row items-center gap-2 py-1">
-                      <p className="text-2xl font-bold">{option.number}</p>
-                      <p className="text-green-500 text-sm font-medium">
-                        {option.subnumber}
-                      </p>
-                    </span>
-                    <p
-                      className={`text-xs font-medium  ${option.subtitle_color}`}
-                    >
-                      {option.subtitle}
-                    </p>
-                    {option.trend && (
-                      <p className="text-xs text-gray-500 mt-1">
-                        {option.trend}
-                      </p>
-                    )}
-                  </div>
-                  <div
-                    className={`${option.background} p-3 rounded-lg hidden sm:block ${option.color}`}
-                  >
-                    <Icon className={``} strokeWidth={2.4} />
-                  </div>
-                </li>
-              );
-            })}
+        <ul className="grid 2xl:grid-cols-4 lg:grid-cols-2 grid-cols-1 gap-5">
+            {options.map((option, index) => (
+              <MenuOption
+                key={index}
+                title={option.title}
+                number={option.number}
+                icon={option.icon}
+                color={option.color}
+                background={option.background}
+                subtitle={option.subtitle}
+                subtitle_color="text-zinc-400"
+                trend={option.trend}
+              />
+            ))}
           </ul>
         </div>
       </div>

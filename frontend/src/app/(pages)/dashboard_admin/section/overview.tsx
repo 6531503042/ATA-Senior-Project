@@ -2,6 +2,7 @@
 
 import { BarChart2, Users, Star, Clock } from "lucide-react";
 import React from "react";
+import MenuOption from "@/app/components/MenuOption";
 
 
 const Overview = () => {
@@ -16,7 +17,7 @@ const Overview = () => {
     subtitle_color?: string;
   }
 
-  const options: MenuOption[] = [
+  const options = [
     {
       title: "Total Responses",
       number: "1,847",
@@ -71,38 +72,20 @@ const Overview = () => {
           </div>
         </div>
         <div className="w-full h-auto mt-9">
-          <ul className="grid 2xl:grid-cols-4 lg:grid-cols-2 grid-cols-1 gap-5">
-            {options.map((option, index) => {
-              const Icon = option.icon;
-              return (
-                <li
-                  key={index}
-                  className="flex-1 p-6 flex flex-row items-center justify-between border border-opacity-5 border-black rounded-lg shadow-md hover:shadow-xl transition-all duration-200"
-                >
-                  <div className="flex flex-col gap-1">
-                    <p className="text-sm font-medium text-zinc-600">
-                      {option.title}
-                    </p>
-                    <p className="text-2xl font-bold">{option.number}</p>
-                    <div className="flex flex-col gap-1">
-                      <p className="text-xs font-medium text-green-500">
-                        {option.trend}
-                      </p>
-                      <p
-                        className={`text-xs font-medium text-gray-500`}
-                      >
-                        {option.subtitle}
-                      </p>
-                    </div>
-                  </div>
-                  <div
-                    className={`${option.background} p-3 rounded-lg hidden sm:block ${option.color}`}
-                  >
-                    <Icon className={``} strokeWidth={2} />
-                  </div>
-                </li>
-              );
-            })}
+        <ul className="grid 2xl:grid-cols-4 lg:grid-cols-2 grid-cols-1 gap-5">
+            {options.map((option, index) => (
+              <MenuOption
+                key={index}
+                title={option.title}
+                number={option.number}
+                icon={option.icon}
+                color={option.color}
+                background={option.background}
+                subtitle={option.subtitle}
+                subtitle_color="text-zinc-400"
+                trend={option.trend}
+              />
+            ))}
           </ul>
         </div>
       </div>
