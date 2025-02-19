@@ -115,16 +115,6 @@ const LoginPage: React.FC = () => {
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>
-
-        <p className="text-center text-sm text-gray-600 mt-4">
-          Don’t have an account?{" "}
-          <span
-            onClick={() => router.push("/register")}
-            className="text-purple-600 font-medium cursor-pointer hover:underline"
-          >
-            Register
-          </span>
-        </p>
       </div>
     </div>
   );
