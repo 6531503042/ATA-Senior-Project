@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Data
 @With
@@ -18,35 +19,34 @@ import java.util.List;
 @NoArgsConstructor
 public class UserPrinciple implements UserDetails {
     private Long id;
-    private String userName;
+    private String username;
     private String fullName;
     private String email;
     private String password;
     private String avatar;
     private String gender;
-    private Collection<? extends GrantedAuthority> roles;
+    private Collection<? extends GrantedAuthority> authorities;
 
     public static UserPrinciple build(User user) {
-        List<SimpleGrantedAuthority> authorityList = user.getRoles()
-                .stream()
+        List<GrantedAuthority> authorities = user.getRoles().stream()
                 .map(role -> new SimpleGrantedAuthority(role.getName().name()))
-                .toList();
+                .collect(Collectors.toList());
 
         return UserPrinciple.builder()
                 .id(user.getId())
-                .userName(user.getUsername())
+                .username(user.getUsername())
                 .fullName(user.getFullname())
                 .email(user.getEmail())
                 .password(user.getPassword())
                 .avatar(user.getAvatar())
                 .gender(user.getGender())
-                .roles(authorityList)
+                .authorities(authorities)
                 .build();
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return roles;
+        return authorities;
     }
 
     @Override
@@ -56,7 +56,7 @@ public class UserPrinciple implements UserDetails {
 
     @Override
     public String getUsername() {
-        return userName;
+        return username;
     }
 
     public String getFullName() {

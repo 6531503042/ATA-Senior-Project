@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
@@ -25,4 +26,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END FROM User u WHERE u.email = :email")
     boolean existsByEmail(@Param("email") String email);
+
+    @Query("SELECT u FROM User u WHERE :projectId MEMBER OF u.projectAuthorities")
+    Set<User> findByProjectAuthorities(@Param("projectId") Long projectId);
+
+    @Query("SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END FROM User u WHERE u.id = :userId AND :projectId MEMBER OF u.projectAuthorities")
+    boolean hasProjectAuthority(@Param("userId") Long userId, @Param("projectId") Long projectId);
 }

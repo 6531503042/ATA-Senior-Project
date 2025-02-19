@@ -1,5 +1,16 @@
 package dev.bengi.userservice.security.jwt;
 
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import javax.crypto.SecretKey;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.stereotype.Component;
+
 import dev.bengi.userservice.domain.model.User;
 import dev.bengi.userservice.security.userPrinciple.UserPrinciple;
 import io.jsonwebtoken.Claims;
@@ -8,34 +19,25 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Component;
-
-import javax.crypto.SecretKey;
-import java.time.Instant;
-import java.util.Date;
-import java.util.stream.Collectors;
 
 @Component
 @Slf4j
 public class JwtProvider {
 
-    @Value("${security.jwt.secret:defaultSecretKeyForDevelopment}")
+    @Value("${jwt.secret}")
     private String jwtSecret;
 
-    @Value("${security.jwt.expiration}")
+    @Value("${jwt.expiration}")
     private int jwtExpiration;
 
-    @Value("${security.jwt.refresh-expiration}")
+    @Value("${jwt.refresh-expiration}")
     private Long jwtRefreshExpiration;
 
     private SecretKey key;
 
-        private SecretKey getSigningKey() {
+    private SecretKey getSigningKey() {
         if (key == null) {
             try {
-                // Decode the secret key from BASE64
                 byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
                 key = Keys.hmacShaKeyFor(keyBytes);
                 log.debug("Signing key created successfully");
@@ -55,42 +57,53 @@ public class JwtProvider {
         }
     }
 
-    public String createToken(Authentication authentication) {
+    private String generateToken(Authentication authentication, long expiration) {
         UserPrinciple userPrinciple = (UserPrinciple) authentication.getPrincipal();
-
-        Instant now = Instant.now();
-        Instant expiration = now.plusSeconds(jwtExpiration);
-
+        
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + expiration * 1000);
+        
         return Jwts.builder()
                 .subject(userPrinciple.getUsername())
                 .claim("roles", userPrinciple.getAuthorities().stream()
-                        .map(authority -> authority.getAuthority())
+                        .map(GrantedAuthority::getAuthority)
                         .collect(Collectors.toList()))
-                .issuedAt(Date.from(now))
-                .expiration(Date.from(expiration))
+                .claim("user_id", userPrinciple.getId())
+                .claim("email", userPrinciple.getEmail())
+                .issuedAt(now)
+                .expiration(expiryDate)
                 .signWith(getSigningKey())
                 .compact();
     }
 
+    public String createToken(Authentication authentication) {
+        log.debug("Creating access token for authentication: {}", authentication.getName());
+        return generateToken(authentication, jwtExpiration);
+    }
+
     public String createToken(User user) {
         try {
-            Instant now = Instant.now();
-            Instant expiration = now.plusSeconds(jwtExpiration);
+            log.debug("Creating token for user: {}", user.getUsername());
+            
+            Date now = new Date();
+            Date expiryDate = new Date(now.getTime() + jwtExpiration * 1000);
 
             String token = Jwts.builder()
                     .subject(user.getUsername())
                     .claim("roles", user.getRoles().stream()
                             .map(role -> role.getName().name())
                             .collect(Collectors.toList()))
+                    .claim("user_id", user.getId())
                     .claim("email", user.getEmail())
-                    .issuedAt(Date.from(now))
-                    .expiration(Date.from(expiration))
+                    .claim("department", user.getDepartment())
+                    .claim("position", user.getPosition())
+                    .issuedAt(now)
+                    .expiration(expiryDate)
                     .signWith(getSigningKey())
                     .compact();
             
-            log.debug("Created token for user: {}", user.getUsername());
-            log.debug("Token details - Subject: {}, Expiration: {}", 
-                user.getUsername(), expiration);
+            log.debug("Token created successfully with claims - Subject: {}, Expiration: {}", 
+                    user.getUsername(), expiryDate);
             
             return token;
         } catch (Exception e) {
@@ -100,22 +113,25 @@ public class JwtProvider {
     }
 
     public String createRefreshToken(Authentication authentication) {
+        log.debug("Creating refresh token for authentication: {}", authentication.getName());
         UserPrinciple userPrinciple = (UserPrinciple) authentication.getPrincipal();
         return createRefreshToken(userPrinciple.getUsername());
     }
 
     public String createRefreshToken(User user) {
+        log.debug("Creating refresh token for user: {}", user.getUsername());
         return createRefreshToken(user.getUsername());
     }
 
     private String createRefreshToken(String username) {
-        Instant now = Instant.now();
-        Instant expiration = now.plusSeconds(jwtRefreshExpiration);
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + jwtRefreshExpiration * 1000);
 
         return Jwts.builder()
                 .subject(username)
-                .issuedAt(Date.from(now))
-                .expiration(Date.from(expiration))
+                .claim("token_type", "refresh")
+                .issuedAt(now)
+                .expiration(expiryDate)
                 .signWith(getSigningKey())
                 .compact();
     }
@@ -123,12 +139,15 @@ public class JwtProvider {
     public boolean validateToken(String token) {
         try {
             log.debug("Validating token: {}", token);
-            log.debug("Using signing key: {}", getSigningKey());
-            Jwts.parser()
+            Claims claims = Jwts.parser()
                     .verifyWith(getSigningKey())
                     .build()
-                    .parseSignedClaims(token);
-            log.debug("Token validation successful");
+                    .parseSignedClaims(token)
+                    .getPayload();
+            
+            log.debug("Token validation successful. Subject: {}, Roles: {}", 
+                    claims.getSubject(), 
+                    claims.get("roles", List.class));
             return true;
         } catch (Exception e) {
             log.error("JWT validation failed: {}", e.getMessage(), e);

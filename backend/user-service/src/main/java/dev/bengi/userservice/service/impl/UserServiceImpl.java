@@ -16,7 +16,6 @@ import dev.bengi.userservice.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -28,6 +27,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -42,9 +42,6 @@ public class UserServiceImpl implements UserService {
     private final RoleService roleService;
     private final JwtProvider jwtProvider;
     private final AuthenticationManager authenticationManager;
-//    private final EmailService emailService;
-    @Value("${app.reset-password.token.expiration:900000}")
-    private long resetPasswordTokenExpiration;
 
     // Helper methods
     private String getTemporaryProfileImageUrl(String email) {
@@ -117,10 +114,10 @@ public class UserServiceImpl implements UserService {
                 // Determine role based on input
                 Role defaultRole;
                 if (register.getRoles() != null && register.getRoles().contains("ADMIN")) {
-                    defaultRole = roleService.findByName(RoleName.ADMIN)
+                    defaultRole = roleService.findByName(RoleName.ROLE_ADMIN)
                             .orElseThrow(() -> new RoleNotFoundException("Admin role not found in the database."));
                 } else {
-                    defaultRole = roleService.findByName(RoleName.USER)
+                    defaultRole = roleService.findByName(RoleName.ROLE_USER)
                             .orElseThrow(() -> new RoleNotFoundException("Default role not found in the database."));
                 }
                 user.setRoles(Collections.singleton(defaultRole));
@@ -306,29 +303,6 @@ public class UserServiceImpl implements UserService {
         });
     }
 
-    @Override
-    public Mono<String> changePassword(ChangePasswordRequest request) {
-        return Mono.defer(() -> {
-            try {
-                Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-                String username = auth.getName();
-
-                User user = findByUsername(username)
-                        .orElseThrow(() -> new UserNotFoundException("User not found"));
-
-                if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
-                    return Mono.error(new BadCredentialsException("Current password is incorrect"));
-                }
-
-                user.setPassword(passwordEncoder.encode(request.getNewPassword()));
-                userRepository.save(user);
-
-                return Mono.just(textSendEmailChangePasswordSuccessfully(username));
-            } catch (Exception e) {
-                return Mono.error(e);
-            }
-        });
-    }
 
     @Override
     public Mono<JwtResponse> refreshToken(String refreshToken) {
@@ -359,17 +333,34 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Mono<Page<AuthResponse>> findAllUser(Pageable pageable) {
-        return Mono.fromCallable(() -> {
-            Page<User> userPage = userRepository.findAll(pageable);
-            return userPage.map(user -> {
+        try {
+            Page<User> users = userRepository.findAll(pageable);
+            Page<AuthResponse> authResponses = users.map(user -> {
                 AuthResponse response = modelMapper.map(user, AuthResponse.class);
                 response.setRoles(user.getRoles().stream()
                         .map(role -> role.getName().name())
                         .collect(Collectors.toList()));
                 return response;
             });
-        });
+            return Mono.just(authResponses);
+        } catch (Exception e) {
+            log.error("Error fetching users: {}", e.getMessage());
+            return Mono.error(e);
+        }
     }
+
+    @Override
+    public Mono<List<User>> findAllUsers() {
+        try {
+            List<User> users = userRepository.findAll();
+            log.debug("Fetched {} users from the database", users.size());
+            return Mono.just(users);
+        } catch (Exception e) {
+            log.error("Error fetching all users: {}", e.getMessage());
+            return Mono.error(e);
+        }
+    }
+
 
     @Override
     public String textSendEmailChangePasswordSuccessfully(String username) {
@@ -386,60 +377,93 @@ public class UserServiceImpl implements UserService {
                 """, username);
     }
 
-//    @Override
-//    public Mono<Void> forgotPassword(ForgotPasswordRequest request) {
-//        return Mono.defer(() -> {
-//            try {
-//                User user = userRepository.findByEmail(request.getEmail())
-//                    .orElseThrow(() -> new UserNotFoundException("User not found with email: " + request.getEmail()));
-//
-//                String resetToken = jwtProvider.createPasswordResetToken(user.getUsername());
-//                // Store the reset token with expiration
-//                user.setResetPasswordToken(resetToken);
-//                user.setResetPasswordTokenExpiry(new Date(System.currentTimeMillis() + resetPasswordTokenExpiration));
-//                userRepository.save(user);
-//
-//                // Send email asynchronously
-//                emailService.sendPasswordResetEmail(user.getEmail(), resetToken);
-//                log.info("Password reset email sent to: {}", user.getEmail());
-//
-//                return Mono.empty();
-//            } catch (Exception e) {
-//                log.error("Error in forgot password process: {}", e.getMessage());
-//                return Mono.error(e);
-//            }
-//        });
-//    }
 
     @Override
-    public Mono<Void> resetPassword(String token, String newPassword) {
+    @Transactional
+    public Mono<Boolean> addProjectAuthority(Long userId, Long projectId) {
         return Mono.defer(() -> {
             try {
-                if (!jwtProvider.validateToken(token)) {
-                    return Mono.error(new BadCredentialsException("Invalid or expired reset token"));
-                }
+                User user = findById(userId)
+                        .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
 
-                String username = jwtProvider.getUserNameFromToken(token);
-                User user = findByUsername(username)
-                    .orElseThrow(() -> new UserNotFoundException("User not found"));
-
-                // Verify token hasn't expired
-                if (user.getResetPasswordTokenExpiry() == null || 
-                    user.getResetPasswordTokenExpiry().before(new Date()) ||
-                    !token.equals(user.getResetPasswordToken())) {
-                    return Mono.error(new BadCredentialsException("Invalid or expired reset token"));
-                }
-
-                // Update password
-                user.setPassword(passwordEncoder.encode(newPassword));
-                user.setResetPasswordToken(null);
-                user.setResetPasswordTokenExpiry(null);
+                user.getProjectAuthorities().add(projectId);
                 userRepository.save(user);
-
-                log.info("Password reset successful for user: {}", username);
-                return Mono.empty();
+                log.info("Added project authority {} to user {}", projectId, userId);
+                return Mono.just(true);
             } catch (Exception e) {
-                log.error("Error resetting password: {}", e.getMessage());
+                log.error("Error adding project authority: {}", e.getMessage());
+                return Mono.error(e);
+            }
+        });
+    }
+
+    @Override
+    @Transactional
+    public Mono<Boolean> removeProjectAuthority(Long userId, Long projectId) {
+        return Mono.defer(() -> {
+            try {
+                User user = findById(userId)
+                        .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
+
+                user.getProjectAuthorities().remove(projectId);
+                userRepository.save(user);
+                log.info("Removed project authority {} from user {}", projectId, userId);
+                return Mono.just(true);
+            } catch (Exception e) {
+                log.error("Error removing project authority: {}", e.getMessage());
+                return Mono.error(e);
+            }
+        });
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Mono<Boolean> hasProjectAuthority(Long userId, Long projectId) {
+        return Mono.defer(() -> {
+            try {
+                User user = findById(userId)
+                        .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
+
+                boolean hasAuthority = user.getProjectAuthorities().contains(projectId);
+                log.debug("User {} {} project authority {}", userId, hasAuthority ? "has" : "does not have", projectId);
+                return Mono.just(hasAuthority);
+            } catch (Exception e) {
+                log.error("Error checking project authority: {}", e.getMessage());
+                return Mono.error(e);
+            }
+        });
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Mono<Set<Long>> getUserProjectAuthorities(Long userId) {
+        return Mono.defer(() -> {
+            try {
+                User user = findById(userId)
+                        .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
+
+                Set<Long> authorities = new HashSet<>(user.getProjectAuthorities());
+                log.debug("Found {} project authorities for user {}", authorities.size(), userId);
+                return Mono.just(authorities);
+            } catch (Exception e) {
+                log.error("Error getting user project authorities: {}", e.getMessage());
+                return Mono.error(e);
+            }
+        });
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Mono<Set<User>> getUsersByProjectId(Long projectId) {
+        return Mono.defer(() -> {
+            try {
+                Set<User> users = userRepository.findAll().stream()
+                        .filter(user -> user.getProjectAuthorities().contains(projectId))
+                        .collect(Collectors.toSet());
+                log.debug("Found {} users for project {}", users.size(), projectId);
+                return Mono.just(users);
+            } catch (Exception e) {
+                log.error("Error getting users by project id: {}", e.getMessage());
                 return Mono.error(e);
             }
         });

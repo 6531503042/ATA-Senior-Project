@@ -5,8 +5,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @Builder
@@ -14,13 +15,17 @@ import java.util.List;
 @AllArgsConstructor
 public class FeedbackResponse {
     private Long id;
-    private String name;
-    private Long projectId;
-    private List<Long> questionIds;
+    private String title;
     private String description;
-    private ZonedDateTime feedbackStartDate;
-    private ZonedDateTime feedbackEndDate;
-    private List<Long> memberIds;
-    private ZonedDateTime createdAt;
-    private ZonedDateTime updatedAt;
+    private ProjectResponse project;
+    private List<QuestionResponse> questions;
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
+    private Set<UserDto> allowedUsers;
+    private boolean active;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    private int totalSubmissions;
+    private int pendingReviews;
+    private double averageScore;
 }

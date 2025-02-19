@@ -23,7 +23,6 @@ public class CreateProjectRequest {
 
     private String description;
 
-    @ElementCollection
     private List<Long> memberIds;
 
     @NotNull(message = "Project start date cannot be empty")

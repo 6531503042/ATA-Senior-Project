@@ -1,244 +1,275 @@
 package dev.bengi.feedbackservice.service.impl;
 
 import dev.bengi.feedbackservice.domain.model.Feedback;
+import dev.bengi.feedbackservice.domain.model.Question;
 import dev.bengi.feedbackservice.domain.model.Project;
-import dev.bengi.feedbackservice.domain.payload.request.CreateFeedbackRequest;
-import dev.bengi.feedbackservice.domain.payload.response.FeedbackResponse;
+import dev.bengi.feedbackservice.domain.enums.AnswerType;
+import dev.bengi.feedbackservice.domain.enums.QuestionType;
+import dev.bengi.feedbackservice.domain.payload.response.FeedbackDetailsResponse;
+import dev.bengi.feedbackservice.domain.payload.response.QuestionResponse;
+import dev.bengi.feedbackservice.domain.payload.response.AnswerOptionResponse;
 import dev.bengi.feedbackservice.repository.FeedbackRepository;
-import dev.bengi.feedbackservice.repository.ProjectRepository;
+import dev.bengi.feedbackservice.repository.FeedbackSubmissionRepository;
 import dev.bengi.feedbackservice.repository.QuestionRepository;
+import dev.bengi.feedbackservice.service.FeedbackPermissionService;
 import dev.bengi.feedbackservice.service.FeedbackService;
+import dev.bengi.feedbackservice.service.UserService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.HashSet;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
+@Transactional
 public class FeedbackServiceImpl implements FeedbackService {
-
     private final FeedbackRepository feedbackRepository;
-    private final ProjectRepository projectRepository;
+    private final FeedbackSubmissionRepository submissionRepository;
     private final QuestionRepository questionRepository;
-
-    private FeedbackResponse mapToFeedbackResponse(Feedback feedback) {
-        Project project = projectRepository.findById(feedback.getProjectId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found"));
-
-        return FeedbackResponse.builder()
-                .id(feedback.getId())
-                .name(feedback.getTitle())
-                .projectId(feedback.getProjectId())
-                .questionIds(feedback.getQuestionIds())
-                .description(feedback.getDescription())
-                .feedbackStartDate(feedback.getFeedbackStartDate())
-                .feedbackEndDate(feedback.getFeedbackEndDate())
-                .memberIds(project.getMemberIds())
-                .createdAt(feedback.getSubmittedAt())
-                .updatedAt(feedback.getSubmittedAt())
-                .build();
-    }
+    private final UserService userService;
+    private final FeedbackPermissionService permissionService;
+    private static final Logger log = LoggerFactory.getLogger(FeedbackServiceImpl.class);
 
     @Override
     @Transactional
-    public FeedbackResponse createFeedback(CreateFeedbackRequest request) {
-        log.info("Creating new feedback with name: {}", request.getName());
-
-        // Verify project exists
-        Project project = projectRepository.findById(request.getProjectId())
-                .orElseThrow(() -> {
-                    log.error("Project not found with ID: {}", request.getProjectId());
-                    return new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found");
-                });
-
-        Feedback feedback = Feedback.builder()
-                .title(request.getName())
-                .projectId(request.getProjectId())
-                .description(request.getDescription())
-                .feedbackStartDate(request.getFeedbackStartDate())
-                .feedbackEndDate(request.getFeedbackEndDate())
-                .build();
-
-        try {
-            Feedback savedFeedback = feedbackRepository.save(feedback);
-            log.info("Feedback created successfully with ID: {}", savedFeedback.getId());
-            return mapToFeedbackResponse(savedFeedback);
-        } catch (Exception e) {
-            log.error("Error creating feedback: {}", e.getMessage(), e);
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to create feedback");
+    public Feedback createFeedback(Feedback feedback) {
+        log.debug("Creating new feedback: {}", feedback.getTitle());
+        
+        // Validate project exists and has members
+        Project project = feedback.getProject();
+        if (project == null) {
+            throw new IllegalArgumentException("Feedback must be associated with a project");
         }
+        
+        Set<Long> memberIds = project.getMemberIds();
+        if (memberIds == null || memberIds.isEmpty()) {
+            throw new IllegalArgumentException("Project has no members");
+        }
+        
+        // Set creation time
+        LocalDateTime now = LocalDateTime.now();
+        feedback.setCreatedAt(now);
+        feedback.setUpdatedAt(now);
+        
+        // Validate questions exist
+        List<Long> questionIds = feedback.getQuestionIds();
+        if (questionIds == null || questionIds.isEmpty()) {
+            throw new IllegalArgumentException("Feedback must have at least one question");
+        }
+        
+        boolean questionsExist = questionRepository.findAllById(questionIds)
+                .size() == questionIds.size();
+        if (!questionsExist) {
+            throw new IllegalArgumentException("One or more questions do not exist");
+        }
+        
+        return feedbackRepository.save(feedback);
     }
 
     @Override
-    @Transactional
-    public FeedbackResponse updateFeedback(Long id, CreateFeedbackRequest request) {
-        log.info("Updating feedback with ID: {}", id);
-
-        Feedback existingFeedback = feedbackRepository.findById(id)
-                .orElseThrow(() -> {
-                    log.error("Feedback not found with ID: {}", id);
-                    return new ResponseStatusException(HttpStatus.NOT_FOUND, "Feedback not found");
-                });
-
-        // Verify project exists if project ID is being updated
-        if (!existingFeedback.getProjectId().equals(request.getProjectId())) {
-            projectRepository.findById(request.getProjectId())
-                    .orElseThrow(() -> {
-                        log.error("Project not found with ID: {}", request.getProjectId());
-                        return new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found");
-                    });
-        }
-
-        existingFeedback.setTitle(request.getName());
-        existingFeedback.setProjectId(request.getProjectId());
-        existingFeedback.setDescription(request.getDescription());
-        existingFeedback.setFeedbackStartDate(request.getFeedbackStartDate());
-        existingFeedback.setFeedbackEndDate(request.getFeedbackEndDate());
-
-        try {
-            Feedback updatedFeedback = feedbackRepository.save(existingFeedback);
-            log.info("Feedback updated successfully with ID: {}", updatedFeedback.getId());
-            return mapToFeedbackResponse(updatedFeedback);
-        } catch (Exception e) {
-            log.error("Error updating feedback: {}", e.getMessage(), e);
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to update feedback");
-        }
+    public Feedback updateFeedback(Long id, Feedback feedback) {
+        Feedback existingFeedback = getFeedback(id);
+        feedback.setId(id);
+        return feedbackRepository.save(feedback);
     }
 
     @Override
-    @Transactional
     public void deleteFeedback(Long id) {
-        log.info("Deleting feedback with ID: {}", id);
+        feedbackRepository.deleteById(id);
+    }
 
-        if (!feedbackRepository.existsById(id)) {
-            log.error("Feedback not found with ID: {}", id);
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Feedback not found");
-        }
+    @Override
+    @Transactional(readOnly = true)
+    public Feedback getFeedback(Long id) {
+        return feedbackRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Feedback not found"));
+    }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<Feedback> getAllFeedbacks() {
+        return feedbackRepository.findAll();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Feedback> getFeedbacksByProject(Long projectId) {
+        return feedbackRepository.findByProjectId(projectId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Feedback> getFeedbacksByUser(String userId) {
         try {
-            feedbackRepository.deleteById(id);
-            log.info("Feedback deleted successfully with ID: {}", id);
-        } catch (Exception e) {
-            log.error("Error deleting feedback: {}", e.getMessage(), e);
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to delete feedback");
+            Long userIdLong = Long.parseLong(userId);
+            return feedbackRepository.findByProjectMemberId(userIdLong);
+        } catch (NumberFormatException e) {
+            log.error("Invalid user ID format: {}", userId);
+            throw new IllegalArgumentException("Invalid user ID format", e);
         }
     }
 
     @Override
     @Transactional(readOnly = true)
-    public FeedbackResponse getFeedbackById(Long id) {
-        log.info("Fetching feedback with ID: {}", id);
-
-        Feedback feedback = feedbackRepository.findById(id)
-                .orElseThrow(() -> {
-                    log.error("Feedback not found with ID: {}", id);
-                    return new ResponseStatusException(HttpStatus.NOT_FOUND, "Feedback not found");
-                });
-
-        return mapToFeedbackResponse(feedback);
+    public List<FeedbackDetailsResponse> getAvailableFeedbacksForUser(String userId) {
+        log.debug("Getting available feedbacks for user ID: {}", userId);
+        
+        // First validate that the user exists
+        boolean userExists = userService.validateUser(userId)
+            .block(); // We need to block here since we're in a @Transactional method
+            
+        if (!userExists) {
+            log.error("User does not exist: {}", userId);
+            throw new RuntimeException("User not found: " + userId);
+        }
+        
+        List<Long> permittedFeedbackIds = permissionService.getPermittedFeedbackIds(userId);
+        log.debug("Found {} permitted feedback IDs for user {}", permittedFeedbackIds.size(), userId);
+        
+        return permittedFeedbackIds.stream()
+                .map(feedbackId -> {
+                    try {
+                        return getFeedbackDetails(feedbackId);
+                    } catch (Exception e) {
+                        log.error("Error getting details for feedback {}: {}", feedbackId, e.getMessage());
+                        return null;
+                    }
+                })
+                .filter(response -> response != null)
+                .collect(Collectors.toList());
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<FeedbackResponse> getAllFeedbacks() {
-        log.info("Fetching all feedbacks");
-
-        try {
-            List<Feedback> feedbacks = feedbackRepository.findAll();
-            List<FeedbackResponse> responses = feedbacks.stream()
-                    .map(this::mapToFeedbackResponse)
-                    .collect(Collectors.toList());
-            log.info("Found {} feedbacks", responses.size());
-            return responses;
-        } catch (Exception e) {
-            log.error("Error fetching feedbacks: {}", e.getMessage(), e);
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to fetch feedbacks");
-        }
+    public FeedbackDetailsResponse getFeedbackDetails(Long feedbackId) {
+        log.debug("Getting feedback details for ID: {}", feedbackId);
+        
+        Feedback feedback = getFeedback(feedbackId);
+        List<Question> questions = questionRepository.findAllById(feedback.getQuestionIds());
+        
+        FeedbackDetailsResponse response = FeedbackDetailsResponse.builder()
+                .id(feedback.getId())
+                .title(feedback.getTitle())
+                .description(feedback.getDescription())
+                .projectName(feedback.getProject().getName())
+                .questions(mapToQuestionResponses(questions))
+                .startDate(feedback.getStartDate())
+                .endDate(feedback.getEndDate())
+                .active(feedback.isActive())
+                .alreadySubmitted(hasUserSubmitted(feedback))
+                .validationRules(getValidationRules(feedback))
+                .build();
+                
+        log.debug("Successfully built feedback details response for ID: {}", feedbackId);
+        return response;
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<FeedbackResponse> getFeedbacksByProjectId(Long projectId) {
-        log.info("Fetching feedbacks for project ID: {}", projectId);
-
-        // Verify project exists
-        if (!projectRepository.existsById(projectId)) {
-            log.error("Project not found with ID: {}", projectId);
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found");
-        }
-
-        try {
-            Pageable pageable = PageRequest.of(0, Integer.MAX_VALUE, Sort.by("submittedAt").descending());
-            Page<Feedback> feedbacks = feedbackRepository.findByProjectId(projectId, pageable);
-            List<FeedbackResponse> responses = feedbacks.getContent().stream()
-                    .map(this::mapToFeedbackResponse)
-                    .collect(Collectors.toList());
-            log.info("Found {} feedbacks for project ID: {}", responses.size(), projectId);
-            return responses;
-        } catch (Exception e) {
-            log.error("Error fetching feedbacks for project: {}", e.getMessage(), e);
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to fetch feedbacks");
-        }
+    public Map<String, Long> getFeedbackStatistics() {
+        Map<String, Long> statistics = new HashMap<>();
+        statistics.put("totalFeedbacks", feedbackRepository.count());
+        statistics.put("activeFeedbacks", feedbackRepository.countActiveFeedbacks());
+        return statistics;
     }
 
     @Override
-    @Transactional
-    public FeedbackResponse addQuestionsToFeedback(Long feedbackId, List<Long> questionIds) {
-        log.info("Adding questions to feedback ID: {}", feedbackId);
+    @Transactional(readOnly = true)
+    public Map<String, Double> getFeedbackMetrics() {
+        Map<String, Double> metrics = new HashMap<>();
+        metrics.put("averageResponseTime", feedbackRepository.getAverageResponseTime());
+        return metrics;
+    }
 
-        Feedback feedback = feedbackRepository.findById(feedbackId)
-                .orElseThrow(() -> {
-                    log.error("Feedback not found with ID: {}", feedbackId);
-                    return new ResponseStatusException(HttpStatus.NOT_FOUND, "Feedback not found");
-                });
+    @Override
+    @Transactional(readOnly = true)
+    public List<Feedback> getRecentFeedbacks() {
+        return feedbackRepository.findRecentFeedbacks();
+    }
 
-        // Verify all questions exist
-        questionIds.forEach(questionId -> {
-            if (!questionRepository.existsById(questionId)) {
-                log.error("Question not found with ID: {}", questionId);
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Question not found with ID: " + questionId);
+    private List<QuestionResponse> mapToQuestionResponses(List<Question> questions) {
+        return questions.stream()
+                .map(q -> QuestionResponse.builder()
+                        .id(q.getId())
+                        .text(q.getText())
+                        .content(q.getText())  // Using text as content
+                        .required(q.isRequired())
+                        .type(q.getQuestionType())  // Map questionType to type
+                        .category(q.getCategory())
+                        .answerType(mapQuestionTypeToAnswerType(q.getQuestionType()))  // Map questionType to answerType
+                        .answers(mapChoicesToAnswerOptions(q.getChoices()))  // Map choices to answers
+                        .createdAt(q.getCreatedAt() != null ? q.getCreatedAt().atZone(java.time.ZoneId.systemDefault()) : null)
+                        .updatedAt(q.getUpdatedAt() != null ? q.getUpdatedAt().atZone(java.time.ZoneId.systemDefault()) : null)
+                        .description(q.getDescription())
+                        .validationRules(q.getValidationRules())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    private AnswerType mapQuestionTypeToAnswerType(QuestionType questionType) {
+        if (questionType == null) return null;
+        switch (questionType) {
+            case MULTIPLE_CHOICE:
+                return AnswerType.MULTIPLE_CHOICE;
+            case SINGLE_CHOICE:
+                return AnswerType.SINGLE_CHOICE;
+            case TEXT_BASED:
+                return AnswerType.TEXT;
+            case RATING:
+                return AnswerType.RATING;
+            case SENTIMENT:
+                return AnswerType.SENTIMENT;
+            default:
+                return null;
+        }
+    }
+
+    private List<AnswerOptionResponse> mapChoicesToAnswerOptions(List<String> choices) {
+        if (choices == null) return new ArrayList<>();
+        return choices.stream()
+                .map(choice -> AnswerOptionResponse.builder()
+                        .text(choice)
+                        .value(choice)
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    private boolean hasUserSubmitted(Feedback feedback) {
+        String userId = getCurrentUserId();
+        if (userId == null) {
+            return false;
+        }
+        return submissionRepository.existsByFeedbackIdAndSubmittedBy(feedback.getId(), userId);
+    }
+
+    private String getCurrentUserId() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getDetails() instanceof Map) {
+            Map<String, Object> details = (Map<String, Object>) auth.getDetails();
+            if (details.containsKey("userId")) {
+                return String.valueOf(details.get("userId"));
             }
-        });
-
-        feedback.setQuestionIds(questionIds);
-
-        try {
-            Feedback updatedFeedback = feedbackRepository.save(feedback);
-            log.info("Questions added successfully to feedback ID: {}", feedbackId);
-            return mapToFeedbackResponse(updatedFeedback);
-        } catch (Exception e) {
-            log.error("Error adding questions to feedback: {}", e.getMessage(), e);
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to add questions to feedback");
         }
+        return auth.getName();
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<FeedbackResponse> getFeedbacksByUser(Long userId, int page, int size) {
-        log.info("Fetching feedbacks for user ID: {} (page: {}, size: {})", userId, page, size);
-
-        try {
-            Pageable pageable = PageRequest.of(page, size, Sort.by("submittedAt").descending());
-            Page<Feedback> feedbacks = feedbackRepository.findByUserId(userId, pageable);
-            List<FeedbackResponse> responses = feedbacks.getContent().stream()
-                    .map(this::mapToFeedbackResponse)
-                    .collect(Collectors.toList());
-            log.info("Found {} feedbacks for user ID: {}", responses.size(), userId);
-            return responses;
-        } catch (Exception e) {
-            log.error("Error fetching feedbacks for user: {}", e.getMessage(), e);
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to fetch feedbacks");
-        }
+    private Map<String, Object> getValidationRules(Feedback feedback) {
+        Map<String, Object> rules = new HashMap<>();
+        rules.put("minQuestions", feedback.getQuestionIds().size());
+        rules.put("maxQuestions", feedback.getQuestionIds().size());
+        rules.put("requiresComments", true);
+        return rules;
     }
 }

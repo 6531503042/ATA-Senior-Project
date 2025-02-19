@@ -1,0 +1,201 @@
+HELP.md
+.gradle
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### VS Code ###
+.vscode/
+
+### Java ###
+# Compiled class file
+*.class
+
+# Log files
+*.log
+logs/
+
+# BlueJ files
+*.ctxt
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files #
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# virtual machine crash logs
+hs_err_pid*
+replay_pid*
+
+### Gradle ###
+.gradle
+**/build/
+!src/**/build/
+
+# Ignore Gradle GUI config
+gradle-app.setting
+
+# Avoid ignoring Gradle wrapper jar file
+!gradle-wrapper.jar
+
+# Cache of project
+.gradletasknamecache
+
+### Spring Boot ###
+application-*.yml
+!application-example.yml
+*.properties
+!application.properties
+!gradle.properties
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Docker
+docker-compose.override.yml
+
+# Secrets and keys
+*.jks
+*.keystore
+*.p12
+*.key
+*.pem
+
+# Python
+**/__pycache__/
+**/*.py[cod]
+**/*$py.class
+**/*.so
+**/.Python
+**/build/
+**/develop-eggs/
+**/dist/
+**/downloads/
+**/eggs/
+**/.eggs/
+**/lib/
+**/lib64/
+**/parts/
+**/sdist/
+**/var/
+**/wheels/
+**/*.egg-info/
+**/.installed.cfg
+**/*.egg
+
+# Virtual Environment
+**/.venv/
+**/venv/
+**/env/
+**/.env
+**/.env.*
+**/ENV/
+**/.Python
+**/pip-log.txt
+**/pip-delete-this-directory.txt
+
+# IDE
+**/.idea/
+**/.vscode/
+**/*.swp
+**/*.swo
+**/.project
+**/.pydevproject
+**/.settings/
+
+# Model files and cache
+**/models/
+**/*.model
+**/*.pkl
+**/*.h5
+**/.cache/
+**/*.pt
+**/*.pth
+**/*.ckpt
+**/.transformers_cache/
+
+# Logs and databases
+**/*.log
+**/*.sqlite
+**/*.db
+**/logs/
+**/*.mongodb
+**/mongodb_data/
+
+# Docker
+**/.docker/
+**/docker-compose.override.yml
+
+# Testing
+**/.coverage
+**/htmlcov/
+**/.pytest_cache/
+**/.tox/
+**/nosetests.xml
+**/coverage.xml
+**/*.cover
+**/.hypothesis/
+
+# Distribution / packaging
+**/*.manifest
+**/*.spec
+
+# Jupyter Notebook
+**/.ipynb_checkpoints
+**/*.ipynb
+
+# System Files
+**/.DS_Store
+**/Thumbs.db
+**/*~
+
+# Project specific
+**/feedback-model-cache/
+**/enhanced_training_data.json
+**/test_results/
+**/predictions/
+**/*.config
+
+# Node (in case you have frontend)
+**/node_modules/
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*

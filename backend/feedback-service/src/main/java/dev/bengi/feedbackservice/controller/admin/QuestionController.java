@@ -1,145 +1,90 @@
 package dev.bengi.feedbackservice.controller.admin;
 
+import dev.bengi.feedbackservice.domain.model.Question;
+import dev.bengi.feedbackservice.domain.enums.QuestionCategory;
 import dev.bengi.feedbackservice.domain.payload.request.CreateQuestionRequest;
-import dev.bengi.feedbackservice.domain.payload.request.CreateQuestionSetRequest;
-import dev.bengi.feedbackservice.domain.payload.response.QuestionResponse;
-import dev.bengi.feedbackservice.domain.payload.response.QuestionSetResponse;
 import dev.bengi.feedbackservice.service.QuestionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
-@RestController
-@RequiredArgsConstructor
 @Slf4j
-@RequestMapping("api/v1/admin")
+@RestController
+@RequestMapping("/api/v1/admin/questions")
+@RequiredArgsConstructor
 public class QuestionController {
     private final QuestionService questionService;
 
-    // Question endpoints
-    @PostMapping("/questions")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<QuestionResponse> createQuestion(@Valid @RequestBody CreateQuestionRequest request) {
-        log.info("Received CreateQuestionRequest: {}", request);
-        try {
-            return ResponseEntity.ok(questionService.createQuestion(request));
-        } catch (Exception e) {
-            log.error("Failed to create question", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    @PostMapping("/create")
+    public ResponseEntity<Question> createQuestion(@Valid @RequestBody CreateQuestionRequest request) {
+        log.debug("Creating new question with title: {}", request.getTitle());
+        Question question = Question.builder()
+                .text(request.getTitle())
+                .description(request.getDescription())
+                .questionType(request.getQuestionType())
+                .category(request.getCategory())
+                .choices(request.getChoices())
+                .required(request.isRequired())
+                .validationRules(request.getValidationRules())
+                .build();
+        return ResponseEntity.ok(questionService.createQuestion(question));
     }
 
-    @PutMapping("/questions/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<QuestionResponse> updateQuestion(
-            @PathVariable Long id,
-            @Valid @RequestBody CreateQuestionRequest request) {
-        try {
-            return ResponseEntity.ok(questionService.updateQuestion(id, request));
-        } catch (Exception e) {
-            log.error("Failed to update question", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    @PutMapping("/update/{id}")
+    public ResponseEntity<Question> updateQuestion(@PathVariable Long id, @Valid @RequestBody CreateQuestionRequest request) {
+        log.debug("Updating question with ID: {}", id);
+        Question question = Question.builder()
+                .text(request.getTitle())
+                .description(request.getDescription())
+                .questionType(request.getQuestionType())
+                .category(request.getCategory())
+                .choices(request.getChoices())
+                .required(request.isRequired())
+                .validationRules(request.getValidationRules())
+                .build();
+        return ResponseEntity.ok(questionService.updateQuestion(id, question));
     }
 
-    @DeleteMapping("/questions/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> deleteQuestion(@PathVariable Long id) {
-        try {
-            questionService.deleteQuestion(id);
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            log.error("Failed to delete question", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        log.debug("Deleting question with ID: {}", id);
+        questionService.deleteQuestion(id);
+        return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/questions/{id}")
-    public ResponseEntity<QuestionResponse> getQuestion(@PathVariable Long id) {
-        try {
-            return ResponseEntity.ok(questionService.getQuestionById(id));
-        } catch (Exception e) {
-            log.error("Failed to get question", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    @GetMapping("/get/{id}")
+    public ResponseEntity<Question> getQuestion(@PathVariable Long id) {
+        log.debug("Fetching question with ID: {}", id);
+        return ResponseEntity.ok(questionService.getQuestion(id));
     }
 
-    @GetMapping("/questions")
-    public ResponseEntity<Page<QuestionResponse>> getAllQuestions(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        try {
-            return ResponseEntity.ok(questionService.getAllQuestions(page, size));
-        } catch (Exception e) {
-            log.error("Failed to get questions", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    @GetMapping("/get-all")
+    public ResponseEntity<List<Question>> getAllQuestions() {
+        log.debug("Fetching all questions");
+        return ResponseEntity.ok(questionService.getAllQuestions());
     }
 
-    // QuestionSet endpoints
-    @PostMapping("/question-sets")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<QuestionSetResponse>> createQuestionSet(
-            @Valid @RequestBody CreateQuestionSetRequest request) {
-        try {
-            return ResponseEntity.ok(questionService.createQuestionSet(request));
-        } catch (Exception e) {
-            log.error("Failed to create question set", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    @GetMapping("/category/{category}")
+    public ResponseEntity<List<Question>> getQuestionsByCategory(@PathVariable QuestionCategory category) {
+        log.debug("Fetching questions for category: {}", category);
+        return ResponseEntity.ok(questionService.getQuestionsByCategory(category));
     }
 
-    @PutMapping("/question-sets/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<QuestionSetResponse> updateQuestionSet(
-            @PathVariable Long id,
-            @Valid @RequestBody CreateQuestionSetRequest request) {
-        try {
-            return ResponseEntity.ok(questionService.updateQuestionSet(id, request));
-        } catch (Exception e) {
-            log.error("Failed to update question set", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    // Dashboard endpoints
+    @GetMapping("/category-count")
+    public ResponseEntity<Map<QuestionCategory, Long>> getQuestionCountByCategory() {
+        log.debug("Fetching question count by category");
+        return ResponseEntity.ok(questionService.getQuestionCountByCategory());
     }
 
-    @DeleteMapping("/question-sets/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deleteQuestionSet(@PathVariable Long id) {
-        try {
-            questionService.deleteQuestionSet(id);
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            log.error("Failed to delete question set", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
-    @GetMapping("/question-sets/{id}")
-    public ResponseEntity<QuestionSetResponse> getQuestionSet(@PathVariable Long id) {
-        try {
-            return ResponseEntity.ok(questionService.getQuestionSetById(id));
-        } catch (Exception e) {
-            log.error("Failed to get question set", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
-    @GetMapping("/question-sets")
-    public ResponseEntity<Page<QuestionSetResponse>> getAllQuestionSets(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        try {
-            return ResponseEntity.ok(questionService.getAllQuestionSets(page, size));
-        } catch (Exception e) {
-            log.error("Failed to get question sets", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    @GetMapping("/recent")
+    public ResponseEntity<List<Question>> getRecentQuestions() {
+        log.debug("Fetching recent questions");
+        return ResponseEntity.ok(questionService.getRecentQuestions());
     }
 }

@@ -31,7 +31,7 @@ public class RoleServiceImpl implements RoleService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
 
-        Role role = roleRepository.findByName(mapToRoleName(roleName))
+        Role role = roleRepository.findByName(mapStringToRoleName(roleName))
                 .orElseThrow(() -> new RoleNotFoundException("Role not found with name: " + roleName));
 
         if (user.getRoles().contains(role)) {
@@ -49,7 +49,7 @@ public class RoleServiceImpl implements RoleService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + id));
 
-        if (user.getRoles().removeIf(role -> role.getName().equals(mapToRoleName(roleName)))) {
+        if (user.getRoles().removeIf(role -> role.getName().equals(mapStringToRoleName(roleName)))) {
             userRepository.save(user);
             return true;
         }
@@ -69,13 +69,12 @@ public class RoleServiceImpl implements RoleService {
         return roleNames;
     }
 
-    private RoleName mapToRoleName(String roleName) {
-        return switch (roleName) {
-            case "ADMIN", "admin", "Admin" -> RoleName.ADMIN;
-            case "USER", "user", "User" -> RoleName.USER;
-            default -> null;
+    private RoleName mapStringToRoleName(String roleName) {
+        return switch (roleName.toUpperCase()) {
+            case "ADMIN", "ROLE_ADMIN" -> RoleName.ROLE_ADMIN;
+            case "USER", "ROLE_USER" -> RoleName.ROLE_USER;
+            default -> throw new IllegalArgumentException("Invalid role name: " + roleName);
         };
     }
-
 
 }
