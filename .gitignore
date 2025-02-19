@@ -52,6 +52,7 @@ replay_pid*
 node_modules/
 
 # Backend
+/backend
 .vscode/settings.json
 *.xml
 *.iml
