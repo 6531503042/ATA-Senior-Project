@@ -49,12 +49,13 @@ const FormProjectManage: React.FC<FormProjectManageProps> = ({ setIsOpen }) => {
 
   // Rest of the helper functions remain the same
   const handleAddOption = () => {
-    if (options.length > 0 && !options[options.length - 1].text.trim()) {
-      alert("Please fill in the current option before adding a new one");
-      return;
+    if (options.length >= 1) {
+      setOptions([...options, { text: "" }]);
+    } else {
+      setOptions([...options, { text: "" }, { text: "" }]);
     }
-    setOptions([...options, { text: "" }]);
   };
+  
 
   const handleRemoveOption = (index: number) => {
     const newOptions = [...options];
@@ -88,8 +89,8 @@ const FormProjectManage: React.FC<FormProjectManageProps> = ({ setIsOpen }) => {
           .map((o) => o.text.trim())
           .filter((text) => text.length > 0);  // Filter out empty options
   
-        if (formattedChoices.length === 0) {
-          alert("Please add at least one valid option.");
+        if (formattedChoices.length < 2) {
+          alert("Please add at least two valid option.");
           return;  // Prevent sending the request
         }
       }
