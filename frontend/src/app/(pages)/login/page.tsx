@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Logo from "@/app/assets/ata-logo.png";
@@ -33,15 +33,18 @@ const LoginPage: React.FC = () => {
 
       const data = await response.json();
 
-      useEffect(() => {
-        if (typeof window !== "undefined") {
-          localStorage.setItem("access_token", data.access_token);
-          localStorage.setItem("refresh_token", data.refresh_token);
-          localStorage.setItem("user_info", JSON.stringify(data.user_info));
-          router.push("/");
-        }
-      }, [data]);
+      document.cookie = `accessToken=${data.access_token}; path=/; max-age=86400; Secure; HttpOnly`;
 
+      localStorage.setItem("access_token", data.access_token);
+      localStorage.setItem("refresh_token", data.refresh_token);
+      localStorage.setItem("user_info", JSON.stringify(data.user_info));
+
+      if (data.user_info.roles.includes("ROLE_ADMIN")) {
+        router.push("/dashboard_admin");
+      } else {
+        router.push("/dashboard_user");
+      }
+      
     } catch (error) {
       setError(error.message || "Something went wrong!");
     } finally {
@@ -51,7 +54,7 @@ const LoginPage: React.FC = () => {
 
   return (
     <div className="flex items-center justify-center w-screen min-h-screen bg-gradient-to-br from-white to-purple-100 relative">
-      {/* Background Image */}
+
       <div className="absolute inset-0 overflow-hidden">
         <Image
           src={Background}
@@ -62,7 +65,6 @@ const LoginPage: React.FC = () => {
         />
       </div>
 
-      {/* Login Form */}
       <div className="relative z-10 bg-white shadow-lg rounded-2xl p-8 w-96">
         <div className="flex justify-center mb-4">
           <Image src={Logo} alt="Logo" className=" w-56 h-auto" priority />
