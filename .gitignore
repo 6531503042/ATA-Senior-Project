@@ -57,3 +57,5 @@ node_modules/
 *.xml
 *.iml
 *.json
+frontend/package-lock.json
+*.json
