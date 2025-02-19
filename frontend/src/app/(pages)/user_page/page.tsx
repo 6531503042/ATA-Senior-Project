@@ -14,7 +14,7 @@ const Page = () => {
     if (checked) return; // Prevent effect from running multiple times
 
     const checkAuth = async () => {
-      const token = localStorage.getItem("token"); // Use 'token' key for consistency
+      const token = localStorage.getItem("access_token"); // Use 'token' key for consistency
       const userInfo = localStorage.getItem("user");
     
       if (!token || !userInfo) {
@@ -41,7 +41,7 @@ const Page = () => {
 
   const handleLogout = () => {
     // Clear localStorage
-    localStorage.removeItem("accessToken");
+    localStorage.removeItem("access_token");
     localStorage.removeItem("user");
 
     // Redirect to signin page

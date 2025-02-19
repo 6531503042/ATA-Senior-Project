@@ -38,7 +38,7 @@ const Page = () => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const token = localStorage.getItem("token"); // Use 'token' key for consistency
+      const token = localStorage.getItem("access_token"); // Use 'token' key for consistency
       const userInfo = localStorage.getItem("user");
     
       if (!token || !userInfo) {

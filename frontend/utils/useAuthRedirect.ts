@@ -6,7 +6,7 @@ export const useAuthRedirect = () => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const accessToken = localStorage.getItem("token");
+      const accessToken = localStorage.getItem("access_token");
       const refreshToken = localStorage.getItem("refresh_token");
       const userInfo = localStorage.getItem("user");
 

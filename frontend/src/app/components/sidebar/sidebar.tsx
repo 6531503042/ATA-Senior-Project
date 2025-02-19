@@ -102,7 +102,7 @@ const Sidebar = ({ onComponentChange }: SidebarProps) => {
 
   const handleLogout = () => {
     // Clear the authentication data from localStorage
-    localStorage.removeItem("token");
+    localStorage.removeItem("access_token");
     localStorage.removeItem("user");
     // Redirect to sign-in page
     router.push("/signin");

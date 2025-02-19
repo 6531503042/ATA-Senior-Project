@@ -80,7 +80,7 @@ const SignIn = () => {
       if (data.access_token) {
         showNotification("Login successful!", "success");
 
-        localStorage.setItem('token', data.access_token);
+        localStorage.setItem('access_token', data.access_token);
         localStorage.setItem('user', JSON.stringify(data.user_info));
         setTimeout(() => {
           const roles = data.user_info.roles;
@@ -107,7 +107,7 @@ const SignIn = () => {
 
   useEffect(() => {
     // Check if a token is already present in localStorage
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("access_token");
     const user = localStorage.getItem("user");
 
     // If the token exists, check the role and navigate

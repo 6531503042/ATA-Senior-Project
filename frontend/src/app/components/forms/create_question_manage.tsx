@@ -33,9 +33,9 @@ const FormProjectManage: React.FC<FormProjectManageProps> = ({ setIsOpen }) => {
 
   const questionTypeOptions = [
     { value: "SINGLE_CHOICE", label: "Single Choice", icon: CheckSquare },
-    { value: "MULTI_CHOICE", label: "Multi Choice", icon: ListChecks },
+    { value: "MULTIPLE_CHOICE", label: "Multiple Choice", icon: ListChecks },
     { value: "SENTIMENT", label: "Sentiment", icon: Star },
-    { value: "TEXT", label: "Text", icon: MessageSquare },
+    { value: "TEXT_BASED", label: "Text", icon: MessageSquare },
   ];
 
   const categoryOptions = [
@@ -67,7 +67,7 @@ const FormProjectManage: React.FC<FormProjectManageProps> = ({ setIsOpen }) => {
 
   const handleCreateQuestion = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("access_token");
   
       if (!token) {
         console.error("Access token not found");
@@ -79,7 +79,7 @@ const FormProjectManage: React.FC<FormProjectManageProps> = ({ setIsOpen }) => {
   
       if (selectedType === "SENTIMENT") {
         formattedChoices = ["Positive", "Neutral", "Negative"];
-      } else if (selectedType === "SINGLE_CHOICE" || selectedType === "MULTI_CHOICE") {
+      } else if (selectedType === "SINGLE_CHOICE" || selectedType === "MULTIPLE_CHOICE") {
         // Ensure choices are not empty for MULTI_CHOICE and SINGLE_CHOICE
         formattedChoices = options
           .map((o) => o.text.trim())
@@ -167,7 +167,7 @@ const FormProjectManage: React.FC<FormProjectManageProps> = ({ setIsOpen }) => {
         );
 
       case "SINGLE_CHOICE":
-      case "MULTI_CHOICE":
+      case "MULTIPLE_CHOICE":
         return (
           <div className="w-full flex flex-col gap-4">
             <h3 className="text-sm font-medium mb-2">Answer Options</h3>
