@@ -18,7 +18,7 @@ const StyledLogo = styled.img`
 const LoadingScreen = () => {
 
   return (
-    <div className="flex flex-col items-center justify-center bg-transparent h-full transition-all  duration-1000 dark:bg-black z-50">
+    <div className="flex flex-col items-center justify-center bg-white h-full transition-all  duration-1000 dark:bg-black z-50">
       <StyledLogo
         src="https://ata-it-th.com/wp-content/uploads/2023/03/cropped-ata_bnc.png"
         alt="ATA IT Logo"
