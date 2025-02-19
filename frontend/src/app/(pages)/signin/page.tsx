@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AlertCircle, CheckCircle, Info } from "lucide-react";
 import ATA from "@/app/assets/ata-logo.png";
 import Background from "@/app/assets/background.png";
@@ -104,6 +104,25 @@ const SignIn = () => {
       }
     }
   };
+
+  useEffect(() => {
+    // Check if a token is already present in localStorage
+    const token = localStorage.getItem("token");
+    const user = localStorage.getItem("user");
+
+    // If the token exists, check the role and navigate
+    if (token && user) {
+      const userInfo = JSON.parse(user);
+      const roles = userInfo.roles;
+      if (roles && roles.includes("ROLE_ADMIN")) {
+        router.push('/dashboard_admin');
+      } else if (roles && roles.includes("ROLE_USER")) {
+        router.push('/user_page');
+      } else {
+        router.push('/');  // Default fallback if no valid role
+      }
+    }
+  }, [router]);
 
   return (
     <div className="w-screen h-screen flex justify-center items-center bg-gray-50 relative overflow-hidden">

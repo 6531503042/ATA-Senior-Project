@@ -68,11 +68,6 @@ const Overview = () => {
             <p className="text-base text-gray-600 font-normal">
               Here's your feedback system overview
             </p>
-            {/* NOT NEED TO USE YET*/}
-            {/* <p className="text-sm text-gray-500">
-              Last updated: {new Date().toLocaleDateString()} at{" "}
-              {new Date().toLocaleTimeString()}
-            </p> */}
           </div>
         </div>
         <div className="w-full h-auto mt-9">

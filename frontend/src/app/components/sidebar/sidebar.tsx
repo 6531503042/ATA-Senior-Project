@@ -12,8 +12,10 @@ import {
   Folder,
   FolderClosed,
   Star,
+  LogOut,
 } from "lucide-react";
 import Logo from "@/app/assets/ata-logo.png";
+import { useRouter } from "next/navigation";
 
 interface SubMenuItem {
   name: string;
@@ -26,7 +28,7 @@ interface MenuOption {
   component: string;
   icon: LucideIcon;
   subMenu?: SubMenuItem[];
-  color?: string,
+  color?: string;
 }
 
 interface SidebarProps {
@@ -38,6 +40,7 @@ const Sidebar = ({ onComponentChange }: SidebarProps) => {
   const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null);
   const [activeComponent, setActiveComponent] = useState<string>("overview");
   const [activeMainMenu, setActiveMainMenu] = useState<string>("Overview");
+  const router = useRouter(); // Use the useRouter hook for routing
 
   const options: MenuOption[] = [
     {
@@ -95,6 +98,14 @@ const Sidebar = ({ onComponentChange }: SidebarProps) => {
     onComponentChange(component);
     setActiveComponent(component);
     setActiveMainMenu(mainMenuName);
+  };
+
+  const handleLogout = () => {
+    // Clear the authentication data from localStorage
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    // Redirect to sign-in page
+    router.push("/signin");
   };
 
   const isComponentActive = (option: MenuOption, subItem?: SubMenuItem) => {
@@ -180,6 +191,16 @@ const Sidebar = ({ onComponentChange }: SidebarProps) => {
                 </li>
               );
             })}
+            {/* Sign Out Button */}
+            <li className="w-full mt-auto">
+              <div
+                onClick={handleLogout}
+                className="flex items-center p-3 rounded-lg cursor-pointer transition text-sm text-gray-600 hover:bg-gray-100"
+              >
+                <LogOut className="w-5 h-5 mr-2" />
+                <span>Sign Out</span>
+              </div>
+            </li>
           </ul>
         </div>
       </div>
