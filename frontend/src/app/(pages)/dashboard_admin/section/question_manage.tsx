@@ -1,9 +1,19 @@
 "use client";
 
-import { BookOpen, CircleDot, Search, SlidersHorizontal } from "lucide-react";
+import {
+  BookOpen,
+  Bot,
+  CircleDot,
+  Ellipsis,
+  MessageCircle,
+  Pencil,
+  Search,
+  SlidersHorizontal,
+} from "lucide-react";
 import React, { useEffect, useState } from "react";
 import FormPop from "@/app/components/forms/create_question_manage";
 import MenuOption from "@/app/components/MenuOption";
+import { button } from "@heroui/theme";
 
 interface Post {
   id: number;
@@ -115,27 +125,46 @@ const QuestionManage = () => {
 
         {/* Question List */}
         <div className="w-full h-auto">
-          <div className="grid grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 2xl:grid-cols-2 gap-5">
             {postData.length > 0 ? (
               postData.map((post) => (
-                <div
+                <label
                   key={post.id}
-                  className="flex flex-col rounded-md shadow-xl p-7 gap-3 bg-white"
+                  className="flex flex-row border border-slate-500 shadow-slate-100 hover:shadow-slate-100  border-opacity-5 rounded-md shadow-md hover:shadow-xl transition-all duration-200 px-10 py-7 bg-white"
                 >
-                  <h1 className="text-3xl font-semibold text-zinc-700">{post.text}</h1>
-                  <span className="flex flex-row gap-3 ms-2">
-                    <p className="font-normal text-gray-500 text-sm">0 response</p>
-                    <p className="font-semibold text-sm">AI</p>
-                  </span>
-                  <div className="flex flex-row gap-3">
-                    <p className="font-medium text-sm py-1 px-2 shadow-md border border-slate-500 border-opacity-5 rounded-2xl text-zinc-700">
-                      Answer Type : {post.questionType}
-                    </p>
-                    <p className="font-medium text-sm py-1 px-2 shadow-md border border-slate-500 border-opacity-5 rounded-2xl text-zinc-700">
-                      {post.category}
-                    </p>
+                  <div className="flex flex-col gap-3 flex-1">
+                    <h1 className="text-3xl font-semibold text-zinc-700">
+                      {post.text}
+                    </h1>
+                    <span className="flex flex-row gap-3 ms-2 items-center">
+                      <p className="font-normal text-gray-500 text-sm flex flex-row items-center gap-2">
+                      <MessageCircle className="w-5 h-5 text-blue-900" />
+                        0 response
+                      </p>
+                    </span>
+                    <div className="flex flex-row gap-3 items-center">
+                      <p className="font-medium text-xs py-1 px-2 shadow-md shadow-slate-100 border border-slate-500 border-opacity-5 rounded-2xl text-zinc-500">
+                        Answer Type : {post.questionType}
+                      </p>
+                      <p className="font-medium text-xs py-1 px-2 shadow-md shadow-slate-100  border border-slate-500 border-opacity-5 rounded-2xl text-stone-600">
+                        {post.category}
+                      </p>
+                    </div>
                   </div>
-                </div>
+                  <div className="flex flex-col flex-1 items-end justify-between">
+                    <div className="">
+                      <button className="p-2 rounded-full hover:text-zinc-500 text-transparent transition-all duration-200">
+                        <Ellipsis className=" w-4 h-4" />
+                      </button>
+                    </div>
+                    <div className="">
+                      <p className="px-3 py-1 bg-green-100 text-green-600 rounded-2xl text-sm">
+                        Active
+                      </p>
+                    </div>
+                    <div className="text-transparent block"><Pencil/></div>
+                  </div>
+                </label>
               ))
             ) : (
               <p className="text-gray-500">No questions found.</p>
