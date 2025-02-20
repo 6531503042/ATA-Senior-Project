@@ -165,8 +165,8 @@ const GetAllProject = () => {
                 </div>
 
                 <div className="flex flex-col gap-3 items-start px-2">
-                  <div className="flex flex-row bg-violet-600 rounded-full items-center p-1">
-                    <CalendarClock className="w-7 h-7 text-violet-700 bg-violet-100 p-1.5 rounded-full" />
+                  <div className="flex flex-row bg-red-500 rounded-full items-center p-1">
+                    <CalendarClock className="w-7 h-7 text-red-700 bg-red-50 p-1.5 rounded-full" />
                     <p className="font-semibold text-xs py-1.5 px-3 text-white">
                       {formatDate(post.projectStartDate)}
                     </p>
