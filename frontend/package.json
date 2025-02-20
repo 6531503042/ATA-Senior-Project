@@ -12,6 +12,7 @@
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@heroui/checkbox": "^2.3.9",
+    "@heroui/dropdown": "^2.3.13",
     "@heroui/system": "^2.4.7",
     "@heroui/theme": "^2.4.6",
     "@hookform/resolvers": "^4.0.0",

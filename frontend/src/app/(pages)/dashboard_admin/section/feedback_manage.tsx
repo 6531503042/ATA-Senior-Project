@@ -8,11 +8,50 @@ import {
   CircleDot,
   PlusCircle,
 } from "lucide-react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import FormPop from "@/app/components/forms/create_feedback_form";
+
+interface Post {
+  id: number;
+  text: string;
+  questionType: string;
+  category: string;
+}
 
 const feedback_manage = () => {
   const [formPop, SetFormPop] = useState(false);
+  const [postData, setPostData] = useState<Post[]>([]);
+
+  const getPosts = async () => {
+      try {
+        const token = localStorage.getItem("access_token");
+  
+        const res = await fetch(
+          "http://localhost:8084/api/v1/admin/questions/get-all",
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            cache: "no-store",
+          }
+        );
+  
+        if (!res.ok) {
+          throw new Error(`Failed to fetch data: ${res.status}`);
+        }
+  
+        const data = await res.json();
+        console.log("API Response:", data);
+        setPostData(data);
+      } catch (error) {
+        console.error("Error loading post:", error);
+      }
+    };
+  
+    useEffect(() => {
+      getPosts();
+    }, []);
 
   return (
     <div className="px-3 w-full h-full">
