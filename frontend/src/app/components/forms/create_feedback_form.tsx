@@ -2,19 +2,12 @@
 
 import {
   X,
-  FolderPlus,
   AlertTriangle,
   AlertCircle,
   CheckCircle2,
-  Plus,
   Rocket,
-  Trash2,
   CalendarIcon,
-  CheckSquare,
-  ListChecks,
   MessageSquare,
-  Star,
-  PlusCircle,
   Box,
   Wrench,
   SmilePlus,
@@ -22,8 +15,7 @@ import {
   BarChart,
   MoreHorizontal,
 } from "lucide-react";
-import React, { useState } from "react";
-import GroupsIcon from "@mui/icons-material/Groups";
+import React, { useEffect, useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
@@ -35,7 +27,7 @@ import { format } from "date-fns";
 import SelectWithIcon from "@/app/components/SelectWithIcon";
 import { Checkbox } from "@heroui/checkbox";
 
-interface form_project_manage {
+interface CreateFeedbackForm {
   setIsOpen: (isOpen: boolean) => void;
 }
 
@@ -44,6 +36,13 @@ interface PlusIconProps {
   height?: number;
   width?: number;
   [x: string]: any;
+}
+
+interface Post {
+  id: number;
+  text: string;
+  questionType: string;
+  category: string;
 }
 
 export const PlusIcon: React.FC<PlusIconProps> = ({
@@ -60,7 +59,6 @@ export const PlusIcon: React.FC<PlusIconProps> = ({
       width={size || width || 24}
       xmlns="http://www.w3.org/2000/svg"
       {...props}
-
     >
       <path
         d="M6 12H18"
@@ -76,14 +74,45 @@ export const PlusIcon: React.FC<PlusIconProps> = ({
         strokeLinejoin="round"
         strokeWidth="3"
       />
-      
     </svg>
   );
 };
 
-const form_project_manage: React.FC<form_project_manage> = ({ setIsOpen }) => {
+const CreateFeedbackForm: React.FC<CreateFeedbackForm> = ({ setIsOpen }) => {
+  const [selectedQuestions, setSelectedQuestions] = useState<number[]>([]);
   const [selectedType, setSelectedType] = useState("");
-  const [checked, setChecked] = useState(false);
+  const [postData, setPostData] = useState<Post[]>([]);
+
+  const getPosts = async () => {
+    try {
+      const token = localStorage.getItem("access_token");
+
+      const res = await fetch(
+        "http://localhost:8084/api/v1/admin/questions/get-all",
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          cache: "no-store",
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error(`Failed to fetch data: ${res.status}`);
+      }
+
+      const data = await res.json();
+      console.log("API Response:", data);
+      setPostData(data);
+    } catch (error) {
+      console.error("Error loading post:", error);
+    }
+  };
+
+  useEffect(() => {
+    getPosts();
+  }, []);
 
   const options = [
     { value: "Product", label: "Product", icon: Box },
@@ -149,9 +178,17 @@ const form_project_manage: React.FC<form_project_manage> = ({ setIsOpen }) => {
     );
   };
 
+  const toggleQuestionSelection = (questionId: number) => {
+    setSelectedQuestions((prev) =>
+      prev.includes(questionId)
+        ? prev.filter((id) => id !== questionId)
+        : [...prev, questionId]
+    );
+  };
+
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30">
-      <div className="bg-white shadow-2xl rounded-lg p-5 flex flex-col gap-3 w-[800px] max-h-full overflow-y-auto">
+      <div className="bg-white shadow-2xl rounded-lg p-5 flex flex-col gap-3 w-[900px] max-h-full overflow-y-auto">
         {/* Close Button and Title*/}
         <div className="flex flex-row">
           <div className="w-full flex flex-col gap-1 mt-2">
@@ -277,37 +314,44 @@ const form_project_manage: React.FC<form_project_manage> = ({ setIsOpen }) => {
               label="Due Date"
             />
           </div>
-          <div className="w-full flex flex-col">
-            <h3 className="text-xl font-semibold text-zinc-700">
+          <div className="flex flex-col items-center">
+            <h3 className="text-xl w-full font-semibold text-zinc-700">
               Select Questions
             </h3>
-            <label
-              className={`w-full flex flex-row items-start mt-3 p-4 border-2 rounded-md gap-1 cursor-pointer transition-colors ${
-                checked
-                  ? "bg-purple-50 border-purple-500"
-                  : "bg-white border-gray-300"
-              }`}
-              onClick={() => setChecked(!checked)}
-            >
-              <Checkbox
-                size="lg"
-                className="flex p-3 pointer-events-none"
-                icon={<PlusIcon />}
-                checked={checked}
-              />
-              <div className="flex flex-col gap-1">
-                <h3 className="text-base font-medium text-zinc-700">
-                  How satisfied are you with your work environment?
-                </h3>
-                <p  className={`rounded-lg w-max text-xs py-1 px-2 ${
-                checked
-                  ? "bg-white bg-opacity-90"
-                  : "bg-gray-100 bg-opacity-50"
-              }`}>
-                  SENTIMENT
-                </p>
-              </div>
-            </label>
+            <div className="flex flex-col p-2 gap-5 h-[300px] w-11/12 overflow-y-auto mt-3">
+              {postData.map((post) => (
+                <label
+                  key={post.id}
+                  className={`w-full flex flex-row items-start p-4 border-2 rounded-md hover:shadow-xl hover:shadow-zinc-100 duration-250 gap-1 cursor-pointer transition-all ${
+                    selectedQuestions.includes(post.id)
+                      ? "bg-purple-50 border-purple-500"
+                      : "bg-white border-zinc-300 border-opacity-10 shadow-md shadow-zinc-100 "
+                  }`}
+                  onClick={() => toggleQuestionSelection(post.id)}
+                >
+                  <Checkbox
+                    size="lg"
+                    className="flex p-3 pointer-events-none"
+                    icon={<PlusIcon />}
+                    checked={selectedQuestions.includes(post.id)}
+                  />
+                  <div className="flex flex-col gap-3 flex-1">
+                    <h1 className="text-xl font-semibold text-zinc-700">
+                      {post.text}
+                    </h1>
+                    <div className="flex flex-row gap-3 items-center">
+                      <p className="font-medium text-xs py-1 px-2 shadow-md border border-slate-500 border-opacity-5 rounded-2xl text-zinc-500">
+                        {post.questionType.charAt(0).toUpperCase() +
+                          post.questionType.slice(1)}
+                      </p>
+                      <p className="font-medium text-xs py-1 px-2 shadow-md border border-slate-500 border-opacity-5 rounded-2xl text-stone-600">
+                        {post.category}
+                      </p>
+                    </div>
+                  </div>
+                </label>
+              ))}
+            </div>
           </div>
           <div className="w-full flex flex-row justify-end gap-3">
             <button
@@ -332,4 +376,4 @@ const form_project_manage: React.FC<form_project_manage> = ({ setIsOpen }) => {
   );
 };
 
-export default form_project_manage;
+export default CreateFeedbackForm;

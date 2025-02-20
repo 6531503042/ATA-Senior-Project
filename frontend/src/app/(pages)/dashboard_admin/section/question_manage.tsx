@@ -1,9 +1,15 @@
 "use client";
 
-import { BookOpen, CircleDot, Search, SlidersHorizontal } from "lucide-react";
+import {
+  BookOpen,
+  CircleDot,
+  Search,
+  SlidersHorizontal,
+} from "lucide-react";
 import React, { useEffect, useState } from "react";
 import FormPop from "@/app/components/forms/create_question_manage";
 import MenuOption from "@/app/components/MenuOption";
+import GetAllQuestionByAPI from '@/app/api/GetAllQuestion'
 
 interface Post {
   id: number;
@@ -97,51 +103,8 @@ const QuestionManage = () => {
             ))}
           </ul>
         </div>
-
-        {/* Search Bar */}
-        <div className="flex flex-row gap-5 items-center my-5">
-          <div className="relative w-[500px]">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
-              type="text"
-              placeholder="Search questions..."
-              className="pl-10 pr-5 text-sm py-2 w-full border border-black border-opacity-10 shadow-sm bg-white rounded-lg outline-none focus:ring-[0.5px] focus:ring-zinc-200"
-            />
-          </div>
-          <button className="hover:shadow-lg transition-all shadow-sm p-2 border border-black rounded-lg border-opacity-10">
-            <SlidersHorizontal className="text-black text-opacity-80 w-4 h-4" />
-          </button>
-        </div>
-
-        {/* Question List */}
-        <div className="w-full h-auto">
-          <div className="grid grid-cols-2 gap-5">
-            {postData.length > 0 ? (
-              postData.map((post) => (
-                <div
-                  key={post.id}
-                  className="flex flex-col rounded-md shadow-xl p-7 gap-3 bg-white"
-                >
-                  <h1 className="text-3xl font-semibold text-zinc-700">{post.text}</h1>
-                  <span className="flex flex-row gap-3 ms-2">
-                    <p className="font-normal text-gray-500 text-sm">0 response</p>
-                    <p className="font-semibold text-sm">AI</p>
-                  </span>
-                  <div className="flex flex-row gap-3">
-                    <p className="font-medium text-sm py-1 px-2 shadow-md border border-slate-500 border-opacity-5 rounded-2xl text-zinc-700">
-                      Answer Type : {post.questionType}
-                    </p>
-                    <p className="font-medium text-sm py-1 px-2 shadow-md border border-slate-500 border-opacity-5 rounded-2xl text-zinc-700">
-                      {post.category}
-                    </p>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <p className="text-gray-500">No questions found.</p>
-            )}
-          </div>
-        </div>
+        {/* List All Question in DATABASE */}
+        <GetAllQuestionByAPI/>
       </div>
 
       {formPop && <FormPop setIsOpen={SetFormPop} />}

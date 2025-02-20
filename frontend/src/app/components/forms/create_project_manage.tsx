@@ -10,8 +10,9 @@ import {
   Rocket,
   Trash2,
   CalendarIcon,
+  ChevronDown,
 } from "lucide-react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import GroupsIcon from "@mui/icons-material/Groups";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -22,24 +23,58 @@ import {
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 
-interface create_project_manage {
+interface CreateProjectForm {
   setIsOpen: (isOpen: boolean) => void;
 }
 
-const create_project_manage: React.FC<create_project_manage> = ({ setIsOpen }) => {
-  const [teamMembers, setTeamMembers] = useState<string[]>([""]);
-  const [selectedPriority, setSelectedPriority] = useState<
-    "high" | "medium" | "low" | null
-  >(null);
+interface Post {
+  id: number;
+  fullname: string;
+  roles: string;
+}
+interface TeamMember {
+  id: string;
+  userId: number;
+}
+const CreateProjectForm: React.FC<CreateProjectForm> = ({ setIsOpen }) => {
+  const [projectName, setProjectName] = useState<string>("");
+  const [projectDescription, setProjectDescription] = useState<string>("");
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([{ id: "1", userId: 0 }]);
+  const [selectedPriority, setSelectedPriority] = useState<"high" | "medium" | "low" | null>(null);
   const [startDate, setStartDate] = useState<Date>();
   const [dueDate, setDueDate] = useState<Date>();
+  const [postData, setPostData] = useState<Post[]>([]);
 
   const handleAddMember = () => {
-    setTeamMembers([...teamMembers, ""]);
+    const newId = (teamMembers.length + 1).toString();
+    setTeamMembers([...teamMembers, { id: newId, userId: 0 }]);
   };
 
-  const handleRemoveMember = (index: number) => {
-    setTeamMembers(teamMembers.filter((_, i) => i !== index));
+  const handleRemoveMember = (id: string) => {
+    setTeamMembers(teamMembers.filter((member) => member.id !== id));
+  };
+
+  const handleMemberSelect = (
+    id: string,
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    const userId = parseInt(event.target.value);
+    
+    // Check if the selected user is already chosen by another member
+    const isDuplicate = teamMembers.some(
+      member => member.id !== id && member.userId === userId
+    );
+
+    if (isDuplicate && userId !== 0) {
+      alert("This team member has already been selected!");
+      return;
+    }
+
+    setTeamMembers(
+      teamMembers.map((member) =>
+        member.id === id ? { ...member, userId } : member
+      )
+    );
   };
 
   const handlePrioritySelect = (priority: "high" | "medium" | "low") => {
@@ -87,6 +122,103 @@ const create_project_manage: React.FC<create_project_manage> = ({ setIsOpen }) =
         </Popover>
       </div>
     );
+  };
+
+  const getPosts = async () => {
+    try {
+      const token = localStorage.getItem("access_token");
+
+      const res = await fetch("http://localhost:8081/api/manager/list", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        cache: "no-store",
+      });
+
+      if (!res.ok) {
+        throw new Error(`Failed to fetch data: ${res.status}`);
+      }
+
+      const data = await res.json();
+      setPostData(
+        data.filter((user: Post) => user.roles.includes("ROLE_USER"))
+      );
+    } catch (error) {
+      console.error("Error loading post:", error);
+    }
+  };
+
+  useEffect(() => {
+    getPosts();
+  }, []);
+
+  const handleCreateProject = async () => {
+    try {
+      const token = localStorage.getItem("access_token");
+      const formattedStartDate = startDate ? startDate.toISOString() : null;
+      const formattedEndDate = dueDate ? dueDate.toISOString() : null;
+  
+      const projectData = {
+        name: projectName,
+        description: projectDescription,
+        projectStartDate: formattedStartDate,
+        projectEndDate: formattedEndDate,
+      };
+  
+      const projectResponse = await fetch(
+        "http://localhost:8084/api/v1/admin/projects/create",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(projectData),
+        }
+      );
+  
+      if (!projectResponse.ok) {
+        throw new Error(`Failed to create project: ${projectResponse.status}`);
+      }
+  
+      const projectResult = await projectResponse.json();
+      const projectId = projectResult.id;
+  
+      console.log("Project Created:", projectResult);
+  
+      if (projectId && teamMembers.length > 0) {
+        const memberIds = teamMembers
+          .map((member) => member.userId)
+          .filter((id) => id !== 0);
+  
+        if (memberIds.length > 0) {
+          const addMembersResponse = await fetch(
+            `http://localhost:8084/api/v1/admin/projects/${projectId}/members`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({ memberIds }),
+            }
+          );
+  
+          if (!addMembersResponse.ok) {
+            throw new Error(
+              `Failed to add members: ${addMembersResponse.status}`
+            );
+          }
+  
+          console.log("Members Added Successfully:", await addMembersResponse.json());
+        }
+      }
+  
+      setIsOpen(false);
+    } catch (error) {
+      console.error("Error creating project:", error);
+    }
   };
 
   return (
@@ -173,6 +305,8 @@ const create_project_manage: React.FC<create_project_manage> = ({ setIsOpen }) =
             <h3 className="text-sm font-medium">Project Name</h3>
             <input
               type="text"
+              value={projectName}
+              onChange={(e) => setProjectName(e.target.value)}
               placeholder="e.g., Website Redesign"
               className="w-full border border-zinc-200 outline-none p-3 rounded-lg mt-2 text-sm focus:shadow-sm"
               required
@@ -181,6 +315,8 @@ const create_project_manage: React.FC<create_project_manage> = ({ setIsOpen }) =
           <div className="w-full flex flex-col">
             <h3 className="text-sm font-medium">Description</h3>
             <textarea
+              value={projectDescription}
+              onChange={(e) => setProjectDescription(e.target.value)}
               placeholder="Describe the project goals and objectives"
               className="w-full border border-zinc-200 outline-none p-3 rounded-lg mt-2 text-sm focus:shadow-sm"
             />
@@ -211,22 +347,39 @@ const create_project_manage: React.FC<create_project_manage> = ({ setIsOpen }) =
                 </p>
               </button>
             </div>
-            {teamMembers.map((_, index) => (
-              <div key={index} className="flex flex-row items-center gap-3">
+            {teamMembers.map((member) => (
+              <div key={member.id} className="flex flex-row items-center gap-3">
                 <div className="p-2 bg-blue-100 rounded-lg flex text-center">
                   <GroupsIcon
                     style={{ fontSize: "1.1rem", color: "transparent" }}
                     className="stroke-blue-400 stroke-[1.5px]"
                   />
                 </div>
-                <input
-                  type="text"
-                  placeholder="Enter team member name"
-                  className="w-full border border-zinc-200 outline-none py-2 px-3 rounded-md text-sm font-light focus:shadow-sm placeholder-zinc-500"
-                />
+                <div className="relative w-full">
+                  <select
+                    value={member.userId}
+                    onChange={(e) => handleMemberSelect(member.id, e)}
+                    className="w-full border border-zinc-200 outline-none p-3 rounded-lg text-sm font-light focus:shadow-sm appearance-none pr-10 bg-transparent"
+                  >
+                    <option value={0}>Select team member</option>
+                    {postData.map((user) => (
+                      <option key={user.id} value={user.id}>
+                        {`${user.fullname} (ID: ${user.id})`}
+                      </option>
+                    ))}
+                  </select>
+                  {member.userId !== 0 && (
+                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-xs text-gray-500">
+                  Selected ID: {member.userId}
+                </span>
+              )}
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                    <ChevronDown className="h-5 w-5 text-blue-500" />
+                  </div>
+                </div>
                 <button
                   type="button"
-                  onClick={() => handleRemoveMember(index)}
+                  onClick={() => handleRemoveMember(member.id)}
                   className="p-2 bg-red-100 hover:bg-red-200 rounded-md transition-all"
                 >
                   <Trash2 className="h-4 w-4 text-red-600" />
@@ -245,7 +398,7 @@ const create_project_manage: React.FC<create_project_manage> = ({ setIsOpen }) =
             <button
               type="button"
               className="border border-transparent bg-blue-800 py-2 px-3 text-sm rounded-md flex flex-row items-center gap-2 text-white hover:shadow-lg hover:shadow-blue-200 transition-all"
-              onClick={() => setIsOpen(false)}
+              onClick={handleCreateProject}
             >
               <Rocket className="h-4 w-4" />
               <p>Launch Project</p>
@@ -257,4 +410,4 @@ const create_project_manage: React.FC<create_project_manage> = ({ setIsOpen }) =
   );
 };
 
-export default create_project_manage;
+export default CreateProjectForm;

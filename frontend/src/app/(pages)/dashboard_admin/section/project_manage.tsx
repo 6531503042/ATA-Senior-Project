@@ -8,13 +8,13 @@ import {
   SlidersHorizontal,
   Search,
 } from "lucide-react";
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import FormPop from "@/app/components/forms/create_project_manage"
+import React, { useEffect, useState } from "react";
+import FormPop from "@/app/components/forms/create_project_manage";
 import MenuOption from "@/app/components/MenuOption";
-
+import GetAllProjectByAPI from '@/app/api/GetAllProject'
 
 const ProjectManage = () => {
+const [formPop, SetFormPop] = useState(false);
 
   const options = [
     {
@@ -42,9 +42,7 @@ const ProjectManage = () => {
       background: "bg-green-50",
     },
   ];
-
-  const [formPop, SetFormPop] = useState(false);
-  const router = useRouter();
+  
 
   return (
     <div className="px-3 w-full h-full">
@@ -52,19 +50,22 @@ const ProjectManage = () => {
         <div className="flex flex-row w-full h-auto items-center justify-between">
           <div className="flex flex-col gap-2">
             <h1 className="text-3xl font-bold text-blue-600">
-              Project Managemaent
+              Project Management
             </h1>
             <p className="text-base text-gray-500 font-normal">
               Manage and track your feedback collection projects
             </p>
           </div>
-          <button onClick={() => SetFormPop(true)} className="flex flex-row gap-2 text-white bg-blue-600 p-2.5 rounded-xl text-sm font-semibold items-center shadow-lg hover:shadow-xl transition-all">
+          <button
+            onClick={() => SetFormPop(true)}
+            className="flex flex-row gap-2 text-white bg-blue-600 p-2.5 rounded-xl text-sm font-semibold items-center shadow-lg hover:shadow-xl transition-all"
+          >
             <CircleDot className="w-4 h-4" />
             <p>New Project</p>
           </button>
         </div>
         <div className="w-full h-auto mt-9">
-        <ul className="grid 2xl:grid-cols-4 lg:grid-cols-2 grid-cols-1 gap-5">
+          <ul className="grid 2xl:grid-cols-4 lg:grid-cols-2 grid-cols-1 gap-5">
             {options.map((option, index) => (
               <MenuOption
                 key={index}
@@ -92,10 +93,11 @@ const ProjectManage = () => {
             <SlidersHorizontal className="text-black text-opacity-80 w-4 h-4" />
           </button>
         </div>
+        {/* List All Project in DATABASE */}
+        <GetAllProjectByAPI/>
       </div>
       {formPop && <FormPop setIsOpen={SetFormPop} />}
     </div>
-    
   );
 };
 
