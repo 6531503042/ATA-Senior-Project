@@ -4,6 +4,7 @@ import { BookOpen, CircleDot, FileText, PlusCircle } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import FormPop from "@/app/components/forms/FormFeedbackManagement";
 import MenuOption from "@/app/components/MenuOption";
+import GetAllFeedbackByAPI from "@/app/api/GetAllFeedback";
 
 interface Post {
   id: number;
@@ -142,6 +143,7 @@ const FormFeedbackManagement = () => {
           <PlusCircle className="w-5 h-5" />
           <p>Create Feedback Form</p>
         </button>
+        <GetAllFeedbackByAPI />
       </div>
 
       {formPop && <FormPop setIsOpen={setFormPop} />}
