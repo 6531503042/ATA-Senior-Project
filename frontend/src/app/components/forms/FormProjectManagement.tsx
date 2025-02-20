@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { DatePickerWithPresets } from "@/app/components/forms/ProjectForm/DatePicker";
-import { TeamMemberSelector } from "@/app/components/forms/ProjectForm/MemberSelector";
-import { ProjectForm } from "@/app/components/forms/ProjectForm/InputForm";
+import { DatePickerWithPresets } from "@/app/components/forms/ProjectComponent/DatePicker";
+import { TeamMemberSelector } from "@/app/components/forms/ProjectComponent/MemberSelector";
+import { ProjectForm } from "@/app/components/forms/ProjectComponent/InputForm";
 import { FolderPlus, X, Rocket } from "lucide-react";
 
 interface CreateProjectForm {

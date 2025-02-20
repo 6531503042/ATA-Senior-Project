@@ -9,12 +9,12 @@ import {
   Search,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import FormPop from "@/app/components/forms/ProjectForm/FormProjectManagement";
+import FormPop from "@/app/components/forms/FormProjectManagement";
 import MenuOption from "@/app/components/MenuOption";
-import GetAllProjectByAPI from '@/app/api/GetAllProject'
+import GetAllProjectByAPI from "@/app/api/GetAllProject";
 
 const ProjectManage = () => {
-const [formPop, SetFormPop] = useState(false);
+  const [formPop, SetFormPop] = useState(false);
 
   const options = [
     {
@@ -42,7 +42,6 @@ const [formPop, SetFormPop] = useState(false);
       background: "bg-green-50",
     },
   ];
-  
 
   return (
     <div className="px-3 w-full h-full">
@@ -80,21 +79,9 @@ const [formPop, SetFormPop] = useState(false);
             ))}
           </ul>
         </div>
-        <div className="flex flex-row gap-5 items-center my-5">
-          <div className="relative w-[640px]">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
-              type="text"
-              placeholder="Search projects..."
-              className="pl-10 pr-5 text-sm py-2 w-full border border-black border-opacity-10 shadow-sm bg-white rounded-lg outline-none focus:ring-[0.5px] focus:ring-zinc-200"
-            />
-          </div>
-          <button className="hover:shadow-lg transition-all shadow-sm p-2 border border-black rounded-lg border-opacity-10">
-            <SlidersHorizontal className="text-black text-opacity-80 w-4 h-4" />
-          </button>
-        </div>
+        
         {/* List All Project in DATABASE */}
-        <GetAllProjectByAPI/>
+        <GetAllProjectByAPI />
       </div>
       {formPop && <FormPop setIsOpen={SetFormPop} />}
     </div>

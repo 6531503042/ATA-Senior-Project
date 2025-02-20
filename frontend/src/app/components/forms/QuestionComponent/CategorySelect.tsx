@@ -38,7 +38,7 @@ const CategorySelect: React.FC<CategorySelectProps> = ({
   ];
 
   return (
-    <div className="flex w-full flex-col">
+    <div className="flex w-full flex-col overflow-y-auto">
       <h3 className="text-sm font-medium mb-2">Category</h3>
       <div className="">
         <SelectWithIcon

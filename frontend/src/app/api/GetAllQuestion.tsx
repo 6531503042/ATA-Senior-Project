@@ -1,16 +1,9 @@
 "use client";
 
-import {
-  Ellipsis,
-  Eye,
-  Filter,
-  MessageCircle,
-  Pencil,
-  Search,
-  Tag,
-} from "lucide-react";
+import { Search, Tag, ChevronDown } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import QuestionAll from "@/app/components/card-ui/QuestionCard";
+import SelectWithIcons from "../components/SelectWithIcon";
 
 interface Post {
   id: number;
@@ -65,12 +58,18 @@ const GetAllQuestion = () => {
   });
 
   const categories = ["All", ...new Set(postData.map((post) => post.category))];
+  const categoryOptions = categories.map((category) => ({
+    value: category,
+    label: category,
+    icon: Tag,
+  }));
 
   return (
-    <div className="w-ful py-8">
+    <div className="w-full py-8">
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
+        {/* Search Box */}
         <div className="relative w-[500px]">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <Search className="absolute left-3 top-[10px] text-gray-400 w-5 h-5" />
           <input
             type="text"
             placeholder="Search questions..."
@@ -79,23 +78,18 @@ const GetAllQuestion = () => {
             className="pl-10 pr-5 text-sm py-2 w-full border border-black border-opacity-10 shadow-sm bg-white rounded-lg outline-none focus:ring-[0.5px] focus:ring-zinc-200"
           />
         </div>
-        <div className="flex gap-2">
-          <select
-            className="px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 bg-white"
+
+        {/* Styled Dropdown */}
+        <div className="w-64 shadow-sm">
+          <SelectWithIcons
+            options={categoryOptions}
             value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-          >
-              {categories.map((category) => (
-                <option key={category} value={category} className="w-full">
-                  {category}
-                </option>
-              ))}
-          </select>
-          <button className="p-2 border border-slate-200 rounded-lg hover:bg-slate-50">
-            <Filter className="w-5 h-5 text-slate-600" />
-          </button>
+            title="Select Category"
+            onChange={setSelectedCategory}
+          />
         </div>
       </div>
+
       {/* Question List */}
       {filteredQuestions.length > 0 ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
