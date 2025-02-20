@@ -3,6 +3,8 @@
 import { BarChart2, Users, Star, Clock } from "lucide-react";
 import React from "react";
 import MenuOption from "@/app/components/MenuOption";
+import { AreaChartComponent } from "@/components/AreaChartComponent";
+import { BarChartComponent } from "@/components/BarChartComponent";
 
 
 const Overview = () => {
@@ -76,6 +78,10 @@ const Overview = () => {
               />
             ))}
           </ul>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+          <AreaChartComponent/>
+          <BarChartComponent/>
         </div>
       </div>
     </div>
