@@ -5,6 +5,7 @@ import dev.bengi.feedbackservice.domain.enums.QuestionCategory;
 import dev.bengi.feedbackservice.domain.enums.QuestionType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -17,6 +18,12 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
     @Query("SELECT q.category, COUNT(q) FROM Question q GROUP BY q.category")
     List<Object[]> countByCategory();
     
-    // Remove the problematic method since QuestionType is not a field in the Question entity
-    // We'll handle type-based queries differently if needed
+    long countByQuestionType(QuestionType type);
+    long countByCategory(QuestionCategory category);
+    
+    @Query("SELECT COUNT(q) FROM Question q WHERE q.category = :category AND q.required = true")
+    long countActiveQuestionsByCategory(@Param("category") QuestionCategory category);
+    
+    @Query("SELECT COUNT(q) FROM Question q WHERE q.questionType = :type AND q.required = true")
+    long countActiveQuestionsByType(@Param("type") QuestionType type);
 }

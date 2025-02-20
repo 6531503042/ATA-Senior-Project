@@ -65,13 +65,6 @@ public class Feedback {
     @Builder.Default
     private boolean allowAnonymous = true;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "feedback_confidential_users",
-            joinColumns = @JoinColumn(name = "feedback_id"))
-    @Column(name = "user_id")
-    @Builder.Default
-    private Set<Long> confidentialUserIds = new HashSet<>();
-
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

@@ -25,4 +25,6 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
     @Query("SELECT AVG(DATEDIFF(second, f.createdAt, s.submittedAt)) " +
            "FROM Feedback f JOIN FeedbackSubmission s ON f.id = s.feedback.id")
     Double getAverageResponseTime();
+
+    long countByActiveTrue();
 }

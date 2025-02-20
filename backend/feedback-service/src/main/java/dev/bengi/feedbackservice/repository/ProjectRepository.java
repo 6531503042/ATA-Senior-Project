@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Repository
@@ -18,4 +19,10 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     
     @Query("SELECT COUNT(p) FROM Project p WHERE p.projectEndDate <= CURRENT_TIMESTAMP")
     Long countCompletedProjects();
+
+    long countByProjectEndDateAfter(LocalDateTime date);
+    long countByProjectEndDateBefore(LocalDateTime date);
+    
+    @Query("SELECT COUNT(DISTINCT m) FROM Project p JOIN p.memberIds m")
+    long countTotalUniqueMembers();
 }

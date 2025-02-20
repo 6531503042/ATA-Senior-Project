@@ -1,9 +1,19 @@
 package dev.bengi.feedbackservice.service.impl;
 
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import dev.bengi.feedbackservice.domain.enums.PrivacyLevel;
 import dev.bengi.feedbackservice.domain.model.Feedback;
 import dev.bengi.feedbackservice.domain.model.FeedbackSubmission;
 import dev.bengi.feedbackservice.domain.model.Question;
-import dev.bengi.feedbackservice.domain.enums.PrivacyLevel;
 import dev.bengi.feedbackservice.domain.payload.request.FeedbackSubmissionRequest;
 import dev.bengi.feedbackservice.domain.payload.response.FeedbackSubmissionResponse;
 import dev.bengi.feedbackservice.domain.payload.response.QuestionDetailsResponse;
@@ -13,15 +23,6 @@ import dev.bengi.feedbackservice.repository.QuestionRepository;
 import dev.bengi.feedbackservice.service.FeedbackSubmissionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -61,7 +62,7 @@ public class FeedbackSubmissionServiceImpl implements FeedbackSubmissionService 
         // Create submission
         FeedbackSubmission submission = FeedbackSubmission.builder()
                 .feedback(feedback)
-                .submittedBy(request.getUserId())
+                .submittedBy(request.getPrivacyLevel() == PrivacyLevel.ANONYMOUS ? null : request.getUserId())
                 .responses(request.getResponses())
                 .overallComments(request.getOverallComments())
                 .privacyLevel(request.getPrivacyLevel())
@@ -106,13 +107,12 @@ public class FeedbackSubmissionServiceImpl implements FeedbackSubmissionService 
     }
 
     private boolean hasConfidentialPermission(Long userId, Feedback feedback) {
-        // Check if user has manager/admin role or specific confidential permission
-        return feedback.getProject().getMemberIds().contains(userId) ||
-               feedback.getConfidentialUserIds().contains(userId);
+        // All project members can submit confidential feedback
+        return feedback.getProject().getMemberIds().contains(userId);
     }
 
     private boolean hasPrivatePermission(Long userId, Feedback feedback) {
-        // Check if user has elevated role (e.g., team lead, manager)
+        // All project members can submit private feedback
         return feedback.getProject().getMemberIds().contains(userId);
     }
 
