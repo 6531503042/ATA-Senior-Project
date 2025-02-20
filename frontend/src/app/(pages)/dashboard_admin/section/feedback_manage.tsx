@@ -1,15 +1,9 @@
 "use client";
 
-import {
-  MessageSquare,
-  ThumbsUp,
-  ThumbsDown,
-  Brain,
-  CircleDot,
-  PlusCircle,
-} from "lucide-react";
+import { BookOpen, CircleDot, FileText, PlusCircle } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import FormPop from "@/app/components/forms/create_feedback_form";
+import FormPop from "@/app/components/forms/FeedbackForm/FormFeedbackManagement";
+import MenuOption from "@/app/components/MenuOption";
 
 interface Post {
   id: number;
@@ -18,40 +12,89 @@ interface Post {
   category: string;
 }
 
-const feedback_manage = () => {
-  const [formPop, SetFormPop] = useState(false);
-  const [postData, setPostData] = useState<Post[]>([]);
+const FormFeedbackManagement = () => {
+  const [formPop, setFormPop] = useState(false);
+  const [feedbackData, setFeedbackData] = useState<Post[]>([]);
+  const [questionData, setQuestionData] = useState<Post[]>([]);
 
-  const getPosts = async () => {
-      try {
-        const token = localStorage.getItem("access_token");
-  
-        const res = await fetch(
-          "http://localhost:8084/api/v1/admin/questions/get-all",
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-            cache: "no-store",
-          }
-        );
-  
-        if (!res.ok) {
-          throw new Error(`Failed to fetch data: ${res.status}`);
+  const getQuestions = async () => {
+    try {
+      const token = localStorage.getItem("access_token");
+
+      const res = await fetch(
+        "http://localhost:8084/api/v1/admin/questions/get-all",
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          cache: "no-store",
         }
-  
-        const data = await res.json();
-        console.log("API Response:", data);
-        setPostData(data);
-      } catch (error) {
-        console.error("Error loading post:", error);
+      );
+
+      if (!res.ok) {
+        throw new Error(`Failed to fetch questions: ${res.status}`);
       }
-    };
-  
-    useEffect(() => {
-      getPosts();
-    }, []);
+
+      const data = await res.json();
+      console.log("Questions API Response:", data);
+      setQuestionData(data);
+    } catch (error) {
+      console.error("Error loading questions:", error);
+    }
+  };
+
+  const getFeedbacks = async () => {
+    try {
+      const token = localStorage.getItem("access_token");
+
+      const res = await fetch(
+        "http://localhost:8084/api/v1/admin/feedbacks/get-all",
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          cache: "no-store",
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error(`Failed to fetch feedbacks: ${res.status}`);
+      }
+
+      const data = await res.json();
+      console.log("Feedback API Response:", data);
+      setFeedbackData(data);
+    } catch (error) {
+      console.error("Error loading feedbacks:", error);
+    }
+  };
+
+  useEffect(() => {
+    getQuestions();
+    getFeedbacks();
+  }, []);
+
+  // Dynamically update total counts
+  const options = [
+    {
+      title: "Total Feedback",
+      number: feedbackData.length.toString(),
+      icon: FileText,
+      color: "text-red-500",
+      subtitle: "Feedback in System",
+      background: "bg-red-50",
+    },
+    {
+      title: "Total Questions",
+      number: questionData.length.toString(),
+      icon: BookOpen,
+      color: "text-blue-500",
+      subtitle: "Questions in System",
+      background: "bg-blue-50",
+    },
+  ];
 
   return (
     <div className="px-3 w-full h-full">
@@ -66,24 +109,44 @@ const feedback_manage = () => {
             </p>
           </div>
           <button
-            onClick={() => SetFormPop(true)}
+            onClick={() => setFormPop(true)}
             className="flex flex-row gap-2 text-white bg-red-600 p-2.5 rounded-xl text-sm font-semibold items-center shadow-lg hover:shadow-xl transition-all"
           >
             <CircleDot className="w-4 h-4" />
             <p>New Feedback</p>
           </button>
         </div>
+
+        {/* Show total feedback and total questions */}
+        <div className="w-full h-auto mt-9">
+          <ul className="grid 2xl:grid-cols-4 lg:grid-cols-2 grid-cols-1 gap-5">
+            {options.map((option, index) => (
+              <MenuOption
+                key={index}
+                title={option.title}
+                number={option.number}
+                icon={option.icon}
+                color={option.color}
+                background={option.background}
+                subtitle={option.subtitle}
+                subtitle_color="text-zinc-400"
+              />
+            ))}
+          </ul>
+        </div>
+
         <button
-            onClick={() => SetFormPop(true)}
-            className="flex flex-row gap-2 text-white bg-red-600 p-2.5 rounded-xl text-sm font-semibold items-center shadow-lg hover:shadow-xl transition-all mt-9"
-          >
-            <PlusCircle className="w-5 h-5" />
-            <p>Create Feedback Form</p>
-          </button>
+          onClick={() => setFormPop(true)}
+          className="flex flex-row gap-2 text-white bg-red-600 p-2.5 rounded-xl text-sm font-semibold items-center shadow-lg hover:shadow-xl transition-all mt-9"
+        >
+          <PlusCircle className="w-5 h-5" />
+          <p>Create Feedback Form</p>
+        </button>
       </div>
-      {formPop && <FormPop setIsOpen={SetFormPop} />}
+
+      {formPop && <FormPop setIsOpen={setFormPop} />}
     </div>
   );
 };
 
-export default feedback_manage;
+export default FormFeedbackManagement;

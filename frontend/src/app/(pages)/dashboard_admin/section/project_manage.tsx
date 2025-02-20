@@ -9,7 +9,7 @@ import {
   Search,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import FormPop from "@/app/components/forms/create_project_manage";
+import FormPop from "@/app/components/forms/ProjectForm/FormProjectManagement";
 import MenuOption from "@/app/components/MenuOption";
 import GetAllProjectByAPI from '@/app/api/GetAllProject'
 
