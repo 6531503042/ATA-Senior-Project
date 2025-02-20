@@ -3,11 +3,9 @@
 import {
   BookOpen,
   CircleDot,
-  Search,
-  SlidersHorizontal,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import FormPop from "@/app/components/forms/create_question_manage";
+import FormPop from "@/app/components/forms/FormQuestionManagement";
 import MenuOption from "@/app/components/MenuOption";
 import GetAllQuestionByAPI from '@/app/api/GetAllQuestion'
 
@@ -103,7 +101,7 @@ const QuestionManage = () => {
             ))}
           </ul>
         </div>
-        {/* List All Question in DATABASE */}
+        {/* List All Question in DATABASE , Searching area*/}
         <GetAllQuestionByAPI/>
       </div>
 
