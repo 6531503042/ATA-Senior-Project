@@ -60,3 +60,4 @@ node_modules/
 frontend/package-lock.json
 *.json
 
+frontend/bun.lockb
