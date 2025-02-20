@@ -6,17 +6,6 @@ import MenuOption from "@/app/components/MenuOption";
 
 
 const Overview = () => {
-  interface MenuOption {
-    title: string;
-    number: string;
-    icon: React.FC<any>;
-    color: string;
-    background?: string;
-    subtitle?: string;
-    trend?: string;
-    subtitle_color?: string;
-  }
-
   const options = [
     {
       title: "Total Responses",
