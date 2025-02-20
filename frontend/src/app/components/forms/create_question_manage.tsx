@@ -225,7 +225,7 @@ const FormProjectManage: React.FC<FormProjectManageProps> = ({ setIsOpen }) => {
 
   // Rest of the JSX remains the same
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30">
+    <div className="fixed z-50 inset-0 flex items-center justify-center bg-black bg-opacity-30">
       <div className="bg-white shadow-2xl rounded-lg p-5 flex flex-col gap-3 w-[600px] max-h-full overflow-y-auto">
         {/* Form header remains the same */}
         <div className="flex flex-row">
