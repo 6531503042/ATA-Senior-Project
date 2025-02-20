@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import Link from "next/link";
 import {
@@ -7,12 +5,12 @@ import {
   MessageCircle,
   CircleHelp,
   LucideIcon,
-  FolderOpenDot,
-  LayoutDashboard,
-  Folder,
   FolderClosed,
+  LayoutDashboard,
   Star,
   LogOut,
+  Menu,
+  X
 } from "lucide-react";
 import Logo from "@/app/assets/ata-logo.png";
 import { useRouter } from "next/navigation";
@@ -36,11 +34,11 @@ interface SidebarProps {
 }
 
 const Sidebar = ({ onComponentChange }: SidebarProps) => {
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
   const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null);
   const [activeComponent, setActiveComponent] = useState<string>("overview");
   const [activeMainMenu, setActiveMainMenu] = useState<string>("Overview");
-  const router = useRouter(); // Use the useRouter hook for routing
+  const router = useRouter();
 
   const options: MenuOption[] = [
     {
@@ -84,7 +82,7 @@ const Sidebar = ({ onComponentChange }: SidebarProps) => {
   ];
 
   const handleMenuClick = (option: MenuOption): void => {
-    if (option.subMenu) {
+    if (option.subMenu && option.subMenu.length > 0) {
       setActiveSubmenu(activeSubmenu === option.name ? null : option.name);
     } else {
       onComponentChange(option.component);
@@ -101,10 +99,8 @@ const Sidebar = ({ onComponentChange }: SidebarProps) => {
   };
 
   const handleLogout = () => {
-    // Clear the authentication data from localStorage
     localStorage.removeItem("access_token");
     localStorage.removeItem("user");
-    // Redirect to sign-in page
     router.push("/signin");
   };
 
@@ -116,23 +112,47 @@ const Sidebar = ({ onComponentChange }: SidebarProps) => {
   };
 
   return (
-    <div className="w-64 h-full overflow-y-auto bg-white shadow-xl border-r border-opacity-5 border-r-black">
-      <div className="w-full h-full flex flex-col items-center">
+    <div
+      className={`h-full bg-white shadow-xl border-r border-opacity-5 border-r-black transition-all duration-300 relative ${
+        isOpen ? "w-64" : "w-20"
+      }`}
+    >
+      {/* Toggle Button */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="absolute -right-3 top-4 z-50 p-1 rounded-full bg-white shadow-lg border border-gray-200"
+      >
+        {isOpen ? (
+          <ChevronRight className="w-4 h-4 text-gray-600" />
+        ) : (
+          <ChevronRight className="w-4 h-4 text-gray-600 rotate-180" />
+        )}
+      </button>
+
+      <div className="w-full h-full flex flex-col items-center overflow-hidden">
         {/* Logo */}
         <Link href="/dashboard_admin" className="p-3">
-          <img src={Logo.src} className="w-auto md:h-10 h-5 " alt="Logo" />
+          <img
+            src={Logo.src}
+            className={`w-auto transition-all duration-300 ${
+              isOpen ? "md:h-10 h-5" : "h-5"
+            }`}
+            alt="Logo"
+          />
         </Link>
-        <div className="bg-zinc-100 h-[1px] w-full"></div>
-        {/* Sidebar Menu */}
-        <div className="w-full p-5">
+        <div className="bg-zinc-100 h-[1px] w-full" />
+
+        {/* Menu Items */}
+        <div className="w-full p-5 overflow-y-auto">
           <ul className="w-full flex flex-col gap-2">
             {options.map((option) => {
               const Icon = option.icon;
               const hasSubmenu = option.subMenu && option.subMenu.length > 0;
               const isActive =
                 isComponentActive(option) ||
-                (option.subMenu && option.subMenu.some(subItem => activeComponent === subItem.component));
-
+                (option.subMenu?.some(
+                  (subItem) => activeComponent === subItem.component
+                ) ?? false);
               const isSubmenuOpen = activeSubmenu === option.name;
 
               return (
@@ -140,26 +160,26 @@ const Sidebar = ({ onComponentChange }: SidebarProps) => {
                   <div
                     className={`flex items-center justify-between p-3 rounded-lg cursor-pointer transition text-sm ${
                       isActive
-                        ? " text-blue-600 font-semibold"
+                        ? "text-blue-600 font-semibold"
                         : "text-gray-600 font-medium hover:bg-gray-100"
                     }`}
                     onClick={() => handleMenuClick(option)}
                   >
                     <div className="flex items-center gap-5">
                       <Icon className="w-5 h-5" />
-                      <span>{option.name}</span>
+                      {isOpen && <span>{option.name}</span>}
                     </div>
-                    {hasSubmenu && (
+                    {hasSubmenu && isOpen && (
                       <ChevronRight
-                        className={`w-4 h-4 transition-transform  ${
-                          isSubmenuOpen ? "rotate-90 " : ""
+                        className={`w-4 h-4 transition-transform ${
+                          isSubmenuOpen ? "rotate-90" : ""
                         }`}
                       />
                     )}
                   </div>
 
                   {/* Submenu */}
-                  {hasSubmenu && option.subMenu && (
+                  {hasSubmenu && isOpen && option.subMenu && (
                     <div
                       className={`overflow-hidden transition-all duration-300 ${
                         isSubmenuOpen ? "max-h-48" : "max-h-0"
@@ -191,16 +211,17 @@ const Sidebar = ({ onComponentChange }: SidebarProps) => {
                 </li>
               );
             })}
+
             {/* Sign Out Button */}
-            <li className="w-full mt-auto">
+            <button className="w-full mt-auto">
               <div
                 onClick={handleLogout}
                 className="flex items-center p-3 rounded-lg cursor-pointer transition text-sm text-gray-600 hover:bg-gray-100"
               >
-                <LogOut className="w-5 h-5 mr-2" />
-                <span>Sign Out</span>
+                <LogOut className="w-5 h-5" />
+                {isOpen && <span className="ml-2">Sign Out</span>}
               </div>
-            </li>
+            </button>
           </ul>
         </div>
       </div>

@@ -11,7 +11,7 @@ import QuestionManage from "@/app/(pages)/dashboard_admin/section/question_manag
 import FeedbackDashboard from "@/app/(pages)/dashboard_admin/section/feedback_dashboard";
 import FeedbackManage from "@/app/(pages)/dashboard_admin/section/feedback_manage";
 import Score from "./section/score_overall";
-import { useRouter } from "next/navigation"; // Correct import
+import { useRouter } from "next/navigation";
 import LeadingScreen from "@/app/components/loadingscreen/loadingscreen_admin";
 
 const ComponentMap = {
@@ -28,7 +28,7 @@ const ComponentMap = {
 const Page = () => {
   const [loading, setLoading] = useState(true);
   const [currentComponent, setCurrentComponent] = useState("overview");
-  const router = useRouter(); // Use the useRouter hook for routing
+  const router = useRouter();
 
   const handleComponentChange = (componentName: string) => {
     setCurrentComponent(componentName);
@@ -39,7 +39,7 @@ const Page = () => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const token = localStorage.getItem("access_token"); // Use 'token' key for consistency
+      const token = localStorage.getItem("access_token");
       const userInfo = localStorage.getItem("user");
 
       if (!token || !userInfo) {
@@ -55,7 +55,7 @@ const Page = () => {
       } else if (userRole === "ROLE_USER") {
         router.push("/user_page");
       } else {
-        router.push("/signin"); // Redirect if role is undefined
+        router.push("/signin");
       }
     };
 
@@ -71,11 +71,11 @@ const Page = () => {
   }
 
   return (
-    <div className="w-full h-screen flex flex-row ">
+    <div className="w-full h-screen flex flex-row">
       <Sidebar onComponentChange={handleComponentChange} />
       <div className="flex-1 flex w-full flex-col overflow-y-auto overflow-x-auto">
         <Navbar />
-        <main className="p-12 max-w-full max-h-full min-w-[320px]">
+        <main className="p-4 md:p-12 max-w-full max-h-full min-w-[320px]">
           {CurrentComponent && <CurrentComponent />}
         </main>
       </div>

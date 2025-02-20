@@ -5,16 +5,23 @@ import {
   Calendar,
   FolderOpen,
   CircleDot,
-  SlidersHorizontal,
-  Search,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import FormPop from "@/app/components/forms/FormProjectManagement";
 import MenuOption from "@/app/components/MenuOption";
 import GetAllProjectByAPI from "@/app/api/GetAllProject";
 
+interface Post {
+  id: number;
+  text: string;
+  questionType: string;
+  category: string;
+}
+
 const ProjectManage = () => {
   const [formPop, SetFormPop] = useState(false);
+  const [feedbackData, setFeedbackData] = useState<Post[]>([]);
+    const [questionData, setQuestionData] = useState<Post[]>([]);
 
   const options = [
     {
