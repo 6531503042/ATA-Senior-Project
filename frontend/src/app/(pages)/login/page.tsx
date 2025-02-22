@@ -42,7 +42,7 @@ const LoginPage: React.FC = () => {
       if (data.user_info.roles.includes("ROLE_ADMIN")) {
         router.push("/dashboard_admin");
       } else {
-        router.push("/dashboard_user");
+        router.push("/user_page");
       }
       
     } catch (error) {
