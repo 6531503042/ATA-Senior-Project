@@ -5,9 +5,9 @@ import {
   CircleDot,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import FormPop from "@/app/(pages)/admin/components/forms/QuestionManagement";
-import MenuOption from "@/app/(pages)/admin/components/MenuOption";
-import GetAllQuestionByAPI from '@/app/(pages)/admin/components/api/GetAllQuestion'
+import FormPop from "@/app/(pages)/modules/forms/QuestionManagement";
+import MenuOption from "@/app/(pages)/modules/components/MenuOption";
+import GetAllQuestionByAPI from '@/app/(pages)/modules/components/api/GetAllQuestion'
 
 interface Post {
   id: number;

@@ -1,4 +1,4 @@
-import SelectWithIcon from "@/app/(pages)/admin/components/SelectWithIcon";
+import SelectWithIcon from "@/app/(pages)/modules/components/SelectWithIcon";
 import { CheckSquare, ListChecks, MessageSquare, Star } from "lucide-react";
 import React from "react";
 

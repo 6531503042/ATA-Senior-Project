@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Sidebar from "@/app/(pages)/admin/components/sidebar/sidebar";
+import Sidebar from "@/app/(pages)/modules/components/sidebar/sidebar";
 import Navbar from "@/app/components/navbar/navbar";
 import Overview from "@/app/(pages)/admin/section/overview";
 import ProjectDashboard from "@/app/(pages)/admin/section/Project/dashboard";

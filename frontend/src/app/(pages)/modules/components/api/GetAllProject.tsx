@@ -1,31 +1,27 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import Dropdown from "@/app/(pages)/admin/components/dropdown-ui/DropdownProjectManage";
+import Dropdown from "@/app/(pages)/modules/components/dropdown-ui/DropdownCardProjectManage";
 import {
+  Briefcase,
   CalendarClock,
   Captions,
   ChevronRight,
+  Clipboard,
   Search,
   Users,
 } from "lucide-react";
 
 interface Post {
   id: number;
-  title: string;
+  name: string;
+  memberIds: string[] | string | number[];
   description: string;
-  project: {
-    id: number;
-    name: string;
-    description: string;
-    memberIds: number[];
-    projectStartDate: string;
-    projectEndDate: string;
-  };
+  projectStartDate: string;
+  projectEndDate: string;
 }
 
-
-const GetAllFeedback = () => {
+const GetAllProject = () => {
   const [postData, setPostData] = useState<Post[]>([]);
   const [hoveredProjectId, setHoveredProjectId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -85,7 +81,7 @@ const GetAllFeedback = () => {
       const token = localStorage.getItem("access_token");
 
       const res = await fetch(
-        "http://localhost:8084/api/v1/admin/feedbacks/get-all",
+        "http://localhost:8084/api/v1/admin/projects/all",
         {
           method: "GET",
           headers: {
@@ -112,7 +108,7 @@ const GetAllFeedback = () => {
   }, []);
 
   const filteredProjects = postData.filter((post) =>
-    post.title.toLowerCase().includes(searchTerm.toLowerCase())
+    post.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -151,9 +147,9 @@ const GetAllFeedback = () => {
                 <div className="flex flex-row  rounded-full items-center gap-3">
                   <h1
                     className="text-2xl font-semibold text-zinc-700 truncate"
-                    title={post.title}
+                    title={post.description}
                   >
-                    {truncateText(post.title, 25)}
+                    {truncateText(post.name, 25)}
                   </h1>
                 </div>
                 <div className="flex flex-row items-center gap-3 px-2">
@@ -168,17 +164,17 @@ const GetAllFeedback = () => {
                   </p>
                 </div>
 
-                <div className="flex flex-row gap-3 items-start px-2">
-                  <div className="flex flex-row bg-green-500 rounded-full items-center p-1">
-                    <CalendarClock className="w-7 h-7 text-green-700 bg-green-50 p-1.5 rounded-full" />
-                    <p className="font-semibold text-xs py-1.5 px-3 text-white">
-                    {formatDate(post.project.projectStartDate)}
-                    </p>
-                  </div>
+                <div className="flex flex-col gap-3 items-start px-2">
                   <div className="flex flex-row bg-red-500 rounded-full items-center p-1">
                     <CalendarClock className="w-7 h-7 text-red-700 bg-red-50 p-1.5 rounded-full" />
                     <p className="font-semibold text-xs py-1.5 px-3 text-white">
-                    {formatDate(post.project.projectEndDate)}
+                      {formatDate(post.projectStartDate)}
+                    </p>
+                  </div>
+                  <div className="flex flex-row bg-blue-600 rounded-full items-center p-1">
+                    <Users className="w-7 h-7 text-blue-700 bg-blue-100 p-1.5 rounded-full" />
+                    <p className="font-semibold text-xs py-1.5 px-3 text-white">
+                      {countTotalUsers(post.memberIds)} Members
                     </p>
                   </div>
                 </div>
@@ -205,4 +201,4 @@ const GetAllFeedback = () => {
   );
 };
 
-export default GetAllFeedback;
+export default GetAllProject;

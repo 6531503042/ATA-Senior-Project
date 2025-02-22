@@ -5,9 +5,9 @@ spring:
     allow-bean-definition-overriding: true
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:3307/user
+    url: jdbc:postgresql://localhost:5432/user
     username: postgres
-    password: 6531503042
+    password: 1234
   application:
     name: user-service
   jpa:
