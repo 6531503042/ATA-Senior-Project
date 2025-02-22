@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Background from "@/app/assets/background.png";
-import LeadingScreen from '@/app/components/loadingscreen/loadingscreen_admin';
+import LeadingScreen from '@/components/loadingscreen/loadingscreen_admin';
 import { useAuthRedirect } from "../../utils/useAuthRedirect"; // Import the custom hook
 
 export default function Home() {

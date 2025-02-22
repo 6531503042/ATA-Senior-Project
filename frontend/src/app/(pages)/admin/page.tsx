@@ -1,28 +1,28 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Sidebar from "@/app/components/sidebar/sidebar";
+import Sidebar from "@/app/(pages)/admin/components/sidebar/sidebar";
 import Navbar from "@/app/components/navbar/navbar";
-import Overview from "@/app/(pages)/dashboard_admin/section/overview";
-import ProjectDashboard from "@/app/(pages)/dashboard_admin/section/project_dashboard";
-import ProjectManage from "@/app/(pages)/dashboard_admin/section/project_manage";
-import QuestionDashboard from "@/app/(pages)/dashboard_admin/section/question_dashboard";
-import QuestionManage from "@/app/(pages)/dashboard_admin/section/question_manage";
-import FeedbackDashboard from "@/app/(pages)/dashboard_admin/section/feedback_dashboard";
-import FeedbackManage from "@/app/(pages)/dashboard_admin/section/feedback_manage";
+import Overview from "@/app/(pages)/admin/section/overview";
+import ProjectDashboard from "@/app/(pages)/admin/section/Project/dashboard";
+import ProjectManage from "@/app/(pages)/admin/section/Project/manage";
+import QuestionDashboard from "@/app/(pages)/admin/section/Question/dashboard";
+import QuestionManage from "@/app/(pages)/admin/section/Question/manage";
+import FeedbackDashboard from "@/app/(pages)/admin/section/Feedback/dashboard";
+import FeedbackManage from "@/app/(pages)/admin/section/Feedback/manage";
 import Score from "./section/score_overall";
 import { useRouter } from "next/navigation";
-import LeadingScreen from "@/app/components/loadingscreen/loadingscreen_admin";
+import LeadingScreen from "@/components/loadingscreen/loadingscreen_admin";
 
 const ComponentMap = {
-  overview: Overview,
-  score_overall: Score,
-  project_dashboard: ProjectDashboard,
-  project_manage: ProjectManage,
-  question_dashboard: QuestionDashboard,
-  question_manage: QuestionManage,
-  feedback_dashboard: FeedbackDashboard,
-  feedback_manage: FeedbackManage,
+  "overview": Overview,
+  "score_overall": Score,
+  "Project/dashboard": ProjectDashboard,
+  "Project/manage": ProjectManage,
+  "Question/dashboard": QuestionDashboard,
+  "Question/manage": QuestionManage,
+  "Feedback/dashboard": FeedbackDashboard,
+  "Feedback/manage": FeedbackManage,
 };
 
 const Page = () => {
@@ -51,9 +51,9 @@ const Page = () => {
       const userRole = parsedUserInfo.roles ? parsedUserInfo.roles[0] : null;
 
       if (userRole === "ROLE_ADMIN") {
-        router.push("/dashboard_admin");
+        router.push("/admin");
       } else if (userRole === "ROLE_USER") {
-        router.push("/user_page");
+        router.push("/page");
       } else {
         router.push("/signin");
       }

@@ -2,7 +2,7 @@
 
 import { FileText, UserPlus, ThumbsUp, Hourglass } from "lucide-react";
 import React from "react";
-import MenuOption from "@/app/components/MenuOption";
+import MenuOption from "@/app/(pages)/admin/components/MenuOption";
 
 const score_overall = () => {
   const options = [

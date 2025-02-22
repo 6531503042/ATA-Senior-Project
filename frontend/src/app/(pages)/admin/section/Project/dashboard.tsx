@@ -2,7 +2,7 @@
 
 import { Folders, Users, MessageSquare, HelpCircle } from "lucide-react";
 import React from "react";
-import MenuOption from "@/app/components/MenuOption";
+import MenuOption from "@/app/(pages)/admin/components/MenuOption";
 
 const ProjectDashboard = () => {
   interface MenuOption {

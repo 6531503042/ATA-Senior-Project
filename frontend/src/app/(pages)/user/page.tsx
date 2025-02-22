@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import LeadingScreen from "@/app/components/loadingscreen/loadingscreen_admin";
+import LeadingScreen from "@/components/loadingscreen/loadingscreen_admin";
 import authMiddleware from "../../../../middleware/authMiddleware";
 
 const Page = () => {
@@ -26,9 +26,9 @@ const Page = () => {
       const userRole = parsedUserInfo.roles ? parsedUserInfo.roles[0] : null;
     
       if (userRole === "ROLE_ADMIN") {
-        router.push("/dashboard_admin");
+        router.push("/admin");
       } else if (userRole === "ROLE_USER") {
-        router.push("/user_page");
+        router.push("/page");
       } else {
         router.push("/signin");  // Redirect if role is undefined
       }

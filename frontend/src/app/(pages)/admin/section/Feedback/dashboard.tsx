@@ -1,46 +1,46 @@
 "use client";
 
-import { HelpCircle, BarChart2, Target, Lightbulb } from "lucide-react";
+import { MessageSquare, ThumbsUp, ThumbsDown, Clock, Brain } from "lucide-react";
 import React from "react";
-import MenuOption from "@/app/components/MenuOption";
+import MenuOption from "@/app/(pages)/admin/components/MenuOption";
 
-const QuestionDashboard = () => {
+const FeedbackDashboard = () => {
 
   const options = [
     {
-      title: "Active Questions",
-      number: "156",
-      trend: "+12 this month",
-      icon: HelpCircle,
+      title: "Total Feedback",
+      number: "2,847",
+      trend: "+156 this week",
+      icon: MessageSquare,
       color: "text-blue-500",
-      subtitle: "Questions in use",
+      subtitle: "Responses collected",
       background: "bg-blue-50",
     },
     {
-      title: "Engagement Rate",
-      number: "87%",
+      title: "Positive Feedback",
+      number: "78%",
       trend: "+5% vs last month",
-      icon: Target,
+      icon: ThumbsUp,
       color: "text-green-500",
-      subtitle: "Average response rate",
+      subtitle: "1,986 responses",
       background: "bg-green-50",
     },
     {
-      title: "Top Performing",
-      number: "Customer Support",
-      trend: "92% response rate",
-      icon: BarChart2,
-      color: "text-purple-500",
-      subtitle: "Most engaged category",
-      background: "bg-purple-50",
+      title: "Negative Feedback",
+      number: "22%",
+      trend: "-3% vs last month",
+      icon: ThumbsDown,
+      color: "text-red-500",
+      subtitle: "861 responses",
+      background: "bg-red-50",
     },
     {
-      title: "Insights Generated",
-      number: "1,284",
-      trend: "+243 this week",
-      icon: Lightbulb,
+      title: "Sentiment Score",
+      number: "84%",
+      trend: "+2% vs last month",
+      icon: Brain,
       color: "text-amber-500",
-      subtitle: "Data points collected",
+      subtitle: "Overall sentiment score",
       background: "bg-amber-50",
     },
   ];
@@ -49,13 +49,14 @@ const QuestionDashboard = () => {
     <div className="px-3 w-full h-full">
       <div className="w-full h-full">
         <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-bold text-violet-500">
-            Question Analytics
+          <h1 className="text-3xl font-bold text-red-600">
+            Feedback Analytics
           </h1>
           <p className="text-base text-gray-500 font-normal">
-            Monitor question performance and feedback insights
+            Monitor feedback trends and sentiment analysis
           </p>
         </div>
+
         <div className="w-full h-auto mt-9">
         <ul className="grid 2xl:grid-cols-4 lg:grid-cols-2 grid-cols-1 gap-5">
             {options.map((option, index) => (
@@ -78,4 +79,4 @@ const QuestionDashboard = () => {
   );
 };
 
-export default QuestionDashboard;
+export default FeedbackDashboard;

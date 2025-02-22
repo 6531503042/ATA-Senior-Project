@@ -2,8 +2,8 @@
 
 import { Search, Tag, ChevronDown } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import QuestionAll from "@/app/components/card-ui/QuestionCard";
-import SelectWithIcons from "../components/SelectWithIcon";
+import QuestionAll from "@/app/(pages)/admin/components/card-ui/QuestionCard";
+import SelectWithIcons from "../SelectWithIcon";
 
 interface Post {
   id: number;

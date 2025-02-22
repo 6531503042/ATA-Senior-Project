@@ -7,9 +7,9 @@ import {
   CircleDot,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import FormPop from "@/app/components/forms/FormProjectManagement";
-import MenuOption from "@/app/components/MenuOption";
-import GetAllProjectByAPI from "@/app/api/GetAllProject";
+import FormPop from "@/app/(pages)/admin/components/forms/ProjectManagement";
+import MenuOption from "@/app/(pages)/admin/components/MenuOption";
+import GetAllProjectByAPI from "@/app/(pages)/admin/components/api/GetAllProject";
 
 interface Post {
   id: number;

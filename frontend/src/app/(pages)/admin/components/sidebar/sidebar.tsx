@@ -52,8 +52,8 @@ const Sidebar = ({ onComponentChange }: SidebarProps) => {
       component: "project",
       icon: FolderClosed,
       subMenu: [
-        { name: "Dashboard", component: "project_dashboard" },
-        { name: "Management", component: "project_manage" },
+        { name: "Dashboard", component: "Project/dashboard" },
+        { name: "Management", component: "Project/manage" },
       ],
     },
     {
@@ -61,8 +61,8 @@ const Sidebar = ({ onComponentChange }: SidebarProps) => {
       component: "question",
       icon: CircleHelp,
       subMenu: [
-        { name: "Dashboard", component: "question_dashboard" },
-        { name: "Management", component: "question_manage" },
+        { name: "Dashboard", component: "Question/dashboard" },
+        { name: "Management", component: "Question/manage" },
       ],
     },
     {
@@ -70,8 +70,8 @@ const Sidebar = ({ onComponentChange }: SidebarProps) => {
       component: "feedback",
       icon: MessageCircle,
       subMenu: [
-        { name: "Dashboard", component: "feedback_dashboard" },
-        { name: "Management", component: "feedback_manage" },
+        { name: "Dashboard", component: "Feedback/dashboard" },
+        { name: "Management", component: "Feedback/manage" },
       ],
     },
     {
@@ -131,7 +131,7 @@ const Sidebar = ({ onComponentChange }: SidebarProps) => {
 
       <div className="w-full h-full flex flex-col items-center overflow-hidden">
         {/* Logo */}
-        <Link href="/dashboard_admin" className="p-3">
+        <Link href="/admin" className="p-3">
           <img
             src={Logo.src}
             className={`w-auto transition-all duration-300 ${

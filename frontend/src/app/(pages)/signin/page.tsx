@@ -85,9 +85,9 @@ const SignIn = () => {
         setTimeout(() => {
           const roles = data.user_info.roles;
           if (roles && roles.includes("ROLE_ADMIN")) {
-            router.push('/dashboard_admin');
+            router.push('/admin');
           } else if (roles && roles.includes("ROLE_USER")) {
-            router.push('/dashboard_user');
+            router.push('/user');
           } else {
             router.push('/');  
           }
@@ -115,9 +115,9 @@ const SignIn = () => {
       const userInfo = JSON.parse(user);
       const roles = userInfo.roles;
       if (roles && roles.includes("ROLE_ADMIN")) {
-        router.push('/dashboard_admin');
+        router.push('/admin');
       } else if (roles && roles.includes("ROLE_USER")) {
-        router.push('/user_page');
+        router.push('/page');
       } else {
         router.push('/');  // Default fallback if no valid role
       }
@@ -180,10 +180,6 @@ const SignIn = () => {
         <div className="mt-4 text-center text-gray-600">
           <a href="#" className="text-blue-600 hover:underline">Forgot password?</a>
         </div>
-
-        <p className="mt-6 text-center text-gray-600">
-          Don't have an account? <a href="/signup" className="text-blue-600 hover:underline">Sign up</a>
-        </p>
       </div>
     </div>
   );

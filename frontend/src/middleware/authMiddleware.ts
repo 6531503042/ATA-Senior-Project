@@ -14,10 +14,10 @@ export function middleware(req: NextRequest) {
         const path = req.nextUrl.pathname;
 
 
-        if (decoded.role === "USER" && path !== "/dashboard_user") {
-            return NextResponse.redirect(new URL("/dashboard_user", req.url));
-        } else if (decoded.role === "ADMIN" && path !== "/dashboard_admin") {
-            return NextResponse.redirect(new URL("/dashboard_admin", req.url));
+        if (decoded.role === "USER" && path !== "/user") {
+            return NextResponse.redirect(new URL("/user", req.url));
+        } else if (decoded.role === "ADMIN" && path !== "/admin") {
+            return NextResponse.redirect(new URL("/admin", req.url));
         }
     } catch (error) {
         console.error("Invalid token:", error);
@@ -28,5 +28,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-    matcher: ["/dashboard_user", "/dashboard_admin"], 
+    matcher: ["/user", "/admin"], 
 };

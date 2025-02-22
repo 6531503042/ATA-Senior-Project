@@ -2,13 +2,13 @@
 
 import React, { useState } from "react";
 import axios from "axios";
-import FormHeader from "@/app/components/forms/QuestionComponent/FormHeader";
-import QuestionTypeSelect from "@/app/components/forms/QuestionComponent/QuestionTypeSelector";
-import CategorySelect from "@/app/components/forms/QuestionComponent/CategorySelect";
-import QuestionFields from "@/app/components/forms/QuestionComponent/QuestionField";
-import AnswerOptions from "@/app/components/forms/QuestionComponent/AnswerOptions";
-import SentimentOptions from "@/app/components/forms/QuestionComponent/SentimentOptions";
-import FormActions from "@/app/components/forms/QuestionComponent/FormActions";
+import FormHeader from "@/app/(pages)/admin/components/forms/QuestionComponent/FormHeader";
+import QuestionTypeSelect from "@/app/(pages)/admin/components/forms/QuestionComponent/QuestionTypeSelector";
+import CategorySelect from "@/app/(pages)/admin/components/forms/QuestionComponent/CategorySelect";
+import QuestionFields from "@/app/(pages)/admin/components/forms/QuestionComponent/QuestionField";
+import AnswerOptions from "@/app/(pages)/admin/components/forms/QuestionComponent/AnswerOptions";
+import SentimentOptions from "@/app/(pages)/admin/components/forms/QuestionComponent/SentimentOptions";
+import FormActions from "@/app/(pages)/admin/components/forms/QuestionComponent/FormActions";
 import { X } from "lucide-react";
 
 interface FormProjectManageProps {
