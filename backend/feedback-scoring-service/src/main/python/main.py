@@ -250,6 +250,242 @@ async def get_feedback_trends(
             detail=f"Error getting feedback trends: {str(e)}"
         )
 
+@app.get("/api/analysis/satisfaction/{feedback_id}")
+async def get_satisfaction_analysis(feedback_id: int):
+    """Get detailed satisfaction analysis for a specific feedback ID"""
+    try:
+        logger.info(f"Analyzing satisfaction for feedback ID: {feedback_id}")
+        analyzer = FeedbackAnalyzerService(
+            mongodb_url=os.getenv("MONGODB_URL", "mongodb://localhost:27017"),
+            feedback_service_url=os.getenv("FEEDBACK_SERVICE_URL", "http://localhost:8084")
+        )
+        
+        # Fetch all submissions
+        all_submissions = await analyzer.fetch_all_submissions()
+        
+        # Filter submissions by feedback_id
+        feedback_submissions = [s for s in all_submissions if s.get("feedbackId") == feedback_id]
+        
+        if not feedback_submissions:
+            raise HTTPException(status_code=404, detail=f"No submissions found for feedback ID {feedback_id}")
+        
+        # Initialize counters
+        total_submissions = len(feedback_submissions)
+        satisfaction_scores = []
+        sentiment_counts = {"POSITIVE": 0, "NEUTRAL": 0, "NEGATIVE": 0}
+        all_suggestions = []
+        
+        # Analyze each submission
+        analyzed_submissions = []
+        for submission in feedback_submissions:
+            try:
+                # Calculate satisfaction score
+                analysis = await analyzer.analyze_feedback_submission(submission)
+                satisfaction_scores.append(analysis.overall_score * 100)  # Convert to percentage
+                analyzed_submissions.append(analysis)
+                
+                # Count sentiments from sentiment questions and text analysis
+                for question in submission.get("questionDetails", []):
+                    response = submission["responses"].get(str(question["id"]))
+                    if not response:
+                        continue
+                        
+                    if question.get("questionType") == "SENTIMENT":
+                        sentiment = response.upper()
+                        if sentiment in sentiment_counts:
+                            sentiment_counts[sentiment] += 1
+                    elif question.get("questionType") == "TEXT_BASED":
+                        # Analyze text response
+                        text_analysis = await analyzer.analyze_text_response(response)
+                        if text_analysis:
+                            sentiment = text_analysis.get("sentiment", "NEUTRAL")
+                            if sentiment in sentiment_counts:
+                                sentiment_counts[sentiment] += 1
+                            # Collect suggestions
+                            if text_analysis.get("suggestions"):
+                                all_suggestions.extend(text_analysis["suggestions"])
+                
+                # Analyze overall comments
+                if submission.get("overallComments"):
+                    overall_analysis = await analyzer.analyze_text_response(submission["overallComments"])
+                    if overall_analysis:
+                        sentiment = overall_analysis.get("sentiment", "NEUTRAL")
+                        if sentiment in sentiment_counts:
+                            sentiment_counts[sentiment] += 1
+                        if overall_analysis.get("suggestions"):
+                            all_suggestions.extend(overall_analysis["suggestions"])
+                            
+            except Exception as e:
+                logger.error(f"Error analyzing submission {submission.get('id')}: {str(e)}")
+                continue
+        
+        # Calculate averages and percentages
+        avg_satisfaction = sum(satisfaction_scores) / len(satisfaction_scores) if satisfaction_scores else 0
+        total_sentiments = sum(sentiment_counts.values()) or 1  # Avoid division by zero
+        
+        sentiment_distribution = {
+            "positive": round((sentiment_counts["POSITIVE"] / total_sentiments) * 100, 1),
+            "neutral": round((sentiment_counts["NEUTRAL"] / total_sentiments) * 100, 1),
+            "negative": round((sentiment_counts["NEGATIVE"] / total_sentiments) * 100, 1)
+        }
+        
+        # Prepare response
+        response = {
+            "feedbackId": feedback_id,
+            "satisfactionOverview": {
+                "overallSatisfaction": round(avg_satisfaction, 1),
+                "satisfactionRate": round((len([s for s in satisfaction_scores if s >= 60]) / len(satisfaction_scores)) * 100 if satisfaction_scores else 0, 1),
+                "totalSubmissions": total_submissions
+            },
+            "sentimentDistribution": {
+                "positive": {
+                    "percentage": sentiment_distribution["positive"],
+                    "emoji": "😃",
+                    "label": "Positive"
+                },
+                "neutral": {
+                    "percentage": sentiment_distribution["neutral"],
+                    "emoji": "😐",
+                    "label": "Neutral"
+                },
+                "negative": {
+                    "percentage": sentiment_distribution["negative"],
+                    "emoji": "😞",
+                    "label": "Negative"
+                }
+            },
+            "suggestions": list(set(all_suggestions))[:5],  # Top 5 unique suggestions
+            "detailedAnalysis": analyzed_submissions
+        }
+        
+        return response
+        
+    except Exception as e:
+        logger.error(f"Error analyzing satisfaction: {str(e)}")
+        logger.error(f"Error details: {e.__class__.__name__}: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error analyzing satisfaction: {str(e)}"
+        )
+
+@app.get("/api/analysis/insights/{feedback_id}")
+async def get_ai_insights(feedback_id: int):
+    """Get AI-powered insights for a specific feedback"""
+    try:
+        logger.info(f"Generating AI insights for feedback ID: {feedback_id}")
+        analyzer = FeedbackAnalyzerService(
+            mongodb_url=os.getenv("MONGODB_URL", "mongodb://localhost:27017"),
+            feedback_service_url=os.getenv("FEEDBACK_SERVICE_URL", "http://localhost:8084")
+        )
+        
+        # Fetch all submissions
+        all_submissions = await analyzer.fetch_all_submissions()
+        
+        # Filter submissions by feedback_id
+        feedback_submissions = [s for s in all_submissions if s.get("feedbackId") == feedback_id]
+        
+        if not feedback_submissions:
+            raise HTTPException(status_code=404, detail=f"No submissions found for feedback ID {feedback_id}")
+        
+        # Generate AI insights
+        insights = await analyzer.generate_ai_insights(feedback_submissions)
+
+        def classify_priority(confidence: float, recommendation: str) -> str:
+            """Classify priority based on confidence and recommendation content"""
+            # Keywords indicating complexity/difficulty
+            complex_keywords = ["implement", "establish", "develop", "create", "integrate"]
+            medium_keywords = ["improve", "enhance", "update", "modify", "adjust"]
+            easy_keywords = ["consider", "review", "discuss", "monitor", "track"]
+            
+            # Check recommendation complexity
+            recommendation_lower = recommendation.lower()
+            if any(keyword in recommendation_lower for keyword in complex_keywords):
+                base_priority = "hard"
+            elif any(keyword in recommendation_lower for keyword in medium_keywords):
+                base_priority = "medium"
+            else:
+                base_priority = "easy"
+            
+            # Adjust based on confidence
+            if confidence < 40:
+                # Lower confidence might indicate more complex issues
+                return "hard" if base_priority != "easy" else "medium"
+            elif confidence > 70:
+                # Higher confidence might indicate clearer, easier solutions
+                return "medium" if base_priority == "hard" else base_priority
+            
+            return base_priority
+
+        # Prepare response with priority classifications
+        response = {
+            "feedbackId": feedback_id,
+            "title": "AI-Powered Insights",
+            "description": "Leveraging advanced machine learning algorithms for data-driven recommendations",
+            "insights": {
+                "performanceInsights": {
+                    "title": "Performance Insights",
+                    "aiConfidence": insights.get("performanceInsights", {}).get("confidence", 0),
+                    "recommendations": [
+                        {
+                            "text": rec,
+                            "priority": classify_priority(
+                                insights.get("performanceInsights", {}).get("confidence", 0),
+                                rec
+                            )
+                        }
+                        for rec in insights.get("performanceInsights", {}).get("recommendations", [])
+                    ]
+                },
+                "engagementAnalysis": {
+                    "title": "Engagement Analysis",
+                    "aiConfidence": insights.get("engagementAnalysis", {}).get("confidence", 0),
+                    "recommendations": [
+                        {
+                            "text": rec,
+                            "priority": classify_priority(
+                                insights.get("engagementAnalysis", {}).get("confidence", 0),
+                                rec
+                            )
+                        }
+                        for rec in insights.get("engagementAnalysis", {}).get("recommendations", [])
+                    ]
+                },
+                "improvementOpportunities": {
+                    "title": "Improvement Opportunities",
+                    "aiConfidence": insights.get("improvementOpportunities", {}).get("confidence", 0),
+                    "recommendations": [
+                        {
+                            "text": rec,
+                            "priority": classify_priority(
+                                insights.get("improvementOpportunities", {}).get("confidence", 0),
+                                rec
+                            )
+                        }
+                        for rec in insights.get("improvementOpportunities", {}).get("recommendations", [])
+                    ]
+                }
+            },
+            "metadata": {
+                "totalSubmissions": len(feedback_submissions),
+                "analyzedAt": datetime.now().isoformat(),
+                "categories": list(set(
+                    question["category"]
+                    for submission in feedback_submissions
+                    for question in submission.get("questionDetails", [])
+                ))
+            }
+        }
+        
+        return response
+        
+    except Exception as e:
+        logger.error(f"Error generating AI insights: {str(e)}")
+        logger.error(f"Error details: {e.__class__.__name__}: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error generating AI insights: {str(e)}"
+        )
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8085, reload=True) 

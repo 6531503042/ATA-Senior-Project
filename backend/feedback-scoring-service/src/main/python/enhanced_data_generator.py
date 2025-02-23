@@ -308,7 +308,7 @@ class EnhancedMockDataGenerator:
         
         for question in questions:
             response = self.generate_response_by_type(question)
-            submission["responses"][question["questionId"]] = response
+            submission["responses"][str(question["id"])] = response  # Convert ID to string
         
         return submission
 

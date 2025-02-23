@@ -7,6 +7,8 @@ from sklearn.model_selection import train_test_split
 import spacy
 from collections import defaultdict
 import re
+from typing import Dict, List
+from transformers import pipeline
 
 class FeedbackAnalyzer:
     def __init__(self):
@@ -18,6 +20,9 @@ class FeedbackAnalyzer:
             import subprocess
             subprocess.run(["python", "-m", "spacy", "download", "en_core_web_sm"])
             self.nlp = spacy.load("en_core_web_sm")
+        
+        # Initialize sentiment analyzer
+        self.sentiment_analyzer = pipeline("sentiment-analysis", model="distilbert-base-uncased-finetuned-sst-2-english")
         
         # Initialize classifiers
         self.priority_classifier = RandomForestClassifier()
@@ -452,6 +457,169 @@ class FeedbackAnalyzer:
                 )
         
         return " ".join(summary_parts)
+
+    async def analyze_text_response(self, text: str) -> Dict:
+        """Analyze text response for sentiment and suggestions"""
+        if not text or not isinstance(text, str):
+            return {
+                "sentiment": "NEUTRAL",
+                "score": 0.5,
+                "suggestions": []
+            }
+
+        try:
+            # Use TextBlob for initial sentiment analysis
+            blob = TextBlob(text)
+            polarity = blob.sentiment.polarity
+            
+            # Map polarity to sentiment labels
+            if polarity > 0.1:
+                sentiment = "POSITIVE"
+                score = min((polarity + 1) / 2, 1.0)
+            elif polarity < -0.1:
+                sentiment = "NEGATIVE"
+                score = max((polarity + 1) / 2, 0.0)
+            else:
+                sentiment = "NEUTRAL"
+                score = 0.5
+
+            # Extract suggestions if text contains improvement-related keywords
+            suggestions = []
+            if any(word in text.lower() for word in ["should", "could", "need", "improve", "better"]):
+                doc = self.nlp(text)
+                for sent in doc.sents:
+                    if any(word in sent.text.lower() for word in ["should", "could", "need", "improve", "better"]):
+                        suggestions.append(sent.text.strip())
+
+            return {
+                "sentiment": sentiment,
+                "score": score,
+                "suggestions": suggestions
+            }
+        except Exception as e:
+            print(f"Error analyzing text: {str(e)}")
+            return {
+                "sentiment": "NEUTRAL",
+                "score": 0.5,
+                "suggestions": []
+            }
+
+    def analyze_category_insights(self, responses: List[Dict], category: str) -> Dict:
+        """Analyze responses for a specific category and generate insights"""
+        try:
+            # Collect all text responses and sentiments for this category
+            text_responses = []
+            sentiments = []
+            
+            for response in responses:
+                if response.get("category") == category:
+                    text = response.get("response", "")
+                    if text:
+                        text_responses.append(text)
+                        blob = TextBlob(text)
+                        sentiments.append(blob.sentiment.polarity)
+            
+            if not text_responses:
+                return None
+                
+            # Calculate confidence score based on consistency and quantity of feedback
+            confidence_score = min(
+                (len(text_responses) / 5) * 0.5 +  # More responses increase confidence
+                (abs(np.mean(sentiments)) * 0.3) +  # Strong sentiments increase confidence
+                0.2,  # Base confidence
+                1.0
+            ) * 100
+            
+            # Generate recommendations based on category
+            recommendations = []
+            doc = self.nlp(" ".join(text_responses))
+            
+            # Extract action items and suggestions
+            action_patterns = [
+                word in doc.text.lower() 
+                for word in ["should", "need", "must", "could", "improve", "suggest"]
+            ]
+            
+            if any(action_patterns):
+                for sent in doc.sents:
+                    if any(word in sent.text.lower() 
+                          for word in ["should", "need", "must", "could", "improve", "suggest"]):
+                        recommendations.append(sent.text.strip())
+            
+            # If no explicit recommendations found, generate based on category
+            if not recommendations and category in self.solution_suggestions:
+                category_solutions = self.solution_suggestions[category]
+                for area, solutions in category_solutions.items():
+                    if any(keyword in " ".join(text_responses).lower() for keyword in area.split()):
+                        recommendations.extend(solutions[:2])
+                        
+            return {
+                "category": category,
+                "confidence": round(confidence_score, 1),
+                "recommendations": list(set(recommendations))[:2],  # Top 2 unique recommendations
+                "sentiment_score": np.mean(sentiments)
+            }
+        except Exception as e:
+            print(f"Error analyzing category insights: {str(e)}")
+            return None
+
+    async def generate_ai_insights(self, submissions: List[Dict]) -> Dict:
+        """Generate AI-powered insights from feedback submissions"""
+        try:
+            # Collect all responses by category
+            category_responses = defaultdict(list)
+            
+            for submission in submissions:
+                for question in submission.get("questionDetails", []):
+                    category = question.get("category")
+                    response = {
+                        "response": submission["responses"].get(str(question["id"])),
+                        "category": category,
+                        "type": question.get("questionType")
+                    }
+                    category_responses[category].append(response)
+            
+            # Analyze each category
+            category_insights = []
+            for category, responses in category_responses.items():
+                insight = self.analyze_category_insights(responses, category)
+                if insight and insight["recommendations"]:
+                    category_insights.append(insight)
+            
+            # Sort by confidence score and get top 3
+            category_insights.sort(key=lambda x: x["confidence"], reverse=True)
+            top_insights = category_insights[:3]
+            
+            # Map insights to specific areas
+            mapped_insights = {
+                "performanceInsights": None,
+                "engagementAnalysis": None,
+                "improvementOpportunities": None
+            }
+            
+            # Map insights based on sentiment and category
+            for insight in top_insights:
+                if not mapped_insights["performanceInsights"] and insight["category"] in ["PROJECT_MANAGEMENT", "TECHNICAL_SKILLS"]:
+                    mapped_insights["performanceInsights"] = {
+                        "confidence": insight["confidence"],
+                        "recommendations": insight["recommendations"]
+                    }
+                elif not mapped_insights["engagementAnalysis"] and insight["category"] in ["TEAM_COLLABORATION", "WORK_ENVIRONMENT"]:
+                    mapped_insights["engagementAnalysis"] = {
+                        "confidence": insight["confidence"],
+                        "recommendations": insight["recommendations"]
+                    }
+                elif not mapped_insights["improvementOpportunities"]:
+                    mapped_insights["improvementOpportunities"] = {
+                        "confidence": insight["confidence"],
+                        "recommendations": insight["recommendations"]
+                    }
+            
+            return mapped_insights
+            
+        except Exception as e:
+            print(f"Error generating AI insights: {str(e)}")
+            return {}
 
 class NumpyEncoder(json.JSONEncoder):
     def default(self, obj):
