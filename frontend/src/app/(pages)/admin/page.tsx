@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Sidebar from "@/app/(pages)/modules/components/sidebar/sidebar";
-import Navbar from "@/app/components/navbar/navbar";
+import Navbar from "@/app/(pages)/modules/components/Navbar";
 import Overview from "@/app/(pages)/admin/section/overview";
 import ProjectDashboard from "@/app/(pages)/admin/section/Project/dashboard";
 import ProjectManage from "@/app/(pages)/admin/section/Project/manage";
