@@ -252,7 +252,7 @@ async def get_feedback_trends(
 
 @app.get("/api/analysis/satisfaction/{feedback_id}")
 async def get_satisfaction_analysis(feedback_id: int):
-    """Get detailed satisfaction analysis for a specific feedback ID"""
+    """Get simplified satisfaction analysis for a specific feedback ID"""
     try:
         logger.info(f"Analyzing satisfaction for feedback ID: {feedback_id}")
         analyzer = FeedbackAnalyzerService(
@@ -276,13 +276,11 @@ async def get_satisfaction_analysis(feedback_id: int):
         all_suggestions = []
         
         # Analyze each submission
-        analyzed_submissions = []
         for submission in feedback_submissions:
             try:
                 # Calculate satisfaction score
                 analysis = await analyzer.analyze_feedback_submission(submission)
                 satisfaction_scores.append(analysis.overall_score * 100)  # Convert to percentage
-                analyzed_submissions.append(analysis)
                 
                 # Count sentiments from sentiment questions and text analysis
                 for question in submission.get("questionDetails", []):
@@ -324,12 +322,24 @@ async def get_satisfaction_analysis(feedback_id: int):
         total_sentiments = sum(sentiment_counts.values()) or 1  # Avoid division by zero
         
         sentiment_distribution = {
-            "positive": round((sentiment_counts["POSITIVE"] / total_sentiments) * 100, 1),
-            "neutral": round((sentiment_counts["NEUTRAL"] / total_sentiments) * 100, 1),
-            "negative": round((sentiment_counts["NEGATIVE"] / total_sentiments) * 100, 1)
+            "positive": {
+                "percentage": round((sentiment_counts["POSITIVE"] / total_sentiments) * 100, 1),
+                "emoji": "😃",
+                "label": "Positive"
+            },
+            "neutral": {
+                "percentage": round((sentiment_counts["NEUTRAL"] / total_sentiments) * 100, 1),
+                "emoji": "😐",
+                "label": "Neutral"
+            },
+            "negative": {
+                "percentage": round((sentiment_counts["NEGATIVE"] / total_sentiments) * 100, 1),
+                "emoji": "😞",
+                "label": "Negative"
+            }
         }
         
-        # Prepare response
+        # Prepare simplified response
         response = {
             "feedbackId": feedback_id,
             "satisfactionOverview": {
@@ -337,25 +347,8 @@ async def get_satisfaction_analysis(feedback_id: int):
                 "satisfactionRate": round((len([s for s in satisfaction_scores if s >= 60]) / len(satisfaction_scores)) * 100 if satisfaction_scores else 0, 1),
                 "totalSubmissions": total_submissions
             },
-            "sentimentDistribution": {
-                "positive": {
-                    "percentage": sentiment_distribution["positive"],
-                    "emoji": "😃",
-                    "label": "Positive"
-                },
-                "neutral": {
-                    "percentage": sentiment_distribution["neutral"],
-                    "emoji": "😐",
-                    "label": "Neutral"
-                },
-                "negative": {
-                    "percentage": sentiment_distribution["negative"],
-                    "emoji": "😞",
-                    "label": "Negative"
-                }
-            },
-            "suggestions": list(set(all_suggestions))[:5],  # Top 5 unique suggestions
-            "detailedAnalysis": analyzed_submissions
+            "sentimentDistribution": sentiment_distribution,
+            "suggestions": list(set(all_suggestions))[:5]  # Top 5 unique suggestions
         }
         
         return response
