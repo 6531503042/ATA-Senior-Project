@@ -1,10 +1,19 @@
 package dev.bengi.feedbackservice.service.impl;
 
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import dev.bengi.feedbackservice.domain.enums.QuestionCategory;
 import dev.bengi.feedbackservice.domain.enums.QuestionType;
 import dev.bengi.feedbackservice.domain.enums.SentimentType;
+import dev.bengi.feedbackservice.domain.model.FeedbackSubmission;
 import dev.bengi.feedbackservice.domain.model.Question;
-import dev.bengi.feedbackservice.domain.model.Project;
 import dev.bengi.feedbackservice.repository.FeedbackRepository;
 import dev.bengi.feedbackservice.repository.FeedbackSubmissionRepository;
 import dev.bengi.feedbackservice.repository.ProjectRepository;
@@ -12,14 +21,6 @@ import dev.bengi.feedbackservice.repository.QuestionRepository;
 import dev.bengi.feedbackservice.service.DashboardService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -33,25 +34,34 @@ public class DashboardServiceImpl implements DashboardService {
 
     @Override
     public Map<String, Object> getProjectDashboardMetrics() {
-        Map<String, Object> metrics = new HashMap<>();
-        LocalDateTime now = LocalDateTime.now();
+        try {
+            Map<String, Object> metrics = new HashMap<>();
+            LocalDateTime now = LocalDateTime.now();
 
-        // Total projects
-        metrics.put("totalProjects", projectRepository.count());
+            // Total projects
+            metrics.put("totalProjects", projectRepository.count());
 
-        // Active projects (end date > now)
-        metrics.put("activeProjects", projectRepository.countByProjectEndDateAfter(now));
+            // Active projects
+            Long activeProjects = projectRepository.countActiveProjects();
+            metrics.put("activeProjects", activeProjects != null ? activeProjects : 0L);
 
-        // Completed projects (end date <= now)
-        metrics.put("completedProjects", projectRepository.countByProjectEndDateBefore(now));
+            // Completed projects
+            Long completedProjects = projectRepository.countCompletedProjects();
+            metrics.put("completedProjects", completedProjects != null ? completedProjects : 0L);
 
-        // Total members across all projects
-        metrics.put("totalMembers", projectRepository.findAll().stream()
-                .flatMap(p -> p.getMemberIds().stream())
-                .distinct()
-                .count());
+            // Total members
+            long totalMembers = projectRepository.countTotalUniqueMembers();
+            metrics.put("totalMembers", totalMembers);
 
-        return metrics;
+            // Average team size
+            Double avgTeamSize = projectRepository.getAverageTeamSizeForActiveProjects();
+            metrics.put("averageTeamSize", avgTeamSize != null ? avgTeamSize : 0.0);
+
+            return metrics;
+        } catch (Exception e) {
+            log.error("Error while fetching project dashboard metrics", e);
+            throw new RuntimeException("Failed to fetch project dashboard metrics", e);
+        }
     }
 
     @Override
@@ -240,32 +250,255 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     private double calculateOverallSatisfactionRate() {
-        // Implementation for calculating overall satisfaction
-        return 0.0; // TODO: Implement actual calculation
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startOfYear = now.withDayOfYear(1).withHour(0).withMinute(0).withSecond(0);
+        
+        // Get all submissions from this year
+        List<FeedbackSubmission> submissions = submissionRepository.findAll().stream()
+                .filter(s -> s.getSubmittedAt().isAfter(startOfYear))
+                .collect(Collectors.toList());
+        
+        if (submissions.isEmpty()) {
+            return 0.0;
+        }
+
+        // Calculate satisfaction rate based on responses
+        long satisfiedCount = submissions.stream()
+                .filter(this::isSubmissionSatisfactory)
+                .count();
+        
+        return (double) satisfiedCount / submissions.size() * 100;
     }
 
     private double calculatePreviousYearSatisfactionRate() {
-        // Implementation for calculating previous year's satisfaction
-        return 0.0; // TODO: Implement actual calculation
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startOfLastYear = now.minusYears(1).withDayOfYear(1).withHour(0).withMinute(0).withSecond(0);
+        LocalDateTime endOfLastYear = now.withDayOfYear(1).withHour(0).withMinute(0).withSecond(0).minusSeconds(1);
+        
+        // Get all submissions from last year
+        List<FeedbackSubmission> submissions = submissionRepository.findAll().stream()
+                .filter(s -> s.getSubmittedAt().isAfter(startOfLastYear) && s.getSubmittedAt().isBefore(endOfLastYear))
+                .collect(Collectors.toList());
+        
+        if (submissions.isEmpty()) {
+            return 0.0;
+        }
+
+        // Calculate satisfaction rate based on responses
+        long satisfiedCount = submissions.stream()
+                .filter(this::isSubmissionSatisfactory)
+                .count();
+        
+        return (double) satisfiedCount / submissions.size() * 100;
+    }
+
+    private boolean isSubmissionSatisfactory(FeedbackSubmission submission) {
+        // Consider a submission satisfactory if the average score is above 3.5 (on a 5-point scale)
+        // or if positive responses outweigh negative ones
+        double averageScore = submission.getResponses().values().stream()
+                .mapToDouble(response -> {
+                    try {
+                        return Double.parseDouble(response);
+                    } catch (NumberFormatException e) {
+                        return 0.0;
+                    }
+                })
+                .average()
+                .orElse(0.0);
+        
+        return averageScore >= 3.5;
     }
 
     private Map<SentimentType, Double> calculateSentimentDistribution() {
-        // Implementation for calculating sentiment distribution
-        return new HashMap<>(); // TODO: Implement actual calculation
+        Map<SentimentType, Double> distribution = new HashMap<>();
+        List<FeedbackSubmission> submissions = submissionRepository.findAll();
+        
+        if (submissions.isEmpty()) {
+            distribution.put(SentimentType.POSITIVE, 0.0);
+            distribution.put(SentimentType.NEUTRAL, 0.0);
+            distribution.put(SentimentType.NEGATIVE, 0.0);
+            return distribution;
+        }
+
+        long totalSubmissions = submissions.size();
+        
+        // Count submissions by sentiment
+        Map<SentimentType, Long> counts = submissions.stream()
+                .map(this::analyzeSentiment)
+                .collect(Collectors.groupingBy(
+                    sentiment -> sentiment,
+                    Collectors.counting()
+                ));
+        
+        // Convert counts to percentages
+        distribution.put(SentimentType.POSITIVE, 
+            (double) counts.getOrDefault(SentimentType.POSITIVE, 0L) / totalSubmissions * 100);
+        distribution.put(SentimentType.NEUTRAL, 
+            (double) counts.getOrDefault(SentimentType.NEUTRAL, 0L) / totalSubmissions * 100);
+        distribution.put(SentimentType.NEGATIVE, 
+            (double) counts.getOrDefault(SentimentType.NEGATIVE, 0L) / totalSubmissions * 100);
+        
+        return distribution;
+    }
+
+    private SentimentType analyzeSentiment(FeedbackSubmission submission) {
+        // Simple sentiment analysis based on average scores and comments
+        double averageScore = submission.getResponses().values().stream()
+                .mapToDouble(response -> {
+                    try {
+                        return Double.parseDouble(response);
+                    } catch (NumberFormatException e) {
+                        return 0.0;
+                    }
+                })
+                .average()
+                .orElse(0.0);
+        
+        // Analyze based on average score (assuming 5-point scale)
+        if (averageScore >= 4.0) {
+            return SentimentType.POSITIVE;
+        } else if (averageScore >= 3.0) {
+            return SentimentType.NEUTRAL;
+        } else {
+            return SentimentType.NEGATIVE;
+        }
     }
 
     private Map<String, Object> getCurrentYearMetrics() {
-        // Implementation for current year metrics
-        return new HashMap<>(); // TODO: Implement actual calculation
+        Map<String, Object> metrics = new HashMap<>();
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startOfYear = now.withDayOfYear(1).withHour(0).withMinute(0).withSecond(0);
+        
+        // Get submissions from this year
+        List<FeedbackSubmission> submissions = submissionRepository.findAll().stream()
+                .filter(s -> s.getSubmittedAt().isAfter(startOfYear))
+                .collect(Collectors.toList());
+        
+        metrics.put("totalSubmissions", submissions.size());
+        metrics.put("averageScore", calculateAverageScore(submissions));
+        metrics.put("participationRate", calculateParticipationRate(submissions));
+        metrics.put("completionRate", calculateCompletionRate(submissions));
+        
+        return metrics;
     }
 
     private Map<String, Object> getPreviousYearMetrics() {
-        // Implementation for previous year metrics
-        return new HashMap<>(); // TODO: Implement actual calculation
+        Map<String, Object> metrics = new HashMap<>();
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startOfLastYear = now.minusYears(1).withDayOfYear(1).withHour(0).withMinute(0).withSecond(0);
+        LocalDateTime endOfLastYear = now.withDayOfYear(1).withHour(0).withMinute(0).withSecond(0).minusSeconds(1);
+        
+        // Get submissions from last year
+        List<FeedbackSubmission> submissions = submissionRepository.findAll().stream()
+                .filter(s -> s.getSubmittedAt().isAfter(startOfLastYear) && s.getSubmittedAt().isBefore(endOfLastYear))
+                .collect(Collectors.toList());
+        
+        metrics.put("totalSubmissions", submissions.size());
+        metrics.put("averageScore", calculateAverageScore(submissions));
+        metrics.put("participationRate", calculateParticipationRate(submissions));
+        metrics.put("completionRate", calculateCompletionRate(submissions));
+        
+        return metrics;
+    }
+
+    private double calculateAverageScore(List<FeedbackSubmission> submissions) {
+        if (submissions.isEmpty()) {
+            return 0.0;
+        }
+        
+        return submissions.stream()
+                .flatMap(s -> s.getResponses().values().stream())
+                .mapToDouble(response -> {
+                    try {
+                        return Double.parseDouble(response);
+                    } catch (NumberFormatException e) {
+                        return 0.0;
+                    }
+                })
+                .average()
+                .orElse(0.0);
+    }
+
+    private double calculateParticipationRate(List<FeedbackSubmission> submissions) {
+        if (submissions.isEmpty()) {
+            return 0.0;
+        }
+        
+        // Get unique users who submitted feedback
+        long uniqueUsers = submissions.stream()
+                .map(FeedbackSubmission::getSubmittedBy)
+                .filter(user -> user != null)
+                .distinct()
+                .count();
+        
+        // Get total eligible users
+        long totalUsers = projectRepository.countTotalUniqueMembers();
+        
+        return totalUsers > 0 ? (double) uniqueUsers / totalUsers * 100 : 0.0;
+    }
+
+    private double calculateCompletionRate(List<FeedbackSubmission> submissions) {
+        if (submissions.isEmpty()) {
+            return 0.0;
+        }
+        
+        // Count submissions with all required questions answered
+        long completedSubmissions = submissions.stream()
+                .filter(this::isSubmissionComplete)
+                .count();
+        
+        return (double) completedSubmissions / submissions.size() * 100;
+    }
+
+    private boolean isSubmissionComplete(FeedbackSubmission submission) {
+        // Get all required questions for this feedback
+        List<Question> requiredQuestions = questionRepository.findAllById(submission.getFeedback().getQuestionIds())
+                .stream()
+                .filter(Question::isRequired)
+                .collect(Collectors.toList());
+        
+        // Check if all required questions have non-empty responses
+        return requiredQuestions.stream()
+                .allMatch(q -> {
+                    String response = submission.getResponses().get(q.getId());
+                    return response != null && !response.trim().isEmpty();
+                });
     }
 
     private Map<String, Object> calculateGrowthMetrics() {
-        // Implementation for growth metrics
-        return new HashMap<>(); // TODO: Implement actual calculation
+        Map<String, Object> growth = new HashMap<>();
+        
+        Map<String, Object> currentYearMetrics = getCurrentYearMetrics();
+        Map<String, Object> previousYearMetrics = getPreviousYearMetrics();
+        
+        // Calculate year-over-year growth for each metric
+        growth.put("submissionGrowth", calculateGrowthPercentage(
+            (Integer) currentYearMetrics.get("totalSubmissions"),
+            (Integer) previousYearMetrics.get("totalSubmissions")));
+            
+        growth.put("scoreGrowth", calculateGrowthPercentage(
+            (Double) currentYearMetrics.get("averageScore"),
+            (Double) previousYearMetrics.get("averageScore")));
+            
+        growth.put("participationGrowth", calculateGrowthPercentage(
+            (Double) currentYearMetrics.get("participationRate"),
+            (Double) previousYearMetrics.get("participationRate")));
+            
+        growth.put("completionGrowth", calculateGrowthPercentage(
+            (Double) currentYearMetrics.get("completionRate"),
+            (Double) previousYearMetrics.get("completionRate")));
+        
+        return growth;
+    }
+
+    private double calculateGrowthPercentage(Number current, Number previous) {
+        double currentValue = current.doubleValue();
+        double previousValue = previous.doubleValue();
+        
+        if (previousValue == 0) {
+            return currentValue > 0 ? 100.0 : 0.0;
+        }
+        
+        return ((currentValue - previousValue) / previousValue) * 100;
     }
 } 

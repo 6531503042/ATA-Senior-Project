@@ -1,27 +1,5 @@
 package dev.bengi.feedbackservice.service.impl;
 
-import dev.bengi.feedbackservice.domain.model.Feedback;
-import dev.bengi.feedbackservice.domain.model.Question;
-import dev.bengi.feedbackservice.domain.model.Project;
-import dev.bengi.feedbackservice.domain.enums.AnswerType;
-import dev.bengi.feedbackservice.domain.enums.QuestionType;
-import dev.bengi.feedbackservice.domain.payload.response.FeedbackDetailsResponse;
-import dev.bengi.feedbackservice.domain.payload.response.QuestionResponse;
-import dev.bengi.feedbackservice.domain.payload.response.AnswerOptionResponse;
-import dev.bengi.feedbackservice.repository.FeedbackRepository;
-import dev.bengi.feedbackservice.repository.FeedbackSubmissionRepository;
-import dev.bengi.feedbackservice.repository.QuestionRepository;
-import dev.bengi.feedbackservice.service.FeedbackPermissionService;
-import dev.bengi.feedbackservice.service.FeedbackService;
-import dev.bengi.feedbackservice.service.UserService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,7 +7,29 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.HashSet;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import dev.bengi.feedbackservice.domain.enums.AnswerType;
+import dev.bengi.feedbackservice.domain.enums.QuestionType;
+import dev.bengi.feedbackservice.domain.model.Feedback;
+import dev.bengi.feedbackservice.domain.model.Project;
+import dev.bengi.feedbackservice.domain.model.Question;
+import dev.bengi.feedbackservice.domain.payload.response.AnswerOptionResponse;
+import dev.bengi.feedbackservice.domain.payload.response.FeedbackDetailsResponse;
+import dev.bengi.feedbackservice.domain.payload.response.QuestionResponse;
+import dev.bengi.feedbackservice.repository.FeedbackRepository;
+import dev.bengi.feedbackservice.repository.FeedbackSubmissionRepository;
+import dev.bengi.feedbackservice.repository.QuestionRepository;
+import dev.bengi.feedbackservice.service.FeedbackPermissionService;
+import dev.bengi.feedbackservice.service.FeedbackService;
+import dev.bengi.feedbackservice.service.UserService;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -100,7 +100,9 @@ public class FeedbackServiceImpl implements FeedbackService {
     @Override
     @Transactional(readOnly = true)
     public List<Feedback> getAllFeedbacks() {
-        return feedbackRepository.findAll();
+        return feedbackRepository.findAll().stream()
+                .filter(Feedback::isActive)  // Only return active feedbacks
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -124,30 +126,34 @@ public class FeedbackServiceImpl implements FeedbackService {
     @Override
     @Transactional(readOnly = true)
     public List<FeedbackDetailsResponse> getAvailableFeedbacksForUser(String userId) {
-        log.debug("Getting available feedbacks for user ID: {}", userId);
+        log.debug("Getting available feedbacks for user: {}", userId);
         
-        // First validate that the user exists
-        boolean userExists = userService.validateUser(userId)
-            .block(); // We need to block here since we're in a @Transactional method
-            
-        if (!userExists) {
-            log.error("User does not exist: {}", userId);
-            throw new RuntimeException("User not found: " + userId);
-        }
+        // Get all feedbacks where the user is a project member
+        List<Feedback> userFeedbacks = feedbackRepository.findByProjectMemberId(Long.parseLong(userId));
         
-        List<Long> permittedFeedbackIds = permissionService.getPermittedFeedbackIds(userId);
-        log.debug("Found {} permitted feedback IDs for user {}", permittedFeedbackIds.size(), userId);
-        
-        return permittedFeedbackIds.stream()
-                .map(feedbackId -> {
-                    try {
-                        return getFeedbackDetails(feedbackId);
-                    } catch (Exception e) {
-                        log.error("Error getting details for feedback {}: {}", feedbackId, e.getMessage());
-                        return null;
-                    }
+        // Filter active feedbacks and map to response
+        return userFeedbacks.stream()
+                .filter(Feedback::isActive)  // Only return active feedbacks
+                .filter(feedback -> {
+                    LocalDateTime now = LocalDateTime.now();
+                    return feedback.getStartDate().isBefore(now) && 
+                           feedback.getEndDate().isAfter(now);
                 })
-                .filter(response -> response != null)
+                .map(feedback -> {
+                    List<Question> questions = questionRepository.findAllById(feedback.getQuestionIds());
+                    return FeedbackDetailsResponse.builder()
+                            .id(feedback.getId())
+                            .title(feedback.getTitle())
+                            .description(feedback.getDescription())
+                            .projectName(feedback.getProject().getName())
+                            .questions(mapToQuestionResponses(questions))
+                            .startDate(feedback.getStartDate())
+                            .endDate(feedback.getEndDate())
+                            .active(feedback.isActive())
+                            .alreadySubmitted(hasUserSubmitted(feedback))
+                            .validationRules(getValidationRules(feedback))
+                            .build();
+                })
                 .collect(Collectors.toList());
     }
 

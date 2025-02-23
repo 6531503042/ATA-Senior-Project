@@ -78,6 +78,10 @@ dependencies {
     implementation 'jakarta.servlet:jakarta.servlet-api:6.0.0'
     implementation 'jakarta.annotation:jakarta.annotation-api:2.1.1'
 
+    //SLF4J
+    implementation 'org.slf4j:slf4j-api'
+    implementation 'ch.qos.logback:logback-classic'
+
     //Test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'

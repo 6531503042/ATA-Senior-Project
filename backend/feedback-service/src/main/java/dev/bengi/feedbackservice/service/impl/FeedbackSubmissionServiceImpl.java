@@ -282,6 +282,7 @@ public class FeedbackSubmissionServiceImpl implements FeedbackSubmissionService 
     public List<FeedbackSubmissionResponse> getAllSubmissions() {
         log.debug("Getting all feedback submissions");
         return submissionRepository.findAll().stream()
+                .filter(submission -> submission.getFeedback().isActive())  // Only return submissions from active feedbacks
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
