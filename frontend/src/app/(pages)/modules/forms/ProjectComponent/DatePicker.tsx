@@ -12,6 +12,7 @@ interface DatePickerProps {
   setDate: (date: Date | undefined) => void;
   label: string;
   startDate?: Date;
+  errorMessage?: string; 
 }
 
 export const DatePickerWithPresets: React.FC<DatePickerProps> = ({
@@ -19,6 +20,7 @@ export const DatePickerWithPresets: React.FC<DatePickerProps> = ({
   setDate,
   label,
   startDate,
+  errorMessage,
 }) => {
   return (
     <div className="flex flex-col w-1/2">
@@ -53,6 +55,9 @@ export const DatePickerWithPresets: React.FC<DatePickerProps> = ({
           </div>
         </PopoverContent>
       </Popover>
+      {errorMessage && (
+        <p className="text-red-600 text-xs mt-1">{errorMessage}</p>
+      )}
     </div>
   );
 };

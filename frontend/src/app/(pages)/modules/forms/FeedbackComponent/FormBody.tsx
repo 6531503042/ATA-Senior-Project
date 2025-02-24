@@ -1,5 +1,5 @@
-import React from 'react';
-import DatePicker from './DatePicker';
+import React from "react";
+import DatePicker from "./DatePicker";
 
 interface FormBodyProps {
   title: string;
@@ -53,12 +53,14 @@ const FormBody: React.FC<FormBodyProps> = ({
           date={startDate}
           setDate={setStartDate}
           label="Start Date"
+          errorMessage={startDate ? undefined : "Start date is required."}
         />
         <DatePicker
           date={dueDate}
           setDate={setDueDate}
           label="Due Date"
           startDate={startDate}
+          errorMessage={dueDate ? undefined : "Due date is required."}
         />
       </div>
     </>

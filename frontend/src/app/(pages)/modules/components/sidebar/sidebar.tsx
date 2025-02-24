@@ -9,8 +9,6 @@ import {
   LayoutDashboard,
   Star,
   LogOut,
-  Menu,
-  X
 } from "lucide-react";
 import Logo from "@/app/assets/ata-logo.png";
 import { useRouter } from "next/navigation";
@@ -120,7 +118,7 @@ const Sidebar = ({ onComponentChange }: SidebarProps) => {
       {/* Toggle Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="absolute -right-3 top-4 z-50 p-1 rounded-full bg-white shadow-lg border border-gray-200"
+        className="absolute -right-3 top-4 z-30 p-1 rounded-full bg-white shadow-lg border border-gray-200"
       >
         {isOpen ? (
           <ChevronRight className="w-4 h-4 text-gray-600" />

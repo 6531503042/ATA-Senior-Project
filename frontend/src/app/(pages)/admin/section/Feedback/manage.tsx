@@ -13,7 +13,7 @@ interface Post {
   category: string;
 }
 
-const FormFeedbackManagement = () => {
+const FeedbackManagement = () => {
   const [formPop, setFormPop] = useState(false);
   const [feedbackData, setFeedbackData] = useState<Post[]>([]);
   const [questionData, setQuestionData] = useState<Post[]>([]);
@@ -151,4 +151,4 @@ const FormFeedbackManagement = () => {
   );
 };
 
-export default FormFeedbackManagement;
+export default FeedbackManagement;

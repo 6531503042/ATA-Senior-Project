@@ -31,6 +31,29 @@ const CreateProjectForm: React.FC<CreateProjectForm> = ({ setIsOpen }) => {
   const [dueDate, setDueDate] = useState<Date>();
   const [postData, setPostData] = useState<Post[]>([]);
   const [duplicateWarning, setDuplicateWarning] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [nameError, setNameError] = useState<string | null>(null);
+  const [descriptionError, setDescriptionError] = useState<string | null>(null);
+
+  const validateForm = () => {
+    let valid = true;
+    if (!projectName) {
+      setNameError("Project name is required.");
+      valid = false;
+    } else {
+      setNameError(null);
+    }
+
+    if (!projectDescription) {
+      setDescriptionError("Project description is required.");
+      valid = false;
+    } else {
+      setDescriptionError(null);
+    }
+
+    return valid;
+  };
 
   const handleAddMember = () => {
     const newId = (teamMembers.length + 1).toString();
@@ -67,8 +90,14 @@ const CreateProjectForm: React.FC<CreateProjectForm> = ({ setIsOpen }) => {
   };
 
   const getPosts = async () => {
+    setLoading(true);
+    setError(null); // Reset error state before fetching
     try {
       const token = localStorage.getItem("access_token");
+
+      if (!token) {
+        throw new Error("No access token found. Please log in.");
+      }
 
       const res = await fetch("http://localhost:8081/api/manager/list", {
         method: "GET",
@@ -79,7 +108,8 @@ const CreateProjectForm: React.FC<CreateProjectForm> = ({ setIsOpen }) => {
       });
 
       if (!res.ok) {
-        throw new Error(`Failed to fetch data: ${res.status}`);
+        const errorMessage = `Failed to fetch data: ${res.status} ${res.statusText}`;
+        throw new Error(errorMessage);
       }
 
       const data = await res.json();
@@ -88,6 +118,11 @@ const CreateProjectForm: React.FC<CreateProjectForm> = ({ setIsOpen }) => {
       );
     } catch (error) {
       console.error("Error loading post:", error);
+      setError(
+        error instanceof Error ? error.message : "An unknown error occurred."
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -96,6 +131,13 @@ const CreateProjectForm: React.FC<CreateProjectForm> = ({ setIsOpen }) => {
   }, []);
 
   const handleCreateProject = async () => {
+    // Validate the form before submitting
+    if (!validateForm() || !startDate || !dueDate) {
+      if (!startDate) setError("Start date is required.");
+      if (!dueDate) setError("Due date is required.");
+      return; // Prevent form submission if validation fails
+    }
+
     try {
       const token = localStorage.getItem("access_token");
       const formattedStartDate = startDate ? startDate.toISOString() : null;
@@ -163,9 +205,13 @@ const CreateProjectForm: React.FC<CreateProjectForm> = ({ setIsOpen }) => {
       setIsOpen(false);
     } catch (error) {
       console.error("Error creating project:", error);
+      setError(
+        error instanceof Error ? error.message : "An unknown error occurred."
+      );
     }
   };
 
+  { /*------------------------------------------------ Form Body ------------------------------------------------*/ }
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-30">
       {duplicateWarning && (
@@ -203,6 +249,8 @@ const CreateProjectForm: React.FC<CreateProjectForm> = ({ setIsOpen }) => {
             setProjectName={setProjectName}
             projectDescription={projectDescription}
             setProjectDescription={setProjectDescription}
+            nameError={nameError}
+            descriptionError={descriptionError}
           />
 
           <div className="w-full flex flex-row gap-5">
@@ -210,15 +258,16 @@ const CreateProjectForm: React.FC<CreateProjectForm> = ({ setIsOpen }) => {
               date={startDate}
               setDate={setStartDate}
               label="Start Date"
+              errorMessage={startDate ? undefined : "Start date is required."}
             />
             <DatePickerWithPresets
               date={dueDate}
               setDate={setDueDate}
               label="Due Date"
               startDate={startDate}
+              errorMessage={dueDate ? undefined : "Due date is required."}
             />
           </div>
-
           <TeamMemberSelector
             teamMembers={teamMembers}
             postData={postData}

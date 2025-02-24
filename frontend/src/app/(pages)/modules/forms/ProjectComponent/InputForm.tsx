@@ -1,10 +1,10 @@
-import { FolderPlus, X, Rocket } from "lucide-react";
-
 interface ProjectFormProps {
   projectName: string;
   setProjectName: (name: string) => void;
   projectDescription: string;
   setProjectDescription: (desc: string) => void;
+  nameError: string | null;
+  descriptionError: string | null;
 }
 
 export const ProjectForm: React.FC<ProjectFormProps> = ({
@@ -12,6 +12,8 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
   setProjectName,
   projectDescription,
   setProjectDescription,
+  nameError,
+  descriptionError,
 }) => {
   return (
     <>
@@ -25,6 +27,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
           className="w-full border border-zinc-200 outline-none p-3 rounded-lg mt-2 text-sm focus:shadow-sm"
           required
         />
+        {nameError && <p className="text-red-500 text-xs mt-1">{nameError}</p>}
       </div>
       <div className="w-full flex flex-col">
         <h3 className="text-sm font-medium">Description</h3>
@@ -34,6 +37,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({
           placeholder="Describe the project goals and objectives"
           className="w-full border border-zinc-200 outline-none p-3 rounded-lg mt-2 text-sm focus:shadow-sm"
         />
+        {descriptionError && <p className="text-red-500 text-xs mt-1">{descriptionError}</p>}
       </div>
     </>
   );
