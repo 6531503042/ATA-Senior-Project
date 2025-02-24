@@ -40,9 +40,9 @@ const LoginPage: React.FC = () => {
       localStorage.setItem("user_info", JSON.stringify(data.user_info));
 
       if (data.user_info.roles.includes("ROLE_ADMIN")) {
-        router.push("/dashboard_admin");
+        router.push("/admin");
       } else {
-        router.push("/user_page");
+        router.push("/user");
       }
       
     } catch (error) {

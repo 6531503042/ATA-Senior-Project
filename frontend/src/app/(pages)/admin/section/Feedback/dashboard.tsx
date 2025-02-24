@@ -3,6 +3,7 @@
 import { MessageSquare, ThumbsUp, ThumbsDown, Clock, Brain } from "lucide-react";
 import React from "react";
 import MenuOption from "@/app/(pages)/modules/components/MenuOption";
+import { SatisfactionOverview } from "@/components/SatisfactionArea";
 
 const FeedbackDashboard = () => {
 
@@ -56,7 +57,9 @@ const FeedbackDashboard = () => {
             Monitor feedback trends and sentiment analysis
           </p>
         </div>
-
+        <div className="w-full h-auto mt-9">
+          <SatisfactionOverview />
+        </div>
         <div className="w-full h-auto mt-9">
         <ul className="grid 2xl:grid-cols-4 lg:grid-cols-2 grid-cols-1 gap-5">
             {options.map((option, index) => (
