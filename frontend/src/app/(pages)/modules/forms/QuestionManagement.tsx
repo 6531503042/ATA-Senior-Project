@@ -1,4 +1,4 @@
-"use client";
+"use client"
 
 import React, { useState } from "react";
 import axios from "axios";
@@ -19,6 +19,11 @@ interface OptionItem {
   text: string;
 }
 
+interface ValidationError {
+  message: string;
+  type: 'error' | 'warning';
+}
+
 const FormProjectManage: React.FC<FormProjectManageProps> = ({ setIsOpen }) => {
   const [selectedType, setSelectedType] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string>("GENERAL");
@@ -26,8 +31,7 @@ const FormProjectManage: React.FC<FormProjectManageProps> = ({ setIsOpen }) => {
   const [text, setText] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [required, setRequired] = useState<boolean>(true);
-  const [lessQuestionWarning, setLessQuestionWarning] =
-    useState<boolean>(false);
+  const [validationError, setValidationError] = useState<ValidationError | null>(null);
 
   const handleAddOption = () => {
     setOptions([...options, { text: "" }]);
@@ -52,12 +56,66 @@ const FormProjectManage: React.FC<FormProjectManageProps> = ({ setIsOpen }) => {
     setOptions([{ text: "" }]);
   };
 
+  const validateForm = (): boolean => {
+    // Check if question type is selected
+    if (!selectedType) {
+      setValidationError({
+        message: "Please select a question type",
+        type: 'error'
+      });
+      return false;
+    }
+
+    // Check if question text is filled
+    if (!text.trim()) {
+      setValidationError({
+        message: "Please enter your question",
+        type: 'error'
+      });
+      return false;
+    }
+
+    // Validate options for choice-based questions
+    if (selectedType === "SINGLE_CHOICE" || selectedType === "MULTIPLE_CHOICE") {
+      const validOptions = options.filter(opt => opt.text.trim().length > 0);
+      
+      if (validOptions.length < 2) {
+        setValidationError({
+          message: "Please add at least two valid options",
+          type: 'error'
+        });
+        return false;
+      }
+
+      // Check if any option is empty
+      if (options.some(opt => !opt.text.trim())) {
+        setValidationError({
+          message: "Please fill in all option fields or remove empty ones",
+          type: 'warning'
+        });
+        return false;
+      }
+    }
+
+    return true;
+  };
+
   const handleCreateQuestion = async () => {
+    // Clear any existing validation messages
+    setValidationError(null);
+
+    // Validate form before proceeding
+    if (!validateForm()) {
+      return;
+    }
+
     try {
       const token = localStorage.getItem("access_token");
 
       if (!token) {
         console.error("Access token not found");
+        alert("Session expired. Please log in again.");
+        window.location.href = "/login";
         return;
       }
 
@@ -72,14 +130,6 @@ const FormProjectManage: React.FC<FormProjectManageProps> = ({ setIsOpen }) => {
         formattedChoices = options
           .map((o) => o.text.trim())
           .filter((text) => text.length > 0);
-
-        if (formattedChoices.length < 2) {
-          setLessQuestionWarning(true);
-
-          setTimeout(() => setLessQuestionWarning(false), 5000);
-
-          return;
-        }
       }
 
       const requestData = {
@@ -104,23 +154,47 @@ const FormProjectManage: React.FC<FormProjectManageProps> = ({ setIsOpen }) => {
         }
       );
 
-      if (response.data) {
-        console.log("Question created successfully:", response.data);
-        setIsOpen(false);
+      if (response.status === 401) {
+        console.warn("Unauthorized request. Redirecting to login...");
+        alert("Session expired. Please log in again.");
+        localStorage.removeItem("access_token");
+        window.location.href = "/login";
+        return;
       }
+
+      if (response.status === 403) {
+        alert("You do not have permission to perform this action.");
+        return;
+      }
+
+      if (!response.data || response.status >= 400) {
+        throw new Error(response.data?.message || "Failed to create question.");
+      }
+
+      console.log("Question created successfully:", response.data);
+      setIsOpen(false);
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const errorResponse = error.response?.data;
         let errorMessage = "An error occurred while creating the question.";
+
+        if (error.response?.status === 401) {
+          alert("Session expired. Please log in again.");
+          localStorage.removeItem("access_token");
+          window.location.href = "/login";
+          return;
+        }
+
         if (errorResponse?.message) {
           errorMessage = errorResponse.message;
         } else if (errorResponse?.error) {
           errorMessage = errorResponse.error;
         }
+
         alert(errorMessage);
       } else {
-        console.error("General error:", error);
-        alert("An unexpected error occurred");
+        console.error("Unexpected error:", error);
+        alert("An unexpected error occurred. Please try again.");
       }
     }
   };
@@ -158,11 +232,13 @@ const FormProjectManage: React.FC<FormProjectManageProps> = ({ setIsOpen }) => {
 
   return (
     <div className="fixed z-50 inset-0 flex items-center justify-center bg-black bg-opacity-30">
-      {lessQuestionWarning && (
-        <div className="fixed top-5 z-50 right-5 bg-red-600 text-white px-4 py-2 rounded-md shadow-lg flex items-center gap-2 animate-">
+      {validationError && (
+        <div className={`fixed top-5 z-50 right-5 ${
+          validationError.type === 'error' ? 'bg-red-600' : 'bg-yellow-500'
+        } text-white px-4 py-2 rounded-md shadow-lg flex items-center gap-2 animate-fade-in`}>
           <X className="w-5 h-5" />
           <p className="text-sm font-medium">
-            Please add at least two valid options.
+            {validationError.message}
           </p>
         </div>
       )}

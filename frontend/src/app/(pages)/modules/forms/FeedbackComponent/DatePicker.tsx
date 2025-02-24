@@ -1,5 +1,4 @@
-"use client";
-
+import React from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CalendarIcon } from "lucide-react";
@@ -8,16 +7,18 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
 interface DatePickerProps {
-  date?: Date;
+  date: Date | undefined;
   setDate: (date: Date | undefined) => void;
   label: string;
-  startDate?: Date;
+  errorMessage?: string;
+  startDate?: Date; // For dueDate validation to ensure it's after the startDate
 }
 
-export const DatePickerWithPresets: React.FC<DatePickerProps> = ({
+const DatePicker: React.FC<DatePickerProps> = ({
   date,
   setDate,
   label,
+  errorMessage,
   startDate,
 }) => {
   return (
@@ -42,19 +43,23 @@ export const DatePickerWithPresets: React.FC<DatePickerProps> = ({
               mode="single"
               selected={date}
               onSelect={setDate}
-              disabled={(date) => {
+              disabled={(selectedDate) => {
+                // Disable dates before the start date for dueDate
                 if (label === "Due Date" && startDate) {
-                  return date < startDate;
+                  return selectedDate < startDate;
                 }
-                return date < new Date();
+                return selectedDate < new Date(); // Disable past dates for all other date pickers
               }}
               initialFocus
             />
           </div>
         </PopoverContent>
       </Popover>
+      {errorMessage && (
+        <p className="text-red-600 text-xs mt-1">{errorMessage}</p>
+      )}
     </div>
   );
 };
 
-export default DatePickerWithPresets;
+export default DatePicker;
