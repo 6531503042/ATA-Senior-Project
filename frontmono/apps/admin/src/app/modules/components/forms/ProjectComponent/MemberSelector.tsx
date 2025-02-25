@@ -1,5 +1,4 @@
 import { ChevronDown, Plus, Trash2 } from "lucide-react";
-import GroupsIcon from "@mui/icons-material/Groups";
 
 interface TeamMember {
   id: string;
@@ -66,7 +65,7 @@ export const TeamMemberSelector: React.FC<TeamMemberSelectorProps> = ({
       {teamMembers.map((member, index) => (
         <div key={member.id} className="flex flex-row items-center gap-3">
           <div className="p-2 bg-blue-100 rounded-lg flex text-center">
-            <GroupsIcon
+            <Plus
               style={{ fontSize: "1.1rem", color: "transparent" }}
               className="stroke-blue-400 stroke-[1.5px]"
             />
