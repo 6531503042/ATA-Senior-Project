@@ -1,37 +1,48 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import Background from "@/app/assets/background.png";
-import LeadingScreen from '@/app/components/loadingscreen/loadingscreen_admin';
-import { useAuthRedirect } from "../../utils/useAuthRedirect"; // Import the custom hook
+import React from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/hooks/use-auth';
 
-export default function Home() {
-  const [loading, setLoading] = useState(true);
-  
-  // Use the custom hook for authentication redirect logic
-  useAuthRedirect();
+export default function HomePage() {
+  const router = useRouter();
+  const { isAuthenticated, isLoading, user } = useAuth();
 
-  useEffect(() => {
-    // Show loading screen for a short time (500ms) while checking authentication
-    setTimeout(() => {
-      setLoading(false);
-    }, 500);
-  }, []);
+  React.useEffect(() => {
+    if (!isLoading) {
+      if (isAuthenticated) {
+        // Redirect authenticated users to their respective dashboards
+        if (user?.roles.includes('ROLE_ADMIN')) {
+          router.push('/admin/projects');
+        } else {
+          router.push('/dashboard');
+        }
+      } else {
+        router.push('/auth/login');
+      }
+    }
+  }, [isLoading, isAuthenticated, user, router]);
 
-  // Show loading screen while checking authentication
-  if (loading) {
+  // Show loading state while checking authentication
+  if (isLoading) {
     return (
-      <div className="w-screen h-screen bg-white text-white">
-        <LeadingScreen />
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
       </div>
     );
   }
 
-  // If everything is fine, show the background
+  // This will briefly show while redirecting
   return (
-    <div className="w-screen h-screen overflow-hidden">
-      <img src={Background.src} alt="Background" className="w-screen h-screen object-cover" />
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
+      <div className="text-center">
+        <h1 className="text-4xl font-bold text-gray-900 mb-4">
+          Welcome to HR Management System
+        </h1>
+        <p className="text-lg text-gray-600">
+          Redirecting you to the appropriate dashboard...
+        </p>
+      </div>
     </div>
   );
 }
