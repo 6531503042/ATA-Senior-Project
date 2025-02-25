@@ -61,3 +61,4 @@ frontend/package-lock.json
 *.json
 
 frontend/bun.lockb
+frontmono/bun.lockb
