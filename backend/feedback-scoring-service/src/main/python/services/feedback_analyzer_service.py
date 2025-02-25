@@ -23,18 +23,22 @@ from enhanced_data_generator import EnhancedMockDataGenerator
 class FeedbackAnalyzerService:
     def __init__(self, mongodb_url: str, feedback_service_url: str):
         # Initialize sentiment pipeline once and cache it
-        self.sentiment_pipeline = pipeline(
-            "sentiment-analysis",
-            model="distilbert-base-uncased-finetuned-sst-2-english",
-            device="cpu"  # Explicitly set to CPU for consistent performance
-        )
+        self.sentiment_pipeline = pipeline("sentiment-analysis")
+        
+        # Initialize MongoDB connection
+        import motor.motor_asyncio
+        self.client = motor.motor_asyncio.AsyncIOMotorClient(mongodb_url)
+        self.db = self.client.feedback_analytics
+        self.feedback_service_url = feedback_service_url
+        
+        # Initialize feedback analyzer
+        from feedback_analyzer import FeedbackAnalyzer
+        self.analyzer = FeedbackAnalyzer()
         
         # Cache TextBlob results
         self.sentiment_cache = {}
         
         # Initialize other attributes
-        self.mongodb_url = mongodb_url
-        self.feedback_service_url = feedback_service_url
         self.mock_data_generator = EnhancedMockDataGenerator()
 
         # Keywords for different aspects
@@ -681,11 +685,16 @@ class FeedbackAnalyzerService:
 
     async def store_analysis(self, analysis: FeedbackAnalysis):
         """Store analysis results in MongoDB"""
-        await self.db.feedback_analyses.update_one(
-            {"feedback_id": analysis.feedback_id},
-            {"$set": analysis.dict()},
-            upsert=True
-        )
+        try:
+            await self.db.feedback_analyses.update_one(
+                {"feedback_id": analysis.feedback_id},
+                {"$set": analysis.dict()},
+                upsert=True
+            )
+        except Exception as e:
+            logger.error(f"Error storing analysis: {str(e)}")
+            # Don't raise the exception, just log it
+            pass
 
     async def get_project_analysis(self, project_id: int, sort_by: str = None, order: str = "desc") -> ProjectAnalysis:
         """Get aggregated analysis for a project"""

@@ -6,7 +6,7 @@ This service provides AI-powered scoring and analysis for feedback submissions.
 
 1. Create a Python virtual environment:
 ```bash
-python -m venv venv
+python3.11 -m venv venv
 ```
 
 2. Activate the virtual environment:
