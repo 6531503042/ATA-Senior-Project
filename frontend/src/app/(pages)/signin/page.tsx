@@ -34,7 +34,8 @@ const SignIn = () => {
 
     if (!formData.username.trim()) newErrors.username = "Username is required";
     if (!formData.password.trim()) newErrors.password = "Password is required";
-    if (formData.password.length < 6) newErrors.password = "Password must be at least 6 characters";
+    if (formData.password.length < 6)
+      newErrors.password = "Password must be at least 6 characters";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -56,10 +57,13 @@ const SignIn = () => {
     }
   };
 
-  const showNotification = (message: string, type: "success" | "error" | "info") => {
+  const showNotification = (
+    message: string,
+    type: "success" | "error" | "info"
+  ) => {
     setNotification({ message, type, visible: true });
     setTimeout(() => {
-      setNotification(prev => ({ ...prev, visible: false }));
+      setNotification((prev) => ({ ...prev, visible: false }));
     }, 5000);
   };
 
@@ -74,27 +78,29 @@ const SignIn = () => {
     try {
       const data = await loginUser({
         username: formData.username,
-        password: formData.password
+        password: formData.password,
       });
 
       if (data.access_token) {
         showNotification("Login successful!", "success");
 
-        localStorage.setItem('access_token', data.access_token);
-        localStorage.setItem('user', JSON.stringify(data.user_info));
+        localStorage.setItem("access_token", data.access_token);
+        localStorage.setItem("user", JSON.stringify(data.user_info));
         setTimeout(() => {
           const roles = data.user_info.roles;
           if (roles && roles.includes("ROLE_ADMIN")) {
-            router.push('/admin');
+            router.push("/admin");
           } else if (roles && roles.includes("ROLE_USER")) {
-            router.push('/user');
+            router.push("/user");
           } else {
-            router.push('/');  
+            router.push("/");
           }
-        }, 1000); 
-
+        }, 1000);
       } else {
-        showNotification(data.message || "Login failed. Please check your credentials.", "error");
+        showNotification(
+          data.message || "Login failed. Please check your credentials.",
+          "error"
+        );
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -115,35 +121,53 @@ const SignIn = () => {
       const userInfo = JSON.parse(user);
       const roles = userInfo.roles;
       if (roles && roles.includes("ROLE_ADMIN")) {
-        router.push('/admin');
+        router.push("/admin");
       } else if (roles && roles.includes("ROLE_USER")) {
-        router.push('/page');
+        router.push("/page");
       } else {
-        router.push('/');  // Default fallback if no valid role
+        router.push("/"); // Default fallback if no valid role
       }
     }
   }, [router]);
 
   return (
     <div className="w-screen h-screen flex justify-center items-center bg-gray-50 relative overflow-hidden">
-      <img src={Background.src} alt="Background" className="absolute z-0 inset-0 object-cover w-full h-full" />
+      <img
+        src={Background.src}
+        alt="Background"
+        className="absolute z-0 inset-0 object-cover w-full h-full"
+      />
       {/* Notification Toast */}
       {notification.visible && (
-        <div className={`fixed top-4 right-4 p-4 rounded-lg shadow-lg max-w-sm animate-in fade-in slide-in-from-top-5 z-50 flex items-center gap-3 ${
-          notification.type === 'success' ? 'bg-green-100 text-green-800' :
-          notification.type === 'error' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'
-        }`}>
-          {notification.type === 'success' ? <CheckCircle className="h-5 w-5" /> :
-           notification.type === 'error' ? <AlertCircle className="h-5 w-5" /> : 
-           <Info className="h-5 w-5" />}
+        <div
+          className={`fixed top-4 right-4 p-4 rounded-lg shadow-lg max-w-sm animate-in fade-in slide-in-from-top-5 z-50 flex items-center gap-3 ${
+            notification.type === "success"
+              ? "bg-green-100 text-green-800"
+              : notification.type === "error"
+              ? "bg-red-100 text-red-800"
+              : "bg-blue-100 text-blue-800"
+          }`}
+        >
+          {notification.type === "success" ? (
+            <CheckCircle className="h-5 w-5" />
+          ) : notification.type === "error" ? (
+            <AlertCircle className="h-5 w-5" />
+          ) : (
+            <Info className="h-5 w-5" />
+          )}
           <p>{notification.message}</p>
         </div>
       )}
 
       <div className="bg-white shadow-xl p-8 w-[720px] rounded-lg border border-gray-200 overflow-auto flex flex-col items-center z-10 bg-opacity-95">
         <img src={ATA.src} alt="LOGO" className="w-64 h-auto" />
-        <h2 className="text-2xl font-bold text-center text-gray-700 mb-6 mt-6">Login to your account</h2>
-        <form onSubmit={handleSubmit} className="space-y-4 w-full max-w-md flex flex-col items-center">
+        <h2 className="text-2xl font-bold text-center text-gray-700 mb-6 mt-6">
+          Login to your account
+        </h2>
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-4 w-full max-w-md flex flex-col items-center"
+        >
           <div className="space-y-1 w-full">
             <input
               name="username"
@@ -151,10 +175,12 @@ const SignIn = () => {
               value={formData.username}
               onChange={handleChange}
               className={`p-3 border rounded-md outline-none w-full focus:ring-2 focus:ring-blue-500 transition-all ${
-                errors.username ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                errors.username ? "border-red-500 bg-red-50" : "border-gray-300"
               }`}
             />
-            {errors.username && <p className="text-red-500 text-sm">{errors.username}</p>}
+            {errors.username && (
+              <p className="text-red-500 text-sm">{errors.username}</p>
+            )}
           </div>
           <div className="space-y-1 w-full">
             <input
@@ -164,13 +190,15 @@ const SignIn = () => {
               value={formData.password}
               onChange={handleChange}
               className={`p-3 border rounded-md outline-none w-full focus:ring-2 focus:ring-blue-500 transition-all ${
-                errors.password ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                errors.password ? "border-red-500 bg-red-50" : "border-gray-300"
               }`}
             />
-            {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
+            {errors.password && (
+              <p className="text-red-500 text-sm">{errors.password}</p>
+            )}
           </div>
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-md transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
           >
             Login
@@ -178,7 +206,9 @@ const SignIn = () => {
         </form>
 
         <div className="mt-4 text-center text-gray-600">
-          <a href="#" className="text-blue-600 hover:underline">Forgot password?</a>
+          <a href="#" className="text-blue-600 hover:underline">
+            Forgot password?
+          </a>
         </div>
       </div>
     </div>
