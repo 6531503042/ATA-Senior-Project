@@ -43,7 +43,7 @@ const Page = () => {
       const userInfo = localStorage.getItem("user");
 
       if (!token || !userInfo) {
-        router.push("http://localhost:3000/");
+        router.push("http://localhost:3000");
         return;
       }
 
@@ -55,7 +55,7 @@ const Page = () => {
       } else if (userRole === "ROLE_USER") {
         router.push("http://localhost:3002");
       } else {
-        router.push("http://localhost:3000/");
+        router.push("http://localhost:3000");
       }
     };
 
