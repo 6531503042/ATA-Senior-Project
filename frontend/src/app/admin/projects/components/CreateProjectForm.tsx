@@ -37,27 +37,27 @@ export function CreateProjectForm({ onClose }: CreateProjectFormProps) {
   });
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
 
-  const fetchUsers = async () => {
-    try {
-      setIsLoading(true);
-      const response = await api.get('/manager/list');
-      console.log('Fetched users:', response.data);
-      setUsers(response.data);
-    } catch (error) {
-      console.error('Failed to fetch users:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load team members. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchUsers();
-  }, []);
+      const fetchUsers = async () => {
+        try {
+          setIsLoading(true);
+          const response = await api.get('/manager/list');
+          console.log('Fetched users:', response.data);
+          setUsers(response.data);
+        } catch (error) {
+          console.error('Failed to fetch users:', error);
+          toast({
+            title: 'Error',
+            description: 'Failed to load team members. Please try again.',
+            variant: 'destructive',
+          });
+        } finally {
+          setIsLoading(false);
+        }
+      };
+  
+      fetchUsers();
+    }, [toast]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -242,7 +242,6 @@ export function CreateProjectForm({ onClose }: CreateProjectFormProps) {
                             selected={formData.projectStartDate ? new Date(formData.projectStartDate) : undefined}
                             onSelect={(date) => handleDateChange('projectStartDate', date)}
                             disabled={{ before: new Date() }}
-                            initialFocus
                           />
                         </PopoverContent>
                       </Popover>
@@ -275,7 +274,6 @@ export function CreateProjectForm({ onClose }: CreateProjectFormProps) {
                             disabled={{ 
                               before: formData.projectStartDate ? new Date(formData.projectStartDate) : new Date()
                             }}
-                            initialFocus
                           />
                         </PopoverContent>
                       </Popover>
