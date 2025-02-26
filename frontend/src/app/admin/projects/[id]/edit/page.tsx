@@ -18,12 +18,13 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = React.useState(true);
   const [project, setProject] = React.useState<Project | undefined>(undefined);
+  const projectId = React.use(Promise.resolve(params.id));
 
   React.useEffect(() => {
     const fetchProject = async () => {
       try {
         setIsLoading(true);
-        const data = await getProjectById(parseInt(params.id, 10));
+        const data = await getProjectById(parseInt(projectId, 10));
         setProject(data);
       } catch (error) {
         console.error('Failed to fetch project:', error);
@@ -39,12 +40,12 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
     };
 
     fetchProject();
-  }, [params.id, router, toast]);
+  }, [projectId, router, toast]);
 
   const handleSubmit = async (data: Partial<CreateProjectDto>) => {
     try {
       setIsLoading(true);
-      await updateProject(parseInt(params.id, 10), data);
+      await updateProject(parseInt(projectId, 10), data);
       toast({
         title: 'Success',
         description: 'Project updated successfully.',

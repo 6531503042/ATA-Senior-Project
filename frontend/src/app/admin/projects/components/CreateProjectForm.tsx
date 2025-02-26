@@ -13,7 +13,6 @@ import { useToast } from '@/hooks/use-toast';
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
 import api from '@/utils/api';
 import type { User } from '@/types/auth';
-import { ProjectStatus } from '@/app/admin/projects/models/types';
 
 interface CreateProjectFormProps {
   onClose: () => void;
@@ -31,7 +30,6 @@ export function CreateProjectForm({ onClose }: CreateProjectFormProps) {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    status: ProjectStatus.ACTIVE,
     projectStartDate: '',
     projectEndDate: '',
   });
@@ -130,11 +128,28 @@ export function CreateProjectForm({ onClose }: CreateProjectFormProps) {
     setIsLoading(true);
 
     try {
-      const response = await createProject(formData);
-      await updateProjectMembers(
-        response.id,
-        teamMembers.map((member) => member.userId)
-      );
+      // Create project first
+      const projectResponse = await createProject(formData);
+      
+      // Only add members if there are any selected
+      if (teamMembers.length > 0) {
+        const validMembers = teamMembers.filter(member => member.userId !== 0);
+        if (validMembers.length > 0) {
+          try {
+            await updateProjectMembers(
+              projectResponse.id,
+              validMembers.map((member) => member.userId)
+            );
+          } catch (memberError) {
+            console.error('Failed to add team members:', memberError);
+            toast({
+              title: 'Warning',
+              description: 'Project created but failed to add team members.',
+              variant: 'destructive',
+            });
+          }
+        }
+      }
 
       toast({
         title: 'Success',
@@ -239,8 +254,8 @@ export function CreateProjectForm({ onClose }: CreateProjectFormProps) {
                         <PopoverContent className="w-auto p-0" align="start">
                           <Calendar
                             mode="single"
-                            defaultSelected={formData.projectStartDate ? new Date(formData.projectStartDate) : undefined}
-                            onSelect={(date) => handleDateChange('projectStartDate', date)}
+                            selected={formData.projectStartDate ? new Date(formData.projectStartDate) : undefined}
+                            onSelect={(date: Date | undefined) => handleDateChange('projectStartDate', date)}
                             disabled={{ before: new Date() }}
                           />
                         </PopoverContent>
@@ -270,7 +285,7 @@ export function CreateProjectForm({ onClose }: CreateProjectFormProps) {
                           <Calendar
                             mode="single"
                             selected={formData.projectEndDate ? new Date(formData.projectEndDate) : undefined}
-                            onSelect={(date) => handleDateChange('projectEndDate', date)}
+                            onSelect={(date: Date | undefined) => handleDateChange('projectEndDate', date)}
                             disabled={{ 
                               before: formData.projectStartDate ? new Date(formData.projectStartDate) : new Date()
                             }}
@@ -278,22 +293,6 @@ export function CreateProjectForm({ onClose }: CreateProjectFormProps) {
                         </PopoverContent>
                       </Popover>
                     </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Status</label>
-                    <select
-                      name="status"
-                      value={formData.status}
-                      onChange={handleInputChange}
-                      className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
-                    >
-                      {Object.values(ProjectStatus).map((status) => (
-                        <option key={status} value={status}>
-                          {status.replace('_', ' ')}
-                        </option>
-                      ))}
-                    </select>
                   </div>
 
                   <div>

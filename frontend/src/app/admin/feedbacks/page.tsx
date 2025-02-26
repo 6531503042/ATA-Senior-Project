@@ -22,9 +22,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import Button from '@/components/ui/Button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { getAllFeedbacks, deleteFeedback, toggleFeedbackStatus } from '@/lib/api/feedbacks';
+import { getFeedbacks, deleteFeedback, toggleFeedbackStatus } from '@/lib/api/feedbacks';
 import type { Feedback, FeedbackFilters } from './models/types';
-import { CreateFeedbackDialog } from './components/CreateFeedbackDialog';
+import { CreateFeedbackForm } from './components/CreateFeedbackForm';
 
 export default function FeedbacksPage() {
   const { toast } = useToast();
@@ -42,7 +42,7 @@ export default function FeedbacksPage() {
   const fetchFeedbacks = useCallback(async () => {
     try {
       setIsLoading(true);
-      const data = await getAllFeedbacks(filters);
+      const data = await getFeedbacks(filters);
       setFeedbacks(data);
     } catch (error) {
       console.error('Failed to fetch feedbacks:', error);
@@ -359,12 +359,16 @@ export default function FeedbacksPage() {
         </Card>
       </div>
 
-      {/* Create Feedback Dialog */}
-      <CreateFeedbackDialog
-        isOpen={isCreateModalOpen}
-        setIsOpen={setIsCreateModalOpen}
-        onSuccess={fetchFeedbacks}
-      />
+      {/* Create Feedback Form */}
+      {isCreateModalOpen && (
+        <CreateFeedbackForm
+          onClose={() => setIsCreateModalOpen(false)}
+          onSuccess={() => {
+            fetchFeedbacks();
+            setIsCreateModalOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 } 

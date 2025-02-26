@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { DatePickerWithPresets } from '../components/DatePicker';
+import { DatePicker } from '@/components/shared/date-picker';
 import { Project } from '../../projects/models/types';
 import { Question } from '../../questions/models/types';
 import { cn } from '@/lib/utils';
@@ -116,18 +116,18 @@ const FormBody: React.FC<FormBodyProps> = ({
 
       {/* Date Selection */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <DatePickerWithPresets
+        <DatePicker
           date={startDate}
           setDate={setStartDate}
           label="Start Date"
-          errorMessage={startDate ? undefined : "Start date is required."}
+          error={startDate ? undefined : errors.startDate}
         />
-        <DatePickerWithPresets
+        <DatePicker
           date={dueDate}
           setDate={setDueDate}
           label="Due Date"
-          startDate={startDate}
-          errorMessage={dueDate ? undefined : "Due date is required."}
+          minDate={startDate}
+          error={dueDate ? undefined : errors.dueDate}
         />
       </div>
 
