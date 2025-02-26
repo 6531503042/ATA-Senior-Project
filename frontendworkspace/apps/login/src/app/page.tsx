@@ -91,9 +91,9 @@ const SignIn = () => {
         setTimeout(() => {
           const roles = data.user_info.roles;
           if (roles && roles.includes("ROLE_ADMIN")) {
-            router.push("/admin");
+            router.push("http://localhost:3001/");
           } else if (roles && roles.includes("ROLE_USER")) {
-            router.push("/user");
+            router.push("http://localhost:3002/");
           } else {
             router.push("/");
           }
@@ -123,9 +123,9 @@ const SignIn = () => {
       const userInfo = JSON.parse(user);
       const roles = userInfo.roles;
       if (roles && roles.includes("ROLE_ADMIN")) {
-        router.push("/admin");
+        router.push("http://localhost:3001/");
       } else if (roles && roles.includes("ROLE_USER")) {
-        router.push("/user");
+        router.push("http://localhost:3002/");
       } else {
         router.push("/"); // Default fallback if no valid role
       }
