@@ -65,3 +65,5 @@ frontmono/bun.lockb
 frontendworkspace/bun.lockb
 *.lockb
 frontendworkspace/bun.lockb
+/frontend_notuse
+/frontendworkspace
