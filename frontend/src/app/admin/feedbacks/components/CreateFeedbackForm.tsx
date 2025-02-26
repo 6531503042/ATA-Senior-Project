@@ -259,7 +259,7 @@ export function CreateFeedbackForm({ onClose, onSuccess }: CreateFeedbackFormPro
                         <PopoverContent className="w-auto p-0" align="start">
                           <Calendar
                             mode="single"
-                            selected={formData.startDate ? new Date(formData.startDate) : undefined}
+                            defaultSelected={formData.startDate ? new Date(formData.startDate) : undefined}
                             onSelect={(date) => handleDateChange('startDate', date)}
                             disabled={{ before: new Date() }}
                             initialFocus

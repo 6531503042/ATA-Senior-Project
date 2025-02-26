@@ -239,7 +239,7 @@ export function CreateProjectForm({ onClose }: CreateProjectFormProps) {
                         <PopoverContent className="w-auto p-0" align="start">
                           <Calendar
                             mode="single"
-                            selected={formData.projectStartDate ? new Date(formData.projectStartDate) : undefined}
+                            defaultSelected={formData.projectStartDate ? new Date(formData.projectStartDate) : undefined}
                             onSelect={(date) => handleDateChange('projectStartDate', date)}
                             disabled={{ before: new Date() }}
                           />

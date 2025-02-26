@@ -133,8 +133,6 @@ export function DatePicker({
               showOutsideDays
               fixedWeeks
               defaultMonth={date || new Date()}
-              fromYear={2020}
-              toYear={2030}
               captionLayout="dropdown"
             />
           </div>

@@ -8,11 +8,8 @@ import {
   MessageSquare, 
   Calendar, 
   User, 
-  ChevronRight,
   AlertCircle,
-  Clock,
   Search,
-  CheckCircle2,
   Loader2,
   ArrowLeft,
   Brain,
@@ -28,15 +25,14 @@ import {
   PieChart,
   Activity,
   Star,
-  Heart,
-  ClipboardList
+  Unlock,
+  Lock
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import axios from 'axios';
 import { getCookie } from 'cookies-next';
-import { SubmissionAnalysis } from '../components/SubmissionAnalysis';
 import { SatisfactionOverview } from '../components/SatisfactionOverview';
 import { AIInsightsCard } from '../components/AIInsightsCard';
 import type { SubmissionResponse, FeedbackAnalysis, SatisfactionAnalysis, AIInsights } from '@/lib/api/submissions';
@@ -54,6 +50,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from '@/components/ui/hover-card';
+import { SubmissionDetails } from '../components/SubmissionDetails';
 
 interface SubmissionListItemProps {
   submission: SubmissionResponse;
@@ -68,8 +65,7 @@ const SubmissionListItem = ({ submission, isSelected, onClick }: SubmissionListI
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
+      className="group"
     >
       <Card
         className={cn(
@@ -81,69 +77,49 @@ const SubmissionListItem = ({ submission, isSelected, onClick }: SubmissionListI
         onClick={onClick}
       >
         <div className="p-4">
-          <div className="flex items-start justify-between">
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="p-2 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg shadow-sm">
-                  <MessageSquare className="h-4 w-4 text-white" />
-                </div>
-                <h3 className="text-base font-medium text-gray-900">
-                  Submission #{submission.submission.id}
-                </h3>
-                <Badge className={cn(
-                  submission.submission.privacyLevel === 'PUBLIC'
-                    ? "bg-emerald-50 text-emerald-700"
-                    : "bg-amber-50 text-amber-700"
-                )}>
-                  {submission.submission.privacyLevel}
-                </Badge>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <div className="p-2 bg-violet-100 rounded-lg">
+                <MessageSquare className="h-4 w-4 text-violet-600" />
               </div>
-
-              <div className="grid grid-cols-2 gap-4 mt-3">
-                <div className="flex items-center gap-2 text-sm text-gray-500">
-                  <Calendar className="h-4 w-4" />
-                  <span>{format(new Date(submission.submission.submittedAt), 'MMM d, yyyy')}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-gray-500">
-                  {submission.submission.submittedBy ? (
-                    <>
-                      <User className="h-4 w-4" />
-                      <span>User #{submission.submission.submittedBy}</span>
-                    </>
-                  ) : (
-                    <>
-                      <User className="h-4 w-4 text-gray-400" />
-                      <span>Anonymous</span>
-                    </>
-                  )}
-                </div>
-              </div>
-
-              <div className="mt-2">
-                <Badge className={cn(
-                  "flex items-center gap-1.5",
-                  submission.submission.status === 'analyzed'
-                    ? "bg-emerald-50 text-emerald-700"
-                    : submission.submission.status === 'error'
-                    ? "bg-red-50 text-red-700"
-                    : "bg-amber-50 text-amber-700"
-                )}>
-                  {submission.submission.status === 'analyzed' ? (
-                    <CheckCircle2 className="h-3.5 w-3.5" />
-                  ) : submission.submission.status === 'error' ? (
-                    <AlertCircle className="h-3.5 w-3.5" />
-                  ) : (
-                    <Clock className="h-3.5 w-3.5" />
-                  )}
-                  {submission.submission.status?.charAt(0).toUpperCase() + submission.submission.status?.slice(1)}
-                </Badge>
-              </div>
+              <h3 className="text-sm font-medium text-gray-900">
+                Submission #{submission.submission.id}
+              </h3>
             </div>
-
-            <ChevronRight className={cn(
-              "h-5 w-5 transition-transform",
-              isSelected ? "rotate-90" : ""
-            )} />
+            <Badge className={cn(
+              "flex items-center gap-1.5",
+              submission.submission.privacyLevel === 'PUBLIC' 
+                ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+                : "bg-amber-50 text-amber-700 border-amber-100"
+            )}>
+              {submission.submission.privacyLevel === 'PUBLIC' ? (
+                <Unlock className="h-3.5 w-3.5" />
+              ) : (
+                <Lock className="h-3.5 w-3.5" />
+              )}
+              {submission.submission.privacyLevel}
+            </Badge>
+          </div>
+          
+          <div className="flex items-center gap-2 text-xs text-gray-500 mb-3">
+            <Calendar className="h-3.5 w-3.5" />
+            <span>{format(new Date(submission.submission.submittedAt), 'PPP')}</span>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              {submission.submission.submittedBy ? (
+                <div className="flex items-center gap-1.5 text-xs text-gray-600">
+                  <User className="h-3.5 w-3.5" />
+                  <span>User #{submission.submission.submittedBy}</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                  <User className="h-3.5 w-3.5" />
+                  <span>Anonymous</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </Card>
@@ -678,7 +654,7 @@ export default function FeedbackSubmissionPage({ params }: { params: Promise<{ f
           {/* Submissions List and Details */}
           <div className="grid grid-cols-12 gap-6">
             {/* Submissions List */}
-            <div className="col-span-12 lg:col-span-3">
+            <div className="col-span-12 md:col-span-5 lg:col-span-4">
               <Card className="sticky top-6 border-0 shadow-lg overflow-hidden bg-white">
                 <div className="p-4 space-y-4">
                   <div className="flex items-center justify-between">
@@ -704,7 +680,7 @@ export default function FeedbackSubmissionPage({ params }: { params: Promise<{ f
                     />
                   </div>
 
-                  <ScrollArea className="h-[calc(100vh-20rem)]">
+                  <ScrollArea className="h-[calc(100vh-22rem)] max-h-[600px]">
                     <div className="space-y-2 pr-4">
                       <AnimatePresence>
                         {filteredSubmissions.map((submission) => (
@@ -723,42 +699,27 @@ export default function FeedbackSubmissionPage({ params }: { params: Promise<{ f
             </div>
 
             {/* Submission Details */}
-            <div className="col-span-12 lg:col-span-9">
-              <AnimatePresence mode="wait">
+            <div className="col-span-12 md:col-span-7 lg:col-span-8">
+              <div className="flex-1 overflow-y-auto">
                 {selectedSubmission ? (
-                  <motion.div
-                    key="details"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                  >
-                    <Card className="border-0 shadow-lg overflow-hidden bg-white">
-                      <div className="p-6">
-                        <SubmissionAnalysis submissionData={selectedSubmission} />
-                      </div>
-                    </Card>
-                  </motion.div>
+                  <div className="space-y-6">
+                    <SubmissionDetails 
+                      submission={selectedSubmission.submission}
+                      analysis={selectedSubmission.analysis}
+                    />
+                  </div>
                 ) : (
-                  <motion.div
-                    key="empty"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                  >
-                    <Card className="p-12 text-center border-0 shadow-lg overflow-hidden bg-gradient-to-br from-gray-50 to-slate-50">
-                      <div className="flex flex-col items-center gap-4">
-                        <div className="p-4 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full">
-                          <MessageSquare className="h-12 w-12 text-gray-400" />
-                        </div>
-                        <div>
-                          <h3 className="text-lg font-semibold text-gray-900">Select a Submission</h3>
-                          <p className="text-sm text-gray-500 mt-1">Choose a submission from the list to view its detailed analysis</p>
-                        </div>
-                      </div>
-                    </Card>
-                  </motion.div>
+                  <div className="flex items-center justify-center h-full min-h-[400px]">
+                    <div className="text-center">
+                      <MessageSquare className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">No Submission Selected</h3>
+                      <p className="text-sm text-gray-500">
+                        Select a submission from the list to view details
+                      </p>
+                    </div>
+                  </div>
                 )}
-              </AnimatePresence>
+              </div>
             </div>
           </div>
         </TabsContent>
