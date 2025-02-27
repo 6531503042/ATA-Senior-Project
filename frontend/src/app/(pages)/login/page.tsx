@@ -3,8 +3,8 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import Logo from "@/app/assets/ata-logo.png";
-import Background from "@/app/assets/background.png";
+import Logo from "@assets/ata-logo.png";
+import Background from "@assets/background.png";
 
 const LoginPage: React.FC = () => {
   const router = useRouter();
