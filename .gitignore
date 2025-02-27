@@ -145,8 +145,6 @@ docker-compose.override.yml
 **/.settings/
 
 # Model files and cache
-**/models/
-**/*.model
 **/*.pkl
 **/*.h5
 **/.cache/
