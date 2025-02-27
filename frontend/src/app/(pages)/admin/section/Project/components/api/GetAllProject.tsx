@@ -6,6 +6,7 @@ import {
   CalendarClock,
   Captions,
   ChevronRight,
+  Pencil,
   Search,
   Users,
 } from "lucide-react";
@@ -121,7 +122,7 @@ const GetAllProject = () => {
           className="pl-10 pr-5 text-sm py-2 w-full border border-black border-opacity-10 shadow-sm bg-white rounded-lg outline-none focus:ring-[0.5px] focus:ring-zinc-200"
         />
       </div>
-      <div className="grid grid-cols-1 2xl:grid-cols-3 lg:grid-cols-2 items-stretch gap-6 pb-5">
+      <div className="flex flex-col items-stretch gap-6 pb-5">
         {filteredProjects.length > 0 ? (
           filteredProjects.map((post) => (
             <label
@@ -177,16 +178,16 @@ const GetAllProject = () => {
                   </div>
                 </div>
               </div>
-
               <label className="flex flex-col w-1/12 items-end relative">
-                <div
-                  className={`absolute top-0 right-0 transition-all duration-250 transform ${
-                    hoveredProjectId === post.id
-                      ? "opacity-100 scale-100"
-                      : "opacity-0 scale-95"
-                  }`}
-                >
-                  <Dropdown />
+                <div className="flex flex-row items-center gap-2">
+                  <button className="bg-trasparent rounded-lg border">
+                    <div className="py-1 px-3 flex flex-row items-center gap-1.5">
+                      <Pencil className="text-black w-3.5 h-3.5" />
+                      <span className="text-black text-sm">Edit</span>
+                    </div>
+                  </button>
+                  <button>aa</button>
+                  <button>aa</button>
                 </div>
               </label>
             </label>
