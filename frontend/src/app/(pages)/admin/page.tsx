@@ -25,11 +25,19 @@ const ComponentMap = {
 
 const Page = () => {
   const [loading, setLoading] = useState(true);
+  const [componentLoading, setComponentLoading] = useState(false);
   const [currentComponent, setCurrentComponent] = useState("overview");
   const router = useRouter();
 
   const handleComponentChange = (componentName: string) => {
-    setCurrentComponent(componentName);
+    // Show loading when changing components
+    setComponentLoading(true);
+    
+    // Set a minimum loading time of 2 seconds
+    setTimeout(() => {
+      setCurrentComponent(componentName);
+      setComponentLoading(false);
+    }, 2000);
   };
 
   const CurrentComponent =
@@ -73,8 +81,17 @@ const Page = () => {
       <Sidebar onComponentChange={handleComponentChange} />
       <div className="flex-1 flex w-full flex-col overflow-y-auto overflow-x-auto">
         <Navbar />
-        <main className="p-4 md:p-12 max-w-full max-h-full min-w-[320px]">
-          {CurrentComponent && <CurrentComponent />}
+        <main className="p-4 md:p-12 max-w-full h-full min-w-[320px] relative">
+          {componentLoading ? (
+            <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-80 z-10">
+              <div className="flex flex-col items-center">
+                <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                <p className="mt-4 text-blue-600 font-medium">Loading data...</p>
+              </div>
+            </div>
+          ) : (
+            CurrentComponent && <CurrentComponent />
+          )}
         </main>
       </div>
     </div>

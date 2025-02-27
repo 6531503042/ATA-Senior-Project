@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, Tag, ChevronDown } from "lucide-react";
+import { Search, Tag } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import QuestionAll from "@/components/shared/QuestionListCard";
 import SelectWithIcons from "@/components/shared/SelectWithIcon";
