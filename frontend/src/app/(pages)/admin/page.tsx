@@ -95,11 +95,11 @@ const Page = () => {
   }
 
   return (
-    <div className="w-full h-screen flex flex-row">
+    <div className="w-full h-screen flex flex-row min-w-[500px]">
       <Sidebar onComponentChange={handleComponentChange} />
-      <div className="flex-1 flex w-full flex-col overflow-y-auto overflow-x-auto">
+      <div className="flex-1 flex w-full flex-col">
         <Navbar />
-        <main className="p-4 md:p-12 max-w-full h-full min-w-[320px] relative">
+        <main className="p-4 md:p-12 w-full h-full relative overflow-x-auto overflow-y-auto">
           {componentLoading ? (
             <LoadingData
               message={`Loading ${formatComponentName(targetComponent)}...`}

@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   ChevronRight,
@@ -37,6 +37,21 @@ const Sidebar = ({ onComponentChange }: SidebarProps) => {
   const [activeComponent, setActiveComponent] = useState<string>("overview");
   const [activeMainMenu, setActiveMainMenu] = useState<string>("Overview");
   const router = useRouter();
+
+  // Add useEffect to handle initial screen size
+  useEffect(() => {
+    const handleInitialResize = () => {
+      // Only set initial state based on screen size
+      if (window.innerWidth < 1280) {
+        setIsOpen(false);
+      } else {
+        setIsOpen(true);
+      }
+    };
+    
+    // Set initial state only once on component mount
+    handleInitialResize();
+  }, []);
 
   const options: MenuOption[] = [
     {
@@ -76,6 +91,11 @@ const Sidebar = ({ onComponentChange }: SidebarProps) => {
 
   const handleMenuClick = (option: MenuOption): void => {
     if (option.subMenu && option.subMenu.length > 0) {
+      // If sidebar is closed and user clicks on an item with submenu, open the sidebar
+      if (!isOpen) {
+        setIsOpen(true);
+      }
+      
       setActiveSubmenu(activeSubmenu === option.name ? null : option.name);
     } else {
       onComponentChange(option.component);
@@ -106,7 +126,7 @@ const Sidebar = ({ onComponentChange }: SidebarProps) => {
 
   return (
     <div
-      className={`h-full bg-white shadow-xl border-r border-opacity-5 border-r-black transition-all duration-300 relative ${
+      className={`h-screen bg-white shadow-xl border-r border-opacity-5 border-r-black transition-all duration-300 relative ${
         isOpen ? "w-64" : "w-20"
       }`}
     >
@@ -172,7 +192,7 @@ const Sidebar = ({ onComponentChange }: SidebarProps) => {
                     )}
                   </div>
 
-                  {/* Submenu */}
+                  {/* Submenu - only show if sidebar is open */}
                   {hasSubmenu && isOpen && option.subMenu && (
                     <div
                       className={`overflow-hidden transition-all duration-300 ${
@@ -205,18 +225,16 @@ const Sidebar = ({ onComponentChange }: SidebarProps) => {
                 </li>
               );
             })}
-
-            {/* Sign Out Button */}
           </ul>
           <div className="flex flex-col">
-          <button
-            onClick={handleLogout}
-            className="flex items-center w-full p-3 gap-5 text-sm font-medium text-red-600 bg-red-50 rounded-lg transition-all hover:bg-red-700 hover:text-white hover:shadow-md"
-          >
-            <LogOut className="w-5 h-5" />
-            {isOpen && <span>Sign Out</span>}
-          </button>
-          <div className="h-10"></div>
+            <button
+              onClick={handleLogout}
+              className="flex items-center w-full p-3 gap-5 text-sm font-medium text-red-600 bg-red-50 rounded-lg transition-all hover:bg-red-700 hover:text-white hover:shadow-md"
+            >
+              <LogOut className="w-5 h-5" />
+              {isOpen && <span>Sign Out</span>}
+            </button>
+            <div className="h-10"></div>
           </div>
         </div>
       </div>
