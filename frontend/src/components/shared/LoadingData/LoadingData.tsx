@@ -28,7 +28,7 @@ const LoadingData: React.FC<EnhancedLoadingIndicatorProps> = ({
       secondaryText: "text-blue-500",
     },
     gradient: {
-      bg: "bg-slate-100 bg-opacity-10",
+      bg: "bg-slate-50 bg-opacity-50",
       spinner: "border-indigo-300 border-t-indigo-600",
       text: "text-indigo-700",
       secondaryText: "text-indigo-500",
@@ -44,7 +44,7 @@ const LoadingData: React.FC<EnhancedLoadingIndicatorProps> = ({
       <div className="flex flex-col items-center max-w-md mx-auto p-8 rounded-xl shadow-lg bg-white">
         {/* Pulse ring animation */}
         <div className="relative">
-          <div className="absolute inset-0 rounded-full animate-ping opacity-20 bg-blue-400" />
+          <div className="absolute inset-0 rounded-full animate-ping opacity-20 bg-violet-400" />
           <div
             className={`w-16 h-16 border-4 ${currentTheme.spinner} rounded-full animate-spin`}
           />
