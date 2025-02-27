@@ -72,11 +72,6 @@ const Sidebar = ({ onComponentChange }: SidebarProps) => {
         { name: "Management", component: "Feedback/manage" },
       ],
     },
-    {
-      name: "Score",
-      component: "score_overall",
-      icon: Star,
-    },
   ];
 
   const handleMenuClick = (option: MenuOption): void => {

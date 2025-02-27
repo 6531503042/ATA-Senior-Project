@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import LeadingScreen from "@/components/loadingscreen/loadingscreen_admin";
+import LeadingScreen from "@/components/shared/loadingscreen/loadingscreen_admin";
 import authMiddleware from "../../../../middleware/authMiddleware";
 
 const Page = () => {

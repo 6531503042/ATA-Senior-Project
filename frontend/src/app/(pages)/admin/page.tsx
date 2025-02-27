@@ -10,13 +10,11 @@ import QuestionDashboard from "@/app/(pages)/admin/section/Question/dashboard";
 import QuestionManage from "@/app/(pages)/admin/section/Question/manage";
 import FeedbackDashboard from "@/app/(pages)/admin/section/Feedback/dashboard";
 import FeedbackManage from "@/app/(pages)/admin/section/Feedback/manage";
-import Score from "./section/score_overall";
 import { useRouter } from "next/navigation";
-import LeadingScreen from "@/components/loadingscreen/loadingscreen_admin";
+import LeadingScreen from "@/components/shared/loadingscreen/loadingscreen_admin";
 
 const ComponentMap = {
   "overview": Overview,
-  "score_overall": Score,
   "Project/dashboard": ProjectDashboard,
   "Project/manage": ProjectManage,
   "Question/dashboard": QuestionDashboard,
