@@ -230,7 +230,7 @@ const GetAllProject = () => {
                       href={`/project/edit/${post.id}`}
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <button className="w-full bg-white rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 hover:border-gray-400 shadow-sm transition-all duration-200 ease-in-out">
+                      <button className="w-full bg-white rounded-lg border border-gray-300 text-gray-700 hover:bg-black hover:text-white hover:border-gray-400 shadow-sm transition-all duration-200 ease-in-out">
                         <div className="py-2 px-4 flex items-center justify-center gap-1.5">
                           <Pencil className="w-4 h-4" />
                           <span className="text-sm font-medium">Edit</span>
@@ -240,7 +240,7 @@ const GetAllProject = () => {
 
                     <button
                       onClick={(e) => handleDelete(post.id, e)}
-                      className="w-full bg-white rounded-lg border border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 shadow-sm transition-all duration-200 ease-in-out"
+                      className="w-full bg-white rounded-lg border border-red-300 text-red-600 hover:bg-red-600 hover:text-white hover:border-red-400 shadow-sm transition-all duration-200 ease-in-out"
                     >
                       <div className="py-2 px-4 flex items-center justify-center gap-1.5">
                         <Eraser className="w-4 h-4" />
@@ -252,7 +252,7 @@ const GetAllProject = () => {
                       href={`/project/${post.id}/details`}
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <button className="w-full bg-white rounded-lg border border-blue-300 text-blue-600 hover:bg-blue-50 hover:border-blue-400 shadow-sm transition-all duration-200 ease-in-out">
+                      <button className="w-full bg-white rounded-lg border border-blue-300 text-blue-600 hover:bg-blue-600 hover:text-white hover:border-blue-400 shadow-sm transition-all duration-200 ease-in-out">
                         <div className="py-2 px-4 flex items-center justify-center gap-1.5">
                           <Eye className="w-4 h-4" />
                           <span className="text-sm font-medium">Details</span>
