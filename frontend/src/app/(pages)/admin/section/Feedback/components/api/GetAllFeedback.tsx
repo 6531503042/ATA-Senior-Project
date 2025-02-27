@@ -7,7 +7,6 @@ import {
   Captions,
   ChevronRight,
   Search,
-  Users,
 } from "lucide-react";
 
 interface Post {

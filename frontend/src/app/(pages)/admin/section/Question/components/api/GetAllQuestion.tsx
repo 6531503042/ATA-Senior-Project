@@ -3,7 +3,7 @@
 import { Search, Tag, ChevronDown } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import QuestionAll from "@/components/shared/QuestionListCard";
-import SelectWithIcons from "../SelectWithIcon";
+import SelectWithIcons from "@/components/shared/SelectWithIcon";
 
 interface Post {
   id: number;

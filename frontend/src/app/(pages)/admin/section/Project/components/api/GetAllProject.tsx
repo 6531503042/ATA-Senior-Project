@@ -3,11 +3,9 @@
 import React, { useEffect, useState } from "react";
 import Dropdown from "@/components/shared/DropdownCardProjectManage";
 import {
-  Briefcase,
   CalendarClock,
   Captions,
   ChevronRight,
-  Clipboard,
   Search,
   Users,
 } from "lucide-react";
