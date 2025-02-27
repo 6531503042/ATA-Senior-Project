@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import { useState } from "react";
 import Link from "next/link";
 import {
@@ -135,7 +136,7 @@ const Sidebar = ({ onComponentChange }: SidebarProps) => {
         <div className="bg-zinc-100 h-[1px] w-full" />
 
         {/* Menu Items */}
-        <div className="w-full p-5 overflow-y-auto">
+        <div className="w-full p-5 overflow-y-auto flex flex-col justify-between h-full gap-2">
           <ul className="w-full flex flex-col gap-2">
             {options.map((option) => {
               const Icon = option.icon;
@@ -144,7 +145,8 @@ const Sidebar = ({ onComponentChange }: SidebarProps) => {
                 isComponentActive(option) ||
                 (option.subMenu?.some(
                   (subItem) => activeComponent === subItem.component
-                ) ?? false);
+                ) ??
+                  false);
               const isSubmenuOpen = activeSubmenu === option.name;
 
               return (
@@ -205,16 +207,17 @@ const Sidebar = ({ onComponentChange }: SidebarProps) => {
             })}
 
             {/* Sign Out Button */}
-            <button className="w-full mt-auto">
-              <div
-                onClick={handleLogout}
-                className="flex items-center p-3 rounded-lg cursor-pointer transition text-sm text-gray-600 hover:bg-gray-100"
-              >
-                <LogOut className="w-5 h-5" />
-                {isOpen && <span className="ml-2">Sign Out</span>}
-              </div>
-            </button>
           </ul>
+          <div className="flex flex-col">
+          <button
+            onClick={handleLogout}
+            className="flex items-center w-full p-3 gap-5 text-sm font-medium text-red-600 bg-red-50 rounded-lg transition-all hover:bg-red-700 hover:text-white hover:shadow-md"
+          >
+            <LogOut className="w-5 h-5" />
+            {isOpen && <span>Sign Out</span>}
+          </button>
+          <div className="h-10"></div>
+          </div>
         </div>
       </div>
     </div>

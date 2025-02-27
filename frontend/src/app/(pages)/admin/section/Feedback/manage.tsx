@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpen, CircleDot, FileText, PlusCircle } from "lucide-react";
+import { BookOpen, FileText, PlusCircle } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import FormPop from "./components/FeedbackManagement";
 import MenuOption from "@/components/shared/MenuOption";
@@ -109,13 +109,13 @@ const FeedbackManagement = () => {
               Monitor feedback trends and sentiment analysis
             </p>
           </div>
-          <button
-            onClick={() => setFormPop(true)}
-            className="flex flex-row gap-2 text-white bg-red-600 p-2.5 rounded-xl text-sm font-semibold items-center shadow-lg hover:shadow-xl transition-all"
-          >
-            <CircleDot className="w-4 h-4" />
-            <p>New Feedback</p>
-          </button>
+        <button
+          onClick={() => setFormPop(true)}
+          className="flex flex-row gap-2 text-white bg-red-600 p-2.5 rounded-xl text-sm font-semibold items-center shadow-lg hover:shadow-xl transition-all mt-9"
+        >
+          <PlusCircle className="w-5 h-5" />
+          <p>Create Feedback Form</p>
+        </button>
         </div>
 
         {/* Show total feedback and total questions */}
@@ -136,13 +136,6 @@ const FeedbackManagement = () => {
           </ul>
         </div>
 
-        <button
-          onClick={() => setFormPop(true)}
-          className="flex flex-row gap-2 text-white bg-red-600 p-2.5 rounded-xl text-sm font-semibold items-center shadow-lg hover:shadow-xl transition-all mt-9"
-        >
-          <PlusCircle className="w-5 h-5" />
-          <p>Create Feedback Form</p>
-        </button>
         <GetAllFeedbackByAPI />
       </div>
 

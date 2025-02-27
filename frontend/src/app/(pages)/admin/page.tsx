@@ -12,9 +12,10 @@ import FeedbackDashboard from "@/app/(pages)/admin/section/Feedback/dashboard";
 import FeedbackManage from "@/app/(pages)/admin/section/Feedback/manage";
 import { useRouter } from "next/navigation";
 import LeadingScreen from "@/components/shared/loadingscreen/loadingscreen_admin";
+import LoadingData from "@/components/shared/LoadingData/LoadingData";
 
 const ComponentMap = {
-  "overview": Overview,
+  overview: Overview,
   "Project/dashboard": ProjectDashboard,
   "Project/manage": ProjectManage,
   "Question/dashboard": QuestionDashboard,
@@ -27,12 +28,15 @@ const Page = () => {
   const [loading, setLoading] = useState(true);
   const [componentLoading, setComponentLoading] = useState(false);
   const [currentComponent, setCurrentComponent] = useState("overview");
+  const [targetComponent, setTargetComponent] = useState("overview");
   const router = useRouter();
 
   const handleComponentChange = (componentName: string) => {
     // Show loading when changing components
     setComponentLoading(true);
-    
+
+    setTargetComponent(componentName);
+
     // Set a minimum loading time of 2 seconds
     setTimeout(() => {
       setCurrentComponent(componentName);
@@ -68,6 +72,20 @@ const Page = () => {
     checkAuth().finally(() => setLoading(false));
   }, [router]);
 
+  const formatComponentName = (name: string) => {
+    // Handle different formatting needs
+    const parts = name.split("/");
+    if (parts.length === 1) {
+      // For "overview" case
+      return name.charAt(0).toUpperCase() + name.slice(1);
+    } else {
+      // For "Project/dashboard" type cases
+      const section = parts[0];
+      const type = parts[1];
+      return `${section} ${type.charAt(0).toUpperCase() + type.slice(1)}`;
+    }
+  };
+
   if (loading) {
     return (
       <div className="w-screen h-screen bg-white text-white">
@@ -83,12 +101,13 @@ const Page = () => {
         <Navbar />
         <main className="p-4 md:p-12 max-w-full h-full min-w-[320px] relative">
           {componentLoading ? (
-            <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-80 z-10">
-              <div className="flex flex-col items-center">
-                <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                <p className="mt-4 text-blue-600 font-medium">Loading data...</p>
-              </div>
-            </div>
+            <LoadingData
+              message={`Loading ${formatComponentName(targetComponent)}...`}
+              secondaryMessage={`Preparing ${
+                targetComponent.split("/").pop() || "dashboard"
+              } view`}
+              theme="gradient"
+            />
           ) : (
             CurrentComponent && <CurrentComponent />
           )}

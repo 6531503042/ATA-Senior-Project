@@ -1,203 +1,191 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import Dropdown from "@/components/shared/DropdownCardProjectManage";
 import {
   CalendarClock,
   Captions,
-  ChevronRight,
+  Eraser,
+  Eye,
+  Pencil,
   Search,
 } from "lucide-react";
+import Link from "next/link";
 
-interface Post {
+interface Feedback {
   id: number;
   title: string;
   description: string;
-  project: {
-    id: number;
-    name: string;
-    description: string;
-    memberIds: number[];
-    projectStartDate: string;
-    projectEndDate: string;
-  };
+  createdAt: string;
 }
 
-
 const GetAllFeedback = () => {
-  const [postData, setPostData] = useState<Post[]>([]);
-  const [hoveredProjectId, setHoveredProjectId] = useState<number | null>(null);
+  const [feedbackData, setFeedbackData] = useState<Feedback[]>([]);
+  const [hoveredFeedbackId, setHoveredFeedbackId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
-  {
-    /* Limit the max text show up */
-  }
+  // Limit text length
   const truncateText = (text: string, limit: number) => {
-    if (text.length <= limit) return text;
-    return text.slice(0, limit) + "...";
+    return text.length <= limit ? text : text.slice(0, limit) + "...";
   };
 
-  {
-    /* Count User by IDs */
-  }
-  const countTotalUsers = (memberIds: string[] | string | number[]) => {
-    if (Array.isArray(memberIds)) {
-      return memberIds.length;
-    }
-    if (typeof memberIds === "string") {
-      if (!memberIds.trim()) return 0;
-      try {
-        const parsed = JSON.parse(memberIds);
-        if (Array.isArray(parsed)) {
-          return parsed.length;
-        }
-      } catch {
-        if (memberIds.includes(",")) {
-          return memberIds.split(",").length;
-        }
-        return 1;
-      }
-    }
-    return 0;
-  };
-
-  {
-    /* Change format date */
-  }
+  // Format date
   const formatDate = (dateString: string) => {
     try {
       const date = new Date(dateString);
-      if (isNaN(date.getTime())) {
-        return "Invalid Date";
-      }
-      const month = (date.getMonth() + 1).toString().padStart(2, "0");
-      const day = date.getDate().toString().padStart(2, "0");
-      const year = date.getFullYear().toString().slice(-2);
-      return `${month}/${day}/${year}`;
+      if (isNaN(date.getTime())) return "Invalid Date";
+      return date.toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" });
     } catch {
       return "Invalid Date";
     }
   };
 
-  const getPosts = async () => {
+  const getFeedbacks = async () => {
     try {
       const token = localStorage.getItem("access_token");
+      const res = await fetch("http://localhost:8084/api/v1/admin/feedbacks/get-all", {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store",
+      });
 
-      const res = await fetch(
-        "http://localhost:8084/api/v1/admin/feedbacks/get-all",
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          cache: "no-store",
-        }
-      );
-
-      if (!res.ok) {
-        throw new Error(`Failed to fetch data: ${res.status}`);
-      }
+      if (!res.ok) throw new Error(`Failed to fetch data: ${res.status}`);
 
       const data = await res.json();
       console.log("API Response:", data);
-      setPostData(data);
+      setFeedbackData(data);
     } catch (error) {
-      console.error("Error loading post:", error);
+      console.error("Error loading feedbacks:", error);
+    }
+  };
+
+  const handleDelete = async (id: number, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (window.confirm("Are you sure you want to delete this feedback?")) {
+      try {
+        const token = localStorage.getItem("access_token");
+        const res = await fetch(`http://localhost:8084/api/v1/admin/feedbacks/${id}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!res.ok) throw new Error(`Failed to delete feedback: ${res.status}`);
+
+        // Remove the feedback from state
+        setFeedbackData(feedbackData.filter((feedback) => feedback.id !== id));
+      } catch (error) {
+        console.error("Error deleting feedback:", error);
+      }
     }
   };
 
   useEffect(() => {
-    getPosts();
+    getFeedbacks();
   }, []);
 
-  const filteredProjects = postData.filter((post) =>
-    post.title.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredFeedbacks = feedbackData.filter((feedback) =>
+    feedback.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
     <div className="w-full py-8">
-      <div className="relative w-[500px] mb-6">
-        <Search className="absolute left-3 top-[10px] text-gray-400 w-5 h-5" />
-        <input
-          type="text"
-          placeholder="Search Project..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10 pr-5 text-sm py-2 w-full border border-black border-opacity-10 shadow-sm bg-white rounded-lg outline-none focus:ring-[0.5px] focus:ring-zinc-200"
-        />
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-2xl font-bold text-gray-800">Feedbacks</h1>
+        <div className="relative w-[300px] md:w-[400px]">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <input
+            type="text"
+            placeholder="Search Feedback..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 pr-5 text-sm py-3 w-full border border-black border-opacity-10 shadow-sm bg-white rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30 transition-all"
+          />
+        </div>
       </div>
-      <div className="grid grid-cols-1 2xl:grid-cols-3 lg:grid-cols-2 items-stretch gap-6 pb-5">
-        {filteredProjects.length > 0 ? (
-          filteredProjects.map((post) => (
-            <label
-              key={post.id}
-              className="relative flex flex-row p-6 border h-max border-slate-500 shadow-slate-100 hover:shadow-slate-100 border-opacity-5 rounded-md shadow-md hover:shadow-xl transition-all duration-200 bg-white"
-              onMouseEnter={() => setHoveredProjectId(post.id)}
-              onMouseLeave={() => setHoveredProjectId(null)}
+
+      <div className="grid grid-cols-1 gap-6 pb-5">
+        {filteredFeedbacks.length > 0 ? (
+          filteredFeedbacks.map((feedback) => (
+            <div
+              key={feedback.id}
+              className="relative flex flex-col md:flex-row p-6 border border-slate-500 border-opacity-5 rounded-xl shadow-md hover:shadow-xl transition-all duration-200 bg-white overflow-hidden"
+              onMouseEnter={() => setHoveredFeedbackId(feedback.id)}
+              onMouseLeave={() => setHoveredFeedbackId(null)}
             >
-              <div
-                className={`absolute cursor-pointer flex flex-row items-center bottom-5 right-5 text-tiny text-gray-600  transition-all duration-250 transform ${
-                  hoveredProjectId === post.id
-                    ? "opacity-100 scale-100"
-                    : "opacity-0 scale-95"
-                }`}
-              >
-                {" "}
-                <p className="">View Information</p>
-                <ChevronRight className="w-4 h-4" />
-              </div>
-              <div className="flex flex-col gap-4 w-11/12 justify-between">
-                <div className="flex flex-row  rounded-full items-center gap-3">
+              {/* Left side content */}
+              <div className="flex flex-col gap-4 flex-grow pr-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-violet-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">
+                    {feedback.title.charAt(0).toUpperCase()}
+                  </div>
                   <h1
-                    className="text-2xl font-semibold text-zinc-700 truncate"
-                    title={post.title}
+                    className="text-xl font-semibold text-gray-800 truncate hover:text-blue-600 transition-colors"
+                    title={feedback.title}
                   >
-                    {truncateText(post.title, 25)}
+                    {truncateText(feedback.title, 25)}
                   </h1>
                 </div>
-                <div className="flex flex-row items-center gap-3 px-2">
-                  <div className="h-full flex items-start">
-                    <Captions className="w-8 h-8 flex-shrink-0 text-gray-700 bg-gray-100 p-1.5 rounded-full" />
-                  </div>
+
+                <div className="flex items-center gap-3 pl-2">
+                  <Captions className="w-7 h-7 flex-shrink-0 p-1 text-gray-700 bg-gray-100 rounded-full" />
                   <p
-                    className="font-normal text-gray-500 text-sm line-clamp-3 break-all overflow-hidden text-ellipsis"
-                    title={post.description}
+                    className="font-normal text-gray-600 text-sm line-clamp-2 break-all"
+                    title={feedback.description}
                   >
-                    {post.description}
+                    {feedback.description || "No description available"}
                   </p>
                 </div>
 
-                <div className="flex flex-row gap-3 items-start px-2">
-                  <div className="flex flex-row bg-green-500 rounded-full items-center p-1">
-                    <CalendarClock className="w-7 h-7 text-green-700 bg-green-50 p-1.5 rounded-full" />
-                    <p className="font-semibold text-xs py-1.5 px-3 text-white">
-                    {formatDate(post.project.projectStartDate)}
-                    </p>
-                  </div>
-                  <div className="flex flex-row bg-red-500 rounded-full items-center p-1">
-                    <CalendarClock className="w-7 h-7 text-red-700 bg-red-50 p-1.5 rounded-full" />
-                    <p className="font-semibold text-xs py-1.5 px-3 text-white">
-                    {formatDate(post.project.projectEndDate)}
-                    </p>
-                  </div>
+                {/* Feedback metadata */}
+                <div className="flex items-center w-max bg-gray-50 rounded-full px-3 py-1.5 mt-2">
+                  <CalendarClock className="w-5 h-5 text-gray-600 mr-2" />
+                  <p className="text-xs font-medium text-gray-700">
+                    Created: {formatDate(feedback.createdAt)}
+                  </p>
                 </div>
               </div>
 
-              <label className="flex flex-col w-1/12 items-end relative">
+              {/* Right side actions */}
+              <div className="mt-4 md:mt-0 flex md:flex-col justify-end items-end gap-2 min-w-[180px] relative">
                 <div
-                  className={`absolute top-0 right-0 transition-all duration-250 transform ${
-                    hoveredProjectId === post.id
-                      ? "opacity-100 scale-100"
-                      : "opacity-0 scale-95"
+                  className={`flex md:flex-col gap-2 w-full md:w-auto transition-all duration-300 ${
+                    hoveredFeedbackId === feedback.id ? "opacity-100" : "opacity-80"
                   }`}
                 >
-                  <Dropdown />
+                  <Link href={`/feedback/edit/${feedback.id}`} onClick={(e) => e.stopPropagation()}>
+                    <button className="w-full bg-white rounded-lg border border-gray-300 text-gray-700 hover:bg-black hover:text-white hover:border-transparent shadow-sm transition-all duration-200 ease-in-out">
+                      <div className="py-2 px-4 flex items-center justify-center gap-1.5">
+                        <Pencil className="w-4 h-4" />
+                        <span className="text-sm font-medium">Edit</span>
+                      </div>
+                    </button>
+                  </Link>
+
+                  <button
+                    onClick={(e) => handleDelete(feedback.id, e)}
+                    className="w-full bg-white rounded-lg border border-red-300 text-red-600 hover:bg-red-600 hover:text-white hover:border-transparent shadow-sm transition-all duration-200 ease-in-out"
+                  >
+                    <div className="py-2 px-4 flex items-center justify-center gap-1.5">
+                      <Eraser className="w-4 h-4" />
+                      <span className="text-sm font-medium">Delete</span>
+                    </div>
+                  </button>
+
+                  <Link href={`/feedback/${feedback.id}/details`} onClick={(e) => e.stopPropagation()}>
+                    <button className="w-full bg-white rounded-lg border border-blue-300 text-blue-600 hover:bg-blue-600 hover:text-white hover:border-transparent shadow-sm transition-all duration-200 ease-in-out">
+                      <div className="py-2 px-4 flex items-center justify-center gap-1.5">
+                        <Eye className="w-4 h-4" />
+                        <span className="text-sm font-medium">Details</span>
+                      </div>
+                    </button>
+                  </Link>
                 </div>
-              </label>
-            </label>
+              </div>
+            </div>
           ))
         ) : (
-          <p className="text-gray-500">No Project found.</p>
+          <p className="text-gray-500">No feedback found.</p>
         )}
       </div>
     </div>

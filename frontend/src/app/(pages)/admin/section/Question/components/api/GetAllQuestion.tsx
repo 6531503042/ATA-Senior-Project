@@ -2,7 +2,7 @@
 
 import { Search, Tag } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import QuestionAll from "@/components/shared/QuestionListCard";
+import QuestionAll from "../QuestionListCard";
 import SelectWithIcons from "@/components/shared/SelectWithIcon";
 
 interface Post {
@@ -92,7 +92,7 @@ const GetAllQuestion = () => {
 
       {/* Question List */}
       {filteredQuestions.length > 0 ? (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
           {filteredQuestions.map((post) => (
             <QuestionAll key={post.id} post={post} />
           ))}
