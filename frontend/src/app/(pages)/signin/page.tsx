@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { AlertCircle, CheckCircle, Info } from "lucide-react";
-import ATA from "@/app/assets/ata-logo.png";
-import Background from "@/app/assets/background.png";
+import ATA from "@assets/ata-logo.png";
+import Background from "@assets/background.png";
 import { useRouter } from "next/navigation";
 
 const SignIn = () => {

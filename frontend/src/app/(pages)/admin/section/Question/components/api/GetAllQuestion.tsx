@@ -2,7 +2,7 @@
 
 import { Search, Tag, ChevronDown } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import QuestionAll from "@/app/(pages)/modules/components/card-ui/QuestionListCard";
+import QuestionAll from "@/components/shared/QuestionListCard";
 import SelectWithIcons from "../SelectWithIcon";
 
 interface Post {

@@ -1,15 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import Background from "@/app/assets/background.png";
+import Background from "@assets/background.png";
 import LeadingScreen from '@/components/shared/loadingscreen/loadingscreen_admin';
 import { useAuthRedirect } from "../../utils/useAuthRedirect"; 
 
 export default function Home() {
   const [loading, setLoading] = useState(true);
   
-  // Use the custom hook for authentication redirect logic
   useAuthRedirect();
 
   useEffect(() => {

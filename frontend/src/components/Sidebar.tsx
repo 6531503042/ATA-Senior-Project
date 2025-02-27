@@ -7,10 +7,9 @@ import {
   LucideIcon,
   FolderClosed,
   LayoutDashboard,
-  Star,
   LogOut,
 } from "lucide-react";
-import Logo from "@/app/assets/ata-logo.png";
+import Logo from "@assets/ata-logo.png";
 import { useRouter } from "next/navigation";
 
 interface SubMenuItem {

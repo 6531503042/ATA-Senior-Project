@@ -2,7 +2,7 @@
 
 import { BarChart2, Users, Star, Clock } from "lucide-react";
 import React from "react";
-import MenuOption from "@/app/(pages)/modules/components/MenuOption";
+import MenuOption from "@/components/shared/MenuOption";
 import { AreaChartComponent } from "@/components/AreaChartComponent";
 import { BarChartComponent } from "@/components/BarChartComponent";
 

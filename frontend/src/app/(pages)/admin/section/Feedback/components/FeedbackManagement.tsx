@@ -1,10 +1,10 @@
 import { Rocket } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { format } from 'date-fns';
-import { Post, CreateFeedbackFormData, FeedbackFormResponse } from './FeedbackComponent/types';
-import FormHeader from './FeedbackComponent/FormHeader';
-import FormBody from './FeedbackComponent/FormBody';
-import QuestionSection from './FeedbackComponent/QuestionSection';
+import { Post, CreateFeedbackFormData, FeedbackFormResponse } from './formComponents/types';
+import FormHeader from './formComponents/FormHeader';
+import FormBody from './formComponents//FormBody';
+import QuestionSection from './formComponents/QuestionSection';
 
 interface CreateFeedbackFormProps {
   setIsOpen: (isOpen: boolean) => void;

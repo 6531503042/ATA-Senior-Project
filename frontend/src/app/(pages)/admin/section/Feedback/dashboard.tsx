@@ -1,8 +1,8 @@
 "use client";
 
-import { MessageSquare, ThumbsUp, ThumbsDown, Clock, Brain } from "lucide-react";
+import { MessageSquare, ThumbsUp, ThumbsDown, Brain } from "lucide-react";
 import React from "react";
-import MenuOption from "@/app/(pages)/modules/components/MenuOption";
+import MenuOption from "@/components/shared/MenuOption";
 import { SatisfactionOverview } from "@/components/SatisfactionArea";
 
 const FeedbackDashboard = () => {

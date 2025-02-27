@@ -2,7 +2,7 @@
 
 import { HelpCircle, BarChart2, Target, Lightbulb } from "lucide-react";
 import React from "react";
-import MenuOption from "@/app/(pages)/modules/components/MenuOption";
+import MenuOption from "@/components/shared/MenuOption";
 
 const QuestionDashboard = () => {
 

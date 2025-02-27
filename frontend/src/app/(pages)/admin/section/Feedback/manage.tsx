@@ -2,9 +2,9 @@
 
 import { BookOpen, CircleDot, FileText, PlusCircle } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import FormPop from "@/app/(pages)/modules/forms/FeedbackManagement";
-import MenuOption from "@/app/(pages)/modules/components/MenuOption";
-import GetAllFeedbackByAPI from "@/app/(pages)/modules/components/api/GetAllFeedback";
+import FormPop from "./components/FeedbackManagement";
+import MenuOption from "@/components/shared/MenuOption";
+import GetAllFeedbackByAPI from "./components/api/GetAllFeedback";
 
 interface Post {
   id: number;

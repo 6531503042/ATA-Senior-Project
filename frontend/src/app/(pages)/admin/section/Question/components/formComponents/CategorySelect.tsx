@@ -1,4 +1,4 @@
-import SelectWithIcon from "@/app/(pages)/modules/components/SelectWithIcon";
+import SelectWithIcon from "@/components/shared/SelectWithIcon";
 import {
   MessageCircleQuestion,
   Briefcase,

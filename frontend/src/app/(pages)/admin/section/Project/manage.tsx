@@ -6,22 +6,13 @@ import {
   FolderOpen,
   CircleDot,
 } from "lucide-react";
-import React, { useEffect, useState } from "react";
-import FormPop from "@/app/(pages)/modules/forms/ProjectManagement";
-import MenuOption from "@/app/(pages)/modules/components/MenuOption";
-import GetAllProjectByAPI from "@/app/(pages)/modules/components/api/GetAllProject";
-
-interface Post {
-  id: number;
-  text: string;
-  questionType: string;
-  category: string;
-}
+import React, {  useState } from "react";
+import FormPop from "./components/ProjectManagement";
+import MenuOption from "@/components/shared/MenuOption";
+import GetAllProjectByAPI from "./components/api/GetAllProject";
 
 const ProjectManage = () => {
   const [formPop, SetFormPop] = useState(false);
-  const [feedbackData, setFeedbackData] = useState<Post[]>([]);
-    const [questionData, setQuestionData] = useState<Post[]>([]);
 
   const options = [
     {
