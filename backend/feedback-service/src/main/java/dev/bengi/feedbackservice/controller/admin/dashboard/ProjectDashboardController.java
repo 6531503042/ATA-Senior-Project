@@ -1,13 +1,14 @@
 package dev.bengi.feedbackservice.controller.admin.dashboard;
 
-import dev.bengi.feedbackservice.service.ProjectDashboardService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import dev.bengi.feedbackservice.service.ProjectDashboardService;
+
 @RestController
-@RequestMapping("/api/dashboard")
+@RequestMapping("/api/v1/admin/dashboard")
 public class ProjectDashboardController {
 
     @Autowired

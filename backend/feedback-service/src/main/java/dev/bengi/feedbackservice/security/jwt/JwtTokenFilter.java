@@ -1,5 +1,24 @@
 package dev.bengi.feedbackservice.security.jwt;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import dev.bengi.feedbackservice.client.UserClient;
+import dev.bengi.feedbackservice.domain.payload.response.TokenValidationResponse;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -7,25 +26,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
-import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
-import org.springframework.util.StringUtils;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import dev.bengi.feedbackservice.domain.payload.response.TokenValidationResponse;
-import dev.bengi.feedbackservice.foreign.UserClient;
-
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
-import java.util.HashMap;
-import java.util.Map;
 
 @Slf4j
 @Component
@@ -47,7 +47,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                 String token = authHeader.substring(7);
                 log.debug("Extracted token: {}", token);
 
-                TokenValidationResponse validationResponse = userClient.validateToken(authHeader);
+                TokenValidationResponse validationResponse = userClient.validateToken("Bearer " + token);
                 log.debug("Token validation response: {}", validationResponse);
 
                 if (validationResponse != null && "Token is valid".equals(validationResponse.getMessage())) {
@@ -75,11 +75,9 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                         
                         log.debug("Setting authentication for user: {} with authorities: {}", username, authorities);
                         
-                        // Create authentication with token stored as credentials
                         UsernamePasswordAuthenticationToken authentication = 
-                            new UsernamePasswordAuthenticationToken(username, token, authorities);
+                            new UsernamePasswordAuthenticationToken(username, authHeader, authorities);
                         
-                        // Store userId in authentication details
                         Map<String, Object> details = new HashMap<>();
                         details.put("token", token);
                         details.put("userId", userId);

@@ -26,7 +26,7 @@ public class FeedbackSubmission {
     @JoinColumn(name = "feedback_id", nullable = false)
     private Feedback feedback;
 
-    @Column(name = "submitted_by", nullable = false)
+    @Column(name = "submitted_by")
     private String submittedBy;
 
     @ElementCollection(fetch = FetchType.EAGER)
