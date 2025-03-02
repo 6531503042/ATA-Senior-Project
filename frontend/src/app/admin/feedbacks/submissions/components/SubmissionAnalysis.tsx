@@ -1,20 +1,12 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { 
-  MessageSquare, 
-  Calendar, 
-  User, 
-  Lock,
-  Unlock,
-  ChevronRight,
-  AlertTriangle,
-  BarChart2
+  BarChart2,
+  AlertTriangle
 } from 'lucide-react';
-import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
-import type { SubmissionResponse } from '@/lib/api/submissions';
-import { Progress } from '@/components/ui/progress';
+import type { SubmissionResponse, FeedbackAnalysis } from '@/lib/api/submissions';
 
 interface QuestionDetail {
   id: number;
@@ -23,15 +15,16 @@ interface QuestionDetail {
   questionType: string;
   category: string;
   choices: string[];
+  response: string;
 }
 
 interface QuestionAnalysis {
-  question_id: number;
+  question_id: number | string;
   question_text: string;
   question_type: string;
   response: string;
   score: number;
-  sentiment: string;
+  sentiment: "POSITIVE" | "NEUTRAL" | "NEGATIVE";
   suggestions: Array<{
     type: string;
     content: string;
@@ -39,11 +32,10 @@ interface QuestionAnalysis {
     details?: string[];
   }>;
   improvement_priorities: Array<{
-    category: string;
-    score: number;
     description: string;
+    priority: string;
   }>;
-  category: string;
+  category: string | null;
 }
 
 interface SubmissionAnalysisProps {
@@ -51,9 +43,7 @@ interface SubmissionAnalysisProps {
 }
 
 export function SubmissionAnalysis({ submissionData }: SubmissionAnalysisProps) {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const analysis = submissionData.analysis;
+  const analysis = submissionData.analysis as FeedbackAnalysis | null;
 
   const renderQuestionResponse = (
     question: QuestionDetail,
@@ -79,13 +69,13 @@ export function SubmissionAnalysis({ submissionData }: SubmissionAnalysisProps) 
       </div>
     );
 
-    const renderSentimentBadge = (sentiment: string) => {
+    const renderSentimentBadge = (sentiment: "POSITIVE" | "NEUTRAL" | "NEGATIVE") => {
       const sentimentConfig = {
         'POSITIVE': { bg: 'bg-green-50', text: 'text-green-700', emoji: '😊' },
         'NEUTRAL': { bg: 'bg-gray-50', text: 'text-gray-700', emoji: '😐' },
         'NEGATIVE': { bg: 'bg-red-50', text: 'text-red-700', emoji: '😞' }
       };
-      const config = sentimentConfig[sentiment as keyof typeof sentimentConfig] || sentimentConfig.NEUTRAL;
+      const config = sentimentConfig[sentiment];
       
       return (
         <Badge className={cn("flex items-center gap-2 px-3 py-1.5", config.bg, config.text)}>
@@ -127,34 +117,31 @@ export function SubmissionAnalysis({ submissionData }: SubmissionAnalysisProps) 
                   {suggestion.score && renderScore(suggestion.score)}
                 </div>
               ))}
+              {questionAnalysis.improvement_priorities.length > 0 && (
+                <div className="mt-4">
+                  <h5 className="text-sm font-medium text-gray-700 mb-2">Improvement Priorities</h5>
+                  <div className="space-y-2">
+                    {questionAnalysis.improvement_priorities.map((priority, index) => (
+                      <div key={index} className="flex items-center gap-2">
+                        <Badge className={cn(
+                          priority.priority.toLowerCase() === 'high' ? "bg-red-50 text-red-700" :
+                          priority.priority.toLowerCase() === 'medium' ? "bg-yellow-50 text-yellow-700" :
+                          "bg-green-50 text-green-700"
+                        )}>
+                          {priority.priority}
+                        </Badge>
+                        <span className="text-sm text-gray-600">{priority.description}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
       </div>
     );
   };
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-48">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600" />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <Card className="p-6 bg-red-50">
-        <div className="flex items-center gap-3">
-          <AlertTriangle className="h-5 w-5 text-red-600" />
-          <div>
-            <h3 className="text-base font-medium text-red-800">Error Loading Analysis</h3>
-            <p className="text-sm text-red-600">{error}</p>
-          </div>
-        </div>
-      </Card>
-    );
-  }
 
   if (!analysis) {
     return (

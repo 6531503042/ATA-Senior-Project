@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -318,46 +318,112 @@ export default function FeedbackSubmissionsPage() {
   const [feedbacks, setFeedbacks] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('all');
+  const [analysisCache, setAnalysisCache] = useState<Record<number, any>>({});
 
   useEffect(() => {
     const fetchFeedbacks = async () => {
       try {
         setIsLoading(true);
         const token = getCookie('accessToken');
-        const response = await axios.get('http://localhost:8084/api/v1/admin/feedbacks/get-all', {
+        if (!token) {
+          throw new Error('No authentication token found');
+        }
+
+        // First fetch all valid feedbacks from the main API
+        const feedbacksResponse = await axios.get('http://localhost:8084/api/v1/admin/feedbacks/get-all', {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         });
 
-        // Get analysis data for each feedback
-        const feedbacksWithAnalysis = await Promise.all(
-          response.data.map(async (feedback: any) => {
-            try {
-              const analysisResponse = await axios.get(
-                `http://localhost:8085/api/analysis/feedback/${feedback.id}`,
-                {
-                  headers: { 'Authorization': `Bearer ${token}` },
-                  timeout: 5000
-                }
-              );
-              return {
-                ...feedback,
-                analysis: analysisResponse.data,
-                hasAnalysis: true
-              };
-            } catch (error) {
-              console.error(`Failed to fetch analysis for feedback ${feedback.id}:`, error);
-              return {
-                ...feedback,
-                analysis: null,
-                hasAnalysis: false
-              };
-            }
-          })
+        // Create a map of valid feedback IDs for quick lookup
+        const validFeedbackIds = new Set(feedbacksResponse.data.map((f: any) => f.id));
+
+        // Initialize feedbacks with basic data
+        const initialFeedbacks = feedbacksResponse.data.map((feedback: any) => ({
+          ...feedback,
+          analysis: null,
+          hasAnalysis: false,
+          isAnalysisLoading: true,
+          submissionCount: 0
+        }));
+        setFeedbacks(initialFeedbacks);
+
+        // Then fetch all submissions from the AI service
+        const submissionsResponse = await axios.get('http://localhost:8085/api/submissions/all');
+        
+        // Count submissions for each feedback
+        const submissionCounts = submissionsResponse.data.reduce((acc: Record<number, number>, submission: any) => {
+          const feedbackId = submission.submission.feedbackId;
+          if (validFeedbackIds.has(feedbackId)) {
+            acc[feedbackId] = (acc[feedbackId] || 0) + 1;
+          }
+          return acc;
+        }, {});
+
+        // Update feedbacks with submission counts
+        setFeedbacks(prevFeedbacks => 
+          prevFeedbacks.map(feedback => ({
+            ...feedback,
+            submissionCount: submissionCounts[feedback.id] || 0
+          }))
         );
 
-        setFeedbacks(feedbacksWithAnalysis);
+        // Then fetch analysis for each feedback that has submissions
+        const feedbacksWithSubmissions = feedbacksResponse.data.filter(
+          (feedback: any) => submissionCounts[feedback.id] > 0
+        );
+
+        // Process analysis in batches
+        const batchSize = 3;
+        const feedbackBatches = chunk(feedbacksWithSubmissions, batchSize);
+
+        for (const batch of feedbackBatches) {
+          await Promise.all(
+            batch.map(async (feedback: any) => {
+              try {
+                const analysisResponse = await axios.get(
+                  `http://localhost:8085/api/analysis/feedback/${feedback.id}`,
+                  { timeout: 5000 }
+                );
+
+                setFeedbacks(prevFeedbacks => 
+                  prevFeedbacks.map(f => 
+                    f.id === feedback.id 
+                      ? {
+                          ...f,
+                          analysis: analysisResponse.data,
+                          hasAnalysis: true,
+                          isAnalysisLoading: false
+                        }
+                      : f
+                  )
+                );
+
+                setAnalysisCache(prev => ({
+                  ...prev,
+                  [feedback.id]: analysisResponse.data
+                }));
+              } catch (error) {
+                console.error(`Failed to fetch analysis for feedback ${feedback.id}:`, error);
+                setFeedbacks(prevFeedbacks => 
+                  prevFeedbacks.map(f => 
+                    f.id === feedback.id 
+                      ? {
+                          ...f,
+                          analysis: null,
+                          hasAnalysis: false,
+                          isAnalysisLoading: false,
+                          analysisError: 'Failed to load analysis'
+                        }
+                      : f
+                  )
+                );
+              }
+            })
+          );
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
       } catch (error) {
         console.error('Failed to fetch feedbacks:', error);
         toast({
@@ -373,17 +439,26 @@ export default function FeedbackSubmissionsPage() {
     fetchFeedbacks();
   }, [toast]);
 
-  const filteredFeedbacks = feedbacks.filter(feedback => {
-    const matchesSearch = feedback.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         feedback.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         feedback.projectName.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesFilter = filter === 'all' ? true :
-                         filter === 'active' ? feedback.active :
-                         !feedback.active;
+  // Helper function to chunk array into smaller arrays
+  const chunk = <T,>(arr: T[], size: number): T[][] => {
+    return Array.from({ length: Math.ceil(arr.length / size) }, (_, i) =>
+      arr.slice(i * size, i * size + size)
+    );
+  };
 
-    return matchesSearch && matchesFilter;
-  });
+  const filteredFeedbacks = useMemo(() => {
+    return feedbacks.filter(feedback => {
+      const matchesSearch = feedback.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           feedback.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           feedback.projectName.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      const matchesFilter = filter === 'all' ? true :
+                           filter === 'active' ? feedback.active :
+                           !feedback.active;
+
+      return matchesSearch && matchesFilter;
+    });
+  }, [feedbacks, searchQuery, filter]);
 
   return (
     <div className="min-h-screen p-8">
@@ -427,112 +502,111 @@ export default function FeedbackSubmissionsPage() {
         </div>
       </Card>
 
-      {/* Feedback Grid */}
-      {isLoading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600" />
-        </div>
-      ) : error ? (
-        <Card className="p-8">
-          <div className="text-center text-red-600">{error}</div>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredFeedbacks.map((feedback) => (
-            <motion.div
-              key={feedback.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="group"
+      {/* Feedbacks Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredFeedbacks.map((feedback) => (
+          <motion.div
+            key={feedback.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="group"
+          >
+            <Card
+              className={cn(
+                "cursor-pointer transition-all duration-200",
+                "hover:border-violet-200 hover:shadow-lg hover:shadow-violet-100/50"
+              )}
+              onClick={() => router.push(`/admin/feedbacks/submissions/${feedback.id}`)}
             >
-              <Card
-                className={cn(
-                  "cursor-pointer transition-all duration-200",
-                  "hover:border-violet-200 hover:shadow-lg hover:shadow-violet-100/50"
-                )}
-                onClick={() => router.push(`/admin/feedbacks/submissions/${feedback.id}`)}
-              >
-                <div className="p-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="p-2 bg-violet-100 rounded-lg">
-                      <MessageSquare className="h-5 w-5 text-violet-600" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        {feedback.title}
-                      </h3>
-                      <Badge className={cn(
-                        feedback.active
-                          ? "bg-emerald-50 text-emerald-700"
-                          : "bg-gray-50 text-gray-700"
-                      )}>
-                        {feedback.active ? 'Active' : 'Inactive'}
-                      </Badge>
-                    </div>
+              <div className="p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-violet-100 rounded-lg">
+                    <MessageSquare className="h-5 w-5 text-violet-600" />
                   </div>
-
-                  <div className="space-y-4">
-                    {/* Stats */}
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="p-3 bg-violet-50 rounded-lg">
-                        <div className="flex items-center gap-2">
-                          <BarChart2 className="h-4 w-4 text-violet-600" />
-                          <span className="text-sm text-violet-600">Analysis</span>
-                        </div>
-                        <p className="text-xl font-bold text-violet-700 mt-1">
-                          {feedback.hasAnalysis ? 'Complete' : 'Pending'}
-                        </p>
-                      </div>
-                      {feedback.analysis && (
-                        <div className="p-3 bg-emerald-50 rounded-lg">
-                          <div className="flex items-center gap-2">
-                            <Users className="h-4 w-4 text-emerald-600" />
-                            <span className="text-sm text-emerald-600">Score</span>
-                          </div>
-                          <p className="text-xl font-bold text-emerald-700 mt-1">
-                            {(feedback.analysis.overall_score * 100).toFixed(0)}%
-                          </p>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Date Range */}
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
-                      <Calendar className="h-4 w-4" />
-                      <span>{format(new Date(feedback.startDate), 'MMM d, yyyy')}</span>
-                      <ChevronRight className="h-4 w-4" />
-                      <span>{format(new Date(feedback.endDate), 'MMM d, yyyy')}</span>
-                    </div>
-
-                    {/* Project Badge */}
-                    <Badge className="bg-blue-50 text-blue-700">
-                      {feedback.projectName}
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      {feedback.title}
+                    </h3>
+                    <Badge className={cn(
+                      feedback.active
+                        ? "bg-emerald-50 text-emerald-700"
+                        : "bg-gray-50 text-gray-700"
+                    )}>
+                      {feedback.active ? 'Active' : 'Inactive'}
                     </Badge>
-
-                    {feedback.analysis?.executive_summary?.key_insights && (
-                      <div className="flex flex-wrap gap-2">
-                        {feedback.analysis.executive_summary.key_insights.slice(0, 2).map((insight: string, index: number) => (
-                          <Badge 
-                            key={index}
-                            className="bg-violet-50 text-violet-700 border-violet-100"
-                          >
-                            {insight}
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="absolute top-4 right-4">
-                    <ChevronRight className="h-5 w-5 text-gray-400 group-hover:text-violet-500 transition-colors" />
                   </div>
                 </div>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
-      )}
+
+                {/* Analysis Status */}
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="p-3 bg-violet-50 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <BarChart2 className="h-4 w-4 text-violet-600" />
+                        <span className="text-sm text-violet-600">Submissions</span>
+                      </div>
+                      <p className="text-xl font-bold text-violet-700 mt-1">
+                        {feedback.submissionCount || 0}
+                      </p>
+                    </div>
+                    <div className="p-3 bg-violet-50 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <BarChart2 className="h-4 w-4 text-violet-600" />
+                        <span className="text-sm text-violet-600">Analysis</span>
+                      </div>
+                      <p className="text-xl font-bold text-violet-700 mt-1">
+                        {feedback.submissionCount === 0 ? (
+                          'No Submissions'
+                        ) : feedback.isAnalysisLoading ? (
+                          <div className="flex items-center gap-2">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <span className="text-sm">Loading...</span>
+                          </div>
+                        ) : feedback.hasAnalysis ? (
+                          'Complete'
+                        ) : (
+                          feedback.analysisError || 'No Analysis'
+                        )}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Date Range */}
+                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <Calendar className="h-4 w-4" />
+                    <span>{format(new Date(feedback.startDate), 'MMM d, yyyy')}</span>
+                    <ChevronRight className="h-4 w-4" />
+                    <span>{format(new Date(feedback.endDate), 'MMM d, yyyy')}</span>
+                  </div>
+
+                  {/* Project Badge */}
+                  <Badge className="bg-blue-50 text-blue-700">
+                    {feedback.projectName}
+                  </Badge>
+
+                  {feedback.submissionCount > 0 && feedback.analysis?.executive_summary?.key_insights && (
+                    <div className="flex flex-wrap gap-2">
+                      {feedback.analysis.executive_summary.key_insights.slice(0, 2).map((insight: string, index: number) => (
+                        <Badge 
+                          key={index}
+                          className="bg-violet-50 text-violet-700 border-violet-100"
+                        >
+                          {insight}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="absolute top-4 right-4">
+                  <ChevronRight className="h-5 w-5 text-gray-400 group-hover:text-violet-500 transition-colors" />
+                </div>
+              </div>
+            </Card>
+          </motion.div>
+        ))}
+      </div>
     </div>
   );
 } 

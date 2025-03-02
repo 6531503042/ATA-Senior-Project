@@ -31,10 +31,7 @@ import {
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import axios from 'axios';
-import { getCookie } from 'cookies-next';
-import { SatisfactionOverview } from '../components/SatisfactionOverview';
-import { AIInsightsCard } from '../components/AIInsightsCard';
+import { aiApi } from '@/lib/api/submissions';
 import type { SubmissionResponse, FeedbackAnalysis, SatisfactionAnalysis, AIInsights } from '@/lib/api/submissions';
 import { Button } from '@/components/ui/Button';
 import { Progress } from '@/components/ui/progress';
@@ -51,6 +48,8 @@ import {
   HoverCardTrigger,
 } from '@/components/ui/hover-card';
 import { SubmissionDetails } from '../components/SubmissionDetails';
+import { SatisfactionOverview } from '../components/SatisfactionOverview';
+import { AIInsightsCard } from '../components/AIInsightsCard';
 
 interface SubmissionListItemProps {
   submission: SubmissionResponse;
@@ -348,19 +347,8 @@ export default function FeedbackSubmissionPage({ params }: { params: Promise<{ f
         setIsLoading(true);
         setError(null);
 
-        const token = getCookie('accessToken');
-        if (!token) {
-          throw new Error('No authentication token found');
-        }
-
         // Fetch all submissions for this feedback
-        const submissionsResponse = await axios.get(
-          `http://localhost:8085/api/submissions/all`,
-          {
-            headers: { 'Authorization': `Bearer ${token}` },
-            timeout: 10000 // Increased timeout
-          }
-        );
+        const submissionsResponse = await aiApi.get('/api/submissions/all');
 
         // Filter submissions for this feedback
         const feedbackSubmissions = submissionsResponse.data.filter(
@@ -376,15 +364,9 @@ export default function FeedbackSubmissionPage({ params }: { params: Promise<{ f
 
         // Fetch analyses in parallel
         const [analysisRes, satisfactionRes, insightsRes] = await Promise.all([
-          axios.get(`http://localhost:8085/api/analysis/feedback/${feedbackId}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-          }),
-          axios.get(`http://localhost:8085/api/analysis/satisfaction/${feedbackId}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-          }),
-          axios.get(`http://localhost:8085/api/analysis/insights/${feedbackId}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-          })
+          aiApi.get(`/api/analysis/feedback/${feedbackId}`),
+          aiApi.get(`/api/analysis/satisfaction/${feedbackId}`),
+          aiApi.get(`/api/analysis/insights/${feedbackId}`)
         ]);
 
         setAnalysis(analysisRes.data);

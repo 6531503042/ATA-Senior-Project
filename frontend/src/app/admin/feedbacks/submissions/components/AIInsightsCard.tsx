@@ -144,6 +144,34 @@ const PriorityBadge = ({ priority }: { priority: string }) => {
   );
 };
 
+// Update the recommendation type to match the backend
+interface Recommendation {
+  text: string;
+  priority: string;
+}
+
+interface InsightSection {
+  title: string;
+  aiConfidence: number;
+  recommendations: Recommendation[];
+}
+
+interface AIInsights {
+  feedbackId: number;
+  title: string;
+  description: string;
+  insights: {
+    performanceInsights: InsightSection;
+    engagementAnalysis: InsightSection;
+    improvementOpportunities: InsightSection;
+  };
+  metadata: {
+    totalSubmissions: number;
+    analyzedAt: string;
+    categories: string[];
+  };
+}
+
 // Insight section with expandable recommendations
 const InsightSection = ({ 
   title, 

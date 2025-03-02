@@ -15,6 +15,10 @@ import sys
 import os
 import random
 import re
+import logging
+
+# Configure logger
+logger = logging.getLogger(__name__)
 
 # Add the parent directory to the Python path to import from sibling directories
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -22,67 +26,73 @@ from enhanced_data_generator import EnhancedMockDataGenerator
 
 class FeedbackAnalyzerService:
     def __init__(self, mongodb_url: str, feedback_service_url: str):
-        # Initialize sentiment pipeline once and cache it
-        self.sentiment_pipeline = pipeline("sentiment-analysis")
-        
-        # Initialize MongoDB connection
-        import motor.motor_asyncio
-        self.client = motor.motor_asyncio.AsyncIOMotorClient(mongodb_url)
-        self.db = self.client.feedback_analytics
-        self.feedback_service_url = feedback_service_url
-        
-        # Initialize feedback analyzer
-        from feedback_analyzer import FeedbackAnalyzer
-        self.analyzer = FeedbackAnalyzer()
-        
-        # Cache TextBlob results
-        self.sentiment_cache = {}
-        
-        # Initialize other attributes
-        self.mock_data_generator = EnhancedMockDataGenerator()
+        """Initialize the FeedbackAnalyzer service."""
+        try:
+            # Initialize sentiment pipeline once and cache it
+            self.sentiment_pipeline = pipeline("sentiment-analysis")
+            
+            # Initialize MongoDB connection
+            import motor.motor_asyncio
+            self.client = motor.motor_asyncio.AsyncIOMotorClient(mongodb_url)
+            self.db = self.client.feedback_analytics
+            self.feedback_service_url = feedback_service_url
+            
+            # Initialize feedback analyzer
+            from feedback_analyzer import FeedbackAnalyzer
+            self.analyzer = FeedbackAnalyzer()
+            
+            # Cache TextBlob results
+            self.sentiment_cache = {}
+            
+            # Initialize other attributes
+            self.mock_data_generator = EnhancedMockDataGenerator()
 
-        # Keywords for different aspects
-        self.improvement_keywords = {
-            "WORK_ENVIRONMENT": ["workspace", "office", "desk", "lighting", "noise", "air", "ergonomic", "meeting"],
-            "WORK_LIFE_BALANCE": ["flexible", "remote", "break", "vacation", "overtime", "workload", "schedule"],
-            "TEAM_COLLABORATION": ["communication", "meeting", "collaboration", "team", "coordination", "update"],
-            "PROJECT_MANAGEMENT": ["task", "deadline", "resource", "documentation", "milestone", "risk", "planning"],
-            "TECHNICAL_SKILLS": ["training", "documentation", "tools", "learning", "skills", "mentorship", "knowledge"]
-        }
-
-        # Solution suggestions for different categories
-        self.solution_suggestions = {
-            "WORK_ENVIRONMENT": {
-                "workspace": [
-                    "Implement flexible seating arrangements",
-                    "Create dedicated quiet zones for focused work"
-                ],
-                "equipment": [
-                    "Upgrade office equipment and tools",
-                    "Provide ergonomic furniture options"
-                ]
-            },
-            "TEAM_COLLABORATION": {
-                "communication": [
-                    "Implement daily stand-ups for better coordination",
-                    "Use collaborative tools for real-time communication"
-                ],
-                "meetings": [
-                    "Structure regular team sync-ups",
-                    "Create clear meeting agendas and follow-ups"
-                ]
-            },
-            "PROJECT_MANAGEMENT": {
-                "planning": [
-                    "Implement agile methodologies",
-                    "Create detailed project roadmaps"
-                ],
-                "tracking": [
-                    "Use project management software effectively",
-                    "Set up regular milestone reviews"
-                ]
+            # Keywords for different aspects
+            self.improvement_keywords = {
+                "WORK_ENVIRONMENT": ["workspace", "office", "desk", "lighting", "noise", "air", "ergonomic", "meeting"],
+                "WORK_LIFE_BALANCE": ["flexible", "remote", "break", "vacation", "overtime", "workload", "schedule"],
+                "TEAM_COLLABORATION": ["communication", "meeting", "collaboration", "team", "coordination", "update"],
+                "PROJECT_MANAGEMENT": ["task", "deadline", "resource", "documentation", "milestone", "risk", "planning"],
+                "TECHNICAL_SKILLS": ["training", "documentation", "tools", "learning", "skills", "mentorship", "knowledge"]
             }
-        }
+
+            # Solution suggestions for different categories
+            self.solution_suggestions = {
+                "WORK_ENVIRONMENT": {
+                    "workspace": [
+                        "Implement flexible seating arrangements",
+                        "Create dedicated quiet zones for focused work"
+                    ],
+                    "equipment": [
+                        "Upgrade office equipment and tools",
+                        "Provide ergonomic furniture options"
+                    ]
+                },
+                "TEAM_COLLABORATION": {
+                    "communication": [
+                        "Implement daily stand-ups for better coordination",
+                        "Use collaborative tools for real-time communication"
+                    ],
+                    "meetings": [
+                        "Structure regular team sync-ups",
+                        "Create clear meeting agendas and follow-ups"
+                    ]
+                },
+                "PROJECT_MANAGEMENT": {
+                    "planning": [
+                        "Implement agile methodologies",
+                        "Create detailed project roadmaps"
+                    ],
+                    "tracking": [
+                        "Use project management software effectively",
+                        "Set up regular milestone reviews"
+                    ]
+                }
+            }
+
+        except Exception as e:
+            logger.error(f"Error initializing service: {str(e)}")
+            raise
 
     async def fetch_all_submissions(self) -> List[Dict]:
         """Fetch all feedback submissions from the feedback service or use mock data if service is unavailable"""
@@ -424,240 +434,305 @@ class FeedbackAnalyzerService:
             return {}
 
     async def analyze_question_response(self, question: Dict, response: str) -> QuestionAnalysis:
-        """Analyze individual question response"""
+        """Analyze a single question response."""
         try:
-            analysis = await self.analyze_text_response(response)
+            question_type = question.get("questionType", "")
+            question_text = question.get("text", "")
+            category = question.get("category", "UNCATEGORIZED")
             
-            return QuestionAnalysis(
-                question_id=question.get("id", 0),
-                question_text=question.get("text", ""),
-                question_type=question.get("questionType", "TEXT"),
-                response=response,
-                score=analysis["score"],
-                sentiment=SentimentType(analysis["sentiment"]),
-                suggestions=[],  # Temporarily disable suggestions
-                improvement_priorities=[]  # Add the missing field
-            )
-        except Exception as e:
-            print(f"Error analyzing question response: {str(e)}")
-            return QuestionAnalysis(
-                question_id=question.get("id", 0),
-                question_text=question.get("text", ""),
-                question_type=question.get("questionType", "TEXT"),
-                response=response,
-                score=0.5,
-                sentiment=SentimentType.NEUTRAL,
-                suggestions=[],
-                improvement_priorities=[]
-            )
-
-    async def analyze_feedback_submission(self, submission: Dict) -> FeedbackAnalysis:
-        """Analyze complete feedback submission"""
-        try:
-            # First fetch the actual submission data if we only have the ID
-            if isinstance(submission, dict) and len(submission.keys()) == 1 and "id" in submission:
-                all_submissions = await self.fetch_all_submissions()
-                matching_submissions = [s for s in all_submissions if str(s.get("id")) == str(submission["id"])]
-                if not matching_submissions:
-                    raise HTTPException(status_code=404, detail=f"No submission found with ID {submission['id']}")
-                submission = matching_submissions[0]
-
-            question_analyses = []
-            overall_score = 0.0
-            satisfaction_scores = []
-            improvement_areas = []
-            key_metrics = {}
-            key_insights = []
-            strengths = []
-            weaknesses = []
+            # Initialize score and sentiment
+            score = 0.0
+            sentiment = SentimentType.NEUTRAL
+            suggestions = []
+            improvement_priorities = []
             
-            # Analyze each question
-            for question in submission.get("questionDetails", []):
-                response = submission["responses"].get(str(question["id"]))
-                question_type = question.get("questionType", "")
-                category = question.get("category", "")
-                
-                # Calculate satisfaction score based on question type
-                if question_type == "SINGLE_CHOICE":
-                    try:
-                        satisfaction = float(response) / 5.0  # Normalize to 0-1
-                        satisfaction_scores.append(satisfaction)
-                        key_metrics[f"{category}_satisfaction"] = satisfaction
-                        
-                        # Add insight for satisfaction score
-                        if satisfaction >= 0.8:
-                            strengths.append({
-                                "category": category,
-                                "score": satisfaction * 100,
-                                "description": f"High satisfaction in {category.lower().replace('_', ' ')}"
-                            })
-                        elif satisfaction <= 0.4:
-                            weaknesses.append({
-                                "category": category,
-                                "score": satisfaction * 100,
-                                "description": f"Low satisfaction in {category.lower().replace('_', ' ')}"
-                            })
-                    except:
-                        satisfaction_scores.append(0.5)
-                
-                # Enhanced question analysis
-                analysis = await self.analyze_question_response(question, response)
-                
-                # Add question-specific insights
-                insights = []
-                if question_type == "MULTIPLE_CHOICE":
-                    selected_options = response.split(", ")
-                    insights.append({
+            # Analyze based on question type
+            if question_type == "MULTIPLE_CHOICE":
+                # For multiple choice, analyze selection coverage
+                choices = question.get("choices", [])
+                if choices:
+                    selected = response.split(", ") if isinstance(response, str) else [str(response)]
+                    score = len(selected) / len(choices)
+                    suggestions.append({
                         "type": "selection_analysis",
-                        "content": f"Selected {len(selected_options)} out of {len(question.get('choices', []))} options",
-                        "details": selected_options
-                    })
-                elif question_type == "TEXT_BASED":
-                    text_sentiment = self.sentiment_pipeline(response)[0]
-                    sentiment_strength = "strong" if text_sentiment["score"] > 0.8 else "moderate"
-                    insights.append({
-                        "type": "sentiment_analysis",
-                        "content": f"Expressed {sentiment_strength} {text_sentiment['label'].lower()} sentiment",
-                        "score": text_sentiment["score"]
+                        "content": f"Selected {len(selected)} out of {len(choices)} options",
+                        "details": selected
                     })
                     
-                    # Extract action items
-                    if any(word in response.lower() for word in ["should", "need", "must", "could"]):
-                        action_items = [s.strip() for s in response.split(".") if any(word in s.lower() for word in ["should", "need", "must", "could"])]
-                        insights.append({
-                            "type": "action_items",
-                            "content": "Action items identified",
-                            "items": action_items
-                        })
-                
-                analysis.suggestions = insights
-                question_analyses.append(analysis)
-                overall_score += analysis.score
-                
-                # Track improvement areas for low scores
-                if analysis.score < 0.6:
-                    improvement_areas.append({
-                        "category": category,
-                        "question": question.get("text", ""),
-                        "score": analysis.score,
-                        "priority": "High" if analysis.score < 0.4 else "Medium",
-                        "recommendations": self.get_default_recommendations(category)[:2]
+            elif question_type == "TEXT_BASED":
+                # For text-based responses, use sentiment analysis
+                if response:
+                    sentiment_result = self.sentiment_pipeline(response)[0]
+                    score = sentiment_result["score"]
+                    sentiment = SentimentType.POSITIVE if sentiment_result["label"] == "POSITIVE" else (
+                        SentimentType.NEGATIVE if sentiment_result["label"] == "NEGATIVE" else SentimentType.NEUTRAL
+                    )
+                    
+                    # Add sentiment analysis suggestion
+                    suggestions.append({
+                        "type": "sentiment_analysis",
+                        "content": f"Expressed {sentiment.value.lower()} sentiment",
+                        "score": score
                     })
+                    
+                    # Extract action items if present
+                    action_words = ["should", "need", "must", "could"]
+                    if any(word in response.lower() for word in action_words):
+                        action_items = [
+                            s.strip() for s in response.split(".")
+                            if any(word in s.lower() for word in action_words)
+                        ]
+                        if action_items:
+                            improvement_priorities.extend([
+                                {"description": item, "priority": "Medium"}
+                                for item in action_items
+                            ])
+                            
+            elif question_type == "SENTIMENT":
+                # For sentiment questions, directly map the response
+                sentiment_map = {
+                    "POSITIVE": (SentimentType.POSITIVE, 1.0),
+                    "NEUTRAL": (SentimentType.NEUTRAL, 0.5),
+                    "NEGATIVE": (SentimentType.NEGATIVE, 0.0)
+                }
+                
+                # If response is a sentiment word, use direct mapping
+                upper_response = response.upper() if isinstance(response, str) else ""
+                if upper_response in sentiment_map:
+                    sentiment, score = sentiment_map[upper_response]
+                else:
+                    # If response is text, analyze it
+                    sentiment_result = self.sentiment_pipeline(response)[0]
+                    score = sentiment_result["score"]
+                    sentiment = SentimentType.POSITIVE if sentiment_result["label"] == "POSITIVE" else (
+                        SentimentType.NEGATIVE if sentiment_result["label"] == "NEGATIVE" else SentimentType.NEUTRAL
+                    )
             
-            num_questions = len(question_analyses) or 1
+            return QuestionAnalysis(
+                question_id=question.get("id", ""),
+                question_text=question_text,
+                question_type=question_type,
+                response=response,
+                category=category,
+                score=score,
+                sentiment=sentiment,
+                suggestions=suggestions,
+                improvement_priorities=improvement_priorities
+            )
             
-            # Analyze overall comments
-            overall_comments = submission.get("overallComments", "")
-            overall_analysis = await self.analyze_text_response(overall_comments)
-            
-            # Extract priorities and suggestions
-            priorities = self.extract_priorities(overall_comments)
-            suggestions = self._generate_suggestions(overall_comments, question_analyses)
-            
-            # Calculate final scores
-            avg_satisfaction = sum(satisfaction_scores) / len(satisfaction_scores) if satisfaction_scores else 0.5
-            final_score = (overall_score / num_questions + avg_satisfaction) / 2
-            
-            # Add overall metrics
-            key_metrics.update({
-                "overall_satisfaction": avg_satisfaction,
-                "response_quality": overall_score / num_questions,
-                "sentiment_score": overall_analysis["score"],
-                "improvement_count": len(improvement_areas)
-            })
-            
-            # Generate insights based on scores and analysis
+        except Exception as e:
+            logger.error(f"Error analyzing question response: {str(e)}")
+            raise
+
+    async def _generate_executive_summary(
+        self,
+        question_analyses: List[QuestionAnalysis],
+        categories_analysis: Dict[str, CategoryAnalysis]
+    ) -> ExecutiveSummary:
+        """Generate an executive summary based on question analyses and category analyses."""
+        try:
             strengths = []
             weaknesses = []
             key_insights = []
-
-            # Add insights based on question analyses
-            for analysis in question_analyses:
-                if analysis.score >= 0.8:
+            action_items = []
+            
+            # Analyze question-based performance
+            for qa in question_analyses:
+                if qa.score >= 0.8:
                     strengths.append({
-                        "category": analysis.category,
-                        "score": analysis.score * 100,
-                        "description": f"High performance in {analysis.question_text.lower()}"
+                        "category": qa.category,
+                        "score": qa.score * 100,
+                        "description": f"High performance in {qa.question_text}"
                     })
-                elif analysis.score <= 0.4:
+                elif qa.score <= 0.4:
                     weaknesses.append({
-                        "category": analysis.category,
-                        "score": analysis.score * 100,
-                        "description": f"Needs improvement in {analysis.question_text.lower()}"
+                        "category": qa.category,
+                        "score": qa.score * 100,
+                        "description": f"Needs improvement in {qa.question_text}"
                     })
-
-            # Add insights based on satisfaction scores
-            if avg_satisfaction >= 0.8:
-                key_insights.append(f"Overall high satisfaction rate of {avg_satisfaction * 100:.1f}%")
-            elif avg_satisfaction <= 0.4:
-                key_insights.append(f"Overall satisfaction needs attention at {avg_satisfaction * 100:.1f}%")
-
-            # Add insights based on sentiment analysis
-            if overall_analysis["sentiment"] == "POSITIVE":
-                key_insights.append("Positive sentiment in overall feedback")
-            elif overall_analysis["sentiment"] == "NEGATIVE":
-                key_insights.append("Negative sentiment requires attention")
-
-            # Add insights based on improvement areas
-            if improvement_areas:
-                key_insights.append(f"Found {len(improvement_areas)} areas needing improvement")
                 
-            # Generate executive summary
-            executive_summary = ExecutiveSummary(
-                overall_rating=f"{final_score * 100:.1f}%",
+                # Extract action items from suggestions
+                for suggestion in qa.suggestions:
+                    if isinstance(suggestion, dict) and suggestion.get("type") == "action_items":
+                        for item in suggestion.get("items", []):
+                            action_items.append({
+                                "description": item,
+                                "category": qa.category,
+                                "priority": "High" if qa.score <= 0.4 else "Medium"
+                            })
+            
+            # Analyze category-based performance
+            for category, analysis in categories_analysis.items():
+                if analysis.score >= 0.8:
+                    key_insights.append(f"Strong performance in {category.lower().replace('_', ' ')}")
+                elif analysis.score <= 0.4:
+                    key_insights.append(f"Attention needed in {category.lower().replace('_', ' ')}")
+                
+                # Add category recommendations as action items
+                for recommendation in analysis.recommendations:
+                    if isinstance(recommendation, str):
+                        action_items.append({
+                            "description": recommendation,
+                            "category": category,
+                            "priority": "High" if analysis.score <= 0.4 else "Medium"
+                        })
+            
+            # Calculate overall rating
+            avg_score = sum(qa.score for qa in question_analyses) / len(question_analyses) if question_analyses else 0.0
+            overall_rating = f"{avg_score * 100:.1f}%"
+            
+            # Add general insights
+            positive_count = sum(1 for qa in question_analyses if qa.sentiment == SentimentType.POSITIVE)
+            sentiment_ratio = positive_count / len(question_analyses) if question_analyses else 0
+            if sentiment_ratio >= 0.7:
+                key_insights.append("Overall positive sentiment across responses")
+            elif sentiment_ratio <= 0.3:
+                key_insights.append("Generally negative sentiment requires attention")
+            
+            # Deduplicate action items and insights
+            action_items = list({item["description"]: item for item in action_items}.values())
+            key_insights = list(set(key_insights))
+            
+            return ExecutiveSummary(
+                overall_rating=overall_rating,
                 strengths=strengths,
                 weaknesses=weaknesses,
                 key_insights=key_insights,
-                action_items=[
-                    {
-                        "description": suggestion,
-                        "category": self._determine_suggestion_category(suggestion),
-                        "priority": "High" if any(word in suggestion.lower() for word in ["critical", "immediate", "urgent"]) else "Medium"
-                    }
-                    for suggestion in suggestions
-                ]
+                action_items=action_items
             )
             
-            # Calculate category scores
-            category_scores = {}
-            for category in self.extract_categories(submission):
-                category_responses = [
-                    q for q in question_analyses 
-                    if q.category == category
-                ]
-                if category_responses:
-                    avg_score = sum(q.score for q in category_responses) / len(category_responses)
-                    category_scores[category] = CategoryAnalysis(
-                        score=avg_score * 100,
-                        sentiment=self._get_sentiment_label(avg_score),
-                        recommendations=self.get_default_recommendations(category)[:2]
-                    )
+        except Exception as e:
+            logger.error(f"Error generating executive summary: {str(e)}")
+            raise
+
+    async def analyze_feedback_submission(self, submission: Dict) -> FeedbackAnalysis:
+        """Analyze a feedback submission and return detailed analysis."""
+        try:
+            # First fetch the actual submission data if we only have the ID
+            if isinstance(submission, dict) and len(submission.keys()) == 1 and "id" in submission:
+                logger.info(f"Fetching full submission data for ID {submission['id']}")
+                all_submissions = await self.fetch_all_submissions()
+                matching_submissions = [s for s in all_submissions if str(s.get("id")) == str(submission["id"])]
+                if not matching_submissions:
+                    logger.error(f"No submission found with ID {submission['id']}")
+                    raise HTTPException(status_code=404, detail=f"No submission found with ID {submission['id']}")
+                submission = matching_submissions[0]
+
+            # Validate required fields
+            if "responses" not in submission:
+                logger.error("Missing 'responses' field in submission")
+                raise ValueError("Missing 'responses' field in submission")
+            if "questionDetails" not in submission:
+                logger.error("Missing 'questionDetails' field in submission")
+                raise ValueError("Missing 'questionDetails' field in submission")
+
+            # Extract question details and create a mapping
+            question_details_map = {
+                str(q["id"]): q for q in submission["questionDetails"]
+            }
+            logger.debug(f"Found {len(question_details_map)} questions in details")
             
+            question_analyses = []
+            categories_analysis = {}
+            
+            # Process each response
+            responses = submission["responses"]
+            logger.debug(f"Processing {len(responses)} responses")
+            
+            for question_id, response in responses.items():
+                question_detail = question_details_map.get(str(question_id))
+                if not question_detail:
+                    logger.warning(f"No question details found for question ID {question_id}")
+                    continue
+                
+                # Get category from question details
+                category = question_detail.get("category", "UNCATEGORIZED")
+                logger.debug(f"Processing question {question_id} in category {category}")
+                
+                # Analyze the question response
+                analysis = await self.analyze_question_response(question_detail, response)
+                
+                # Update the category in the analysis
+                analysis.category = category
+                
+                question_analyses.append(analysis)
+                
+                # Aggregate analysis by category
+                if category not in categories_analysis:
+                    categories_analysis[category] = CategoryAnalysis(
+                        score=0.0,
+                        sentiment="NEUTRAL",
+                        recommendations=[]
+                    )
+                
+                # Update category analysis
+                cat_analysis = categories_analysis[category]
+                cat_analysis.score = (cat_analysis.score + analysis.score) / 2
+                cat_analysis.sentiment = analysis.sentiment
+                if analysis.suggestions:
+                    cat_analysis.recommendations.extend([str(s) for s in analysis.suggestions])
+            
+            if not question_analyses:
+                logger.error("No questions were successfully analyzed")
+                raise ValueError("No questions were successfully analyzed")
+            
+            # Calculate overall metrics
+            overall_score = sum(qa.score for qa in question_analyses) / len(question_analyses)
+            overall_sentiment = self._get_sentiment_label(overall_score)
+            
+            # Generate executive summary
+            executive_summary = await self._generate_executive_summary(question_analyses, categories_analysis)
+            
+            # Extract overall suggestions and priorities
+            overall_suggestions = []
+            overall_priorities = []
+            
+            for qa in question_analyses:
+                if qa.suggestions:
+                    overall_suggestions.extend([str(s) for s in qa.suggestions])
+                if qa.improvement_priorities:
+                    overall_priorities.extend(qa.improvement_priorities)
+            
+            # Calculate satisfaction score
+            satisfaction_score = sum(1 for qa in question_analyses if qa.sentiment == SentimentType.POSITIVE) / len(question_analyses)
+            
+            # Create improvement areas list
+            improvement_areas = [
+                {"category": cat, "score": analysis.score, "recommendations": analysis.recommendations}
+                for cat, analysis in categories_analysis.items()
+                if analysis.score < 0.7  # Consider areas with score less than 70% as needing improvement
+            ]
+            
+            # Calculate key metrics
+            key_metrics = {
+                "overall_satisfaction": satisfaction_score,
+                "response_quality": sum(qa.score for qa in question_analyses) / len(question_analyses),
+                "sentiment_score": sum(1 for qa in question_analyses if qa.sentiment == SentimentType.POSITIVE) / len(question_analyses),
+                "improvement_count": len(improvement_areas)
+            }
+            
+            logger.info("Successfully analyzed feedback submission")
             return FeedbackAnalysis(
-                feedback_id=int(submission.get("id", 0)),
-                project_id=int(submission.get("projectId", 0)),
+                feedback_id=submission.get("id", 0),
+                project_id=submission.get("projectId", 0),
                 project_name=submission.get("projectName", ""),
-                submitted_by=submission.get("submittedBy", ""),
-                submitted_at=datetime.fromisoformat(
-                    submission.get("submittedAt", datetime.now().isoformat())
-                ),
+                submitted_by=submission.get("submittedBy"),
+                submitted_at=submission.get("submittedAt", datetime.now().isoformat()),
                 executive_summary=executive_summary,
                 question_analyses=question_analyses,
-                overall_score=final_score,
-                overall_sentiment=SentimentType(overall_analysis["sentiment"]),
-                overall_suggestions=suggestions,
-                overall_priorities=priorities,
-                categories=category_scores,
-                satisfaction_score=avg_satisfaction,
+                overall_score=overall_score,
+                overall_sentiment=overall_sentiment,
+                overall_suggestions=list(set(overall_suggestions)),
+                overall_priorities=overall_priorities,
+                categories=categories_analysis,
+                satisfaction_score=satisfaction_score,
                 improvement_areas=improvement_areas,
                 key_metrics=key_metrics
             )
+            
         except Exception as e:
-            print(f"Error analyzing feedback submission: {str(e)}")
-            raise HTTPException(
-                status_code=500,
-                detail=f"Error analyzing feedback: {str(e)}"
-            )
+            logger.error(f"Error analyzing feedback submission: {str(e)}")
+            raise
 
     def extract_priorities(self, text: str) -> List[Dict[str, float]]:
         """Extract improvement priorities from text"""

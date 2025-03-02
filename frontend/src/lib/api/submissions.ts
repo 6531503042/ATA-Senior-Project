@@ -14,38 +14,40 @@ const api = axios.create({
   }
 });
 
-const aiApi = axios.create({
+export const aiApi = axios.create({
   baseURL: AI_SERVICE_URL,
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
-  }
+  },
+  timeout: 10000
 });
 
-// Add request interceptor for auth to all APIs
-[api, aiApi].forEach(instance => {
-  instance.interceptors.request.use(
-    (config) => {
-      const token = getCookie('accessToken');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-      console.log(`${config.baseURL} Request Config:`, {
-        url: config.url,
-        method: config.method,
-        headers: {
-          ...config.headers,
-          Authorization: config.headers.Authorization ? 'Bearer ****' : 'None'
-        }
-      });
-      return config;
-    },
-    (error) => {
-      console.error('Request interceptor error:', error);
-      return Promise.reject(error);
+// Add request interceptor for auth to main API only
+api.interceptors.request.use(
+  (config) => {
+    const token = getCookie('accessToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
-  );
+    console.log(`${config.baseURL} Request Config:`, {
+      url: config.url,
+      method: config.method,
+      headers: {
+        ...config.headers,
+        Authorization: config.headers.Authorization ? 'Bearer ****' : 'None'
+      }
+    });
+    return config;
+  },
+  (error) => {
+    console.error('Request interceptor error:', error);
+    return Promise.reject(error);
+  }
+);
 
+// Add response interceptors for both APIs
+[api, aiApi].forEach(instance => {
   instance.interceptors.response.use(
     (response) => {
       console.log(`${response.config.baseURL} Response:`, {
@@ -140,13 +142,13 @@ export interface FeedbackAnalysis {
   executive_summary: {
     overall_rating: string;
     strengths: Array<{
-      category: string;
-      score: string;
+      category: string | null;
+      score: number;
       description: string;
     }>;
     weaknesses: Array<{
-      category: string;
-      score: string;
+      category: string | null;
+      score: number;
       description: string;
     }>;
     key_insights: string[];
@@ -157,31 +159,38 @@ export interface FeedbackAnalysis {
     }>;
   };
   question_analyses: Array<{
-    question_id: number;
+    question_id: string | number;
     question_text: string;
     question_type: string;
     response: string;
+    category: string | null;
     score: number;
-    sentiment: string;
+    sentiment: "POSITIVE" | "NEUTRAL" | "NEGATIVE";
     suggestions: Array<{
       type: string;
       content: string;
-      details?: string[];
       score?: number;
+      details?: string[];
     }>;
-    improvement_priorities: ImprovementPriority[];
-    category: string;
+    improvement_priorities: Array<{
+      description: string;
+      priority: string;
+    }>;
   }>;
   overall_score: number;
-  overall_sentiment: string;
+  overall_sentiment: "POSITIVE" | "NEUTRAL" | "NEGATIVE";
   overall_suggestions: string[];
   overall_priorities: Array<{
     name: string;
-    score: string;
+    score: number;
   }>;
   categories: Record<string, CategoryAnalysis>;
   satisfaction_score: number;
-  improvement_areas: ImprovementPriority[];
+  improvement_areas: Array<{
+    category: string;
+    score: number;
+    recommendations: string[];
+  }>;
   key_metrics: {
     overall_satisfaction: number;
     response_quality: number;
@@ -233,7 +242,7 @@ export interface AIInsights {
       aiConfidence: number;
       recommendations: Array<{
         text: string;
-        priority: 'high' | 'medium' | 'low';
+        priority: string;
       }>;
     };
     engagementAnalysis: {
@@ -241,7 +250,7 @@ export interface AIInsights {
       aiConfidence: number;
       recommendations: Array<{
         text: string;
-        priority: 'high' | 'medium' | 'low';
+        priority: string;
       }>;
     };
     improvementOpportunities: {
@@ -249,7 +258,7 @@ export interface AIInsights {
       aiConfidence: number;
       recommendations: Array<{
         text: string;
-        priority: 'high' | 'medium' | 'low';
+        priority: string;
       }>;
     };
   };
