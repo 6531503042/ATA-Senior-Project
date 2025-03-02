@@ -9,7 +9,7 @@ import { Project, ProjectStatus, ProjectStats } from './models/types';
 import { getProjects, deleteProject, getProjectMetrics } from '@/lib/api/projects';
 import { useToast } from '@/hooks/use-toast';
 import { Card } from '@/components/ui/card';
-import Button from '@/components/ui/Button';
+import Button from '@/components/ui/button';
 import { PlusIcon, TrashIcon, PencilIcon, ChevronDownIcon, FilterIcon, RefreshCwIcon } from 'lucide-react';
 
 export default function ProjectsPage() {

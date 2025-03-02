@@ -2,12 +2,6 @@ import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { 
-  MessageSquare, 
-  Calendar, 
-  User, 
-  Lock,
-  Unlock,
-  ChevronRight,
   AlertTriangle,
   BarChart2
 } from 'lucide-react';

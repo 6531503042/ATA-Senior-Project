@@ -22,7 +22,7 @@ import {
 import type { AIInsights } from '@/lib/api/submissions';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import {
   HoverCard,
