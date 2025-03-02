@@ -38,6 +38,8 @@ import axios from 'axios';
 import { getCookie } from 'cookies-next';
 import { FeedbackSelector } from './components/FeedbackSelector';
 import { useRouter } from 'next/navigation';
+import { FeedbackCardSkeleton } from '@/components/ui/skeleton';
+import { Suspense } from 'react';
 
 interface FeedbackAnalysis {
   feedback_id: number;
@@ -310,6 +312,24 @@ const SubmissionCard: React.FC<SubmissionCardProps> = ({ submission, isSelected,
   );
 };
 
+// Add this new component for loading grid
+function LoadingGrid() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {[1, 2, 3, 4, 5, 6].map((i) => (
+        <motion.div
+          key={i}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: i * 0.1 }}
+        >
+          <FeedbackCardSkeleton />
+        </motion.div>
+      ))}
+    </div>
+  );
+}
+
 export default function FeedbackSubmissionsPage() {
   const router = useRouter();
   const { toast } = useToast();
@@ -320,6 +340,13 @@ export default function FeedbackSubmissionsPage() {
   const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [analysisCache, setAnalysisCache] = useState<Record<number, any>>({});
 
+  // Add new state for optimistic loading
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(1);
+  const ITEMS_PER_PAGE = 9;
+
+  // Optimize data fetching with batching and caching
   useEffect(() => {
     const fetchFeedbacks = async () => {
       try {
@@ -329,32 +356,38 @@ export default function FeedbackSubmissionsPage() {
           throw new Error('No authentication token found');
         }
 
-        // First fetch all valid feedbacks from the main API
-        const feedbacksResponse = await axios.get('http://localhost:8084/api/v1/admin/feedbacks/get-all', {
-          headers: {
-            'Authorization': `Bearer ${token}`
+        // Fetch feedbacks with pagination
+        const feedbacksResponse = await axios.get(
+          `http://localhost:8084/api/v1/admin/feedbacks/get-all?page=${page}&limit=${ITEMS_PER_PAGE}`,
+          {
+            headers: { 'Authorization': `Bearer ${token}` }
           }
-        });
+        );
 
-        // Create a map of valid feedback IDs for quick lookup
         const validFeedbackIds = new Set(feedbacksResponse.data.map((f: any) => f.id));
-
-        // Initialize feedbacks with basic data
+        
+        // Initialize feedbacks with optimistic loading states
         const initialFeedbacks = feedbacksResponse.data.map((feedback: any) => ({
           ...feedback,
-          analysis: null,
-          hasAnalysis: false,
-          isAnalysisLoading: true,
+          analysis: analysisCache[feedback.id] || null,
+          hasAnalysis: !!analysisCache[feedback.id],
+          isAnalysisLoading: !analysisCache[feedback.id],
           submissionCount: 0
         }));
-        setFeedbacks(initialFeedbacks);
 
-        // Then fetch all submissions from the AI service
-        const submissionsResponse = await axios.get('http://localhost:8085/api/submissions/all');
-        
-        // Count submissions for each feedback
-        const submissionCounts = submissionsResponse.data.reduce((acc: Record<number, number>, submission: any) => {
-          const feedbackId = submission.submission.feedbackId;
+        // Update state based on page
+        setFeedbacks(prev => page === 1 ? initialFeedbacks : [...prev, ...initialFeedbacks]);
+        setHasMore(feedbacksResponse.data.length === ITEMS_PER_PAGE);
+
+        // Fetch submissions in parallel
+        const [submissionsResponse] = await Promise.all([
+          axios.get('http://localhost:8085/api/submissions/all'),
+          new Promise(resolve => setTimeout(resolve, 300)) // Minimum loading time for UX
+        ]);
+
+        // Process submission counts
+        const submissionCounts = submissionsResponse.data.reduce((acc: Record<number, number>, sub: any) => {
+          const feedbackId = sub.submission.feedbackId;
           if (validFeedbackIds.has(feedbackId)) {
             acc[feedbackId] = (acc[feedbackId] || 0) + 1;
           }
@@ -369,18 +402,20 @@ export default function FeedbackSubmissionsPage() {
           }))
         );
 
-        // Then fetch analysis for each feedback that has submissions
+        // Fetch analysis for feedbacks with submissions
         const feedbacksWithSubmissions = feedbacksResponse.data.filter(
           (feedback: any) => submissionCounts[feedback.id] > 0
         );
 
-        // Process analysis in batches
+        // Process analysis in smaller batches for better performance
         const batchSize = 3;
         const feedbackBatches = chunk(feedbacksWithSubmissions, batchSize);
 
         for (const batch of feedbackBatches) {
           await Promise.all(
             batch.map(async (feedback: any) => {
+              if (analysisCache[feedback.id]) return; // Skip if cached
+
               try {
                 const analysisResponse = await axios.get(
                   `http://localhost:8085/api/analysis/feedback/${feedback.id}`,
@@ -422,7 +457,7 @@ export default function FeedbackSubmissionsPage() {
               }
             })
           );
-          await new Promise(resolve => setTimeout(resolve, 500));
+          await new Promise(resolve => setTimeout(resolve, 300)); // Rate limiting
         }
       } catch (error) {
         console.error('Failed to fetch feedbacks:', error);
@@ -433,11 +468,12 @@ export default function FeedbackSubmissionsPage() {
         });
       } finally {
         setIsLoading(false);
+        setIsLoadingMore(false);
       }
     };
 
     fetchFeedbacks();
-  }, [toast]);
+  }, [toast, page]);
 
   // Helper function to chunk array into smaller arrays
   const chunk = <T,>(arr: T[], size: number): T[][] => {
@@ -446,19 +482,31 @@ export default function FeedbackSubmissionsPage() {
     );
   };
 
+  // Optimize filtering with memoization
   const filteredFeedbacks = useMemo(() => {
     return feedbacks.filter(feedback => {
-      const matchesSearch = feedback.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           feedback.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           feedback.projectName.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch = 
+        !searchQuery || 
+        feedback.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        feedback.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        feedback.projectName.toLowerCase().includes(searchQuery.toLowerCase());
       
-      const matchesFilter = filter === 'all' ? true :
-                           filter === 'active' ? feedback.active :
-                           !feedback.active;
+      const matchesFilter = 
+        filter === 'all' ? true :
+        filter === 'active' ? feedback.active :
+        !feedback.active;
 
       return matchesSearch && matchesFilter;
     });
   }, [feedbacks, searchQuery, filter]);
+
+  // Infinite scroll handler
+  const loadMore = () => {
+    if (!isLoadingMore && hasMore) {
+      setIsLoadingMore(true);
+      setPage(prev => prev + 1);
+    }
+  };
 
   return (
     <div className="min-h-screen p-8">
@@ -502,111 +550,139 @@ export default function FeedbackSubmissionsPage() {
         </div>
       </Card>
 
-      {/* Feedbacks Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredFeedbacks.map((feedback) => (
-          <motion.div
-            key={feedback.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="group"
-          >
-            <Card
-              className={cn(
-                "cursor-pointer transition-all duration-200",
-                "hover:border-violet-200 hover:shadow-lg hover:shadow-violet-100/50"
-              )}
-              onClick={() => router.push(`/admin/feedbacks/submissions/${feedback.id}`)}
-            >
-              <div className="p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2 bg-violet-100 rounded-lg">
-                    <MessageSquare className="h-5 w-5 text-violet-600" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900">
-                      {feedback.title}
-                    </h3>
-                    <Badge className={cn(
-                      feedback.active
-                        ? "bg-emerald-50 text-emerald-700"
-                        : "bg-gray-50 text-gray-700"
-                    )}>
-                      {feedback.active ? 'Active' : 'Inactive'}
-                    </Badge>
-                  </div>
-                </div>
+      {/* Feedbacks Grid with Loading States */}
+      <Suspense fallback={<LoadingGrid />}>
+        {isLoading && page === 1 ? (
+          <LoadingGrid />
+        ) : (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredFeedbacks.map((feedback) => (
+                <motion.div
+                  key={feedback.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="group"
+                >
+                  <Card
+                    className={cn(
+                      "cursor-pointer transition-all duration-200",
+                      "hover:border-violet-200 hover:shadow-lg hover:shadow-violet-100/50"
+                    )}
+                    onClick={() => router.push(`/admin/feedbacks/submissions/${feedback.id}`)}
+                  >
+                    <div className="p-6">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="p-2 bg-violet-100 rounded-lg">
+                          <MessageSquare className="h-5 w-5 text-violet-600" />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900">
+                            {feedback.title}
+                          </h3>
+                          <Badge className={cn(
+                            feedback.active
+                              ? "bg-emerald-50 text-emerald-700"
+                              : "bg-gray-50 text-gray-700"
+                          )}>
+                            {feedback.active ? 'Active' : 'Inactive'}
+                          </Badge>
+                        </div>
+                      </div>
 
-                {/* Analysis Status */}
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="p-3 bg-violet-50 rounded-lg">
-                      <div className="flex items-center gap-2">
-                        <BarChart2 className="h-4 w-4 text-violet-600" />
-                        <span className="text-sm text-violet-600">Submissions</span>
-                      </div>
-                      <p className="text-xl font-bold text-violet-700 mt-1">
-                        {feedback.submissionCount || 0}
-                      </p>
-                    </div>
-                    <div className="p-3 bg-violet-50 rounded-lg">
-                      <div className="flex items-center gap-2">
-                        <BarChart2 className="h-4 w-4 text-violet-600" />
-                        <span className="text-sm text-violet-600">Analysis</span>
-                      </div>
-                      <p className="text-xl font-bold text-violet-700 mt-1">
-                        {feedback.submissionCount === 0 ? (
-                          'No Submissions'
-                        ) : feedback.isAnalysisLoading ? (
-                          <div className="flex items-center gap-2">
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                            <span className="text-sm">Loading...</span>
+                      {/* Analysis Status */}
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="p-3 bg-violet-50 rounded-lg">
+                            <div className="flex items-center gap-2">
+                              <BarChart2 className="h-4 w-4 text-violet-600" />
+                              <span className="text-sm text-violet-600">Submissions</span>
+                            </div>
+                            <p className="text-xl font-bold text-violet-700 mt-1">
+                              {feedback.submissionCount || 0}
+                            </p>
                           </div>
-                        ) : feedback.hasAnalysis ? (
-                          'Complete'
-                        ) : (
-                          feedback.analysisError || 'No Analysis'
-                        )}
-                      </p>
-                    </div>
-                  </div>
+                          <div className="p-3 bg-violet-50 rounded-lg">
+                            <div className="flex items-center gap-2">
+                              <BarChart2 className="h-4 w-4 text-violet-600" />
+                              <span className="text-sm text-violet-600">Analysis</span>
+                            </div>
+                            <p className="text-xl font-bold text-violet-700 mt-1">
+                              {feedback.submissionCount === 0 ? (
+                                'No Submissions'
+                              ) : feedback.isAnalysisLoading ? (
+                                <div className="flex items-center gap-2">
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                  <span className="text-sm">Loading...</span>
+                                </div>
+                              ) : feedback.hasAnalysis ? (
+                                'Complete'
+                              ) : (
+                                feedback.analysisError || 'No Analysis'
+                              )}
+                            </p>
+                          </div>
+                        </div>
 
-                  {/* Date Range */}
-                  <div className="flex items-center gap-2 text-sm text-gray-500">
-                    <Calendar className="h-4 w-4" />
-                    <span>{format(new Date(feedback.startDate), 'MMM d, yyyy')}</span>
-                    <ChevronRight className="h-4 w-4" />
-                    <span>{format(new Date(feedback.endDate), 'MMM d, yyyy')}</span>
-                  </div>
+                        {/* Date Range */}
+                        <div className="flex items-center gap-2 text-sm text-gray-500">
+                          <Calendar className="h-4 w-4" />
+                          <span>{format(new Date(feedback.startDate), 'MMM d, yyyy')}</span>
+                          <ChevronRight className="h-4 w-4" />
+                          <span>{format(new Date(feedback.endDate), 'MMM d, yyyy')}</span>
+                        </div>
 
-                  {/* Project Badge */}
-                  <Badge className="bg-blue-50 text-blue-700">
-                    {feedback.projectName}
-                  </Badge>
-
-                  {feedback.submissionCount > 0 && feedback.analysis?.executive_summary?.key_insights && (
-                    <div className="flex flex-wrap gap-2">
-                      {feedback.analysis.executive_summary.key_insights.slice(0, 2).map((insight: string, index: number) => (
-                        <Badge 
-                          key={index}
-                          className="bg-violet-50 text-violet-700 border-violet-100"
-                        >
-                          {insight}
+                        {/* Project Badge */}
+                        <Badge className="bg-blue-50 text-blue-700">
+                          {feedback.projectName}
                         </Badge>
-                      ))}
-                    </div>
-                  )}
-                </div>
 
-                <div className="absolute top-4 right-4">
-                  <ChevronRight className="h-5 w-5 text-gray-400 group-hover:text-violet-500 transition-colors" />
-                </div>
+                        {feedback.submissionCount > 0 && feedback.analysis?.executive_summary?.key_insights && (
+                          <div className="flex flex-wrap gap-2">
+                            {feedback.analysis.executive_summary.key_insights.slice(0, 2).map((insight: string, index: number) => (
+                              <Badge 
+                                key={index}
+                                className="bg-violet-50 text-violet-700 border-violet-100"
+                              >
+                                {insight}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="absolute top-4 right-4">
+                        <ChevronRight className="h-5 w-5 text-gray-400 group-hover:text-violet-500 transition-colors" />
+                      </div>
+                    </div>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+            
+            {/* Load More */}
+            {hasMore && (
+              <div className="flex justify-center mt-8">
+                <Button
+                  onClick={loadMore}
+                  disabled={isLoadingMore}
+                  className="bg-violet-50 text-violet-700 hover:bg-violet-100"
+                >
+                  {isLoadingMore ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      Loading...
+                    </>
+                  ) : (
+                    'Load More'
+                  )}
+                </Button>
               </div>
-            </Card>
-          </motion.div>
-        ))}
-      </div>
+            )}
+          </div>
+        )}
+      </Suspense>
     </div>
   );
 } 

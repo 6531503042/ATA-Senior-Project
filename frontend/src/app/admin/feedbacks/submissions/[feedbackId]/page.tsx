@@ -50,6 +50,22 @@ import {
 import { SubmissionDetails } from '../components/SubmissionDetails';
 import { SatisfactionOverview } from '../components/SatisfactionOverview';
 import { AIInsightsCard } from '../components/AIInsightsCard';
+import { 
+  SubmissionDetailsSkeleton, 
+  MetricCardSkeleton, 
+  InsightCardSkeleton 
+} from '@/components/ui/skeleton';
+import { Suspense } from 'react';
+import { 
+  getAllSubmissions, 
+  getSubmissionAnalysis, 
+  getSatisfactionAnalysis, 
+  getAIInsights,
+  handleApiError,
+  getFeedbackData
+} from '@/lib/api/submissions';
+import { useToast } from '@/hooks/use-toast';
+import { cacheManager } from '@/lib/cache';
 
 interface SubmissionListItemProps {
   submission: SubmissionResponse;
@@ -328,11 +344,48 @@ const InsightCard = ({ title, description, metrics, recommendations, icon: Icon,
   );
 };
 
+// Add loading components
+function LoadingMetrics() {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {[1, 2, 3, 4].map((i) => (
+        <motion.div
+          key={i}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: i * 0.1 }}
+        >
+          <MetricCardSkeleton />
+        </motion.div>
+      ))}
+    </div>
+  );
+}
+
+function LoadingInsights() {
+  return (
+    <div className="space-y-6">
+      {[1, 2].map((i) => (
+        <motion.div
+          key={i}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: i * 0.1 }}
+        >
+          <InsightCardSkeleton />
+        </motion.div>
+      ))}
+    </div>
+  );
+}
+
 export default function FeedbackSubmissionPage({ params }: { params: Promise<{ feedbackId: string }> }) {
   const resolvedParams = use(params);
   const feedbackId = parseInt(resolvedParams.feedbackId);
+  const { toast } = useToast();
 
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submissions, setSubmissions] = useState<SubmissionResponse[]>([]);
   const [selectedSubmissionId, setSelectedSubmissionId] = useState<number | null>(null);
@@ -341,50 +394,96 @@ export default function FeedbackSubmissionPage({ params }: { params: Promise<{ f
   const [aiInsights, setAiInsights] = useState<AIInsights | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Load cached data immediately
+  useEffect(() => {
+    const cachedData = cacheManager.getFeedbackData(feedbackId);
+    if (cachedData) {
+      setSubmissions(cachedData.submissions);
+      setAnalysis(cachedData.analysis);
+      setSatisfactionAnalysis(cachedData.satisfaction);
+      setAiInsights(cachedData.insights);
+      setIsLoading(false);
+    }
+  }, [feedbackId]);
+
+  // Fetch fresh data
   useEffect(() => {
     const fetchData = async () => {
       try {
-        setIsLoading(true);
+        // If we're refreshing, don't show full loading state
+        setIsRefreshing(true);
         setError(null);
 
-        // Fetch all submissions for this feedback
-        const submissionsResponse = await aiApi.get('/api/submissions/all');
+        const data = await getFeedbackData(feedbackId);
 
-        // Filter submissions for this feedback
-        const feedbackSubmissions = submissionsResponse.data.filter(
-          (sub: SubmissionResponse) => sub.submission.feedbackId === feedbackId
-        );
+        // Update state with fresh data
+        setSubmissions(data.submissions);
+        setAnalysis(data.analysis);
+        setSatisfactionAnalysis(data.satisfaction);
+        setAiInsights(data.insights);
 
-        setSubmissions(feedbackSubmissions);
-
-        // Set first submission as selected if available
-        if (feedbackSubmissions.length > 0 && !selectedSubmissionId) {
-          setSelectedSubmissionId(feedbackSubmissions[0].submission.id);
+        // Set first submission as selected if available and none selected
+        if (data.submissions.length > 0 && !selectedSubmissionId) {
+          setSelectedSubmissionId(data.submissions[0].submission.id);
         }
-
-        // Fetch analyses in parallel
-        const [analysisRes, satisfactionRes, insightsRes] = await Promise.all([
-          aiApi.get(`/api/analysis/feedback/${feedbackId}`),
-          aiApi.get(`/api/analysis/satisfaction/${feedbackId}`),
-          aiApi.get(`/api/analysis/insights/${feedbackId}`)
-        ]);
-
-        setAnalysis(analysisRes.data);
-        setSatisfactionAnalysis(satisfactionRes.data);
-        setAiInsights(insightsRes.data);
 
       } catch (error) {
         console.error('Failed to fetch data:', error);
-        setError('Failed to load feedback data. Please try again.');
+        setError(error instanceof Error ? error.message : 'An unexpected error occurred');
+        
+        // Show error toast only if we don't have cached data
+        if (!cacheManager.getFeedbackData(feedbackId)) {
+          toast({
+            title: 'Error',
+            description: error instanceof Error ? error.message : 'Failed to load feedback data',
+            variant: 'destructive',
+          });
+        }
       } finally {
         setIsLoading(false);
+        setIsRefreshing(false);
       }
     };
 
     if (feedbackId) {
       fetchData();
     }
-  }, [feedbackId]);
+  }, [feedbackId, selectedSubmissionId, toast]);
+
+  // Handle manual refresh
+  const handleRefresh = async () => {
+    try {
+      setIsRefreshing(true);
+      setError(null);
+
+      // Clear cache for this feedback
+      cacheManager.clearCache(feedbackId);
+
+      // Fetch fresh data
+      const data = await getFeedbackData(feedbackId);
+
+      // Update state with fresh data
+      setSubmissions(data.submissions);
+      setAnalysis(data.analysis);
+      setSatisfactionAnalysis(data.satisfaction);
+      setAiInsights(data.insights);
+
+      toast({
+        title: 'Success',
+        description: 'Data refreshed successfully',
+        variant: 'default',
+      });
+    } catch (error) {
+      console.error('Failed to refresh data:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to refresh data. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const filteredSubmissions = submissions.filter(submission =>
     submission.submission.id.toString().includes(searchQuery) ||
@@ -407,17 +506,6 @@ export default function FeedbackSubmissionPage({ params }: { params: Promise<{ f
   }).length;
 
   const totalUsers = submissions.filter(s => s.submission?.submittedBy).length;
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-8 w-8 animate-spin text-violet-600" />
-          <p className="text-sm text-gray-500">Loading feedback data...</p>
-        </div>
-      </div>
-    );
-  }
 
   if (error) {
     return (
@@ -483,41 +571,42 @@ export default function FeedbackSubmissionPage({ params }: { params: Promise<{ f
               </Button>
               <Button
                 size="sm"
-                onClick={() => window.location.reload()}
+                onClick={handleRefresh}
+                disabled={isRefreshing}
                 className="gap-2 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white shadow-lg"
               >
-                <Sparkles className="h-4 w-4" />
-                Refresh Analysis
+                <Sparkles className={cn("h-4 w-4", isRefreshing && "animate-spin")} />
+                {isRefreshing ? 'Refreshing...' : 'Refresh Analysis'}
               </Button>
             </div>
           </div>
 
-          {/* Quick Stats */}
+          {/* Quick Stats with loading states */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
             <StatCard
               title="Total Submissions"
-              value={submissions.length}
+              value={isRefreshing ? '...' : submissions.length}
               icon={MessageCircle}
-              change="+12%"
+              change={isRefreshing ? null : "+12%"}
               color="violet"
             />
             <StatCard
               title="Analysis Status"
-              value={`${analyzedCount}/${submissions.length}`}
+              value={isRefreshing ? '...' : `${analyzedCount}/${submissions.length}`}
               icon={ChartBar}
-              change={`${((analyzedCount / submissions.length) * 100).toFixed(1)}% analyzed`}
+              change={isRefreshing ? null : `${((analyzedCount / submissions.length) * 100).toFixed(1)}% analyzed`}
               color="blue"
             />
             <StatCard
               title="Satisfaction Rate"
-              value={satisfactionAnalysis ? `${(satisfactionAnalysis.satisfactionOverview.satisfactionRate * 100).toFixed(1)}%` : 'N/A'}
+              value={isRefreshing ? '...' : (satisfactionAnalysis ? `${(satisfactionAnalysis.satisfactionOverview.satisfactionRate * 100).toFixed(1)}%` : 'N/A')}
               icon={Smile}
-              change="+5.2%"
+              change={isRefreshing ? null : "+5.2%"}
               color="green"
             />
             <StatCard
               title="AI Confidence"
-              value={aiInsights ? `${aiInsights.insights.performanceInsights.aiConfidence.toFixed(1)}%` : 'N/A'}
+              value={isRefreshing ? '...' : (aiInsights ? `${aiInsights.insights.performanceInsights.aiConfidence.toFixed(1)}%` : 'N/A')}
               icon={Cpu}
               color="yellow"
             />
@@ -547,204 +636,253 @@ export default function FeedbackSubmissionPage({ params }: { params: Promise<{ f
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
-          {/* Overview Content */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* AI Insights Summary */}
-            {aiInsights && (
-              <div className="lg:col-span-2">
-                <InsightCard
-                  title="Performance Analysis"
-                  description="AI-powered insights and recommendations"
-                  metrics={[
-                    {
-                      label: "Overall Score",
-                      value: `${aiInsights.insights.performanceInsights.aiConfidence.toFixed(1)}%`,
-                      change: "+5.2%"
-                    },
-                    {
-                      label: "Analyzed Submissions",
-                      value: analyzedCount,
-                      change: `${((analyzedCount / submissions.length) * 100).toFixed(1)}%`
-                    }
-                  ]}
-                  recommendations={aiInsights.insights.performanceInsights.recommendations}
-                  icon={Target}
-                  color="violet"
-                />
+          <Suspense fallback={<LoadingMetrics />}>
+            {isLoading ? (
+              <LoadingMetrics />
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* AI Insights Summary */}
+                {aiInsights && (
+                  <div className="lg:col-span-2">
+                    <InsightCard
+                      title="Performance Analysis"
+                      description="AI-powered insights and recommendations"
+                      metrics={[
+                        {
+                          label: "Overall Score",
+                          value: `${aiInsights.insights.performanceInsights.aiConfidence.toFixed(1)}%`,
+                          change: "+5.2%"
+                        },
+                        {
+                          label: "Analyzed Submissions",
+                          value: analyzedCount,
+                          change: `${((analyzedCount / submissions.length) * 100).toFixed(1)}%`
+                        }
+                      ]}
+                      recommendations={aiInsights.insights.performanceInsights.recommendations}
+                      icon={Target}
+                      color="violet"
+                    />
+                  </div>
+                )}
+
+                {/* Key Metrics */}
+                <div className="lg:col-span-1">
+                  <Card className="p-6 bg-white shadow-lg border-0">
+                    <div className="space-y-6">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-violet-100 rounded-lg">
+                          <Activity className="h-5 w-5 text-violet-600" />
+                        </div>
+                        <h3 className="text-lg font-semibold text-gray-900">Key Metrics</h3>
+                      </div>
+
+                      <div className="flex justify-center">
+                        <ProgressRing value={75} />
+                      </div>
+
+                      <div className="space-y-4">
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm font-medium text-gray-500">Analysis Progress</span>
+                            <span className="text-sm font-medium text-violet-600">75%</span>
+                          </div>
+                          <Progress value={75} className="h-2" />
+                        </div>
+
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm font-medium text-gray-500">Satisfaction Rate</span>
+                            <span className="text-sm font-medium text-emerald-600">92%</span>
+                          </div>
+                          <Progress value={92} className="h-2" />
+                        </div>
+
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm font-medium text-gray-500">Response Rate</span>
+                            <span className="text-sm font-medium text-blue-600">88%</span>
+                          </div>
+                          <Progress value={88} className="h-2" />
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                </div>
               </div>
             )}
+          </Suspense>
 
-            {/* Key Metrics */}
-            <div className="lg:col-span-1">
-              <Card className="p-6 bg-white shadow-lg border-0">
-                <div className="space-y-6">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-violet-100 rounded-lg">
-                      <Activity className="h-5 w-5 text-violet-600" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-900">Key Metrics</h3>
-                  </div>
-
-                  <div className="flex justify-center">
-                    <ProgressRing value={75} />
-                  </div>
-
-                  <div className="space-y-4">
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-gray-500">Analysis Progress</span>
-                        <span className="text-sm font-medium text-violet-600">75%</span>
-                      </div>
-                      <Progress value={75} className="h-2" />
-                    </div>
-
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-gray-500">Satisfaction Rate</span>
-                        <span className="text-sm font-medium text-emerald-600">92%</span>
-                      </div>
-                      <Progress value={92} className="h-2" />
-                    </div>
-
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-gray-500">Response Rate</span>
-                        <span className="text-sm font-medium text-blue-600">88%</span>
-                      </div>
-                      <Progress value={88} className="h-2" />
-                    </div>
-                  </div>
+          <Suspense fallback={<LoadingInsights />}>
+            {isRefreshing ? (
+              <div className="relative">
+                <div className="absolute inset-0 bg-white/50 backdrop-blur-sm z-10 flex items-center justify-center">
+                  <Loader2 className="h-8 w-8 animate-spin text-violet-600" />
                 </div>
-              </Card>
-            </div>
-          </div>
-
-          {/* Satisfaction Overview */}
-          {satisfactionAnalysis && (
-            <Card className="border-0 shadow-lg overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-50">
-              <SatisfactionOverview analysis={satisfactionAnalysis} />
-            </Card>
-          )}
+                {/* Show existing content while refreshing */}
+                {satisfactionAnalysis && (
+                  <Card className="border-0 shadow-lg overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-50">
+                    <SatisfactionOverview analysis={satisfactionAnalysis} />
+                  </Card>
+                )}
+              </div>
+            ) : (
+              <>
+                {satisfactionAnalysis && (
+                  <Card className="border-0 shadow-lg overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-50">
+                    <SatisfactionOverview analysis={satisfactionAnalysis} />
+                  </Card>
+                )}
+              </>
+            )}
+          </Suspense>
         </TabsContent>
 
         <TabsContent value="insights">
-          {/* AI Insights Content */}
-          {aiInsights && <AIInsightsCard insights={aiInsights} />}
+          <Suspense fallback={<InsightCardSkeleton />}>
+            {isLoading ? (
+              <InsightCardSkeleton />
+            ) : (
+              aiInsights && <AIInsightsCard insights={aiInsights} />
+            )}
+          </Suspense>
         </TabsContent>
 
         <TabsContent value="submissions">
-          {/* Submissions List and Details */}
-          <div className="grid grid-cols-12 gap-6">
-            {/* Submissions List */}
-            <div className="col-span-12 md:col-span-5 lg:col-span-4">
-              <Card className="sticky top-6 border-0 shadow-lg overflow-hidden bg-white">
-                <div className="p-4 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg">
-                        <MessageSquare className="h-4 w-4 text-white" />
+          <Suspense fallback={<SubmissionDetailsSkeleton />}>
+            {isLoading ? (
+              <SubmissionDetailsSkeleton />
+            ) : (
+              <div className="grid grid-cols-12 gap-6">
+                {/* Submissions List */}
+                <div className="col-span-12 md:col-span-5 lg:col-span-4">
+                  <Card className="sticky top-6 border-0 shadow-lg overflow-hidden bg-white">
+                    <div className="p-4 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg">
+                            <MessageSquare className="h-4 w-4 text-white" />
+                          </div>
+                          <h3 className="text-lg font-semibold text-gray-900">Submissions</h3>
+                        </div>
+                        <Badge className="bg-violet-100 text-violet-700">
+                          {submissions.length} Total
+                        </Badge>
                       </div>
-                      <h3 className="text-lg font-semibold text-gray-900">Submissions</h3>
-                    </div>
-                    <Badge className="bg-violet-100 text-violet-700">
-                      {submissions.length} Total
-                    </Badge>
-                  </div>
 
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <input
-                      type="text"
-                      placeholder="Search submissions..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500 bg-gray-50/50"
-                    />
-                  </div>
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        <input
+                          type="text"
+                          placeholder="Search submissions..."
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500 bg-gray-50/50"
+                        />
+                      </div>
 
-                  <ScrollArea className="h-[calc(100vh-22rem)] max-h-[600px]">
-                    <div className="space-y-2 pr-4">
-                      <AnimatePresence>
-                        {filteredSubmissions.map((submission) => (
-                          <SubmissionListItem
-                            key={submission.submission.id}
-                            submission={submission}
-                            isSelected={selectedSubmissionId === submission.submission.id}
-                            onClick={() => setSelectedSubmissionId(submission.submission.id)}
-                          />
-                        ))}
-                      </AnimatePresence>
+                      <ScrollArea className="h-[calc(100vh-22rem)] max-h-[600px]">
+                        <div className="space-y-2 pr-4">
+                          <AnimatePresence>
+                            {filteredSubmissions.map((submission) => (
+                              <SubmissionListItem
+                                key={submission.submission.id}
+                                submission={submission}
+                                isSelected={selectedSubmissionId === submission.submission.id}
+                                onClick={() => setSelectedSubmissionId(submission.submission.id)}
+                              />
+                            ))}
+                          </AnimatePresence>
+                        </div>
+                      </ScrollArea>
                     </div>
-                  </ScrollArea>
+                  </Card>
                 </div>
-              </Card>
-            </div>
 
-            {/* Submission Details */}
-            <div className="col-span-12 md:col-span-7 lg:col-span-8">
-              <div className="flex-1 overflow-y-auto">
-                {selectedSubmission ? (
-                  <div className="space-y-6">
-                    <SubmissionDetails 
-                      submission={selectedSubmission.submission}
-                      analysis={selectedSubmission.analysis}
-                    />
+                {/* Submission Details */}
+                <div className="col-span-12 md:col-span-7 lg:col-span-8">
+                  <div className="flex-1 overflow-y-auto">
+                    {selectedSubmission ? (
+                      <div className="space-y-6">
+                        <SubmissionDetails 
+                          submission={selectedSubmission.submission}
+                          analysis={selectedSubmission.analysis}
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center h-full min-h-[400px]">
+                        <div className="text-center">
+                          <MessageSquare className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                          <h3 className="text-lg font-medium text-gray-900 mb-2">No Submission Selected</h3>
+                          <p className="text-sm text-gray-500">
+                            Select a submission from the list to view details
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                ) : (
-                  <div className="flex items-center justify-center h-full min-h-[400px]">
-                    <div className="text-center">
-                      <MessageSquare className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">No Submission Selected</h3>
-                      <p className="text-sm text-gray-500">
-                        Select a submission from the list to view details
-                      </p>
-                    </div>
-                  </div>
-                )}
+                </div>
               </div>
-            </div>
-          </div>
+            )}
+          </Suspense>
         </TabsContent>
 
         <TabsContent value="metrics">
-          {/* Metrics Content */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Submission Trends */}
-            <Card className="p-6 border-0 shadow-lg">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-violet-100 rounded-lg">
-                    <LineChart className="h-5 w-5 text-violet-600" />
+          <Suspense fallback={<LoadingMetrics />}>
+            {isLoading ? (
+              <LoadingMetrics />
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Submission Trends */}
+                <Card className="p-6 border-0 shadow-lg">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-violet-100 rounded-lg">
+                        <LineChart className="h-5 w-5 text-violet-600" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900">Submission Trends</h3>
+                    </div>
+                    <Button variant="outline" size="sm" className="gap-2">
+                      <PieChart className="h-4 w-4" />
+                      View Details
+                    </Button>
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900">Submission Trends</h3>
-                </div>
-                <Button variant="outline" size="sm" className="gap-2">
-                  <PieChart className="h-4 w-4" />
-                  View Details
-                </Button>
-              </div>
-              {/* Add your charts/graphs here */}
-            </Card>
+                  {/* Add your charts/graphs here */}
+                </Card>
 
-            {/* Satisfaction Distribution */}
-            <Card className="p-6 border-0 shadow-lg">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-emerald-100 rounded-lg">
-                    <ChartBar className="h-5 w-5 text-emerald-600" />
+                {/* Satisfaction Distribution */}
+                <Card className="p-6 border-0 shadow-lg">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-emerald-100 rounded-lg">
+                        <ChartBar className="h-5 w-5 text-emerald-600" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900">Satisfaction Distribution</h3>
+                    </div>
+                    <Button variant="outline" size="sm" className="gap-2">
+                      <Star className="h-4 w-4" />
+                      View Details
+                    </Button>
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900">Satisfaction Distribution</h3>
-                </div>
-                <Button variant="outline" size="sm" className="gap-2">
-                  <Star className="h-4 w-4" />
-                  View Details
-                </Button>
+                  {/* Add your charts/graphs here */}
+                </Card>
               </div>
-              {/* Add your charts/graphs here */}
-            </Card>
-          </div>
+            )}
+          </Suspense>
         </TabsContent>
       </Tabs>
+
+      {/* Show loading overlay when refreshing */}
+      {isRefreshing && (
+        <div className="fixed inset-0 bg-black/5 backdrop-blur-sm z-50 pointer-events-none flex items-center justify-center">
+          <Card className="p-4 bg-white/80 shadow-lg">
+            <div className="flex items-center gap-3">
+              <Loader2 className="h-5 w-5 animate-spin text-violet-600" />
+              <p className="text-sm font-medium text-gray-900">Refreshing data...</p>
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   );
 } 
