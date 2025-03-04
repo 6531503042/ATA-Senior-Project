@@ -379,6 +379,58 @@ function LoadingInsights() {
   );
 }
 
+// Add this new component for no submissions state
+function NoSubmissionsState() {
+  return (
+    <div className="min-h-[60vh] flex flex-col items-center justify-center text-center">
+      <div className="p-4 bg-amber-50 rounded-full mb-4">
+        <AlertCircle className="h-8 w-8 text-amber-600" />
+      </div>
+      <h2 className="text-xl font-semibold text-gray-900 mb-2">No Submissions Yet</h2>
+      <p className="text-gray-500 max-w-md mb-6">
+        This feedback form hasn&apos;t received any submissions yet. Please wait for participants to submit their responses.
+      </p>
+      <Button
+        variant="outline"
+        onClick={() => window.history.back()}
+        className="bg-white"
+        leftIcon={<ArrowLeft className="h-4 w-4" />}
+      >
+        Go Back
+      </Button>
+    </div>
+  );
+}
+
+// Add this new component for unified loading state
+function LoadingState() {
+  return (
+    <div className="space-y-8">
+      <div className="flex items-center justify-between">
+        <div className="animate-pulse flex items-center gap-4">
+          <div className="h-12 w-12 bg-gray-200 rounded-xl" />
+          <div className="space-y-2">
+            <div className="h-6 w-48 bg-gray-200 rounded" />
+            <div className="h-4 w-32 bg-gray-200 rounded" />
+          </div>
+        </div>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="animate-pulse p-6 bg-white rounded-xl border">
+            <div className="h-4 w-24 bg-gray-200 rounded mb-2" />
+            <div className="h-8 w-16 bg-gray-200 rounded" />
+          </div>
+        ))}
+      </div>
+      <div className="animate-pulse space-y-4">
+        <div className="h-[200px] bg-gray-200 rounded-xl" />
+        <div className="h-[300px] bg-gray-200 rounded-xl" />
+      </div>
+    </div>
+  );
+}
+
 export default function FeedbackSubmissionPage({ params }: { params: Promise<{ feedbackId: string }> }) {
   const resolvedParams = use(params);
   const feedbackId = parseInt(resolvedParams.feedbackId);
@@ -411,10 +463,18 @@ export default function FeedbackSubmissionPage({ params }: { params: Promise<{ f
     const fetchData = async () => {
       try {
         // If we're refreshing, don't show full loading state
-        setIsRefreshing(true);
+        if (!isRefreshing) {
+          setIsLoading(true);
+        }
         setError(null);
 
         const data = await getFeedbackData(feedbackId);
+
+        // Check if there are any submissions
+        if (!data.submissions || data.submissions.length === 0) {
+          setError('no-submissions');
+          return;
+        }
 
         // Update state with fresh data
         setSubmissions(data.submissions);
@@ -448,42 +508,24 @@ export default function FeedbackSubmissionPage({ params }: { params: Promise<{ f
     if (feedbackId) {
       fetchData();
     }
-  }, [feedbackId, selectedSubmissionId, toast]);
+  }, [feedbackId, selectedSubmissionId, toast, isRefreshing]);
 
-  // Handle manual refresh
+  // Handle refresh
   const handleRefresh = async () => {
-    try {
-      setIsRefreshing(true);
-      setError(null);
-
-      // Clear cache for this feedback
-      cacheManager.clearCache(feedbackId);
-
-      // Fetch fresh data
-      const data = await getFeedbackData(feedbackId);
-
-      // Update state with fresh data
-      setSubmissions(data.submissions);
-      setAnalysis(data.analysis);
-      setSatisfactionAnalysis(data.satisfaction);
-      setAiInsights(data.insights);
-
-      toast({
-        title: 'Success',
-        description: 'Data refreshed successfully',
-        variant: 'default',
-      });
-    } catch (error) {
-      console.error('Failed to refresh data:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to refresh data. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsRefreshing(false);
-    }
+    setIsRefreshing(true);
+    cacheManager.clearCache(feedbackId);
+    await getFeedbackData(feedbackId);
+    setIsRefreshing(false);
   };
+
+  // Show appropriate state based on loading and error
+  if (isLoading && !cacheManager.getFeedbackData(feedbackId)) {
+    return <LoadingState />;
+  }
+
+  if (error === 'no-submissions') {
+    return <NoSubmissionsState />;
+  }
 
   const filteredSubmissions = submissions.filter(submission =>
     submission.submission.id.toString().includes(searchQuery) ||

@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { Card } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
 import axios from 'axios';
 import { AIInsightsCard } from './AIInsightsCard';
 import { getCookie } from 'cookies-next';
@@ -21,6 +23,97 @@ interface User {
   roles: string[];
 }
 
+interface MetricCardProps {
+  icon: React.ElementType;
+  title: string;
+  value: number | string;
+  description?: string;
+  trend?: {
+    value: number;
+    label: string;
+  };
+  color?: 'violet' | 'emerald' | 'blue' | 'amber';
+}
+
+const MetricCard = ({ 
+  icon: Icon, 
+  title, 
+  value, 
+  description, 
+  trend,
+  color = 'violet' 
+}: MetricCardProps) => {
+  const colors = {
+    violet: {
+      bg: 'bg-violet-50',
+      text: 'text-violet-600',
+      icon: 'text-violet-600',
+      trend: {
+        positive: 'text-violet-600 bg-violet-50',
+        negative: 'text-red-600 bg-red-50'
+      }
+    },
+    emerald: {
+      bg: 'bg-emerald-50',
+      text: 'text-emerald-600',
+      icon: 'text-emerald-600',
+      trend: {
+        positive: 'text-emerald-600 bg-emerald-50',
+        negative: 'text-red-600 bg-red-50'
+      }
+    },
+    blue: {
+      bg: 'bg-blue-50',
+      text: 'text-blue-600',
+      icon: 'text-blue-600',
+      trend: {
+        positive: 'text-blue-600 bg-blue-50',
+        negative: 'text-red-600 bg-red-50'
+      }
+    },
+    amber: {
+      bg: 'bg-amber-50',
+      text: 'text-amber-600',
+      icon: 'text-amber-600',
+      trend: {
+        positive: 'text-amber-600 bg-amber-50',
+        negative: 'text-red-600 bg-red-50'
+      }
+    }
+  };
+
+  return (
+    <Card className="bg-white p-4 shadow-sm hover:shadow-md transition-shadow">
+      <div className="flex items-center gap-4">
+        <div className={cn("p-3 rounded-xl", colors[color].bg)}>
+          <Icon className={cn("h-5 w-5", colors[color].icon)} />
+        </div>
+        <div>
+          <p className="text-sm font-medium text-gray-500">{title}</p>
+          <div className="flex items-center gap-2">
+            <p className="text-2xl font-bold text-gray-900">
+              {typeof value === 'number' ? value.toLocaleString() : value}
+            </p>
+            {trend && (
+              <span className={cn(
+                "text-sm px-2 py-1 rounded-full",
+                trend.value >= 0 
+                  ? colors[color].trend.positive
+                  : colors[color].trend.negative
+              )}>
+                {trend.value > 0 ? '+' : ''}{trend.value}% {trend.label}
+              </span>
+            )}
+          </div>
+          {description && (
+            <p className="text-sm text-gray-500 mt-1">{description}</p>
+          )}
+        </div>
+      </div>
+    </Card>
+  );
+};
+
 interface SubmissionMetricsProps {
   totalSubmissions: number;
   analyzedCount: number;
@@ -29,48 +122,12 @@ interface SubmissionMetricsProps {
   feedbackId: number;
   recentSubmissions: number;
   submittedBy?: string | null;
+  trends?: {
+    submissions?: number;
+    analyzed?: number;
+    satisfaction?: number;
+  };
 }
-
-// Add new component for animated background
-const AnimatedBackground = () => (
-  <>
-    <div className="absolute inset-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:14px_24px] opacity-20" />
-    <div className="absolute inset-0 bg-gradient-to-br from-violet-600/20 via-fuchsia-500/20 to-blue-600/20" />
-    <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" />
-    <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-violet-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000" />
-    <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-fuchsia-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000" />
-  </>
-);
-
-const MetricBox = ({ icon: Icon, title, value, description, color = "blue", confidence }: {
-  icon: React.ElementType;
-  title: string;
-  value: string | number;
-  description?: string;
-  color?: "blue" | "violet" | "emerald";
-  confidence?: number;
-}) => (
-  <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 ring-1 ring-white/20 hover:ring-white/30 transition-all">
-    <div className="flex items-center gap-3 mb-2">
-      <div className={cn(
-        "p-2 rounded-lg",
-        color === "blue" ? "bg-blue-400/20" : 
-        color === "violet" ? "bg-violet-400/20" : 
-        "bg-emerald-400/20"
-      )}>
-        <Icon className="h-4 w-4" />
-      </div>
-      <span className="text-sm font-medium">{title}</span>
-    </div>
-    <div className="text-2xl font-bold">{value}</div>
-    {description && (
-      <p className="mt-1 text-sm text-white/60">{description}</p>
-    )}
-    {confidence && (
-      <p className="mt-1 text-sm text-white/60">Confidence: {confidence.toFixed(1)}%</p>
-    )}
-  </div>
-);
 
 export function SubmissionMetrics({
   totalSubmissions,
@@ -79,7 +136,8 @@ export function SubmissionMetrics({
   totalUsers,
   feedbackId,
   recentSubmissions,
-  submittedBy
+  submittedBy,
+  trends
 }: SubmissionMetricsProps) {
   const [aiInsights, setAiInsights] = useState<any | null>(null);
   const [userData, setUserData] = useState<User | null>(null);
@@ -115,6 +173,11 @@ export function SubmissionMetrics({
     }
   }, [feedbackId, submittedBy]);
 
+  // Calculate percentages
+  const analysisPercentage = totalSubmissions > 0 
+    ? Math.round((analyzedCount / totalSubmissions) * 100) 
+    : 0;
+
   return (
     <div className="space-y-8">
       {/* AI Insights Card */}
@@ -122,106 +185,90 @@ export function SubmissionMetrics({
 
       {/* Key Metrics Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0 }}
-          className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-all"
-        >
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-violet-100 rounded-lg">
-              <BarChart2 className="h-5 w-5 text-violet-600" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Total Submissions</p>
-              <div className="flex items-center gap-2">
-                <p className="text-2xl font-bold text-gray-900">{totalSubmissions}</p>
-                <span className="text-sm text-violet-600 bg-violet-50 px-2 py-1 rounded-full">
-                  +12%
-                </span>
-              </div>
-            </div>
-          </div>
-        </motion.div>
+        <MetricCard
+          icon={MessageSquare}
+          title="Total Submissions"
+          value={totalSubmissions}
+          trend={trends?.submissions ? {
+            value: trends.submissions,
+            label: "vs last period"
+          } : undefined}
+          color="violet"
+        />
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-all"
-        >
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-emerald-100 rounded-lg">
-              <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Analysis Status</p>
-              <div className="flex items-center gap-2">
-                <p className="text-2xl font-bold text-gray-900">{analyzedCount}/{totalSubmissions}</p>
-                <span className="text-sm text-gray-600">
-                  {((analyzedCount / totalSubmissions) * 100).toFixed(1)}% analyzed • {recentSubmissions} today
-                </span>
-              </div>
-            </div>
-          </div>
-        </motion.div>
+        <MetricCard
+          icon={CheckCircle2}
+          title="Analysis Status"
+          value={`${analyzedCount}/${totalSubmissions}`}
+          description={`${analysisPercentage}% analyzed`}
+          trend={trends?.analyzed ? {
+            value: trends.analyzed,
+            label: "completion rate"
+          } : undefined}
+          color="emerald"
+        />
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-all"
-        >
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <MessageSquare className="h-5 w-5 text-blue-600" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Active Projects</p>
-              <div className="flex items-center gap-2">
-                <p className="text-2xl font-bold text-gray-900">{totalProjects}</p>
-                <span className="text-sm text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
-                  +8%
-                </span>
-              </div>
-            </div>
-          </div>
-        </motion.div>
+        <MetricCard
+          icon={BarChart2}
+          title="Recent Activity"
+          value={recentSubmissions}
+          description="New submissions today"
+          color="blue"
+        />
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-all"
-        >
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-violet-100 rounded-lg">
-              <Users className="h-5 w-5 text-violet-600" />
+        <MetricCard
+          icon={Users}
+          title="Total Participants"
+          value={totalUsers}
+          description="Unique contributors"
+          color="amber"
+        />
+      </div>
+
+      {/* Progress Indicators */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card className="p-6 bg-white">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-medium text-gray-900">Analysis Progress</h3>
+            <span className="text-sm text-gray-500">{analysisPercentage}% Complete</span>
+          </div>
+          <Progress value={analysisPercentage} className="h-2" />
+          <div className="mt-4 grid grid-cols-2 gap-4">
+            <div className="text-center">
+              <p className="text-sm text-gray-500">Analyzed</p>
+              <p className="text-lg font-semibold text-gray-900">{analyzedCount}</p>
             </div>
-            <div>
-              <p className="text-sm text-gray-600">Submission By</p>
-              <div className="flex items-center gap-2">
-                {userData ? (
-                  <div className="flex items-center gap-2">
-                    <img 
-                      src={userData.avatar} 
-                      alt={userData.fullname}
-                      className="w-8 h-8 rounded-full"
-                    />
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">{userData.fullname}</p>
-                      <p className="text-xs text-gray-500">{userData.email}</p>
-                    </div>
-                  </div>
-                ) : submittedBy ? (
-                  <p className="text-sm text-gray-500">User not found</p>
-                ) : (
-                  <p className="text-sm text-gray-500">Anonymous</p>
-                )}
-              </div>
+            <div className="text-center">
+              <p className="text-sm text-gray-500">Pending</p>
+              <p className="text-lg font-semibold text-gray-900">
+                {totalSubmissions - analyzedCount}
+              </p>
             </div>
           </div>
-        </motion.div>
+        </Card>
+
+        <Card className="p-6 bg-white">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-medium text-gray-900">Submission Trends</h3>
+            <span className="text-sm text-gray-500">Last 7 days</span>
+          </div>
+          <div className="h-[100px] flex items-end justify-between gap-2">
+            {[25, 40, 35, 50, 45, 60, 75].map((height, i) => (
+              <motion.div
+                key={i}
+                initial={{ height: 0 }}
+                animate={{ height: `${height}%` }}
+                transition={{ duration: 0.5, delay: i * 0.1 }}
+                className="w-full bg-violet-100 rounded-t-sm"
+              />
+            ))}
+          </div>
+          <div className="mt-4 flex items-center justify-between text-xs text-gray-500">
+            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, i) => (
+              <span key={i}>{day}</span>
+            ))}
+          </div>
+        </Card>
       </div>
     </div>
   );

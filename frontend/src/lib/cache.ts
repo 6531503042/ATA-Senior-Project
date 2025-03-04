@@ -1,10 +1,5 @@
 import type { SubmissionResponse, FeedbackAnalysis, SatisfactionAnalysis, AIInsights } from './api/submissions';
 
-interface CacheData {
-  timestamp: number;
-  data: any;
-}
-
 interface FeedbackCache {
   submissions: SubmissionResponse[];
   analysis: FeedbackAnalysis | null;
