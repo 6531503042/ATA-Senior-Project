@@ -29,6 +29,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from '@/components/ui/hover-card';
+import { Badge } from '@/components/ui/badge';
 
 interface AIInsights {
   feedbackId: number;
@@ -94,15 +95,15 @@ const ConfidenceIndicator = ({ value, label }: { value: number; label: string })
               className={cn("h-full rounded-full", getColor(value))}
             />
           </div>
-          <div className={cn(
-            "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium",
-            value >= 90 ? "bg-emerald-50 text-emerald-700" : 
-            value >= 70 ? "bg-blue-50 text-blue-700" : 
-            "bg-amber-50 text-amber-700"
+          <Badge variant={value >= 90 ? "default" : value >= 70 ? "secondary" : "outline"} className={cn(
+            "flex items-center gap-1.5",
+            value >= 90 ? "bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-200" : 
+            value >= 70 ? "bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200" : 
+            "bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-200"
           )}>
             <BarChart2 className="h-3.5 w-3.5" />
             <span>{value.toFixed(1)}%</span>
-          </div>
+          </Badge>
         </div>
       </HoverCardTrigger>
       <HoverCardContent className="w-80 p-4">
@@ -113,16 +114,19 @@ const ConfidenceIndicator = ({ value, label }: { value: number; label: string })
           </p>
           <div className="pt-2 space-y-1.5">
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-emerald-500" />
-              <span className="text-xs text-gray-600">90-100%: High confidence</span>
+              <Badge variant="default" className="bg-emerald-100 text-emerald-700 border-emerald-200">
+                90-100%: High confidence
+              </Badge>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-blue-500" />
-              <span className="text-xs text-gray-600">70-89%: Medium confidence</span>
+              <Badge variant="secondary" className="bg-blue-100 text-blue-700 border-blue-200">
+                70-89%: Medium confidence
+              </Badge>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-amber-500" />
-              <span className="text-xs text-gray-600">Below 70%: Consider with caution</span>
+              <Badge variant="outline" className="bg-amber-100 text-amber-700 border-amber-200">
+                Below 70%: Consider with caution
+              </Badge>
             </div>
           </div>
         </div>
@@ -182,27 +186,27 @@ const RecommendationCard = ({
     switch (priority) {
       case 'high':
         return {
-          bg: 'bg-red-50',
+          bg: 'bg-red-100',
           text: 'text-red-700',
-          border: 'border-red-100',
+          border: 'border-red-200',
           icon: 'text-red-500',
           label: 'URGENT',
           description: 'Requires immediate attention'
         };
       case 'medium':
         return {
-          bg: 'bg-amber-50',
+          bg: 'bg-amber-100',
           text: 'text-amber-700',
-          border: 'border-amber-100',
+          border: 'border-amber-200',
           icon: 'text-amber-500',
           label: 'IMPORTANT',
           description: 'Should be addressed soon'
         };
       default:
         return {
-          bg: 'bg-emerald-50',
+          bg: 'bg-emerald-100',
           text: 'text-emerald-700',
-          border: 'border-emerald-100',
+          border: 'border-emerald-200',
           icon: 'text-emerald-500',
           label: 'CONSIDER',
           description: 'Can be implemented when possible'
@@ -214,7 +218,7 @@ const RecommendationCard = ({
   const categoryName = recommendation.category || 'General';
   const CategoryIcon = getCategoryIcon(categoryName).icon;
   const categoryColor = getCategoryIcon(categoryName).color;
-
+  
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -238,14 +242,16 @@ const RecommendationCard = ({
           <div className="flex flex-wrap items-center gap-2">
             <HoverCard>
               <HoverCardTrigger>
-                <span className={cn(
-                  "inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium cursor-help",
+                <Badge variant="secondary" className={cn(
+                  "inline-flex items-center gap-1.5 cursor-help",
                   colors.bg,
-                  colors.text
+                  colors.text,
+                  colors.border,
+                  "hover:bg-opacity-80"
                 )}>
                   <AlertCircle className="h-3.5 w-3.5" />
                   {colors.label}
-                </span>
+                </Badge>
               </HoverCardTrigger>
               <HoverCardContent className="w-64">
                 <div className="space-y-2">
@@ -255,17 +261,20 @@ const RecommendationCard = ({
               </HoverCardContent>
             </HoverCard>
             {recommendation.impact !== undefined && (
-              <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-white text-xs font-medium text-gray-600">
-                <TrendingUp className="h-3.5 w-3.5 text-blue-500" />
+              <Badge variant="outline" className="bg-white shadow-sm">
+                <TrendingUp className="h-3.5 w-3.5 text-blue-500 mr-1.5" />
                 {recommendation.impact.toFixed(0)}% Impact
-              </span>
+              </Badge>
             )}
             <HoverCard>
               <HoverCardTrigger>
-                <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-white text-xs font-medium text-gray-600 cursor-help">
+                <Badge variant="outline" className={cn(
+                  "inline-flex items-center gap-1.5 cursor-help bg-white",
+                  "hover:bg-gray-50/80"
+                )}>
                   <CategoryIcon className={cn("h-3.5 w-3.5", categoryColor)} />
                   {categoryName}
-                </span>
+                </Badge>
               </HoverCardTrigger>
               <HoverCardContent className="w-64">
                 <div className="space-y-2">
@@ -345,28 +354,28 @@ export function AIInsightsCard({ insights }: AIInsightsCardProps) {
 
   return (
     <Card className="bg-white p-6 shadow-lg rounded-2xl border-0 overflow-hidden">
-      {/* Header */}
+        {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4">
           <div className="p-3 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl shadow-lg">
             <Brain className="h-6 w-6 text-white" />
-          </div>
-          <div>
+            </div>
+            <div>
             <h2 className="text-xl font-bold text-gray-900">{insights.title || 'AI Insights'}</h2>
             <p className="text-sm text-gray-500 mt-1">{insights.description || 'Analysis of feedback submissions'}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="gap-2">
-            <Download className="h-4 w-4" />
-            Export
-          </Button>
-          <Button variant="outline" size="sm" className="gap-2">
-            <Share2 className="h-4 w-4" />
-            Share
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" className="gap-2">
+              <Download className="h-4 w-4" />
+              Export
+            </Button>
+            <Button variant="outline" size="sm" className="gap-2">
+              <Share2 className="h-4 w-4" />
+              Share
+            </Button>
+          </div>
         </div>
-      </div>
 
       {/* Overall Confidence */}
       <div className="mb-8">
@@ -374,13 +383,13 @@ export function AIInsightsCard({ insights }: AIInsightsCardProps) {
           <h3 className="text-sm font-medium text-gray-900">Overall AI Confidence</h3>
           <span className="text-sm text-gray-500">
             Based on {insights.metadata?.totalSubmissions || 0} submissions
-          </span>
-        </div>
+              </span>
+            </div>
         <ConfidenceIndicator 
           value={confidenceMetrics.overall}
           label="Overall confidence score based on data quality, patterns, and consistency across all analyzed submissions."
-        />
-      </div>
+              />
+            </div>
 
       {/* Insights Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -391,8 +400,8 @@ export function AIInsightsCard({ insights }: AIInsightsCardProps) {
             <ConfidenceIndicator 
               value={confidenceMetrics.performance}
               label="Confidence in performance-related insights and recommendations."
-            />
-          </div>
+              />
+            </div>
           {renderRecommendations(insights.insights?.performanceInsights?.recommendations, 0.2)}
         </div>
 
@@ -403,8 +412,8 @@ export function AIInsightsCard({ insights }: AIInsightsCardProps) {
             <ConfidenceIndicator 
               value={confidenceMetrics.engagement}
               label="Confidence in engagement-related insights and recommendations."
-            />
-          </div>
+              />
+            </div>
           {renderRecommendations(insights.insights?.engagementAnalysis?.recommendations, 0.4)}
         </div>
 
@@ -419,46 +428,46 @@ export function AIInsightsCard({ insights }: AIInsightsCardProps) {
           </div>
           {renderRecommendations(insights.insights?.improvementOpportunities?.recommendations, 0.6)}
         </div>
-      </div>
+        </div>
 
       {/* Footer */}
       <div className="mt-8 pt-6 border-t grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-gray-50 rounded-lg">
             <Clock className="h-4 w-4 text-gray-600" />
-          </div>
-          <div>
+            </div>
+            <div>
             <p className="text-sm text-gray-500">Last Updated</p>
             <p className="text-sm font-medium text-gray-900">
               {insights.metadata?.analyzedAt ? 
                 new Date(insights.metadata.analyzedAt).toLocaleDateString() :
                 'Not available'
               }
-            </p>
+              </p>
+            </div>
           </div>
-        </div>
-        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3">
           <div className="p-2 bg-gray-50 rounded-lg">
             <Users className="h-4 w-4 text-gray-600" />
-          </div>
-          <div>
+            </div>
+            <div>
             <p className="text-sm text-gray-500">Total Submissions</p>
             <p className="text-sm font-medium text-gray-900">
               {insights.metadata?.totalSubmissions || 0} analyzed
-            </p>
-          </div>
-        </div>
+                </p>
+              </div>
+            </div>
         <div className="flex items-center gap-3">
           <div className="p-2 bg-gray-50 rounded-lg">
             <Target className="h-4 w-4 text-gray-600" />
-          </div>
-          <div>
+            </div>
+            <div>
             <p className="text-sm text-gray-500">Categories</p>
             <p className="text-sm font-medium text-gray-900">
               {insights.metadata?.categories?.length || 0} analyzed
-            </p>
+              </p>
+            </div>
           </div>
-        </div>
       </div>
     </Card>
   );

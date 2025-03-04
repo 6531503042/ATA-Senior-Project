@@ -122,6 +122,13 @@ const retryRequest = async <T,>(requestFn: () => Promise<T>, maxRetries = 3, del
   throw new Error('Request failed after retries');
 };
 
+// Helper function to chunk array into smaller arrays
+const chunk = <T,>(arr: T[], size: number): T[][] => {
+  return Array.from({ length: Math.ceil(arr.length / size) }, (_, i) =>
+    arr.slice(i * size, i * size + size)
+  );
+};
+
 export default function FeedbackSubmissionsPage() {
   const router = useRouter();
   const { toast } = useToast();
@@ -181,7 +188,7 @@ export default function FeedbackSubmissionsPage() {
       );
 
       const validFeedbackIds = new Set(feedbacksResponse.data.map(f => f.id));
-      
+        
       // Initialize feedbacks with optimistic loading states
       const initialFeedbacks = feedbacksResponse.data.map((feedback) => ({
         ...feedback,
@@ -195,213 +202,202 @@ export default function FeedbackSubmissionsPage() {
       setFeedbacks(prev => page === 1 ? initialFeedbacks : [...prev, ...initialFeedbacks]);
       setHasMore(feedbacksResponse.data.length === ITEMS_PER_PAGE);
 
-      try {
-        // Fetch submissions, analysis data, team stats, and team members
-        const [submissionsResponse, analysisStatsResponse, teamStatsResponse] = await Promise.all([
-          axios.get<SubmissionData[]>('http://localhost:8085/api/submissions/all', {
+      // Fetch data with retries and longer timeouts
+      const [submissionsResponse, analysisStatsResponse, teamStatsResponse] = await Promise.all([
+        retryRequest(
+          () => axios.get<SubmissionData[]>('http://localhost:8085/api/submissions/all', {
             headers: { 'Authorization': `Bearer ${token}` },
-            timeout: 10000
-          }).catch(error => {
-            console.error('Failed to fetch submissions:', error);
-            toast({
-              title: 'Warning',
-              description: 'Failed to fetch submissions. Some data may be incomplete.',
-              variant: 'destructive',
-            });
-            return { data: [] };
+            timeout: 30000 // Increased timeout to 30 seconds
           }),
-          axios.get(`http://localhost:8085/api/analysis/stats`, {
+          3, // Max 3 retries
+          2000 // 2 second base delay between retries
+        ).catch(error => {
+          console.error('Failed to fetch submissions:', error);
+          toast({
+            title: 'Warning',
+            description: 'Failed to fetch submissions. Some data may be incomplete. Retrying...',
+            variant: 'destructive',
+          });
+          return { data: [] };
+        }),
+        retryRequest(
+          () => axios.get(`http://localhost:8085/api/analysis/stats`, {
             headers: { 'Authorization': `Bearer ${token}` },
-            timeout: 10000
-          }).catch(error => {
-            console.warn('Failed to fetch analysis stats:', error);
-            return { data: { totalAnalyzed: 0, satisfactionRate: 0, previousPeriodRate: 0 } };
+            timeout: 30000
           }),
-          axios.get(`http://localhost:8081/api/manager/list`, {
+          3,
+          2000
+        ).catch(error => {
+          console.warn('Failed to fetch analysis stats:', error);
+          return { data: { totalAnalyzed: 0, satisfactionRate: 0, previousPeriodRate: 0 } };
+        }),
+        retryRequest(
+          () => axios.get(`http://localhost:8081/api/manager/list`, {
             headers: { 'Authorization': `Bearer ${token}` },
-            timeout: 10000
-          }).catch(error => {
-            console.warn('Failed to fetch team stats:', error);
-            return { data: [] };
-          })
-        ]);
+            timeout: 30000
+          }),
+          3,
+          2000
+        ).catch(error => {
+          console.warn('Failed to fetch team stats:', error);
+          return { data: [] };
+        })
+      ]);
 
-        // Calculate per-feedback member stats
-        const memberStats: Record<number, FeedbackMemberStats> = {};
-        const teamMembers = teamStatsResponse.data as TeamMember[];
+      // Process submissions and update stats
+      const memberStats: Record<number, FeedbackMemberStats> = {};
+      const teamMembers = teamStatsResponse.data as TeamMember[];
 
-        feedbacksResponse.data.forEach(feedback => {
-          const feedbackSubmissions = submissionsResponse.data.filter(
-            s => s.submission?.feedbackId === feedback.id
-          );
-          const submittedMembers = new Set(
-            feedbackSubmissions
-              .map(s => s.submission?.submittedBy)
-              .filter((id): id is string => id !== null)
-          );
-          const pendingMembers = teamMembers
-            .filter(m => !submittedMembers.has(m.id.toString()))
-            .map(m => m.fullname);
-
-          memberStats[feedback.id] = {
-            feedbackId: feedback.id,
-            totalMembers: teamMembers.length,
-            submittedMembers,
-            pendingMembers
-          };
-        });
-
-        setFeedbackMemberStats(memberStats);
-
-        // Log submissions data for debugging
-        console.log('Submissions response:', submissionsResponse.data);
-
-        // Process submission counts (safely handle potential undefined data)
-        const submissionCounts = (submissionsResponse.data || []).reduce<Record<number, number>>((acc, sub) => {
-          if (!sub || !sub.submission) return acc;
-          
-          const feedbackId = sub.submission.feedbackId;
-          if (feedbackId && validFeedbackIds.has(feedbackId)) {
-            acc[feedbackId] = (acc[feedbackId] || 0) + 1;
-          }
-          return acc;
-        }, {});
-
-        // Log submission counts for debugging
-        console.log('Submission counts:', submissionCounts);
-
-        // Calculate total submissions
-        const totalSubs = Object.values(submissionCounts).reduce((a, b) => a + b, 0);
-        const analyzedSubs = analysisStatsResponse.data?.totalAnalyzed || 0;
-
-        // Update submission stats
-        setSubmissionStats({
-          totalSubmissions: totalSubs,
-          analyzedSubmissions: analyzedSubs,
-          pendingAnalysis: totalSubs - analyzedSubs
-        });
-
-        // Update feedbacks with submission counts
-        setFeedbacks(prevFeedbacks => 
-          prevFeedbacks.map(feedback => ({
-            ...feedback,
-            submissionCount: submissionCounts[feedback.id] || 0
-          }))
+      feedbacksResponse.data.forEach(feedback => {
+        const feedbackSubmissions = submissionsResponse.data.filter(
+          s => s.submission?.feedbackId === feedback.id
         );
-
-        // Update analysis metrics
-        const currentSatisfactionRate = analysisStatsResponse.data?.satisfactionRate || 0;
-        const previousSatisfactionRate = analysisStatsResponse.data?.previousPeriodRate || 0;
-        const rateChange = currentSatisfactionRate - previousSatisfactionRate;
-
-        setAnalysisMetrics({
-          totalAnalyzed: analyzedSubs,
-          satisfactionRate: currentSatisfactionRate * 100,
-          previousRate: previousSatisfactionRate * 100,
-          changePercentage: rateChange * 100
-        });
-
-        // Calculate team member stats
-        const totalTeamMembers = teamMembers.length;
-        const submittedMembers = new Set(submissionsResponse.data.map(s => s.submission?.submittedBy).filter(Boolean)).size;
-
-        setTeamStats({
-          total: totalTeamMembers,
-          submitted: submittedMembers,
-          pending: totalTeamMembers - submittedMembers
-        });
-
-        // Fetch analysis for feedbacks with submissions
-        const feedbacksWithSubmissions = feedbacksResponse.data.filter(
-          (feedback) => submissionCounts[feedback.id] > 0
+        const submittedMembers = new Set(
+          feedbackSubmissions
+            .map(s => s.submission?.submittedBy)
+            .filter((id): id is string => id !== null)
         );
+        const pendingMembers = teamMembers
+          .filter(m => !submittedMembers.has(m.id.toString()))
+          .map(m => m.fullname);
 
-        // Process analysis in smaller batches for better performance
-        const batchSize = 3;
-        const feedbackBatches = chunk(feedbacksWithSubmissions, batchSize);
+        memberStats[feedback.id] = {
+          feedbackId: feedback.id,
+          totalMembers: teamMembers.length,
+          submittedMembers,
+          pendingMembers
+        };
+      });
 
-        for (const batch of feedbackBatches) {
-          await Promise.all(
-            batch.map(async (feedback) => {
-              if (analysisCache[feedback.id]) return; // Skip if cached
+      setFeedbackMemberStats(memberStats);
 
-              try {
-                const analysisResponse = await retryRequest(
-                  () => axios.get<FeedbackAnalysis>(
-                    `http://localhost:8085/api/analysis/feedback/${feedback.id}`,
-                    { 
-                      headers: {
-                        'Authorization': `Bearer ${token}`
-                      },
-                      timeout: 15000 // Increased timeout to 15 seconds
-                    }
-                  ),
-                  3, // Max 3 retries
-                  2000 // 2 second base delay between retries
-                );
-
-                setFeedbacks(prevFeedbacks => 
-                  prevFeedbacks.map(f => 
-                    f.id === feedback.id 
-                      ? {
-                          ...f,
-                          analysis: analysisResponse.data,
-                          hasAnalysis: true,
-                          isAnalysisLoading: false
-                        }
-                      : f
-                  )
-                );
-
-                setAnalysisCache(prev => ({
-                  ...prev,
-                  [feedback.id]: analysisResponse.data
-                }));
-              } catch (error) {
-                console.error(`Failed to fetch analysis for feedback ${feedback.id}:`, error);
-                setFeedbacks(prevFeedbacks => 
-                  prevFeedbacks.map(f => 
-                    f.id === feedback.id 
-                      ? {
-                          ...f,
-                          analysis: null,
-                          hasAnalysis: false,
-                          isAnalysisLoading: false,
-                          analysisError: error instanceof Error ? error.message : 'Failed to load analysis'
-                        }
-                      : f
-                  )
-                );
-              }
-            })
-          );
-          await new Promise(resolve => setTimeout(resolve, 500)); // Delay between batches
+      // Process submission counts
+      const submissionCounts = (submissionsResponse.data || []).reduce<Record<number, number>>((acc, sub) => {
+        if (!sub || !sub.submission) return acc;
+        const feedbackId = sub.submission.feedbackId;
+        if (feedbackId && validFeedbackIds.has(feedbackId)) {
+          acc[feedbackId] = (acc[feedbackId] || 0) + 1;
         }
-      } catch (error) {
-        console.error('Failed to fetch analysis data:', error);
-        toast({
-          title: 'Warning',
-          description: 'Some analysis data could not be loaded. The display may be incomplete.',
-          variant: 'destructive',
-        });
+        return acc;
+      }, {});
+
+      // Update stats
+      const totalSubs = Object.values(submissionCounts).reduce((a, b) => a + b, 0);
+      const analyzedSubs = analysisStatsResponse.data?.totalAnalyzed || 0;
+
+      setSubmissionStats({
+        totalSubmissions: totalSubs,
+        analyzedSubmissions: analyzedSubs,
+        pendingAnalysis: totalSubs - analyzedSubs
+      });
+
+      // Update feedbacks with submission counts
+      setFeedbacks(prevFeedbacks => 
+        prevFeedbacks.map(feedback => ({
+          ...feedback,
+          submissionCount: submissionCounts[feedback.id] || 0
+        }))
+      );
+
+      // Update analysis metrics
+      const currentSatisfactionRate = analysisStatsResponse.data?.satisfactionRate || 0;
+      const previousSatisfactionRate = analysisStatsResponse.data?.previousPeriodRate || 0;
+      const rateChange = currentSatisfactionRate - previousSatisfactionRate;
+
+      setAnalysisMetrics({
+        totalAnalyzed: analyzedSubs,
+        satisfactionRate: currentSatisfactionRate * 100,
+        previousRate: previousSatisfactionRate * 100,
+        changePercentage: rateChange * 100
+      });
+
+      // Calculate team stats
+      const totalTeamMembers = teamMembers.length;
+      const submittedMembersCount = new Set(submissionsResponse.data.map(s => s.submission?.submittedBy).filter(Boolean)).size;
+
+      setTeamStats({
+        total: totalTeamMembers,
+        submitted: submittedMembersCount,
+        pending: totalTeamMembers - submittedMembersCount
+      });
+
+      // Fetch analysis for feedbacks with submissions
+      const feedbacksWithSubmissions = feedbacksResponse.data.filter(
+        (feedback) => submissionCounts[feedback.id] > 0
+      );
+
+      // Process analysis in smaller batches
+      const batchSize = 3;
+      const feedbackBatches = chunk(feedbacksWithSubmissions, batchSize);
+
+      for (const batch of feedbackBatches) {
+        await Promise.all(
+          batch.map(async (feedback: FeedbackResponse) => {
+            if (analysisCache[feedback.id]) return;
+
+            try {
+              const analysisResponse = await retryRequest(
+                () => axios.get<FeedbackAnalysis>(
+                  `http://localhost:8085/api/analysis/feedback/${feedback.id}`,
+                  { 
+                    headers: {
+                      'Authorization': `Bearer ${token}`
+                    },
+                    timeout: 30000
+                  }
+                ),
+                3,
+                2000
+              );
+
+              setFeedbacks(prevFeedbacks => 
+                prevFeedbacks.map(f => 
+                  f.id === feedback.id 
+                    ? {
+                        ...f,
+                        analysis: analysisResponse.data,
+                        hasAnalysis: true,
+                        isAnalysisLoading: false
+                      }
+                    : f
+                )
+              );
+
+              setAnalysisCache(prev => ({
+                ...prev,
+                [feedback.id]: analysisResponse.data
+              }));
+            } catch (error) {
+              console.error(`Failed to fetch analysis for feedback ${feedback.id}:`, error);
+              setFeedbacks(prevFeedbacks => 
+                prevFeedbacks.map(f => 
+                  f.id === feedback.id 
+                    ? {
+                        ...f,
+                        analysis: null,
+                        hasAnalysis: false,
+                        isAnalysisLoading: false,
+                        analysisError: error instanceof Error ? error.message : 'Failed to load analysis'
+                      }
+                    : f
+                )
+              );
+            }
+          })
+        );
+        await new Promise(resolve => setTimeout(resolve, 500)); // Delay between batches
       }
+
     } catch (error) {
-      console.error('Failed to fetch feedbacks:', error);
+      console.error('Failed to fetch data:', error);
       toast({
         title: 'Error',
-        description: 'Failed to fetch feedbacks. Please try again.',
+        description: error instanceof Error ? error.message : 'Failed to fetch data. Please try again.',
         variant: 'destructive',
       });
     } finally {
       setIsLoading(false);
     }
-  };
-
-  // Helper function to chunk array into smaller arrays
-  const chunk = <T,>(arr: T[], size: number): T[][] => {
-    return Array.from({ length: Math.ceil(arr.length / size) }, (_, i) =>
-      arr.slice(i * size, i * size + size)
-    );
   };
 
   // Optimize filtering with memoization
@@ -446,14 +442,14 @@ export default function FeedbackSubmissionsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
+      {/* Header */}
+      <div className="mb-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4">
               <div className="p-3 bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl shadow-lg">
-                <ClipboardList className="h-6 w-6 text-white" />
-              </div>
-              <div>
+              <ClipboardList className="h-6 w-6 text-white" />
+            </div>
+            <div>
                 <h1 className="text-2xl font-bold text-gray-900">Feedback Analysis</h1>
                 <p className="text-gray-500 text-sm">
                   {filteredFeedbacks.reduce((acc, f) => acc + (f.submissionCount || 0), 0)} Total Submissions
@@ -470,36 +466,36 @@ export default function FeedbackSubmissionsPage() {
               >
                 Refresh
               </Button>
-            </div>
           </div>
         </div>
+      </div>
 
-        {/* Search and Filters */}
+      {/* Search and Filters */}
         <Card className="mb-6 bg-white shadow-sm">
           <div className="p-4">
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-                  <input
-                    type="text"
-                    placeholder="Search feedbacks..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+            <input
+              type="text"
+              placeholder="Search feedbacks..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-violet-500 bg-gray-50/50"
-                  />
-                </div>
+            />
+          </div>
               </div>
               <div className="flex items-center gap-3">
-                <select
-                  value={filter}
-                  onChange={(e) => setFilter(e.target.value as 'all' | 'active' | 'inactive')}
+          <select
+            value={filter}
+            onChange={(e) => setFilter(e.target.value as 'all' | 'active' | 'inactive')}
                   className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-violet-500 bg-gray-50/50"
-                >
-                  <option value="all">All Status</option>
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                </select>
+          >
+            <option value="all">All Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
               </div>
             </div>
           </div>
@@ -579,8 +575,8 @@ export default function FeedbackSubmissionsPage() {
                   </div>
                 </div>
               </div>
-            </div>
-          </Card>
+        </div>
+      </Card>
 
           {/* Analysis Status Card */}
           <Card className="bg-white p-4 shadow-sm hover:shadow-md transition-shadow overflow-hidden relative group">
@@ -603,28 +599,28 @@ export default function FeedbackSubmissionsPage() {
         </div>
 
         {/* Updated Feedback Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredFeedbacks.map((feedback) => {
             const memberStats = feedbackMemberStats[feedback.id];
             const submissionProgress = memberStats ? 
               (memberStats.submittedMembers.size / memberStats.totalMembers) * 100 : 0;
 
             return (
-              <motion.div
-                key={feedback.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className="group"
-              >
-                <Card
-                  className={cn(
-                    "bg-white cursor-pointer transition-all duration-200",
-                    "hover:border-violet-200 hover:shadow-lg hover:shadow-violet-100/50"
-                  )}
-                  onClick={() => handleFeedbackClick(feedback)}
+                <motion.div
+                  key={feedback.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="group"
                 >
-                  <div className="p-6">
+                  <Card
+                    className={cn(
+                    "bg-white cursor-pointer transition-all duration-200",
+                      "hover:border-violet-200 hover:shadow-lg hover:shadow-violet-100/50"
+                    )}
+                  onClick={() => handleFeedbackClick(feedback)}
+                  >
+                    <div className="p-6">
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-violet-100 rounded-lg">
@@ -635,18 +631,18 @@ export default function FeedbackSubmissionsPage() {
                             {feedback.title}
                           </h3>
                           <div className="flex items-center gap-2 mt-1">
-                            <Badge className={cn(
-                              feedback.active
-                                ? "bg-emerald-50 text-emerald-700"
-                                : "bg-gray-50 text-gray-700"
-                            )}>
+                          <Badge className={cn(
+                            feedback.active
+                              ? "bg-emerald-50 text-emerald-700"
+                              : "bg-gray-50 text-gray-700"
+                          )}>
                               {feedback.active ? (
                                 <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
                               ) : (
                                 <XCircle className="h-3.5 w-3.5 mr-1" />
                               )}
-                              {feedback.active ? 'Active' : 'Inactive'}
-                            </Badge>
+                            {feedback.active ? 'Active' : 'Inactive'}
+                          </Badge>
                             <Badge className="bg-blue-50 text-blue-700">
                               {feedback.projectName}
                             </Badge>
@@ -697,8 +693,8 @@ export default function FeedbackSubmissionsPage() {
 
                       {/* Analysis Status */}
                       <div className="p-3 bg-violet-50 rounded-lg group hover:bg-violet-100/80 transition-colors">
-                        <div className="flex items-center gap-2">
-                          <BarChart2 className="h-4 w-4 text-violet-600" />
+                            <div className="flex items-center gap-2">
+                              <BarChart2 className="h-4 w-4 text-violet-600" />
                           <span className="text-sm text-violet-700">Analysis</span>
                         </div>
                         <div className="mt-2">
@@ -711,7 +707,7 @@ export default function FeedbackSubmissionsPage() {
                             <div className="flex flex-col gap-1">
                               <span className="text-sm text-violet-600">No Responses</span>
                               <span className="text-xs text-violet-500">Waiting for team submissions</span>
-                            </div>
+                          </div>
                           ) : feedback.isAnalysisLoading ? (
                             <div className="flex items-center gap-2">
                               <Loader2 className="h-4 w-4 animate-spin text-violet-600" />
@@ -719,12 +715,12 @@ export default function FeedbackSubmissionsPage() {
                             </div>
                           ) : feedback.hasAnalysis ? (
                             <div className="flex flex-col gap-1">
-                              <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2">
                                 <CheckCircle2 className="h-4 w-4 text-emerald-600" />
                                 <span className="text-sm text-emerald-600">Analyzed</span>
                               </div>
                               <span className="text-xs text-emerald-500">View detailed insights</span>
-                            </div>
+                                </div>
                           ) : (
                             <div className="flex flex-col gap-1">
                               <span className="text-sm text-amber-600">
@@ -735,43 +731,43 @@ export default function FeedbackSubmissionsPage() {
                           )}
                         </div>
                       </div>
-                    </div>
+                        </div>
 
                     <div className="flex items-center justify-between text-sm text-gray-500">
                       <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4" />
-                        <span>{format(new Date(feedback.startDate), 'MMM d, yyyy')}</span>
-                        <ChevronRight className="h-4 w-4" />
-                        <span>{format(new Date(feedback.endDate), 'MMM d, yyyy')}</span>
+                          <Calendar className="h-4 w-4" />
+                          <span>{format(new Date(feedback.startDate), 'MMM d, yyyy')}</span>
+                          <ChevronRight className="h-4 w-4" />
+                          <span>{format(new Date(feedback.endDate), 'MMM d, yyyy')}</span>
+                      </div>
                       </div>
                     </div>
-                  </div>
-                </Card>
-              </motion.div>
+                  </Card>
+                </motion.div>
             );
           })}
-        </div>
-
-        {/* Load More */}
+            </div>
+            
+            {/* Load More */}
         {hasMore && !isLoading && (
-          <div className="flex justify-center mt-8">
-            <Button
-              onClick={loadMore}
-              disabled={isLoadingMore}
-              className="bg-violet-50 text-violet-700 hover:bg-violet-100"
-            >
-              {isLoadingMore ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              <div className="flex justify-center mt-8">
+                <Button
+                  onClick={loadMore}
+                  disabled={isLoadingMore}
+                  className="bg-violet-50 text-violet-700 hover:bg-violet-100"
+                >
+                  {isLoadingMore ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
                   Loading more...
-                </>
-              ) : (
-                'Load More'
-              )}
-            </Button>
+                    </>
+                  ) : (
+                    'Load More'
+                  )}
+                </Button>
+              </div>
+            )}
           </div>
-        )}
-      </div>
     </div>
   );
 } 
