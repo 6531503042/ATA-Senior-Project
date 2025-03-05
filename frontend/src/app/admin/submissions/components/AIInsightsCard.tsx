@@ -312,9 +312,9 @@ export function AIInsightsCard({ insights }: AIInsightsCardProps) {
   // Add default confidence values with proper type checking
   const confidenceMetrics = {
     overall: insights?.metadata?.confidence?.overall ?? 0,
-    performance: insights?.metadata?.confidence?.performance ?? 0,
-    engagement: insights?.metadata?.confidence?.engagement ?? 0,
-    improvement: insights?.metadata?.confidence?.improvement ?? 0
+    performance: insights.insights?.performanceInsights?.aiConfidence ?? 0,
+    engagement: insights.insights?.engagementAnalysis?.aiConfidence ?? 0,
+    improvement: insights.insights?.improvementOpportunities?.aiConfidence ?? 0
   };
 
   // Add safe category mapping
@@ -383,13 +383,13 @@ export function AIInsightsCard({ insights }: AIInsightsCardProps) {
           <h3 className="text-sm font-medium text-gray-900">Overall AI Confidence</h3>
           <span className="text-sm text-gray-500">
             Based on {insights.metadata?.totalSubmissions || 0} submissions
-              </span>
-            </div>
+          </span>
+        </div>
         <ConfidenceIndicator 
-          value={confidenceMetrics.overall}
+          value={confidenceMetrics.overall || Math.round((confidenceMetrics.performance + confidenceMetrics.engagement + confidenceMetrics.improvement) / 3)}
           label="Overall confidence score based on data quality, patterns, and consistency across all analyzed submissions."
-              />
-            </div>
+        />
+      </div>
 
       {/* Insights Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

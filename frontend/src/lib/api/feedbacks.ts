@@ -76,19 +76,11 @@ export async function createFeedback(data: CreateFeedbackDto): Promise<Feedback>
   }
 }
 
-export async function updateFeedback(id: number, data: Partial<CreateFeedbackDto>) {
+export async function updateFeedback(id: number, data: CreateFeedbackDto): Promise<void> {
   try {
-    // Format dates if they are provided
-    const feedbackData = {
-      ...data,
-      ...(data.startDate && { startDate: new Date(data.startDate).toISOString() }),
-      ...(data.endDate && { endDate: new Date(data.endDate).toISOString() })
-    };
-
-    const response = await feedbackApi.put(`/api/v1/admin/feedbacks/${id}`, feedbackData);
-    return response.data;
+    await feedbackApi.put(`/api/v1/admin/feedbacks/${id}`, data);
   } catch (error) {
-    console.error(`Failed to update feedback ${id}:`, error);
+    console.error('Error updating feedback:', error);
     throw error;
   }
 }
