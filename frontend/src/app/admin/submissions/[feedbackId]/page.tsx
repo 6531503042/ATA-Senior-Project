@@ -663,7 +663,7 @@ export default function FeedbackSubmissionPage({ params }: { params: Promise<{ f
   );
 
   const analyzedCount = submissions.filter(s => 
-    s.submission?.status && s.submission.status === 'analyzed'
+    s.analysis !== null && s.analysis !== undefined
   ).length;
 
   if (error) {
@@ -758,7 +758,7 @@ export default function FeedbackSubmissionPage({ params }: { params: Promise<{ f
             />
             <StatCard
               title="Satisfaction Rate"
-              value={isRefreshing ? '...' : (satisfactionAnalysis ? `${(satisfactionAnalysis.satisfactionOverview.satisfactionRate * 100).toFixed(1)}%` : 'N/A')}
+              value={isRefreshing ? '...' : (satisfactionAnalysis ? `${Math.min(Math.max(satisfactionAnalysis.satisfactionOverview.satisfactionRate * 100, 0), 100).toFixed(1)}%` : 'N/A')}
               icon={Smile}
               change={isRefreshing ? null : "+5.2%"}
               color="green"

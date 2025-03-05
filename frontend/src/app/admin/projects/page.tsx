@@ -11,12 +11,15 @@ import { useToast } from '@/hooks/use-toast';
 import { Card } from '@/components/ui/card';
 import Button from '@/components/ui/Button';
 import { PlusIcon, TrashIcon, PencilIcon, ChevronDownIcon, FilterIcon, RefreshCwIcon } from 'lucide-react';
+import { ProjectFormModal } from './components/ProjectFormModal';
 
 export default function ProjectsPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = React.useState(true);
-  const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false);
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [modalMode, setModalMode] = React.useState<'create' | 'edit'>('create');
+  const [selectedProject, setSelectedProject] = React.useState<Project | undefined>(undefined);
   const [showFilters, setShowFilters] = React.useState(false);
   const [projects, setProjects] = React.useState<Project[]>([]);
   const [projectMetrics, setProjectMetrics] = React.useState<ProjectStats>({
@@ -107,8 +110,20 @@ export default function ProjectsPage() {
     setFilters((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleEdit = (id: number) => {
-    router.push(`/admin/projects/${id}/edit`);
+  const handleEdit = async (id: number) => {
+    const projectToEdit = projects.find(p => p.id === id);
+    if (projectToEdit) {
+      setSelectedProject(projectToEdit);
+      setModalMode('edit');
+      setIsModalOpen(true);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedProject(undefined);
+    setModalMode('create');
+    fetchProjects();
   };
 
   const handleDelete = async (id: number) => {
@@ -163,10 +178,11 @@ export default function ProjectsPage() {
                 Refresh
               </Button>
               <Button
-                size="sm"
-                className="bg-indigo-600 text-white hover:bg-indigo-700"
-                onClick={() => setIsCreateModalOpen(true)}
-                leftIcon={<PlusIcon className="w-4 h-4" />}
+                onClick={() => {
+                  setModalMode('create');
+                  setIsModalOpen(true);
+                }}
+                leftIcon={<PlusIcon className="h-4 w-4" />}
               >
                 Create Project
               </Button>
@@ -286,13 +302,12 @@ export default function ProjectsPage() {
         </Card>
       </div>
 
-      {/* Create Project Modal */}
-      {isCreateModalOpen && (
-        <CreateProjectForm
-          onClose={() => {
-            setIsCreateModalOpen(false);
-            fetchProjects();
-          }}
+      {/* Project Form Modal */}
+      {isModalOpen && (
+        <ProjectFormModal
+          project={selectedProject}
+          mode={modalMode}
+          onClose={handleCloseModal}
         />
       )}
     </div>

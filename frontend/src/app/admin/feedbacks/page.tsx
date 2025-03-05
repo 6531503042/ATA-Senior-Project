@@ -25,6 +25,7 @@ import { useToast } from '@/hooks/use-toast';
 import { getFeedbacks, deleteFeedback, toggleFeedbackStatus } from '@/lib/api/feedbacks';
 import type { Feedback, FeedbackFilters } from './models/types';
 import { CreateFeedbackForm } from './components/CreateFeedbackForm';
+import { FeedbackFormModal } from './components/FeedbackFormModal';
 
 export default function FeedbacksPage() {
   const { toast } = useToast();
@@ -37,7 +38,9 @@ export default function FeedbacksPage() {
     page: 1,
     limit: 10
   });
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<'create' | 'edit' | 'view'>('create');
+  const [selectedFeedback, setSelectedFeedback] = useState<Feedback | undefined>(undefined);
 
   const fetchFeedbacks = useCallback(async () => {
     try {
@@ -98,6 +101,24 @@ export default function FeedbacksPage() {
     }
   };
 
+  const handleEdit = (feedback: Feedback) => {
+    setSelectedFeedback(feedback);
+    setModalMode('edit');
+    setIsModalOpen(true);
+  };
+
+  const handleView = (feedback: Feedback) => {
+    setSelectedFeedback(feedback);
+    setModalMode('view');
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedFeedback(undefined);
+    setModalMode('create');
+  };
+
   return (
     <div className="min-h-screen">
       <div className="p-8">
@@ -134,7 +155,10 @@ export default function FeedbacksPage() {
               </Button>
               <Button
                 size="sm"
-                onClick={() => setIsCreateModalOpen(true)}
+                onClick={() => {
+                  setModalMode('create');
+                  setIsModalOpen(true);
+                }}
                 leftIcon={<PlusCircle className="w-4 h-4" />}
               >
                 Create Feedback
@@ -328,7 +352,7 @@ export default function FeedbacksPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => {/* TODO: View feedback */}}
+                          onClick={() => handleView(feedback)}
                           leftIcon={<Eye className="w-4 h-4" />}
                         >
                           View
@@ -336,7 +360,7 @@ export default function FeedbacksPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => {/* TODO: Edit feedback */}}
+                          onClick={() => handleEdit(feedback)}
                           leftIcon={<PencilIcon className="w-4 h-4" />}
                         >
                           Edit
@@ -360,12 +384,14 @@ export default function FeedbacksPage() {
       </div>
 
       {/* Create Feedback Form */}
-      {isCreateModalOpen && (
-        <CreateFeedbackForm
-          onClose={() => setIsCreateModalOpen(false)}
+      {isModalOpen && (
+        <FeedbackFormModal
+          feedback={selectedFeedback}
+          mode={modalMode}
+          onClose={handleCloseModal}
           onSuccess={() => {
             fetchFeedbacks();
-            setIsCreateModalOpen(false);
+            handleCloseModal();
           }}
         />
       )}
