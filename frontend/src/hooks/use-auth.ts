@@ -33,6 +33,17 @@ export function useAuth(): UseAuthReturn {
           const user = auth.getUser();
           if (user) {
             setUser(user as User);
+            // Redirect based on role if on wrong path
+            const path = window.location.pathname;
+            const isAdminPath = path.startsWith('/admin');
+            const isEmployeePath = path.startsWith('/employee');
+            const isAdminUser = user.roles.includes('ROLE_ADMIN');
+
+            if (isAdminPath && !isAdminUser) {
+              router.push('/employee');
+            } else if (isEmployeePath && isAdminUser) {
+              router.push('/admin/dashboard');
+            }
           } else {
             // If no user info but token exists, validate token
             const isValid = await auth.validateToken();
@@ -49,12 +60,12 @@ export function useAuth(): UseAuthReturn {
       }
     };
     initAuth();
-  }, []);
+  }, [router]);
 
   const handleLogout = () => {
     auth.logout();
     setUser(null);
-    router.push('/login');
+    router.push('/auth/login');
   };
 
   const handleLogin = async (credentials: LoginCredentials) => {
@@ -80,8 +91,8 @@ export function useAuth(): UseAuthReturn {
         console.log('Redirecting to admin dashboard');
         router.push('/admin/dashboard');
       } else {
-        console.log('Redirecting to user dashboard');
-        router.push('/dashboard');
+        console.log('Redirecting to employee dashboard');
+        router.push('/employee');
       }
     } catch (error) {
       console.error('Login error:', error);
@@ -107,7 +118,6 @@ export function useAuth(): UseAuthReturn {
       setIsLoading(false);
     }
   };
-
 
   return {
     user,

@@ -23,7 +23,7 @@ import {
   Zap
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/Button';
 import { motion } from 'framer-motion';
 import { getProjectStats } from '@/lib/api/projects';
 import { ProjectStats } from '../projects/models/types';

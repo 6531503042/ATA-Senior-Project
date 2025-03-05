@@ -1,164 +1,130 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/hooks/use-auth';
 import {
   LayoutDashboard,
-  FolderClosed,
+  FolderKanban,
   CircleHelp,
-  MessageCircle,
-  ChevronRight,
+  MessageSquare,
   LogOut,
+  ClipboardList,
 } from 'lucide-react';
-
-interface SubMenuItem {
-  name: string;
-  href: string;
-}
+import { cn } from '@/lib/utils';
 
 interface MenuItem {
   name: string;
   href: string;
   icon: React.ElementType;
-  subMenu?: SubMenuItem[];
+  description: string;
 }
 
 const menuItems: MenuItem[] = [
   {
-    name: 'Overview',
+    name: 'Dashboard',
     href: '/admin/dashboard',
     icon: LayoutDashboard,
+    description: 'Overview and analytics',
   },
   {
     name: 'Projects',
     href: '/admin/projects',
-    icon: FolderClosed,
-    subMenu: [
-      { name: 'Dashboard', href: '/admin/projects' },
-      { name: 'Management', href: '/admin/projects/manage' },
-    ],
+    icon: FolderKanban,
+    description: 'Manage projects',
   },
   {
     name: 'Questions',
     href: '/admin/questions',
     icon: CircleHelp,
-    subMenu: [
-      { name: 'Dashboard', href: '/admin/questions' },
-      { name: 'Management', href: '/admin/questions/manage' },
-    ],
+    description: 'Feedback questions',
   },
   {
     name: 'Feedback',
     href: '/admin/feedbacks',
-    icon: MessageCircle,
-    subMenu: [
-      { name: 'Dashboard', href: '/admin/feedbacks' },
-      { name: 'Management', href: '/admin/feedbacks/manage' },
-      { name: 'Submissions', href: '/admin/feedbacks/submissions' },
-    ],
+    icon: MessageSquare,
+    description: 'View feedbacks',
+  },
+  {
+    name: 'Submissions',
+    href: '/admin/submissions',
+    icon: ClipboardList,
+    description: 'View submissions',
   },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
   const { logout } = useAuth();
-  const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
-
-  const toggleSubmenu = (menuName: string) => {
-    setOpenSubmenu(openSubmenu === menuName ? null : menuName);
-  };
 
   const isActive = (href: string) => pathname === href;
-  const isMenuActive = (item: MenuItem) =>
-    pathname === item.href ||
-    item.subMenu?.some((subItem) => pathname === subItem.href);
 
   return (
-    <aside className="w-64 h-screen bg-white border-r border-gray-200 flex flex-col">
-      <div className="p-6">
-        <Link href="/admin/dashboard" className="flex items-center">
-          <h1 className="text-xl font-bold text-gray-900">HR Admin</h1>
+    <aside className="w-64 h-screen bg-white border-r border-gray-200 flex flex-col shadow-sm">
+      {/* Header */}
+      <div className="p-6 border-b border-gray-100">
+        <Link 
+          href="/admin/dashboard" 
+          className="flex items-center gap-2 transition-transform hover:scale-[0.98]"
+        >
+          <div className="p-2 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg">
+            <LayoutDashboard className="h-5 w-5 text-white" />
+          </div>
+          <h1 className="text-xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">
+            HR Admin
+          </h1>
         </Link>
       </div>
 
-      <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
+      {/* Navigation */}
+      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
         {menuItems.map((item) => (
-          <div key={item.name}>
-            {item.subMenu ? (
-              <>
-                <button
-                  onClick={() => toggleSubmenu(item.name)}
-                  className={`
-                    flex items-center justify-between w-full px-4 py-2 text-sm font-medium rounded-lg
-                    ${
-                      isMenuActive(item)
-                        ? 'text-blue-600 bg-blue-50'
-                        : 'text-gray-600 hover:bg-gray-100'
-                    }
-                  `}
-                >
-                  <div className="flex items-center">
-                    <item.icon className="w-5 h-5 mr-3" />
-                    <span>{item.name}</span>
-                  </div>
-                  <ChevronRight
-                    className={`w-4 h-4 transition-transform ${
-                      openSubmenu === item.name ? 'rotate-90' : ''
-                    }`}
-                  />
-                </button>
-                <div
-                  className={`mt-1 space-y-1 ${
-                    openSubmenu === item.name ? 'block' : 'hidden'
-                  }`}
-                >
-                  {item.subMenu.map((subItem) => (
-                    <Link
-                      key={subItem.href}
-                      href={subItem.href}
-                      className={`
-                        block pl-12 pr-4 py-2 text-sm font-medium rounded-lg
-                        ${
-                          isActive(subItem.href)
-                            ? 'text-blue-600 bg-blue-50'
-                            : 'text-gray-600 hover:bg-gray-100'
-                        }
-                      `}
-                    >
-                      {subItem.name}
-                    </Link>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <Link
-                href={item.href}
-                className={`
-                  flex items-center px-4 py-2 text-sm font-medium rounded-lg
-                  ${
-                    isActive(item.href)
-                      ? 'text-blue-600 bg-blue-50'
-                      : 'text-gray-600 hover:bg-gray-100'
-                  }
-                `}
-              >
-                <item.icon className="w-5 h-5 mr-3" />
-                <span>{item.name}</span>
-              </Link>
+          <Link
+            key={item.name}
+            href={item.href}
+            className={cn(
+              "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
+              "hover:bg-violet-50 group relative",
+              isActive(item.href)
+                ? "bg-violet-100 text-violet-900 shadow-sm"
+                : "text-gray-600"
             )}
-          </div>
+          >
+            <div className={cn(
+              "p-2 rounded-lg transition-colors",
+              isActive(item.href)
+                ? "bg-violet-200"
+                : "bg-gray-100 group-hover:bg-violet-100"
+            )}>
+              <item.icon className={cn(
+                "w-5 h-5",
+                isActive(item.href)
+                  ? "text-violet-600"
+                  : "text-gray-600 group-hover:text-violet-600"
+              )} />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm font-medium">{item.name}</span>
+              <span className="text-xs text-gray-500">{item.description}</span>
+            </div>
+            {isActive(item.href) && (
+              <div className="absolute left-0 w-1 h-8 bg-violet-600 rounded-r-full" />
+            )}
+          </Link>
         ))}
       </nav>
 
-      <div className="p-4 border-t">
+      {/* Footer */}
+      <div className="p-4 border-t border-gray-100">
         <button
           onClick={logout}
-          className="flex items-center w-full px-4 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-100"
+          className="flex items-center w-full px-4 py-3 text-sm font-medium text-gray-600 rounded-lg hover:bg-red-50 hover:text-red-600 transition-colors group"
         >
-          <LogOut className="w-5 h-5 mr-3" />
-          <span>Sign Out</span>
+          <div className="p-2 rounded-lg bg-gray-100 group-hover:bg-red-100">
+            <LogOut className="w-5 h-5 group-hover:text-red-600" />
+          </div>
+          <span className="ml-3">Sign Out</span>
         </button>
       </div>
     </aside>

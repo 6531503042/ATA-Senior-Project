@@ -19,7 +19,7 @@ import {
   Eye
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import Button from '@/components/ui/button';
+import Button from '@/components/ui/Button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { getFeedbacks, deleteFeedback, toggleFeedbackStatus } from '@/lib/api/feedbacks';
