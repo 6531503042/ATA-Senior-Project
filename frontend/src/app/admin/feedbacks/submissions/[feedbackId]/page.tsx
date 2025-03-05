@@ -446,15 +446,36 @@ export default function FeedbackSubmissionPage({ params }: { params: Promise<{ f
   const [aiInsights, setAiInsights] = useState<AIInsights | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Reset state when feedback ID changes
+  useEffect(() => {
+    setSelectedSubmissionId(null);
+    setSubmissions([]);
+    setAnalysis(null);
+    setSatisfactionAnalysis(null);
+    setAiInsights(null);
+    setError(null);
+    setIsLoading(true);
+  }, [feedbackId]);
+
   // Load cached data immediately
   useEffect(() => {
     const cachedData = cacheManager.getFeedbackData(feedbackId);
-    if (cachedData) {
-      setSubmissions(cachedData.submissions);
-      setAnalysis(cachedData.analysis);
-      setSatisfactionAnalysis(cachedData.satisfaction);
-      setAiInsights(cachedData.insights);
-      setIsLoading(false);
+    if (cachedData?.submissions) {
+      // Validate that cached submissions belong to current feedback ID
+      const validSubmissions = cachedData.submissions.filter(
+        sub => sub.submission.feedbackId === feedbackId
+      );
+      
+      if (validSubmissions.length > 0) {
+        setSubmissions(validSubmissions);
+        setAnalysis(cachedData.analysis);
+        setSatisfactionAnalysis(cachedData.satisfaction);
+        setAiInsights(cachedData.insights);
+        setIsLoading(false);
+      } else {
+        // Clear invalid cache
+        cacheManager.clearCache(feedbackId);
+      }
     }
   }, [feedbackId]);
 
@@ -470,21 +491,39 @@ export default function FeedbackSubmissionPage({ params }: { params: Promise<{ f
 
         const data = await getFeedbackData(feedbackId);
 
+        // Validate submissions belong to current feedback ID
+        const validSubmissions = data.submissions?.filter(
+          sub => sub.submission.feedbackId === feedbackId
+        ) || [];
+
         // Check if there are any submissions
-        if (!data.submissions || data.submissions.length === 0) {
+        if (validSubmissions.length === 0) {
           setError('no-submissions');
+          // Clear any existing submissions
+          setSubmissions([]);
+          setAnalysis(null);
+          setSatisfactionAnalysis(null);
+          setAiInsights(null);
           return;
         }
 
         // Update state with fresh data
-        setSubmissions(data.submissions);
+        setSubmissions(validSubmissions);
         setAnalysis(data.analysis);
         setSatisfactionAnalysis(data.satisfaction);
         setAiInsights(data.insights);
 
-        // Set first submission as selected if available and none selected
-        if (data.submissions.length > 0 && !selectedSubmissionId) {
-          setSelectedSubmissionId(data.submissions[0].submission.id);
+        // Cache the valid data
+        cacheManager.setFeedbackData(feedbackId, {
+          submissions: validSubmissions,
+          analysis: data.analysis,
+          satisfaction: data.satisfaction,
+          insights: data.insights
+        });
+
+        // Set first submission as selected if none selected
+        if (validSubmissions.length > 0 && !selectedSubmissionId) {
+          setSelectedSubmissionId(validSubmissions[0].submission.id);
         }
 
       } catch (error) {
@@ -508,7 +547,7 @@ export default function FeedbackSubmissionPage({ params }: { params: Promise<{ f
     if (feedbackId) {
       fetchData();
     }
-  }, [feedbackId, selectedSubmissionId, toast, isRefreshing]);
+  }, [feedbackId, toast, isRefreshing]);
 
   // Handle refresh
   const handleRefresh = async () => {
