@@ -31,6 +31,16 @@ class FeedbackAnalyzerService:
             # Initialize sentiment pipeline once and cache it
             self.sentiment_pipeline = pipeline("sentiment-analysis")
             
+            # Initialize spaCy
+            try:
+                import spacy
+                self.nlp = spacy.load("en_core_web_sm")
+            except OSError:
+                # If model not found, download it
+                import subprocess
+                subprocess.run(["python", "-m", "spacy", "download", "en_core_web_sm"])
+                self.nlp = spacy.load("en_core_web_sm")
+            
             # Initialize MongoDB connection
             import motor.motor_asyncio
             self.client = motor.motor_asyncio.AsyncIOMotorClient(mongodb_url)
@@ -44,7 +54,8 @@ class FeedbackAnalyzerService:
             # Cache TextBlob results
             self.sentiment_cache = {}
             
-            # Initialize other attributes
+            # Initialize mock data generator for fallback
+            from enhanced_data_generator import EnhancedMockDataGenerator
             self.mock_data_generator = EnhancedMockDataGenerator()
 
             # Keywords for different aspects
@@ -313,13 +324,11 @@ class FeedbackAnalyzerService:
         """Analyze responses for a specific category with optimized processing"""
         try:
             if not responses:
+                logger.warning(f"No responses provided for category {category}")
                 return {
                     "category": category,
-                    "confidence": 50.0,  # Medium confidence for default insights
-                    "recommendations": [
-                        "Implement regular feedback collection to gather more detailed insights",
-                        "Consider establishing baseline metrics for better tracking"
-                    ],
+                    "confidence": 40.0,
+                    "recommendations": self.get_default_recommendations(category)[:2],
                     "sentiment_score": 0.5
                 }
 
@@ -335,103 +344,247 @@ class FeedbackAnalyzerService:
                         valid_responses.append(text)
 
             if not valid_responses:
+                logger.warning(f"No valid responses found for category {category}")
                 return {
                     "category": category,
                     "confidence": 40.0,
-                    "recommendations": [
-                        "Establish regular communication channels for feedback",
-                        "Create structured feedback collection processes"
-                    ],
+                    "recommendations": self.get_default_recommendations(category)[:2],
                     "sentiment_score": 0.5
                 }
 
-            # Batch sentiment analysis
-            sentiments = []
-            for i in range(0, len(valid_responses), 8):  # Process in batches of 8
-                batch = valid_responses[i:i + 8]
-                results = self.sentiment_pipeline(batch)
-                sentiments.extend([1 if r["label"] == "POSITIVE" else 0 for r in results])
+            try:
+                # Batch sentiment analysis
+                sentiments = []
+                for i in range(0, len(valid_responses), 8):  # Process in batches of 8
+                    batch = valid_responses[i:i + 8]
+                    results = self.sentiment_pipeline(batch)
+                    sentiments.extend([1 if r["label"] == "POSITIVE" else 0 for r in results])
 
-            # Calculate metrics
-            avg_sentiment = sum(sentiments) / len(sentiments)
-            confidence_score = min(
-                (len(valid_responses) / 5) * 0.5 +  # More responses increase confidence
-                (abs(avg_sentiment - 0.5) * 2 * 0.3) +  # Strong sentiments increase confidence
-                0.2,  # Base confidence
-                1.0
-            ) * 100
+                # Calculate metrics
+                avg_sentiment = sum(sentiments) / len(sentiments)
+                confidence_score = min(
+                    (len(valid_responses) / 5) * 0.5 +  # More responses increase confidence
+                    (abs(avg_sentiment - 0.5) * 2 * 0.3) +  # Strong sentiments increase confidence
+                    0.2,  # Base confidence
+                    1.0
+                ) * 100
 
-            # Get default recommendations based on category
-            recommendations = self.get_default_recommendations(category)
+                # Extract actual recommendations from responses
+                recommendations = []
+                combined_text = " ".join(valid_responses)
+                
+                if not hasattr(self, 'nlp') or self.nlp is None:
+                    logger.warning("NLP not initialized, falling back to basic analysis")
+                    # Basic text analysis fallback
+                    sentences = combined_text.split('.')
+                    for sentence in sentences:
+                        if any(word in sentence.lower() for word in ["should", "need", "must", "could", "improve", "suggest"]):
+                            clean_suggestion = sentence.strip()
+                            if clean_suggestion and len(clean_suggestion.split()) > 3:
+                                recommendations.append(clean_suggestion)
+                else:
+                    # Use spaCy for better text analysis
+                    doc = self.nlp(combined_text)
+                    for sent in doc.sents:
+                        sent_text = sent.text.lower()
+                        if any(word in sent_text for word in ["should", "need", "must", "could", "improve", "suggest"]):
+                            clean_suggestion = sent.text.strip()
+                            if clean_suggestion and len(clean_suggestion.split()) > 3:
+                                recommendations.append(clean_suggestion)
 
-            return {
-                "category": category,
-                "confidence": round(confidence_score, 1),
-                "recommendations": recommendations[:2],
-                "sentiment_score": avg_sentiment
-            }
+                # Only use default recommendations if no actual suggestions found
+                if not recommendations:
+                    logger.info(f"No recommendations found in text for {category}, using defaults")
+                    default_recs = self.get_default_recommendations(category)
+                    recommendations.extend(default_recs[:2])
+
+                # Ensure recommendations are unique and properly formatted
+                unique_recommendations = []
+                seen = set()
+                for rec in recommendations:
+                    rec_lower = rec.lower()
+                    if rec_lower not in seen:
+                        seen.add(rec_lower)
+                        # Ensure recommendation starts with an action verb
+                        if not any(rec.lower().startswith(verb) for verb in ["implement", "establish", "create", "develop", "improve"]):
+                            rec = f"Implement {rec[0].lower()}{rec[1:]}"
+                        unique_recommendations.append(rec)
+
+                return {
+                    "category": category,
+                    "confidence": round(confidence_score, 1),
+                    "recommendations": unique_recommendations[:2],  # Top 2 unique recommendations
+                    "sentiment_score": avg_sentiment
+                }
+
+            except Exception as inner_e:
+                logger.error(f"Error in analysis for category {category}: {str(inner_e)}")
+                # Fallback to default recommendations
+                return {
+                    "category": category,
+                    "confidence": 40.0,
+                    "recommendations": self.get_default_recommendations(category)[:2],
+                    "sentiment_score": 0.5
+                }
 
         except Exception as e:
-            print(f"Error analyzing category insights: {str(e)}")
+            logger.error(f"Error analyzing category insights: {str(e)}")
+            # Return None to indicate analysis failure
             return None
 
     async def generate_ai_insights(self, submissions: List[Dict]) -> Dict:
         """Generate AI-powered insights from feedback submissions"""
         try:
+            if not submissions:
+                logger.warning("No submissions provided for analysis")
+                return {
+                    "performanceInsights": {
+                        "confidence": 0.0,
+                        "recommendations": ["No submissions available for analysis"]
+                    },
+                    "engagementAnalysis": {
+                        "confidence": 0.0,
+                        "recommendations": ["No submissions available for analysis"]
+                    },
+                    "improvementOpportunities": {
+                        "confidence": 0.0,
+                        "recommendations": ["No submissions available for analysis"]
+                    }
+                }
+
             # Collect all responses by category
             category_responses = defaultdict(list)
             
             for submission in submissions:
                 for question in submission.get("questionDetails", []):
                     category = question.get("category")
-                    response = {
-                        "response": submission["responses"].get(str(question["id"])),
-                        "category": category,
-                        "type": question.get("questionType")
-                    }
-                    category_responses[category].append(response)
+                    if category:  # Only process if category exists
+                        response = {
+                            "response": submission["responses"].get(str(question["id"])),
+                            "category": category,
+                            "type": question.get("questionType")
+                        }
+                        category_responses[category].append(response)
             
             # Analyze each category
             category_insights = []
             for category, responses in category_responses.items():
                 insight = self.analyze_category_insights(responses, category)
-                if insight and insight["recommendations"]:
+                if insight and insight.get("recommendations"):  # Check if insight has recommendations
                     category_insights.append(insight)
             
-            # Sort by confidence score and get top 3
-            category_insights.sort(key=lambda x: x["confidence"], reverse=True)
-            top_insights = category_insights[:3]
+            if not category_insights:
+                logger.warning("No insights generated from submissions")
+                return {
+                    "performanceInsights": {
+                        "confidence": 40.0,
+                        "recommendations": ["Insufficient data for detailed analysis"]
+                    },
+                    "engagementAnalysis": {
+                        "confidence": 40.0,
+                        "recommendations": ["Insufficient data for detailed analysis"]
+                    },
+                    "improvementOpportunities": {
+                        "confidence": 40.0,
+                        "recommendations": ["Insufficient data for detailed analysis"]
+                    }
+                }
             
-            # Map insights to specific areas
+            # Sort by confidence score and get top insights
+            category_insights.sort(key=lambda x: x.get("confidence", 0), reverse=True)
+            
+            # Initialize mapped insights with default values
             mapped_insights = {
-                "performanceInsights": None,
-                "engagementAnalysis": None,
-                "improvementOpportunities": None
+                "performanceInsights": {
+                    "confidence": 40.0,
+                    "recommendations": ["No performance-related insights found"]
+                },
+                "engagementAnalysis": {
+                    "confidence": 40.0,
+                    "recommendations": ["No engagement-related insights found"]
+                },
+                "improvementOpportunities": {
+                    "confidence": 40.0,
+                    "recommendations": ["No improvement opportunities found"]
+                }
             }
             
-            # Map insights based on sentiment and category
-            for insight in top_insights:
-                if not mapped_insights["performanceInsights"] and insight["category"] in ["PROJECT_MANAGEMENT", "TECHNICAL_SKILLS"]:
+            # Define category mappings
+            performance_categories = ["PROJECT_MANAGEMENT", "TECHNICAL_SKILLS", "PERFORMANCE", "INNOVATION"]
+            engagement_categories = ["TEAM_COLLABORATION", "WORK_ENVIRONMENT", "COMMUNICATION", "LEADERSHIP"]
+            improvement_categories = ["WORK_LIFE_BALANCE", "PERSONAL_GROWTH", "TRAINING", "DEVELOPMENT"]
+            
+            # First pass: Map insights to their primary categories
+            for insight in category_insights:
+                category = insight.get("category")
+                if not category:
+                    continue
+                
+                recommendations = insight.get("recommendations", [])
+                if not recommendations:
+                    continue
+                
+                confidence = insight.get("confidence", 40.0)
+                
+                if category in performance_categories:
                     mapped_insights["performanceInsights"] = {
-                        "confidence": insight["confidence"],
-                        "recommendations": insight["recommendations"]
+                        "confidence": confidence,
+                        "recommendations": recommendations
                     }
-                elif not mapped_insights["engagementAnalysis"] and insight["category"] in ["TEAM_COLLABORATION", "WORK_ENVIRONMENT"]:
+                elif category in engagement_categories:
                     mapped_insights["engagementAnalysis"] = {
-                        "confidence": insight["confidence"],
-                        "recommendations": insight["recommendations"]
+                        "confidence": confidence,
+                        "recommendations": recommendations
                     }
-                elif not mapped_insights["improvementOpportunities"]:
+                elif category in improvement_categories:
                     mapped_insights["improvementOpportunities"] = {
-                        "confidence": insight["confidence"],
-                        "recommendations": insight["recommendations"]
+                        "confidence": confidence,
+                        "recommendations": recommendations
                     }
+            
+            # Second pass: Fill any remaining empty slots with the highest confidence insights
+            remaining_insights = [i for i in category_insights if i.get("recommendations")]
+            remaining_insights.sort(key=lambda x: x.get("confidence", 0), reverse=True)
+            
+            for key, value in mapped_insights.items():
+                if value["recommendations"] == [f"No {key.replace('Insights', '').lower()}-related insights found"]:
+                    if remaining_insights:
+                        insight = remaining_insights.pop(0)
+                        mapped_insights[key] = {
+                            "confidence": insight.get("confidence", 40.0),
+                            "recommendations": insight.get("recommendations", [])
+                        }
+            
+            # Ensure no duplicate recommendations across sections
+            seen_recommendations = set()
+            for section in mapped_insights.values():
+                if section and "recommendations" in section:
+                    unique_recs = []
+                    for rec in section["recommendations"]:
+                        rec_lower = rec.lower()
+                        if rec_lower not in seen_recommendations:
+                            seen_recommendations.add(rec_lower)
+                            unique_recs.append(rec)
+                    section["recommendations"] = unique_recs if unique_recs else ["No unique insights found for this category"]
             
             return mapped_insights
             
         except Exception as e:
-            print(f"Error generating AI insights: {str(e)}")
-            return {}
+            logger.error(f"Error generating AI insights: {str(e)}")
+            return {
+                "performanceInsights": {
+                    "confidence": 0.0,
+                    "recommendations": ["Error generating performance insights"]
+                },
+                "engagementAnalysis": {
+                    "confidence": 0.0,
+                    "recommendations": ["Error generating engagement analysis"]
+                },
+                "improvementOpportunities": {
+                    "confidence": 0.0,
+                    "recommendations": ["Error generating improvement opportunities"]
+                }
+            }
 
     async def analyze_question_response(self, question: Dict, response: str) -> QuestionAnalysis:
         """Analyze a single question response."""
