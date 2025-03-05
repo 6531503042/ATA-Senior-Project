@@ -9,6 +9,7 @@ interface FeedbackCache {
 }
 
 const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
+const BACKGROUND_UPDATE_THRESHOLD = 2 * 60 * 1000; // 2 minutes
 const CACHE_PREFIX = 'feedback_cache_';
 
 export const cacheManager = {
@@ -61,5 +62,12 @@ export const cacheManager = {
     const data = this.getFeedbackData(feedbackId);
     if (!data) return false;
     return Date.now() - data.timestamp < CACHE_EXPIRY;
+  },
+
+  shouldBackgroundUpdate(feedbackId: number): boolean {
+    const data = this.getFeedbackData(feedbackId);
+    if (!data) return false;
+    // Return true if the cache is older than BACKGROUND_UPDATE_THRESHOLD
+    return Date.now() - data.timestamp > BACKGROUND_UPDATE_THRESHOLD;
   }
 }; 

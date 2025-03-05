@@ -436,7 +436,7 @@ export default function FeedbackSubmissionsPage() {
       });
       return;
     }
-    router.push(`/admin/feedbacks/submissions/${feedback.id}`);
+    router.push(`/admin/submissions/${feedback.id}`);
   };
 
   return (

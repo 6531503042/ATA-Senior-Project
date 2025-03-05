@@ -48,7 +48,7 @@ const menuItems: MenuItem[] = [
   },
   {
     name: 'Submissions',
-    href: '/admin/feedbacks/submissions',
+    href: '/admin/submissions',
     icon: ClipboardList,
     description: 'View submissions',
   },

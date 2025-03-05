@@ -31,8 +31,14 @@ import {
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { aiApi } from '@/lib/api/submissions';
-import type { SubmissionResponse, FeedbackAnalysis, SatisfactionAnalysis, AIInsights } from '@/lib/api/submissions';
+import type { 
+  SubmissionResponse,
+  FeedbackAnalysis,
+  SatisfactionAnalysis,
+  AIInsights as ImportedAIInsights,
+  Analysis as ImportedAnalysis
+} from '@/lib/api/submissions';
+import { getFeedbackData } from '@/lib/api/submissions';
 import { Button } from '@/components/ui/Button';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -56,21 +62,80 @@ import {
   InsightCardSkeleton 
 } from '@/components/ui/skeleton';
 import { Suspense } from 'react';
-import { 
-  getAllSubmissions, 
-  getSubmissionAnalysis, 
-  getSatisfactionAnalysis, 
-  getAIInsights,
-  handleApiError,
-  getFeedbackData
-} from '@/lib/api/submissions';
 import { useToast } from '@/hooks/use-toast';
 import { cacheManager } from '@/lib/cache';
+
+// Type definitions
+interface ProgressRingProps {
+  value: number;
+  size?: number;
+  strokeWidth?: number;
+}
+
+interface StatCardProps {
+  title: string;
+  value: string | number;
+  icon: React.ElementType;
+  change?: string | null;
+  color?: 'violet' | 'blue' | 'green' | 'yellow';
+}
+
+interface InsightCardProps {
+  title: string;
+  description: string;
+  metrics: Array<{
+    label: string;
+    value: string | number;
+    change?: string;
+  }>;
+  recommendations: Array<{
+    text: string;
+    priority: string;
+  }>;
+  icon: React.ElementType;
+  color?: 'violet' | 'blue' | 'green';
+}
 
 interface SubmissionListItemProps {
   submission: SubmissionResponse;
   isSelected: boolean;
   onClick: () => void;
+}
+
+interface CacheManager {
+  setFeedbackData: (feedbackId: number, data: Partial<FeedbackCache>) => void;
+  getFeedbackData: (feedbackId: number) => FeedbackCache | null;
+  clearCache: (feedbackId?: number) => void;
+  isCacheValid: (feedbackId: number) => boolean;
+  shouldBackgroundUpdate: (feedbackId: number) => boolean;
+}
+
+interface FeedbackCache {
+  submissions: SubmissionResponse[];
+  analysis: FeedbackAnalysis | null;
+  satisfaction: SatisfactionAnalysis | null;
+  insights: AIInsights | null;
+}
+
+interface AIInsightsRecommendation {
+  text: string;
+  priority: 'high' | 'medium' | 'low';
+  impact: number;
+  category: string;
+}
+
+interface AIInsightSection {
+  title: string;
+  aiConfidence: number;
+  recommendations: AIInsightsRecommendation[];
+}
+
+interface AIInsights extends Omit<ImportedAIInsights, 'insights'> {
+  insights: {
+    performanceInsights: AIInsightSection;
+    engagementAnalysis: AIInsightSection;
+    improvementOpportunities: AIInsightSection;
+  };
 }
 
 const SubmissionListItem = ({ submission, isSelected, onClick }: SubmissionListItemProps) => {
@@ -143,7 +208,7 @@ const SubmissionListItem = ({ submission, isSelected, onClick }: SubmissionListI
 };
 
 // Beautiful animated progress ring component
-const ProgressRing = ({ value, size = 120, strokeWidth = 8 }) => {
+const ProgressRing = ({ value, size = 120, strokeWidth = 8 }: ProgressRingProps) => {
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
   const offset = circumference - (value / 100) * circumference;
@@ -187,7 +252,7 @@ const ProgressRing = ({ value, size = 120, strokeWidth = 8 }) => {
 };
 
 // Beautiful stat card with hover effects
-const StatCard = ({ title, value, icon: Icon, change, color = "violet" }) => {
+const StatCard = ({ title, value, icon: Icon, change, color = "violet" }: StatCardProps) => {
   const colors = {
     violet: "from-violet-500 to-purple-600",
     blue: "from-blue-500 to-cyan-600",
@@ -241,7 +306,7 @@ const StatCard = ({ title, value, icon: Icon, change, color = "violet" }) => {
 };
 
 // Beautiful insights card with animations
-const InsightCard = ({ title, description, metrics, recommendations, icon: Icon, color = "violet" }) => {
+const InsightCard = ({ title, description, metrics, recommendations, icon: Icon, color = "violet" }: InsightCardProps) => {
   const colors = {
     violet: {
       light: "bg-violet-50",
@@ -441,54 +506,81 @@ export default function FeedbackSubmissionPage({ params }: { params: Promise<{ f
   const [error, setError] = useState<string | null>(null);
   const [submissions, setSubmissions] = useState<SubmissionResponse[]>([]);
   const [selectedSubmissionId, setSelectedSubmissionId] = useState<number | null>(null);
-  const [analysis, setAnalysis] = useState<FeedbackAnalysis | null>(null);
   const [satisfactionAnalysis, setSatisfactionAnalysis] = useState<SatisfactionAnalysis | null>(null);
   const [aiInsights, setAiInsights] = useState<AIInsights | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Reset state when feedback ID changes
+  // Load cached data immediately and setup background refresh if needed
   useEffect(() => {
-    setSelectedSubmissionId(null);
-    setSubmissions([]);
-    setAnalysis(null);
-    setSatisfactionAnalysis(null);
-    setAiInsights(null);
-    setError(null);
-    setIsLoading(true);
-  }, [feedbackId]);
+    const loadCachedData = () => {
+      const cachedData = cacheManager.getFeedbackData(feedbackId);
+      if (cachedData?.submissions) {
+        // Validate that cached submissions belong to current feedback ID
+        const validSubmissions = cachedData.submissions.filter(
+          sub => sub.submission.feedbackId === feedbackId
+        );
+        
+        if (validSubmissions.length > 0) {
+          setSubmissions(validSubmissions);
+          setSatisfactionAnalysis(cachedData.satisfaction);
+          setAiInsights(cachedData.insights);
+          setIsLoading(false);
 
-  // Load cached data immediately
-  useEffect(() => {
-    const cachedData = cacheManager.getFeedbackData(feedbackId);
-    if (cachedData?.submissions) {
-      // Validate that cached submissions belong to current feedback ID
-      const validSubmissions = cachedData.submissions.filter(
-        sub => sub.submission.feedbackId === feedbackId
-      );
-      
-      if (validSubmissions.length > 0) {
-        setSubmissions(validSubmissions);
-        setAnalysis(cachedData.analysis);
-        setSatisfactionAnalysis(cachedData.satisfaction);
-        setAiInsights(cachedData.insights);
-        setIsLoading(false);
-      } else {
-        // Clear invalid cache
-        cacheManager.clearCache(feedbackId);
+          // If cache is getting old, trigger a background refresh
+          if (cacheManager.shouldBackgroundUpdate(feedbackId)) {
+            refreshDataInBackground();
+          }
+        } else {
+          // Clear invalid cache
+          cacheManager.clearCache(feedbackId);
+        }
       }
-    }
+    };
+
+    const refreshDataInBackground = async () => {
+      try {
+        const data = await getFeedbackData(feedbackId);
+        
+        // Only update if we got valid data
+        if (data.submissions?.length > 0) {
+          // Validate submissions belong to current feedback ID
+          const validSubmissions = data.submissions.filter(
+            sub => sub.submission.feedbackId === feedbackId
+          );
+
+          if (validSubmissions.length > 0) {
+            setSubmissions(validSubmissions);
+            setSatisfactionAnalysis(data.satisfaction as unknown as SatisfactionAnalysis);
+            setAiInsights(data.insights as unknown as AIInsights);
+
+            // Update cache with fresh data
+            cacheManager.setFeedbackData(feedbackId, {
+              submissions: validSubmissions,
+              analysis: data.analysis as unknown as FeedbackAnalysis,
+              satisfaction: data.satisfaction as unknown as SatisfactionAnalysis,
+              insights: data.insights as unknown as AIInsights
+            });
+          }
+        }
+      } catch (err) {
+        // Don't show error toast for background updates
+        console.warn('Background refresh failed:', err);
+      }
+    };
+
+    loadCachedData();
   }, [feedbackId]);
 
-  // Fetch fresh data
+  // Fetch fresh data only if no cache or explicitly refreshing
   useEffect(() => {
     const fetchData = async () => {
-      try {
-        // If we're refreshing, don't show full loading state
-        if (!isRefreshing) {
-          setIsLoading(true);
-        }
-        setError(null);
+      // Skip if we're not refreshing and have valid cache
+      if (!isRefreshing && cacheManager.isCacheValid(feedbackId)) {
+        return;
+      }
 
+      try {
+        setError(null);
         const data = await getFeedbackData(feedbackId);
 
         // Validate submissions belong to current feedback ID
@@ -501,7 +593,6 @@ export default function FeedbackSubmissionPage({ params }: { params: Promise<{ f
           setError('no-submissions');
           // Clear any existing submissions
           setSubmissions([]);
-          setAnalysis(null);
           setSatisfactionAnalysis(null);
           setAiInsights(null);
           return;
@@ -509,16 +600,15 @@ export default function FeedbackSubmissionPage({ params }: { params: Promise<{ f
 
         // Update state with fresh data
         setSubmissions(validSubmissions);
-        setAnalysis(data.analysis);
-        setSatisfactionAnalysis(data.satisfaction);
-        setAiInsights(data.insights);
+        setSatisfactionAnalysis(data.satisfaction as unknown as SatisfactionAnalysis);
+        setAiInsights(data.insights as unknown as AIInsights);
 
         // Cache the valid data
         cacheManager.setFeedbackData(feedbackId, {
           submissions: validSubmissions,
-          analysis: data.analysis,
-          satisfaction: data.satisfaction,
-          insights: data.insights
+          analysis: data.analysis as unknown as FeedbackAnalysis,
+          satisfaction: data.satisfaction as unknown as SatisfactionAnalysis,
+          insights: data.insights as unknown as AIInsights
         });
 
         // Set first submission as selected if none selected
@@ -526,15 +616,16 @@ export default function FeedbackSubmissionPage({ params }: { params: Promise<{ f
           setSelectedSubmissionId(validSubmissions[0].submission.id);
         }
 
-      } catch (error) {
-        console.error('Failed to fetch data:', error);
-        setError(error instanceof Error ? error.message : 'An unexpected error occurred');
+      } catch (err: unknown) {
+        const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
+        console.error('Failed to fetch data:', errorMessage);
+        setError(errorMessage);
         
         // Show error toast only if we don't have cached data
         if (!cacheManager.getFeedbackData(feedbackId)) {
           toast({
             title: 'Error',
-            description: error instanceof Error ? error.message : 'Failed to load feedback data',
+            description: errorMessage,
             variant: 'destructive',
           });
         }
@@ -544,17 +635,13 @@ export default function FeedbackSubmissionPage({ params }: { params: Promise<{ f
       }
     };
 
-    if (feedbackId) {
-      fetchData();
-    }
-  }, [feedbackId, toast, isRefreshing]);
+    fetchData();
+  }, [feedbackId, isRefreshing, selectedSubmissionId, toast]);
 
   // Handle refresh
   const handleRefresh = async () => {
     setIsRefreshing(true);
     cacheManager.clearCache(feedbackId);
-    await getFeedbackData(feedbackId);
-    setIsRefreshing(false);
   };
 
   // Show appropriate state based on loading and error
@@ -578,15 +665,6 @@ export default function FeedbackSubmissionPage({ params }: { params: Promise<{ f
   const analyzedCount = submissions.filter(s => 
     s.submission?.status && s.submission.status === 'analyzed'
   ).length;
-
-  const recentSubmissions = submissions.filter(s => {
-    if (!s.submission?.submittedAt) return false;
-    const submittedDate = new Date(s.submission.submittedAt);
-    const today = new Date();
-    return submittedDate.toDateString() === today.toDateString();
-  }).length;
-
-  const totalUsers = submissions.filter(s => s.submission?.submittedBy).length;
 
   if (error) {
     return (
@@ -887,7 +965,7 @@ export default function FeedbackSubmissionPage({ params }: { params: Promise<{ f
                       <div className="space-y-6">
                         <SubmissionDetails 
                           submission={selectedSubmission.submission}
-                          analysis={selectedSubmission.analysis}
+                          analysis={selectedSubmission.analysis as unknown as ImportedAnalysis}
                         />
                       </div>
                     ) : (

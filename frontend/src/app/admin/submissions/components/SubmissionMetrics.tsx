@@ -192,7 +192,10 @@ export function SubmissionMetrics({
           trend={trends?.submissions ? {
             value: trends.submissions,
             label: "vs last period"
-          } : undefined}
+          } : {
+            value: 0,
+            label: "vs last period"
+          }}
           color="violet"
         />
 
