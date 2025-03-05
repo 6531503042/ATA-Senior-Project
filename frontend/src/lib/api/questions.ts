@@ -126,15 +126,39 @@ export async function createQuestion(data: CreateQuestionDto): Promise<Question>
 
 export async function updateQuestion(id: number, data: CreateQuestionDto): Promise<Question> {
   try {
-    const response = await questionsApi.put(`/api/v1/admin/questions/update/${id}`, {
+    console.log('Updating question with data:', {
+      id,
       ...data,
+      title: data.title.trim()
+    });
+
+    const response = await questionsApi.put(`/api/v1/admin/questions/update/${id}`, {
       title: data.title.trim(),
       description: data.description.trim(),
-      choices: data.choices?.map(choice => choice.trim())
+      questionType: data.questionType,
+      category: data.category,
+      choices: data.choices || [],
+      required: data.required ?? true,
+      validationRules: data.validationRules || ''
     });
+
+    console.log('Update response:', response.data);
     return response.data;
   } catch (error) {
-    console.error(`Failed to update question ${id}:`, error);
+    if (axios.isAxiosError(error)) {
+      console.error('Update Question Error:', {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message,
+        requestData: {
+          id,
+          ...data,
+          title: data.title.trim()
+        }
+      });
+    } else {
+      console.error('Unexpected error during question update:', error);
+    }
     throw error;
   }
 }

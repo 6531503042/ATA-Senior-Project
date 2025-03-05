@@ -20,9 +20,8 @@ export enum QuestionCategory {
 }
 
 export interface Question {
-  text: unknown;
   id: number;
-  title: string;
+  text: string;
   description: string;
   questionType: QuestionType;
   category: QuestionCategory;
@@ -34,7 +33,6 @@ export interface Question {
 }
 
 export interface CreateQuestionDto {
-  text: unknown;
   title: string;
   description: string;
   questionType: QuestionType;

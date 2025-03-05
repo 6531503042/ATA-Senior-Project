@@ -129,13 +129,13 @@ const sentimentEmojis = [
 export function QuestionForm({ onSubmit, onCancel, isLoading, initialData, mode }: QuestionFormProps) {
   const [formData, setFormData] = useState<CreateQuestionDto>(
     initialData ? {
-      title: initialData.title,
-      description: initialData.description,
-      questionType: initialData.questionType,
-      category: initialData.category,
+      title: initialData.text || '',
+      description: initialData.description || '',
+      questionType: initialData.questionType || QuestionType.SINGLE_CHOICE,
+      category: initialData.category || QuestionCategory.GENERAL,
       choices: initialData.choices || [],
-      required: initialData.required,
-      validationRules: initialData.validationRules,
+      required: initialData.required ?? true,
+      validationRules: initialData.validationRules || ''
     } : {
       title: '',
       description: '',
@@ -143,7 +143,7 @@ export function QuestionForm({ onSubmit, onCancel, isLoading, initialData, mode 
       category: QuestionCategory.GENERAL,
       choices: [],
       required: true,
-      validationRules: '',
+      validationRules: ''
     }
   );
 
@@ -156,17 +156,17 @@ export function QuestionForm({ onSubmit, onCancel, isLoading, initialData, mode 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     
-    if (!formData.title.trim()) {
+    if (!formData.title || formData.title.trim() === '') {
       newErrors.title = 'Question title is required';
     }
     
-    if (!formData.description.trim()) {
+    if (!formData.description || formData.description.trim() === '') {
       newErrors.description = 'Description is required';
     }
     
     if (formData.questionType !== QuestionType.TEXT_BASED && 
         formData.questionType !== QuestionType.SENTIMENT && 
-        (!options || options.length < 2 || options.some(opt => !opt.text.trim()))) {
+        (!options || options.length < 2 || options.some(opt => !opt.text || opt.text.trim() === ''))) {
       newErrors.options = 'At least two non-empty options are required';
     }
     
@@ -181,12 +181,20 @@ export function QuestionForm({ onSubmit, onCancel, isLoading, initialData, mode 
       return;
     }
 
+    // Ensure all required fields are properly set
     const submitData = {
-      ...formData,
+      title: formData.title.trim(),
+      description: formData.description.trim(),
+      questionType: formData.questionType,
+      category: formData.category,
       choices: formData.questionType === QuestionType.TEXT_BASED ? [] :
                formData.questionType === QuestionType.SENTIMENT ? ['NEGATIVE', 'NEUTRAL', 'POSITIVE'] :
-               options.map(opt => opt.text)
+               options.map(opt => opt.text.trim()).filter(text => text !== ''),
+      required: formData.required ?? true,
+      validationRules: formData.validationRules || ''
     };
+
+    console.log('Submitting question data:', submitData);
     onSubmit(submitData);
   };
 
