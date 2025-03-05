@@ -1,19 +1,20 @@
 package dev.bengi.feedbackservice.service.impl;
 
-import dev.bengi.feedbackservice.domain.model.Question;
-import dev.bengi.feedbackservice.domain.enums.QuestionCategory;
-import dev.bengi.feedbackservice.repository.QuestionRepository;
-import dev.bengi.feedbackservice.service.QuestionService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import dev.bengi.feedbackservice.domain.enums.QuestionCategory;
+import dev.bengi.feedbackservice.domain.model.Question;
+import dev.bengi.feedbackservice.repository.QuestionRepository;
+import dev.bengi.feedbackservice.service.QuestionService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
@@ -29,11 +30,20 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     @Override
-    public Question updateQuestion(Long id, Question question) {
+    public Question updateQuestion(Long id, Question updatedQuestion) {
         Question existingQuestion = getQuestion(id);
-        question.setId(id);
-        question.setUpdatedAt(LocalDateTime.now());
-        return questionRepository.save(question);
+        
+        // Update fields while preserving creation date and ID
+        existingQuestion.setText(updatedQuestion.getText());
+        existingQuestion.setDescription(updatedQuestion.getDescription());
+        existingQuestion.setQuestionType(updatedQuestion.getQuestionType());
+        existingQuestion.setCategory(updatedQuestion.getCategory());
+        existingQuestion.setChoices(updatedQuestion.getChoices());
+        existingQuestion.setRequired(updatedQuestion.isRequired());
+        existingQuestion.setValidationRules(updatedQuestion.getValidationRules());
+        existingQuestion.setUpdatedAt(LocalDateTime.now());
+        
+        return questionRepository.save(existingQuestion);
     }
 
     @Override

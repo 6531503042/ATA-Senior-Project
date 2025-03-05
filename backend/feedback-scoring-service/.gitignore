@@ -38,8 +38,6 @@ pip-debug.log*
 .settings/
 
 # Model files and cache
-models/
-*.model
 *.pkl
 *.h5
 .cache/
