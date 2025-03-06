@@ -1,16 +1,17 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import type { User, LoginCredentials } from '@/types/auth';
+import type { LoginRequest } from '@/lib/api/auth';
 import { AxiosError } from 'axios';
 import { auth } from '@/lib/api/auth';
 
 interface UseAuthReturn {
-  user: User | null;
+  user: any | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (credentials: LoginCredentials) => Promise<void>;
+  login: (credentials: LoginRequest) => Promise<void>;
   logout: () => void;
   error: string | null;
+  timeUntilExpiration: number | null;
 }
 
 interface ApiErrorResponse {
@@ -22,9 +23,41 @@ interface ApiErrorResponse {
 
 export function useAuth(): UseAuthReturn {
   const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [timeUntilExpiration, setTimeUntilExpiration] = useState<number | null>(null);
+
+  // Function to check token status and update state
+  const checkTokenStatus = useCallback(() => {
+    if (auth.isAuthenticated()) {
+      const userData = auth.getUser();
+      if (userData) {
+        setUser(userData);
+        
+        // Update time until expiration
+        const timeLeft = auth.getTimeUntilExpiration();
+        setTimeUntilExpiration(timeLeft);
+        
+        // If token is about to expire, try to refresh it
+        if (auth.isTokenAboutToExpire()) {
+          auth.refreshToken().catch(() => {
+            console.warn('Failed to refresh token that was about to expire');
+          });
+        }
+      } else {
+        // If authenticated but no user data, something is wrong
+        auth.logout();
+        setUser(null);
+        setTimeUntilExpiration(null);
+      }
+    } else {
+      // Not authenticated (possibly expired token)
+      auth.logout();
+      setUser(null);
+      setTimeUntilExpiration(null);
+    }
+  }, []);
 
   // Initialize auth state
   useEffect(() => {
@@ -38,7 +71,8 @@ export function useAuth(): UseAuthReturn {
           const userData = auth.getUser();
           
           if (userData && isMounted) {
-            setUser(userData as User);
+            setUser(userData);
+            setTimeUntilExpiration(auth.getTimeUntilExpiration());
           } else {
             // If no user data but supposedly authenticated, try to validate
             const isValid = await auth.validateToken();
@@ -46,6 +80,7 @@ export function useAuth(): UseAuthReturn {
               // If token is invalid, clean up
               auth.logout();
               setUser(null);
+              setTimeUntilExpiration(null);
             }
           }
         }
@@ -54,6 +89,7 @@ export function useAuth(): UseAuthReturn {
         // Don't automatically redirect on error, just clear the state
         auth.logout();
         setUser(null);
+        setTimeUntilExpiration(null);
       } finally {
         if (isMounted) {
           setIsLoading(false);
@@ -63,20 +99,41 @@ export function useAuth(): UseAuthReturn {
     
     initAuth();
     
+    // Set up token expiration check interval (every minute)
+    const tokenCheckInterval = setInterval(() => {
+      if (isMounted) {
+        checkTokenStatus();
+      }
+    }, 60000); // Check every minute
+    
+    // Set up event listener for session expired events
+    const handleSessionExpired = () => {
+      if (isMounted) {
+        setUser(null);
+        setTimeUntilExpiration(null);
+        setError('Your session has expired. Please log in again.');
+      }
+    };
+    
+    window.addEventListener('auth:session-expired', handleSessionExpired);
+    
     return () => {
       isMounted = false;
+      clearInterval(tokenCheckInterval);
+      window.removeEventListener('auth:session-expired', handleSessionExpired);
     };
-  }, []);
+  }, [checkTokenStatus]);
 
-  // Simplified logout function that doesn't force redirect
+  // Simplified logout function
   const handleLogout = useCallback(() => {
     console.log('Logging out user');
     auth.logout();
     setUser(null);
+    setTimeUntilExpiration(null);
     router.push('/auth/login');
   }, [router]);
 
-  const handleLogin = async (credentials: LoginCredentials) => {
+  const handleLogin = async (credentials: LoginRequest) => {
     try {
       setIsLoading(true);
       setError(null);
@@ -93,6 +150,7 @@ export function useAuth(): UseAuthReturn {
       }
 
       setUser(userInfo);
+      setTimeUntilExpiration(auth.getTimeUntilExpiration());
       
       // Redirect based on role
       if (userInfo.roles?.includes('ROLE_ADMIN')) {
@@ -134,5 +192,6 @@ export function useAuth(): UseAuthReturn {
     login: handleLogin,
     logout: handleLogout,
     error,
+    timeUntilExpiration,
   };
 }

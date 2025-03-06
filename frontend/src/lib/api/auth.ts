@@ -1,6 +1,8 @@
 import api from '@/utils/api';
 import { getCookie, setCookie, deleteCookie } from 'cookies-next';
 
+const TOKEN_EXPIRATION_TIME = 24 * 60 * 60 * 1000; // 1 day in milliseconds
+
 export interface LoginRequest {
     username: string;
     password: string;
@@ -20,6 +22,11 @@ export interface AuthResponse {
     email: string;
     fullname: string;
     roles: string[];
+}
+
+interface TokenData {
+    token: string;
+    expiresAt: number;
 }
 
 export const auth = {
@@ -46,9 +53,18 @@ export const auth = {
                 throw new Error('Authentication tokens not received');
             }
 
+            // Calculate expiration time (current time + 1 day)
+            const expiresAt = Date.now() + TOKEN_EXPIRATION_TIME;
+            
             // Store tokens in cookies
             setCookie('accessToken', accessToken);
             setCookie('refreshToken', refreshToken);
+            
+            // Store token expiration time
+            localStorage.setItem('tokenExpiration', JSON.stringify({
+                token: accessToken,
+                expiresAt
+            }));
             
             // Store user info from response body
             if (response.data?.user_info) {
@@ -88,11 +104,17 @@ export const auth = {
             deleteCookie('refreshToken');
             deleteCookie('user_role');
             localStorage.removeItem('user');
+            localStorage.removeItem('tokenExpiration');
         }
     },
 
     async validateToken() {
         try {
+            // First check if token is expired locally
+            if (!this.isTokenValid()) {
+                return false;
+            }
+
             const token = getCookie('accessToken');
             if (!token) return false;
 
@@ -104,8 +126,53 @@ export const auth = {
         }
     },
 
+    async refreshToken() {
+        try {
+            const refreshToken = getCookie('refreshToken');
+            if (!refreshToken) return false;
+
+            const response = await api.post('/auth/refresh', {}, {
+                headers: {
+                    'Refresh-Token': refreshToken
+                }
+            });
+
+            // Extract new access token from response
+            const newAccessToken = response.headers['authorization']?.replace('Bearer ', '');
+            const newRefreshToken = response.headers['refresh-token'];
+            
+            if (!newAccessToken) {
+                return false;
+            }
+
+            // Calculate new expiration time
+            const expiresAt = Date.now() + TOKEN_EXPIRATION_TIME;
+            
+            // Update tokens in cookies
+            setCookie('accessToken', newAccessToken);
+            if (newRefreshToken) {
+                setCookie('refreshToken', newRefreshToken);
+            }
+            
+            // Update token expiration
+            localStorage.setItem('tokenExpiration', JSON.stringify({
+                token: newAccessToken,
+                expiresAt
+            }));
+            
+            return true;
+        } catch (error) {
+            console.error('Token refresh error:', error);
+            return false;
+        }
+    },
+
     async checkAuthority(requiredRole: string) {
         try {
+            if (!this.isTokenValid()) {
+                return false;
+            }
+
             const response = await api.get('/auth/hasAuthority', {
                 params: { requireRole: requiredRole }
             });
@@ -118,16 +185,66 @@ export const auth = {
 
     getUser(): AuthResponse | null {
         if (typeof window === 'undefined') return null;
+        
+        // If token is expired, consider user as logged out
+        if (!this.isTokenValid()) {
+            return null;
+        }
+        
         const userStr = localStorage.getItem('user');
         return userStr ? JSON.parse(userStr) : null;
     },
 
     isAuthenticated(): boolean {
-        return !!getCookie('accessToken');
+        // Check both if token exists and is not expired
+        return !!getCookie('accessToken') && this.isTokenValid();
     },
 
     getUserRole(): string | null {
         const user = this.getUser();
         return user?.roles?.[0] || null;
+    },
+
+    // New methods for token expiration handling
+
+    isTokenValid(): boolean {
+        try {
+            const tokenData = this.getTokenData();
+            if (!tokenData) return false;
+            
+            return Date.now() < tokenData.expiresAt;
+        } catch (error) {
+            console.error('Error checking token validity:', error);
+            return false;
+        }
+    },
+
+    getTokenData(): TokenData | null {
+        if (typeof window === 'undefined') return null;
+        
+        try {
+            const tokenDataStr = localStorage.getItem('tokenExpiration');
+            if (!tokenDataStr) return null;
+            
+            return JSON.parse(tokenDataStr);
+        } catch (error) {
+            console.error('Error parsing token data:', error);
+            return null;
+        }
+    },
+
+    getTimeUntilExpiration(): number | null {
+        const tokenData = this.getTokenData();
+        if (!tokenData) return null;
+        
+        const remainingTime = tokenData.expiresAt - Date.now();
+        return remainingTime > 0 ? remainingTime : 0;
+    },
+
+    isTokenAboutToExpire(minutes = 5): boolean {
+        const timeRemaining = this.getTimeUntilExpiration();
+        const threshold = minutes * 60 * 1000;
+        
+        return timeRemaining !== null && timeRemaining < threshold && timeRemaining > 0;
     }
-}; 
+};
