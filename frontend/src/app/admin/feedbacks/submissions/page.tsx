@@ -31,7 +31,7 @@ import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { SubmissionAnalysis } from './components/SubmissionAnalysis';
 import { SubmissionMetrics } from './components/SubmissionMetrics';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/Button';
 import { AIInsightsCard } from './components/AIInsightsCard';
 import type { AIInsights } from '@/lib/api/submissions';
 import axios from 'axios';

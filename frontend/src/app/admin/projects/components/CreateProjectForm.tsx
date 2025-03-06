@@ -5,7 +5,7 @@ import { FolderPlus, X, Rocket, CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import Button from '@/components/ui/button';
+import Button from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
 import { TeamSelector } from '@/components/shared/team-selector';
 import { createProject, updateProjectMembers } from '@/lib/api/projects';

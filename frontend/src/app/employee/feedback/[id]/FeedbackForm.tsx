@@ -6,7 +6,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { getCookie } from 'cookies-next';
 import { useRouter } from 'next/navigation';
 import { AlertCircle, CheckCircle2, MessageSquare, ChevronLeft, ChevronRight, ClipboardList, Clock, User2, BarChart } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/Button';
 import QuestionCard from '@/components/feedback/QuestionCard';
 import { FeedbackOverallComments } from './components/FeedbackOverallComments';
 import {

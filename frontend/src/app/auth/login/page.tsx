@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { Card } from "@/components/ui/card";
-import Button from "@/components/ui/button";
+import Button from "@/components/ui/Button";
 import { User, Lock } from "lucide-react";
 
 export default function LoginPage() {

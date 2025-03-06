@@ -9,6 +9,7 @@ export interface User {
 }
 
 export interface AuthResponse {
+  token: AuthResponse;
   access_token: string;
   refresh_token: string;
   user_info: User;

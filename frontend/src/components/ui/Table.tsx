@@ -1,5 +1,5 @@
 import React from 'react';
-import Button from './button';
+import Button from './Button';
 
 interface Column<T> {
   key: keyof T | string;
