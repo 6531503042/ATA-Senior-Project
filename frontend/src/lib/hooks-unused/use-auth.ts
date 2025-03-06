@@ -96,7 +96,7 @@ export function useAuth(): UseAuthReturn {
         router.push('/admin/dashboard');
       } else {
         console.log('Redirecting to user dashboard');
-        router.push('/dashboard');
+        router.push('/employee');
       }
     } catch (error) {
       console.error('Login error:', error);
