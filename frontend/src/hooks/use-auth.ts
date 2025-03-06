@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import type { User, LoginCredentials } from '@/types/auth';
 import { AxiosError } from 'axios';
@@ -26,47 +26,55 @@ export function useAuth(): UseAuthReturn {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Initialize auth state
   useEffect(() => {
+    let isMounted = true;
+    
     const initAuth = async () => {
       try {
+        // Check if authenticated according to auth service
         if (auth.isAuthenticated()) {
-          const user = auth.getUser();
-          if (user) {
-            setUser(user as User);
-            // Redirect based on role if on wrong path
-            const path = window.location.pathname;
-            const isAdminPath = path.startsWith('/admin');
-            const isEmployeePath = path.startsWith('/employee');
-            const isAdminUser = user.roles.includes('ROLE_ADMIN');
-
-            if (isAdminPath && !isAdminUser) {
-              router.push('/employee');
-            } else if (isEmployeePath && isAdminUser) {
-              router.push('/admin/dashboard');
-            }
+          // Get user data
+          const userData = auth.getUser();
+          
+          if (userData && isMounted) {
+            setUser(userData as User);
           } else {
-            // If no user info but token exists, validate token
+            // If no user data but supposedly authenticated, try to validate
             const isValid = await auth.validateToken();
-            if (!isValid) {
-              handleLogout();
+            if (!isValid && isMounted) {
+              // If token is invalid, clean up
+              auth.logout();
+              setUser(null);
             }
           }
         }
       } catch (err) {
         console.error('Error initializing auth:', err);
-        handleLogout();
+        // Don't automatically redirect on error, just clear the state
+        auth.logout();
+        setUser(null);
       } finally {
-        setIsLoading(false);
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     };
+    
     initAuth();
-  }, [router]);
+    
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
-  const handleLogout = () => {
+  // Simplified logout function that doesn't force redirect
+  const handleLogout = useCallback(() => {
+    console.log('Logging out user');
     auth.logout();
     setUser(null);
     router.push('/auth/login');
-  };
+  }, [router]);
 
   const handleLogin = async (credentials: LoginCredentials) => {
     try {
@@ -85,7 +93,7 @@ export function useAuth(): UseAuthReturn {
       }
 
       setUser(userInfo);
-
+      
       // Redirect based on role
       if (userInfo.roles?.includes('ROLE_ADMIN')) {
         console.log('Redirecting to admin dashboard');
@@ -127,4 +135,4 @@ export function useAuth(): UseAuthReturn {
     logout: handleLogout,
     error,
   };
-} 
+}

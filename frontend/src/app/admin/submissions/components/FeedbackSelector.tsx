@@ -16,7 +16,7 @@ import { format } from 'date-fns';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import axios from 'axios';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { getCookie } from 'cookies-next';
 
 interface Feedback {

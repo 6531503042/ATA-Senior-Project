@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { ClipboardList, X } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 
 interface FormHeaderProps {
   setIsOpen: (isOpen: boolean) => void;

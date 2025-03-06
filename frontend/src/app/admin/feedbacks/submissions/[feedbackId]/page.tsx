@@ -36,7 +36,7 @@ import { getCookie } from 'cookies-next';
 import { SatisfactionOverview } from '../components/SatisfactionOverview';
 import { AIInsightsCard } from '../components/AIInsightsCard';
 import type { SubmissionResponse, FeedbackAnalysis, SatisfactionAnalysis, AIInsights } from '@/lib/api/submissions';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
