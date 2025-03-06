@@ -104,7 +104,7 @@ export function useAuth(): UseAuthReturn {
       if (isMounted) {
         checkTokenStatus();
       }
-    }, 60000); // Check every minute
+    }, 30000); // Check every minute
     
     // Set up event listener for session expired events
     const handleSessionExpired = () => {
