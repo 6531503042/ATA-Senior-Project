@@ -2,7 +2,7 @@ import api from '@/utils/api';
 import { getCookie, setCookie, deleteCookie } from 'cookies-next';
 
 // const TOKEN_EXPIRATION_TIME = 24 * 60 * 60 * 1000; // 1 day in milliseconds
-const TOKEN_EXPIRATION_TIME = 30 * 60 * 1000; // 5 minutes in milliseconds
+const TOKEN_EXPIRATION_TIME = 60 * 60 * 1000; // 60 minutes in milliseconds
 
 export interface LoginRequest {
     username: string;
