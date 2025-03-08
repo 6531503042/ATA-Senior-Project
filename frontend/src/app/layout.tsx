@@ -2,8 +2,8 @@
 
 import { Inter } from "next/font/google";
 import "@/styles/globals.css";
-import { useEffect } from "react";
-import setupInterceptors from "@/utils/api-interceptors";
+import SessionExpired from "@/utils/SessionExpired";
+import { useAuth } from '@/hooks/use-auth';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -12,12 +12,14 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  useEffect(() => {
-    setupInterceptors();
-  }, []);
+  const { logout } = useAuth();
+  
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        {children}
+        <SessionExpired onRedirect={logout} />
+      </body>
     </html>
   );
 }
