@@ -33,13 +33,23 @@ export function DatePicker({
   disabled,
   error,
 }: DatePickerProps) {
+  // Create a ref for the popover
+  const [open, setOpen] = React.useState(false);
+
+  // Handle date selection with auto-close
+  const handleSelect = (selectedDate: Date | undefined) => {
+    setDate(selectedDate);
+    // Close the popover after selection
+    setOpen(false);
+  };
+
   return (
     <div className="flex flex-col gap-2">
       <label className="text-sm font-medium text-gray-700">
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
       </label>
-      <Popover>
+      <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
             variant="outline"
@@ -58,11 +68,15 @@ export function DatePicker({
           <Calendar
             mode="single"
             selected={date}
-            onSelect={setDate}
-            disabled={(date) => {
-              if (minDate && date < minDate) return true;
-              if (maxDate && date > maxDate) return true;
-              return false;
+            onSelect={handleSelect}
+            disabled={(selectedDate) => {
+              // Disable dates before the start date for dueDate
+              if (label === "Due Date" && minDate) {
+                return selectedDate < minDate;
+              }
+              if (minDate && selectedDate < minDate) return true;
+              if (maxDate && selectedDate > maxDate) return true;
+              return selectedDate < new Date(); // Disable past dates for all other date pickers
             }}
             initialFocus
           />
@@ -73,4 +87,4 @@ export function DatePicker({
       )}
     </div>
   );
-} 
+}

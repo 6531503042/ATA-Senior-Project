@@ -1,16 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import type { User, LoginCredentials } from '@/types/auth';
+import type { LoginRequest } from '@/lib/api/auth';
 import { AxiosError } from 'axios';
 import { auth } from '@/lib/api/auth';
 
 interface UseAuthReturn {
-  user: User | null;
+  user: any | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (credentials: LoginCredentials) => Promise<void>;
+  login: (credentials: LoginRequest) => Promise<void>;
   logout: () => void;
   error: string | null;
+  timeUntilExpiration: number | null;
 }
 
 interface ApiErrorResponse {
@@ -22,53 +23,144 @@ interface ApiErrorResponse {
 
 export function useAuth(): UseAuthReturn {
   const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [timeUntilExpiration, setTimeUntilExpiration] = useState<number | null>(null);
 
+  // Function to check token status and update state
+  const checkTokenStatus = useCallback(() => {
+    // Skip checks if we're on a public route
+    if (typeof window !== 'undefined') {
+      const currentPath = window.location.pathname;
+      if (auth.isPublicRoute(currentPath)) {
+        return;
+      }
+    }
+    
+    if (auth.isAuthenticated()) {
+      const userData = auth.getUser();
+      if (userData) {
+        setUser(userData);
+        
+        // Update time until expiration
+        const timeLeft = auth.getTimeUntilExpiration();
+        setTimeUntilExpiration(timeLeft);
+        
+        // If token is about to expire (within 2 minutes), try to refresh it
+        if (auth.isTokenAboutToExpire(2)) {
+          auth.refreshToken().catch(() => {
+            console.warn('Failed to refresh token that was about to expire');
+          });
+        }
+      } else {
+        // If authenticated but no user data, something is wrong
+        setUser(null);
+        setTimeUntilExpiration(null);
+      }
+    } else {
+      // Not authenticated (possibly expired token)
+      setUser(null);
+      setTimeUntilExpiration(null);
+    }
+  }, []);
+
+  // Initialize auth state
   useEffect(() => {
+    let isMounted = true;
+    
     const initAuth = async () => {
       try {
+        // Skip initialization if we're on a public route
+        if (typeof window !== 'undefined') {
+          const currentPath = window.location.pathname;
+          if (auth.isPublicRoute(currentPath)) {
+            setIsLoading(false);
+            return;
+          }
+          
+          // Check if we just came from a redirect
+          const forcedRedirect = sessionStorage.getItem('forcedRedirect');
+          if (forcedRedirect === 'true') {
+            sessionStorage.removeItem('forcedRedirect');
+            setIsLoading(false);
+            return;
+          }
+        }
+        
+        // Check if authenticated according to auth service
         if (auth.isAuthenticated()) {
-          const user = auth.getUser();
-          if (user) {
-            setUser(user as User);
-            // Redirect based on role if on wrong path
-            const path = window.location.pathname;
-            const isAdminPath = path.startsWith('/admin');
-            const isEmployeePath = path.startsWith('/employee');
-            const isAdminUser = user.roles.includes('ROLE_ADMIN');
-
-            if (isAdminPath && !isAdminUser) {
-              router.push('/employee');
-            } else if (isEmployeePath && isAdminUser) {
-              router.push('/admin/dashboard');
-            }
+          // Get user data
+          const userData = auth.getUser();
+          
+          if (userData && isMounted) {
+            setUser(userData);
+            setTimeUntilExpiration(auth.getTimeUntilExpiration());
           } else {
-            // If no user info but token exists, validate token
+            // If no user data but supposedly authenticated, try to validate
             const isValid = await auth.validateToken();
-            if (!isValid) {
-              handleLogout();
+            if (!isValid && isMounted) {
+              // If token is invalid, clean up
+              setUser(null);
+              setTimeUntilExpiration(null);
             }
           }
         }
       } catch (err) {
         console.error('Error initializing auth:', err);
-        handleLogout();
+        // Clear auth state
+        setUser(null);
+        setTimeUntilExpiration(null);
       } finally {
-        setIsLoading(false);
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     };
+    
     initAuth();
-  }, [router]);
+    
+    // Set up token expiration check interval (every 60 seconds)
+    // Using a longer interval to reduce unnecessary checks
+    const tokenCheckInterval = setInterval(() => {
+      if (isMounted) {
+        checkTokenStatus();
+      }
+    }, 60000); // Check every 60 seconds
+    
+    // Set up event listener for session expired events
+    const handleSessionExpired = () => {
+      if (isMounted) {
+        console.log('Session expired event received in useAuth hook');
+        setUser(null);
+        setTimeUntilExpiration(null);
+        setError('Your session has expired. Please log in again.');
+      }
+    };
+    
+    // Listen for the custom event when token expires
+    window.addEventListener('auth:session-expired', handleSessionExpired);
+    
+    return () => {
+      isMounted = false;
+      clearInterval(tokenCheckInterval);
+      window.removeEventListener('auth:session-expired', handleSessionExpired);
+    };
+  }, [checkTokenStatus]);
 
-  const handleLogout = () => {
+  // Logout function
+  const handleLogout = useCallback(() => {
+    console.log('Logging out user');
     auth.logout();
     setUser(null);
-    router.push('/auth/login');
-  };
+    setTimeUntilExpiration(null);
+    
+    // Use a flag to prevent redirect loops
+    localStorage.setItem('manualLogout', 'true');
+    window.location.href = '/auth/login';
+  }, []);
 
-  const handleLogin = async (credentials: LoginCredentials) => {
+  const handleLogin = async (credentials: LoginRequest) => {
     try {
       setIsLoading(true);
       setError(null);
@@ -85,15 +177,21 @@ export function useAuth(): UseAuthReturn {
       }
 
       setUser(userInfo);
-
-      // Redirect based on role
-      if (userInfo.roles?.includes('ROLE_ADMIN')) {
-        console.log('Redirecting to admin dashboard');
-        router.push('/admin/dashboard');
-      } else {
-        console.log('Redirecting to employee dashboard');
-        router.push('/employee');
-      }
+      setTimeUntilExpiration(auth.getTimeUntilExpiration());
+      
+      // Clear any session expired flags
+      sessionStorage.removeItem('sessionExpiredHandled');
+      
+      // Redirect based on role - with a small delay to ensure state is updated
+      setTimeout(() => {
+        if (userInfo.roles?.includes('ROLE_ADMIN')) {
+          console.log('Redirecting to admin dashboard');
+          window.location.href = '/admin/dashboard';
+        } else {
+          console.log('Redirecting to employee dashboard');
+          window.location.href = '/employee';
+        }
+      }, 100);
     } catch (error) {
       console.error('Login error:', error);
       
@@ -126,5 +224,6 @@ export function useAuth(): UseAuthReturn {
     login: handleLogin,
     logout: handleLogout,
     error,
+    timeUntilExpiration,
   };
-} 
+}
