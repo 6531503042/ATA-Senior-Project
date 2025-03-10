@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/Button";
 import { User, Lock, Eye, EyeOff } from "lucide-react";
 import Image from "next/image";
+import Logo from "@assets/ata-logo.png";
 
 export default function LoginPage() {
   const { login, isLoading, error } = useAuth();
@@ -65,7 +66,7 @@ export default function LoginPage() {
           <div className="px-8 pt-8 pb-6 bg-blue-50 border-b border-blue-100">
             <div className="flex justify-center mb-6">
               <Image
-                src="logo.png" 
+                src={Logo}
                 alt="ATA Logo" 
                 width={56}
                 height={56}
