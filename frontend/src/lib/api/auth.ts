@@ -8,19 +8,11 @@ const TOKEN_EXPIRATION_TIME = 24 * 60 * 60 * 1000; // 1 day in milliseconds
 const SESSION_EXPIRED_EVENT = 'auth:session-expired';
 
 // Public routes that don't require authentication
-const PUBLIC_ROUTES = ['/auth/login', '/auth/register'];
+const PUBLIC_ROUTES = ['/auth/login'];
 
 export interface LoginRequest {
     username: string;
     password: string;
-}
-
-export interface RegisterRequest {
-    username: string;
-    email: string;
-    password: string;
-    fullname: string;
-    gender: string;
 }
 
 export interface AuthResponse {
@@ -105,16 +97,6 @@ export const auth = {
         }
     },
 
-    async register(data: RegisterRequest) {
-        try {
-            const response = await api.post('/auth/register', data);
-            return response.data;
-        } catch (error) {
-            console.error('Registration error:', error);
-            throw error;
-        }
-    },
-
     logout() {
         try {
             // Try to call logout API but don't wait for it
@@ -123,16 +105,24 @@ export const auth = {
             });
         } finally {
             // Always clear all auth data regardless of API call success
-            deleteCookie('accessToken');
-            deleteCookie('refreshToken');
-            deleteCookie('user_role');
-            localStorage.removeItem('user');
-            localStorage.removeItem('tokenExpiration');
-            localStorage.removeItem('justLoggedIn');
+            this.clearAuthData();
             
             // Set a flag to indicate manual logout to prevent redirect loops
             localStorage.setItem('manualLogout', 'true');
         }
+    },
+    
+    // Separate method to clear all auth data - for reuse
+    clearAuthData() {
+        // Clear cookies with proper options to ensure deletion
+        deleteCookie('accessToken', { path: '/' });
+        deleteCookie('refreshToken', { path: '/' });
+        deleteCookie('user_role', { path: '/' });
+        
+        // Clear all localStorage items related to auth
+        localStorage.removeItem('user');
+        localStorage.removeItem('tokenExpiration');
+        localStorage.removeItem('justLoggedIn');
     },
 
     async validateToken() {
@@ -263,6 +253,8 @@ export const auth = {
             const isValid = Date.now() < tokenData.expiresAt;
             if (!isValid && dispatchEvent) {
                 this.dispatchSessionExpiredEvent();
+                // Clear auth data when token is invalid
+                this.clearAuthData();
             }
             return isValid;
         } catch (error) {
@@ -326,6 +318,9 @@ export const auth = {
             const event = new CustomEvent(SESSION_EXPIRED_EVENT, { bubbles: true });
             window.dispatchEvent(event);
             
+            // Clear all auth data when session expires
+            this.clearAuthData();
+            
             // Set a flag to prevent multiple dispatches
             sessionStorage.setItem('sessionExpiredHandled', 'true');
             
@@ -340,6 +335,9 @@ export const auth = {
         if (typeof window !== 'undefined') {
             const currentPath = window.location.pathname;
             if (!this.isPublicRoute(currentPath)) {
+                // Clear auth data before redirecting
+                this.clearAuthData();
+                
                 // Set flag to prevent loops
                 sessionStorage.setItem('forcedRedirect', 'true');
                 window.location.href = `/auth/login?${reason}=true`;
