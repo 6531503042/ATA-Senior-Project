@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useAuth } from '@/hooks/use-auth';
+import React from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useAuth } from "@/hooks/use-auth";
 import {
   LayoutDashboard,
   FolderKanban,
@@ -11,8 +11,10 @@ import {
   MessageSquare,
   LogOut,
   ClipboardList,
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import Logo from "@assets/ata-logo.png";
+import Image from "next/image";
 
 interface MenuItem {
   name: string;
@@ -23,34 +25,34 @@ interface MenuItem {
 
 const menuItems: MenuItem[] = [
   {
-    name: 'Dashboard',
-    href: '/admin/dashboard',
+    name: "Dashboard",
+    href: "/admin/dashboard",
     icon: LayoutDashboard,
-    description: 'Overview and analytics',
+    description: "Overview and analytics",
   },
   {
-    name: 'Projects',
-    href: '/admin/projects',
+    name: "Projects",
+    href: "/admin/projects",
     icon: FolderKanban,
-    description: 'Manage projects',
+    description: "Manage projects",
   },
   {
-    name: 'Questions',
-    href: '/admin/questions',
+    name: "Questions",
+    href: "/admin/questions",
     icon: CircleHelp,
-    description: 'Feedback questions',
+    description: "Feedback questions",
   },
   {
-    name: 'Feedback',
-    href: '/admin/feedbacks',
+    name: "Feedback",
+    href: "/admin/feedbacks",
     icon: MessageSquare,
-    description: 'View feedbacks',
+    description: "View feedbacks",
   },
   {
-    name: 'Submissions',
-    href: '/admin/submissions',
+    name: "Submissions",
+    href: "/admin/submissions",
     icon: ClipboardList,
-    description: 'View submissions',
+    description: "View submissions",
   },
 ];
 
@@ -64,16 +66,18 @@ export default function Sidebar() {
     <aside className="w-64 h-screen bg-white border-r border-gray-200 flex flex-col shadow-sm">
       {/* Header */}
       <div className="p-6 border-b border-gray-100">
-        <Link 
-          href="/admin/dashboard" 
+        <Link
+          href="/admin/dashboard"
           className="flex items-center gap-2 transition-transform hover:scale-[0.98]"
         >
-          <div className="p-2 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg">
-            <LayoutDashboard className="h-5 w-5 text-white" />
-          </div>
-          <h1 className="text-xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">
-            HR Admin
-          </h1>
+          <Image
+                src={Logo}
+                alt="ATA Logo" 
+                width={200}
+                height={200}
+                priority
+                unoptimized
+              />
         </Link>
       </div>
 
@@ -91,18 +95,22 @@ export default function Sidebar() {
                 : "text-gray-600"
             )}
           >
-            <div className={cn(
-              "p-2 rounded-lg transition-colors",
-              isActive(item.href)
-                ? "bg-violet-200"
-                : "bg-gray-100 group-hover:bg-violet-100"
-            )}>
-              <item.icon className={cn(
-                "w-5 h-5",
+            <div
+              className={cn(
+                "p-2 rounded-lg transition-colors",
                 isActive(item.href)
-                  ? "text-violet-600"
-                  : "text-gray-600 group-hover:text-violet-600"
-              )} />
+                  ? "bg-violet-200"
+                  : "bg-gray-100 group-hover:bg-violet-100"
+              )}
+            >
+              <item.icon
+                className={cn(
+                  "w-5 h-5",
+                  isActive(item.href)
+                    ? "text-violet-600"
+                    : "text-gray-600 group-hover:text-violet-600"
+                )}
+              />
             </div>
             <div className="flex flex-col">
               <span className="text-sm font-medium">{item.name}</span>
@@ -129,4 +137,4 @@ export default function Sidebar() {
       </div>
     </aside>
   );
-} 
+}
