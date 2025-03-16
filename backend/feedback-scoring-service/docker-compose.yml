@@ -1,84 +1,65 @@
 version: '3.8'
 
 services:
-  mongodb:
-    image: mongo:latest
-    container_name: feedback-mongodb
-    restart: always
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongodb_data:/data/db
-      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=admin
-      - MONGO_INITDB_ROOT_PASSWORD=password
-      - MONGO_INITDB_DATABASE=feedback_analytics
-    networks:
-      - feedback-network
-    healthcheck:
-      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
-      interval: 10s
-      timeout: 10s
-      retries: 5
-      start_period: 40s
-    deploy:
-      resources:
-        limits:
-          memory: 1G
-          cpus: '1'
-        reservations:
-          memory: 512M
-          cpus: '0.5'
-
-  feedback-scoring:
-    build: 
+  feedback-scoring-service:
+    build:
       context: .
       dockerfile: Dockerfile
     container_name: feedback-scoring-service
-    restart: always
+    restart: unless-stopped
     ports:
-      - "8086:8086"
+      - "8085:8085"
     environment:
-      - MONGODB_URL=mongodb://admin:password@mongodb:27017/feedback_analytics?authSource=admin
-      - FEEDBACK_SERVICE_URL=http://host.docker.internal:8084
-      - MODEL_PATH=/app/models
-      - TRANSFORMERS_CACHE=/app/models
-      - HF_HOME=/app/models
-      - PYTHONUNBUFFERED=1
+      - API_HOST=0.0.0.0
+      - API_PORT=8085
+      - API_RELOAD=False
+      - API_WORKERS=2
+      - MONGODB_URL=mongodb://mongodb:27017
+      - MONGODB_DB_NAME=feedback_analytics
+      - FEEDBACK_SERVICE_URL=http://feedback-service:8084
+      - USE_GPU=False
+      - LOG_LEVEL=INFO
+      - BATCH_SIZE=16
+      - MAX_WORKERS=4
+      - CORS_ORIGINS=http://localhost:3000
     volumes:
-      - model_cache:/app/models
+      - ./models:/app/models
     depends_on:
-      mongodb:
-        condition: service_healthy
+      - mongodb
     networks:
       - feedback-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8086/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8085/health"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
-    deploy:
-      resources:
-        limits:
-          memory: 4G
-          cpus: '2'
-        reservations:
-          memory: 2G
-          cpus: '1'
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    dns:
-      - 8.8.8.8
-      - 8.8.4.4
+
+  mongodb:
+    image: mongo:6.0
+    container_name: mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+      - MONGO_INITDB_DATABASE=feedback_analytics
+    volumes:
+      - mongodb-data:/data/db
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    networks:
+      - feedback-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/feedback_analytics --quiet
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
 
 networks:
   feedback-network:
     driver: bridge
 
 volumes:
-  mongodb_data:
-    name: feedback-mongodb-data
-  model_cache:
-    name: feedback-model-cache 
+  mongodb-data: 

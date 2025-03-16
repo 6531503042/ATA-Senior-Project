@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, validator
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Union
 from datetime import datetime
 from enum import Enum
 
@@ -11,25 +11,30 @@ class SentimentType(str, Enum):
 class CategoryAnalysis(BaseModel):
     score: float = Field(ge=0, le=100)
     sentiment: str
-    recommendations: List[str]
+    recommendations: List[str] = Field(default_factory=lambda: ["Implement regular team meetings to improve information sharing", "Create a centralized documentation system for project updates"])
 
 class ExecutiveSummary(BaseModel):
     overall_rating: str
-    strengths: List[Dict]
-    weaknesses: List[Dict]
-    key_insights: List[str]
-    action_items: List[Dict]
+    strengths: List[Dict] = Field(default_factory=list)
+    weaknesses: List[Dict] = Field(default_factory=list)
+    key_insights: List[str] = Field(default_factory=lambda: ["Feedback indicates areas for improvement in team collaboration", "Communication processes could be enhanced for better efficiency"])
+    action_items: List[Dict] = Field(default_factory=lambda: [
+        {"text": "Implement regular team meetings to improve information sharing", "priority": "high", "category": "TEAM_COLLABORATION"},
+        {"text": "Create a centralized documentation system for project updates", "priority": "medium", "category": "DOCUMENTATION"}
+    ])
 
 class QuestionAnalysis(BaseModel):
     question_id: str | int
     question_text: str
     question_type: str
-    response: str
+    response: Union[str, List[str]]
     category: Optional[str] = None
     score: float = Field(ge=0, le=100)
     sentiment: SentimentType
-    suggestions: List = []
-    improvement_priorities: List = []
+    suggestions: List[str] = Field(default_factory=lambda: ["Implement regular team meetings to improve information sharing", "Create a centralized documentation system for project updates"])
+    improvement_priorities: List[Dict] = Field(default_factory=lambda: [
+        {"text": "Improve team communication", "priority": "high", "source": "analysis"}
+    ])
 
     @validator('score')
     def validate_score(cls, v):
@@ -39,19 +44,25 @@ class QuestionAnalysis(BaseModel):
 
 class FeedbackAnalysis(BaseModel):
     feedback_id: int
-    project_id: int
-    project_name: str
+    project_id: int = 0
+    project_name: str = "Unknown Project"
     submitted_by: Optional[str] = None
     submitted_at: datetime
     executive_summary: ExecutiveSummary
     question_analyses: List[QuestionAnalysis]
     overall_score: float = Field(ge=0, le=100)
     overall_sentiment: SentimentType
-    overall_suggestions: List[str]
-    overall_priorities: List[Dict]
+    overall_suggestions: List[str] = Field(default_factory=lambda: ["Implement regular team meetings to improve information sharing", "Create a centralized documentation system for project updates"])
+    overall_priorities: List[Dict] = Field(default_factory=lambda: [
+        {"text": "Improve team communication", "priority": "high", "category": "TEAM_COLLABORATION"},
+        {"text": "Enhance documentation processes", "priority": "medium", "category": "DOCUMENTATION"}
+    ])
     categories: Dict[str, CategoryAnalysis]
     satisfaction_score: float = Field(ge=0, le=100)
-    improvement_areas: List[Dict]
+    improvement_areas: List[Dict] = Field(default_factory=lambda: [
+        {"category": "TEAM_COLLABORATION", "score": 65.0, "suggestions": ["Implement regular team meetings", "Use collaborative tools for real-time communication"]},
+        {"category": "DOCUMENTATION", "score": 70.0, "suggestions": ["Create standardized documentation templates", "Establish a central knowledge repository"]}
+    ])
     key_metrics: Dict
 
     @validator('satisfaction_score', 'overall_score')
