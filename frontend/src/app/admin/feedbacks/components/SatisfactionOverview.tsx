@@ -20,8 +20,12 @@ interface SatisfactionOverviewProps {
 }
 
 const SatisfactionMeter = ({ percentage, previousYear }: { percentage: number; previousYear: number }) => {
+  // Ensure percentage and previousYear are valid numbers
+  const validPercentage = isNaN(percentage) ? 0 : percentage;
+  const validPreviousYear = isNaN(previousYear) ? 0 : previousYear;
+  
   // Calculate the angle for the semi-circle (180 degrees max)
-  const angle = (percentage / 100) * 180;
+  const angle = (validPercentage / 100) * 180;
   const radius = 120;
   
   // Calculate the point on the arc for the emoji
@@ -51,7 +55,7 @@ const SatisfactionMeter = ({ percentage, previousYear }: { percentage: number; p
             strokeWidth="30"
             strokeLinecap="round"
             initial={{ pathLength: 0 }}
-            animate={{ pathLength: percentage / 100 }}
+            animate={{ pathLength: validPercentage / 100 }}
             transition={{ duration: 2, ease: "easeOut" }}
           />
           {/* Emoji */}
@@ -87,7 +91,7 @@ const SatisfactionMeter = ({ percentage, previousYear }: { percentage: number; p
           className="absolute left-1/2 -translate-x-1/2 bottom-0 text-center bg-white/80 backdrop-blur-sm px-4 py-2 rounded-2xl shadow-sm"
         >
           <span className="block text-3xl md:text-4xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">
-            {percentage}%
+            {validPercentage}%
           </span>
           <span className="text-xs md:text-sm text-gray-500">Satisfaction Rate</span>
         </motion.div>
@@ -112,7 +116,7 @@ const SatisfactionMeter = ({ percentage, previousYear }: { percentage: number; p
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-gray-900">{previousYear}%</span>
+              <span className="text-sm font-semibold text-gray-900">{validPreviousYear}%</span>
               <span className="text-xs text-gray-500">Previous Year</span>
             </div>
           </div>
@@ -129,6 +133,9 @@ const SentimentCard = ({ emoji, percentage, label, color, icon: Icon }: {
   color: 'green' | 'gray' | 'red';
   icon: React.ElementType;
 }) => {
+  // Ensure percentage is a valid number
+  const validPercentage = isNaN(percentage) ? 0 : percentage;
+  
   const colors = {
     green: {
       bg: 'bg-emerald-50',
@@ -175,12 +182,12 @@ const SentimentCard = ({ emoji, percentage, label, color, icon: Icon }: {
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between mb-1">
           <span className={cn("font-medium", colors.text)}>{label}</span>
-          <span className={cn("font-bold", colors.text)}>{percentage.toFixed(1)}%</span>
+          <span className={cn("font-bold", colors.text)}>{validPercentage.toFixed(1)}%</span>
         </div>
         <div className="h-2 w-full bg-white rounded-full overflow-hidden shadow-inner">
           <motion.div
             initial={{ width: 0 }}
-            animate={{ width: `${percentage}%` }}
+            animate={{ width: `${validPercentage}%` }}
             transition={{ duration: 1, delay: 0.5 }}
             className={cn(
               "h-full rounded-full",
@@ -196,6 +203,11 @@ const SentimentCard = ({ emoji, percentage, label, color, icon: Icon }: {
 
 export function SatisfactionOverview({ analysis }: SatisfactionOverviewProps) {
   const { satisfactionOverview, sentimentDistribution, suggestions } = analysis;
+
+  // Ensure satisfaction rate is a valid number
+  const validSatisfactionRate = isNaN(satisfactionOverview.overallSatisfaction) 
+    ? 0 
+    : satisfactionOverview.overallSatisfaction;
 
   return (
     <Card className="bg-white p-4 md:p-6 shadow-lg rounded-2xl border-0 overflow-hidden relative">
@@ -245,7 +257,7 @@ export function SatisfactionOverview({ analysis }: SatisfactionOverviewProps) {
           <div className="flex flex-col items-center p-4 md:p-8 rounded-2xl bg-white shadow-sm border">
             <h3 className="text-lg font-semibold text-gray-900 mb-8">Overall Satisfaction</h3>
             <SatisfactionMeter 
-              percentage={satisfactionOverview.overallSatisfaction} 
+              percentage={validSatisfactionRate} 
               previousYear={85}
             />
           </div>
@@ -261,21 +273,21 @@ export function SatisfactionOverview({ analysis }: SatisfactionOverviewProps) {
             <div className="space-y-4">
               <SentimentCard
                 emoji={sentimentDistribution.positive.emoji}
-                percentage={sentimentDistribution.positive.percentage}
+                percentage={isNaN(sentimentDistribution.positive.percentage) ? 0 : sentimentDistribution.positive.percentage}
                 label={sentimentDistribution.positive.label}
                 color="green"
                 icon={ThumbsUp}
               />
               <SentimentCard
                 emoji={sentimentDistribution.neutral.emoji}
-                percentage={sentimentDistribution.neutral.percentage}
+                percentage={isNaN(sentimentDistribution.neutral.percentage) ? 0 : sentimentDistribution.neutral.percentage}
                 label={sentimentDistribution.neutral.label}
                 color="gray"
                 icon={Meh}
               />
               <SentimentCard
                 emoji={sentimentDistribution.negative.emoji}
-                percentage={sentimentDistribution.negative.percentage}
+                percentage={isNaN(sentimentDistribution.negative.percentage) ? 0 : sentimentDistribution.negative.percentage}
                 label={sentimentDistribution.negative.label}
                 color="red"
                 icon={ThumbsDown}

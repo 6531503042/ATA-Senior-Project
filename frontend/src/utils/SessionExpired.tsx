@@ -50,7 +50,7 @@ const SessionExpired: React.FC<SessionExpiredProps> = ({ onRedirect }) => {
         });
       }, 1000); // 1 second interval
       
-      setCountdownIntervalState(interval);
+      setCountdownIntervalState(interval as unknown as NodeJS.Timeout);
     };
 
     window.addEventListener('auth:session-expired', handleSessionExpired);

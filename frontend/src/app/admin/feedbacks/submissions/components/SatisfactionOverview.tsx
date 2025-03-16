@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { 
   BarChart2, 
   Download, 
@@ -29,6 +28,9 @@ const SentimentCard = ({ emoji, percentage, label, color, icon: Icon }: {
   color: 'green' | 'gray' | 'red';
   icon: React.ElementType;
 }) => {
+  // Ensure percentage is a valid number
+  const validPercentage = isNaN(percentage) ? 0 : percentage;
+  
   const colors = {
     green: {
       bg: 'bg-emerald-50',
@@ -75,12 +77,12 @@ const SentimentCard = ({ emoji, percentage, label, color, icon: Icon }: {
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between mb-1">
           <span className={cn("font-medium", colors.text)}>{label}</span>
-          <span className={cn("font-bold", colors.text)}>{percentage.toFixed(1)}%</span>
+          <span className={cn("font-bold", colors.text)}>{validPercentage.toFixed(1)}%</span>
         </div>
         <div className="h-2 w-full bg-white rounded-full overflow-hidden shadow-inner">
           <motion.div
             initial={{ width: 0 }}
-            animate={{ width: `${percentage}%` }}
+            animate={{ width: `${validPercentage}%` }}
             transition={{ duration: 1, delay: 0.5 }}
             className={cn(
               "h-full rounded-full",
@@ -96,6 +98,11 @@ const SentimentCard = ({ emoji, percentage, label, color, icon: Icon }: {
 
 export function SatisfactionOverview({ analysis }: SatisfactionOverviewProps) {
   const { satisfactionOverview, sentimentDistribution, suggestions } = analysis;
+
+  // Ensure satisfaction rate is a valid number
+  const satisfactionRate = isNaN(satisfactionOverview.satisfactionRate) 
+    ? 0 
+    : satisfactionOverview.satisfactionRate;
 
   return (
     <Card className="bg-white p-4 md:p-6 shadow-lg rounded-2xl border-0 overflow-hidden relative">
@@ -146,7 +153,7 @@ export function SatisfactionOverview({ analysis }: SatisfactionOverviewProps) {
             <div className="relative w-full max-w-md">
               <div className="flex flex-col items-center">
                 <div className="text-4xl font-bold text-violet-600 mb-2">
-                  {(satisfactionOverview.satisfactionRate * 100).toFixed(1)}%
+                  {satisfactionRate.toFixed(1)}%
                 </div>
                 <div className="text-sm text-gray-500">Satisfaction Rate</div>
               </div>

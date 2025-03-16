@@ -758,7 +758,7 @@ export default function FeedbackSubmissionPage({ params }: { params: Promise<{ f
             />
             <StatCard
               title="Satisfaction Rate"
-              value={isRefreshing ? '...' : (satisfactionAnalysis ? `${Math.min(Math.max(satisfactionAnalysis.satisfactionOverview.satisfactionRate * 100, 0), 100).toFixed(1)}%` : 'N/A')}
+              value={isRefreshing ? '...' : (satisfactionAnalysis ? `${Math.min(Math.max(satisfactionAnalysis.satisfactionOverview.satisfactionRate, 0), 100).toFixed(1)}%` : 'N/A')}
               icon={Smile}
               change={isRefreshing ? null : "+5.2%"}
               color="green"

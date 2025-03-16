@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
+import { cn, normalizeScore, formatScoreAsPercentage } from '@/lib/utils';
 import { Progress } from '@/components/ui/progress';
 
 interface QuestionDetail {
@@ -174,8 +174,11 @@ const QuestionResponse = ({
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 0.8) return 'text-green-600';
-    if (score >= 0.6) return 'text-yellow-600';
+    // Normalize score to 0-1 scale for color determination
+    const normalizedScore = normalizeScore(score) / 100;
+    
+    if (normalizedScore >= 0.8) return 'text-green-600';
+    if (normalizedScore >= 0.6) return 'text-yellow-600';
     return 'text-red-600';
   };
 
@@ -267,15 +270,18 @@ const QuestionResponse = ({
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-xs text-gray-500">Response Score</span>
                     <span className={cn("text-sm font-medium", getScoreColor(analysis.score))}>
-                      {(analysis.score * 100).toFixed(1)}%
+                      {formatScoreAsPercentage(analysis.score)}
                     </span>
                   </div>
                   <Progress 
-                    value={analysis.score * 100} 
+                    value={normalizeScore(analysis.score)} 
                     className={cn("h-2", 
-                      analysis.score >= 0.8 ? "bg-green-100" : 
-                      analysis.score >= 0.6 ? "bg-yellow-100" : 
-                      "bg-red-100"
+                      (() => {
+                        const normalizedScore = normalizeScore(analysis.score) / 100;
+                        if (normalizedScore >= 0.8) return "bg-green-100";
+                        if (normalizedScore >= 0.6) return "bg-yellow-100";
+                        return "bg-red-100";
+                      })()
                     )}
                   />
                 </div>
@@ -377,34 +383,55 @@ export function SubmissionDetails({ submission, analysis }: SubmissionDetailsPro
               <div className="p-4 md:p-5 bg-gradient-to-br from-blue-50 to-blue-100/30 rounded-xl shadow-sm border border-blue-100">
                 <div className="text-sm text-blue-700 mb-1 font-medium">Overall Score</div>
                 <div className="text-2xl md:text-3xl font-bold text-blue-900 flex items-baseline gap-2">
-                  {(analysis.overall_score * 100).toFixed(1)}%
+                  {formatScoreAsPercentage(analysis.overall_score)}
                   <span className="text-xs md:text-sm font-normal text-blue-600">confidence</span>
                 </div>
                 <Progress 
-                  value={analysis.overall_score * 100} 
-                  className="h-2 mt-2 bg-blue-200"
+                  value={normalizeScore(analysis.overall_score)} 
+                  className={cn("h-2 mt-2", 
+                    (() => {
+                      const normalizedScore = normalizeScore(analysis.overall_score) / 100;
+                      if (normalizedScore >= 0.8) return "bg-green-100";
+                      if (normalizedScore >= 0.6) return "bg-yellow-100";
+                      return "bg-red-100";
+                    })()
+                  )}
                 />
               </div>
               <div className="p-4 md:p-5 bg-gradient-to-br from-violet-50 to-violet-100/30 rounded-xl shadow-sm border border-violet-100">
                 <div className="text-sm text-violet-700 mb-1 font-medium">Response Quality</div>
                 <div className="text-2xl md:text-3xl font-bold text-violet-900 flex items-baseline gap-2">
-                  {(analysis.key_metrics.response_quality * 100).toFixed(1)}%
+                  {formatScoreAsPercentage(analysis.key_metrics.response_quality)}
                   <span className="text-xs md:text-sm font-normal text-violet-600">score</span>
                 </div>
                 <Progress 
-                  value={analysis.key_metrics.response_quality * 100} 
-                  className="h-2 mt-2 bg-violet-200"
+                  value={normalizeScore(analysis.key_metrics.response_quality)} 
+                  className={cn("h-2 mt-2", 
+                    (() => {
+                      const normalizedScore = normalizeScore(analysis.key_metrics.response_quality) / 100;
+                      if (normalizedScore >= 0.8) return "bg-green-100";
+                      if (normalizedScore >= 0.6) return "bg-yellow-100";
+                      return "bg-red-100";
+                    })()
+                  )}
                 />
               </div>
               <div className="p-4 md:p-5 bg-gradient-to-br from-emerald-50 to-emerald-100/30 rounded-xl shadow-sm border border-emerald-100 sm:col-span-2 md:col-span-1">
                 <div className="text-sm text-emerald-700 mb-1 font-medium">Sentiment Score</div>
                 <div className="text-2xl md:text-3xl font-bold text-emerald-900 flex items-baseline gap-2">
-                  {(analysis.key_metrics.sentiment_score * 100).toFixed(1)}%
+                  {formatScoreAsPercentage(analysis.key_metrics.sentiment_score)}
                   <span className="text-xs md:text-sm font-normal text-emerald-600">positive</span>
                 </div>
                 <Progress 
-                  value={analysis.key_metrics.sentiment_score * 100} 
-                  className="h-2 mt-2 bg-emerald-200"
+                  value={normalizeScore(analysis.key_metrics.sentiment_score)} 
+                  className={cn("h-2 mt-2", 
+                    (() => {
+                      const normalizedScore = normalizeScore(analysis.key_metrics.sentiment_score) / 100;
+                      if (normalizedScore >= 0.8) return "bg-green-100";
+                      if (normalizedScore >= 0.6) return "bg-yellow-100";
+                      return "bg-red-100";
+                    })()
+                  )}
                 />
               </div>
             </div>

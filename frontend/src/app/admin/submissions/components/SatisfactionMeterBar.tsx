@@ -6,8 +6,12 @@ import { ArrowUpRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const SatisfactionMeter = ({ percentage, previousYear }: { percentage: number; previousYear: number }) => {
+  // Ensure percentage and previousYear are valid numbers
+  const validPercentage = isNaN(percentage) ? 0 : percentage;
+  const validPreviousYear = isNaN(previousYear) ? 0 : previousYear;
+  
   // Ensure percentage is between 0 and 100 (limiting to 100)
-  const normalizedPercentage = Math.min(Math.max(percentage, 0), 80); 
+  const normalizedPercentage = Math.min(Math.max(validPercentage, 0), 80); 
   const angle = (normalizedPercentage / 100) * 90; // Angle from 0 to 90 degrees (semi-circle)
   const radius = 120; // Reduced radius to prevent overflow
   
@@ -20,7 +24,7 @@ const SatisfactionMeter = ({ percentage, previousYear }: { percentage: number; p
   const emojiY = 150 + radius * Math.sin(0 * (Math.PI / 180)); // Fixed at 180 degrees
   
   // Calculate year-over-year change
-  const change = normalizedPercentage - previousYear;
+  const change = normalizedPercentage - validPreviousYear;
   const changeText = `${change >= 0 ? '+' : ''}${change.toFixed(1)}%`;
 
   return (

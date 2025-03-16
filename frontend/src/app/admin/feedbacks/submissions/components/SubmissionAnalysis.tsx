@@ -6,7 +6,7 @@ import {
   BarChart2
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
+import { cn, normalizeScore, formatScoreAsPercentage } from '@/lib/utils';
 import type { SubmissionResponse } from '@/lib/api/submissions';
 import { Progress } from '@/components/ui/progress';
 
@@ -54,24 +54,28 @@ export function SubmissionAnalysis({ submissionData }: SubmissionAnalysisProps) 
     response: string,
     questionAnalysis: QuestionAnalysis | undefined
   ) => {
-    const renderScore = (score: number) => (
-      <div className="flex items-center gap-2 mt-2">
-        <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-          <div 
-            className={cn(
-              "h-full rounded-full transition-all duration-500",
-              score >= 0.8 ? "bg-green-500" : 
-              score >= 0.6 ? "bg-yellow-500" : 
-              "bg-red-500"
-            )}
-            style={{ width: `${score * 100}%` }}
-          />
+    const renderScore = (score: number) => {
+      const normalizedScore = normalizeScore(score);
+      
+      return (
+        <div className="flex items-center gap-2">
+          <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div 
+              className={cn(
+                "h-full rounded-full transition-all duration-500",
+                normalizedScore >= 80 ? "bg-green-500" : 
+                normalizedScore >= 60 ? "bg-yellow-500" : 
+                "bg-red-500"
+              )}
+              style={{ width: `${normalizedScore}%` }}
+            />
+          </div>
+          <span className="text-sm font-medium text-gray-700">
+            {formatScoreAsPercentage(score)}
+          </span>
         </div>
-        <span className="text-sm font-medium text-gray-700">
-          {(score * 100).toFixed(1)}%
-        </span>
-      </div>
-    );
+      );
+    };
 
     const renderSentimentBadge = (sentiment: string) => {
       const sentimentConfig = {
@@ -170,25 +174,23 @@ export function SubmissionAnalysis({ submissionData }: SubmissionAnalysisProps) 
     <div className="space-y-6">
       {/* Analysis Overview */}
       <Card className="bg-gradient-to-br from-violet-50 to-fuchsia-50 p-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="p-4 bg-white/50 rounded-lg backdrop-blur-sm">
-            <h4 className="text-sm font-medium text-violet-700 mb-2">Overall Score</h4>
-            <div className="text-2xl font-bold text-violet-900">
-              {analysis.overall_score ? (analysis.overall_score * 100).toFixed(1) + '%' : 'N/A'}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+          <div className="p-4 bg-white rounded-xl shadow-sm border">
+            <div className="text-sm text-gray-500 mb-2">Overall Score</div>
+            <div className="text-xl font-bold">
+              {analysis.overall_score ? formatScoreAsPercentage(analysis.overall_score) : 'N/A'}
             </div>
           </div>
-          <div className="p-4 bg-white/50 rounded-lg backdrop-blur-sm">
-            <h4 className="text-sm font-medium text-emerald-700 mb-2">Response Quality</h4>
-            <div className="text-2xl font-bold text-emerald-900">
-              {analysis.key_metrics?.response_quality ? 
-                (analysis.key_metrics.response_quality * 100).toFixed(1) + '%' : 'N/A'}
+          <div className="p-4 bg-white rounded-xl shadow-sm border">
+            <div className="text-sm text-gray-500 mb-2">Response Quality</div>
+            <div className="text-xl font-bold">
+              {analysis.key_metrics ? formatScoreAsPercentage(analysis.key_metrics.response_quality) : 'N/A'}
             </div>
           </div>
-          <div className="p-4 bg-white/50 rounded-lg backdrop-blur-sm">
-            <h4 className="text-sm font-medium text-blue-700 mb-2">Sentiment Score</h4>
-            <div className="text-2xl font-bold text-blue-900">
-              {analysis.key_metrics?.sentiment_score ? 
-                (analysis.key_metrics.sentiment_score * 100).toFixed(1) + '%' : 'N/A'}
+          <div className="p-4 bg-white rounded-xl shadow-sm border">
+            <div className="text-sm text-gray-500 mb-2">Sentiment Score</div>
+            <div className="text-xl font-bold">
+              {analysis.key_metrics ? formatScoreAsPercentage(analysis.key_metrics.sentiment_distribution?.POSITIVE || 0) : 'N/A'}
             </div>
           </div>
         </div>

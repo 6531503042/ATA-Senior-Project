@@ -375,6 +375,7 @@ export interface AnalysisResponse {
 export interface SatisfactionAnalysisResponse {
   feedbackId: number;
   satisfactionOverview: {
+    overallSatisfaction: number;
     satisfactionRate: number;
     totalSubmissions: number;
   };

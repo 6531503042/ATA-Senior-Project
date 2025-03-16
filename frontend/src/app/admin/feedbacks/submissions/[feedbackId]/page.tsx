@@ -528,7 +528,7 @@ export default function FeedbackSubmissionPage({ params }: { params: Promise<{ f
             />
             <StatCard
               title="Satisfaction Rate"
-              value={satisfactionAnalysis ? `${(satisfactionAnalysis.satisfactionOverview.satisfactionRate * 100).toFixed(1)}%` : 'N/A'}
+              value={satisfactionAnalysis ? `${satisfactionAnalysis.satisfactionOverview.satisfactionRate.toFixed(1)}%` : 'N/A'}
               icon={Smile}
               change="+5.2%"
               color="green"

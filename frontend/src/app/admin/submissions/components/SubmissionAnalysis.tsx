@@ -11,7 +11,7 @@ import {
   Target,
   Lightbulb
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, normalizeScore, formatScoreAsPercentage } from '@/lib/utils';
 import type { SubmissionResponse, FeedbackAnalysis } from '@/lib/api/submissions';
 import { motion } from 'framer-motion';
 import { HoverCard, HoverCardTrigger, HoverCardContent } from '@/components/ui/hover-card';
@@ -58,24 +58,28 @@ export function SubmissionAnalysis({ submissionData }: SubmissionAnalysisProps) 
     response: string,
     questionAnalysis: QuestionAnalysis | undefined
   ) => {
-    const renderScore = (score: number) => (
-      <div className="flex items-center gap-2 mt-2">
-        <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-          <div 
-            className={cn(
-              "h-full rounded-full transition-all duration-500",
-              score >= 0.8 ? "bg-green-500" : 
-              score >= 0.6 ? "bg-yellow-500" : 
-              "bg-red-500"
-            )}
-            style={{ width: `${score * 100}%` }}
-          />
+    const renderScore = (score: number) => {
+      const normalizedScore = normalizeScore(score);
+      
+      return (
+        <div className="flex items-center gap-2 mt-2">
+          <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+            <div 
+              className={cn(
+                "h-full rounded-full transition-all duration-500",
+                normalizedScore >= 80 ? "bg-green-500" : 
+                normalizedScore >= 60 ? "bg-yellow-500" : 
+                "bg-red-500"
+              )}
+              style={{ width: `${normalizedScore}%` }}
+            />
+          </div>
+          <span className="text-sm font-medium text-gray-700">
+            {formatScoreAsPercentage(score)}
+          </span>
         </div>
-        <span className="text-sm font-medium text-gray-700">
-          {(score * 100).toFixed(1)}%
-        </span>
-      </div>
-    );
+      );
+    };
 
     const renderSentimentBadge = (sentiment: "POSITIVE" | "NEUTRAL" | "NEGATIVE") => {
       const sentimentConfig = {
@@ -209,21 +213,21 @@ export function SubmissionAnalysis({ submissionData }: SubmissionAnalysisProps) 
           <div className="p-4 bg-white/50 rounded-lg backdrop-blur-sm">
             <h4 className="text-sm font-medium text-violet-700 mb-2">Overall Score</h4>
             <div className="text-2xl font-bold text-violet-900">
-              {analysis.overall_score ? (analysis.overall_score * 100).toFixed(1) + '%' : 'N/A'}
+              {analysis.overall_score ? formatScoreAsPercentage(analysis.overall_score) : 'N/A'}
             </div>
           </div>
           <div className="p-4 bg-white/50 rounded-lg backdrop-blur-sm">
             <h4 className="text-sm font-medium text-emerald-700 mb-2">Response Quality</h4>
             <div className="text-2xl font-bold text-emerald-900">
               {analysis.key_metrics?.response_quality ? 
-                (analysis.key_metrics.response_quality * 100).toFixed(1) + '%' : 'N/A'}
+                formatScoreAsPercentage(analysis.key_metrics.response_quality) : 'N/A'}
             </div>
           </div>
           <div className="p-4 bg-white/50 rounded-lg backdrop-blur-sm">
             <h4 className="text-sm font-medium text-blue-700 mb-2">Sentiment Score</h4>
             <div className="text-2xl font-bold text-blue-900">
               {analysis.key_metrics?.sentiment_score ? 
-                (analysis.key_metrics.sentiment_score * 100).toFixed(1) + '%' : 'N/A'}
+                formatScoreAsPercentage(analysis.key_metrics.sentiment_score) : 'N/A'}
             </div>
           </div>
         </div>
@@ -518,17 +522,17 @@ export function SubmissionAnalysis({ submissionData }: SubmissionAnalysisProps) 
                 <div className="mb-3">
                   <div className="flex items-center justify-between text-sm mb-1">
                     <span className="text-gray-600">Category Score</span>
-                    <span className="font-medium text-gray-900">{(data.score * 100).toFixed(1)}%</span>
+                    <span className="font-medium text-gray-900">{formatScoreAsPercentage(data.score)}</span>
                   </div>
                   <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                     <div
                       className={cn(
                         "h-full rounded-full transition-all duration-500",
-                        data.score >= 0.7 ? "bg-emerald-500" :
-                        data.score >= 0.4 ? "bg-yellow-500" :
+                        normalizeScore(data.score) / 100 >= 0.7 ? "bg-emerald-500" :
+                        normalizeScore(data.score) / 100 >= 0.4 ? "bg-yellow-500" :
                         "bg-red-500"
                       )}
-                      style={{ width: `${data.score * 100}%` }}
+                      style={{ width: `${normalizeScore(data.score)}%` }}
                     />
                   </div>
                 </div>
@@ -555,7 +559,7 @@ export function SubmissionAnalysis({ submissionData }: SubmissionAnalysisProps) 
                                 {recData.score && (
                                   <div className="mt-2 flex items-center gap-2">
                                     <Badge className="bg-white border border-indigo-100 text-indigo-700 shadow-sm">
-                                      Confidence: {(recData.score * 100).toFixed(1)}%
+                                      Confidence: {formatScoreAsPercentage(recData.score)}
                                     </Badge>
                                   </div>
                                 )}
@@ -619,17 +623,17 @@ export function SubmissionAnalysis({ submissionData }: SubmissionAnalysisProps) 
                     <div className="mb-3">
                       <div className="flex items-center justify-between text-sm mb-1">
                         <span className="text-gray-600">Current Score</span>
-                        <span className="font-medium text-gray-900">{(area.score * 100).toFixed(1)}%</span>
+                        <span className="font-medium text-gray-900">{formatScoreAsPercentage(area.score)}</span>
                       </div>
                       <div className="h-2 bg-gray-100 rounded-full overflow-hidden shadow-sm">
                         <div
                           className={cn(
                             "h-full rounded-full transition-all duration-500",
-                            area.score >= 0.7 ? "bg-emerald-500" :
-                            area.score >= 0.4 ? "bg-yellow-500" :
+                            normalizeScore(area.score) / 100 >= 0.7 ? "bg-emerald-500" :
+                            normalizeScore(area.score) / 100 >= 0.4 ? "bg-yellow-500" :
                             "bg-red-500"
                           )}
-                          style={{ width: `${area.score * 100}%` }}
+                          style={{ width: `${normalizeScore(area.score)}%` }}
                         />
                       </div>
                     </div>
@@ -705,7 +709,7 @@ export function SubmissionAnalysis({ submissionData }: SubmissionAnalysisProps) 
                   <div>
                     <p className="text-sm text-violet-800">{priority.name}</p>
                     <Badge className="mt-2 bg-white text-violet-700">
-                      Score: {(priority.score * 100).toFixed(1)}%
+                      Score: {formatScoreAsPercentage(priority.score)}
                     </Badge>
                   </div>
                 </div>

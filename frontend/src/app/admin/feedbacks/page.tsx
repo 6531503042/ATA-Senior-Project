@@ -16,7 +16,8 @@ import {
   XCircle,
   Trash2,
   PencilIcon,
-  Eye
+  Eye,
+  BarChart2
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import Button from '@/components/ui/Button';
@@ -26,9 +27,11 @@ import { getFeedbacks, deleteFeedback, toggleFeedbackStatus } from '@/lib/api/fe
 import type { Feedback, FeedbackFilters } from './models/types';
 import { CreateFeedbackForm } from './components/CreateFeedbackForm';
 import { FeedbackFormModal } from './components/FeedbackFormModal';
+import { useRouter } from 'next/navigation';
 
 export default function FeedbacksPage() {
   const { toast } = useToast();
+  const router = useRouter();
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
@@ -341,6 +344,14 @@ export default function FeedbacksPage() {
 
                       {/* Actions */}
                       <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => router.push(`/admin/feedbacks/${feedback.id}/satisfaction`)}
+                          leftIcon={<BarChart2 className="w-4 h-4" />}
+                        >
+                          Satisfaction
+                        </Button>
                         <Button
                           variant="outline"
                           size="sm"
