@@ -17,24 +17,24 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({
     username: false,
-    password: false
+    password: false,
   });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     try {
       await login(formData);
     } catch (err) {
       setFieldErrors({
         username: true,
-        password: true
+        password: true,
       });
-      
+
       setTimeout(() => {
         setFieldErrors({
           username: false,
-          password: false
+          password: false,
         });
       }, 600);
     }
@@ -46,11 +46,11 @@ export default function LoginPage() {
       ...prev,
       [name]: value,
     }));
-    
+
     if (fieldErrors[name]) {
-      setFieldErrors(prev => ({
+      setFieldErrors((prev) => ({
         ...prev,
-        [name]: false
+        [name]: false,
       }));
     }
   };
@@ -60,27 +60,28 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-white to-slate-100">
-      <div className="w-full max-w-md px-4">
-        <Card className="overflow-hidden w-full bg-white shadow-lg rounded-2xl border-0">
-          <div className="px-8 pt-8 pb-6 bg-blue-50 border-b border-blue-100">
-            <div className="flex justify-center mb-6">
-              <Image
-                src={Logo}
-                alt="ATA Logo" 
-                width={56}
-                height={56}
-                priority
-                unoptimized
-              />
-            </div>
-            
-            <h2 className="text-2xl font-medium text-slate-800 text-center">Welcome Back</h2>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-white to-blue-100 relative">
+      {/* <div className="absolute top-5 ">
+        <Image
+          src={Logo}
+          alt="ATA Logo"
+          width={250}
+          height={250}
+          priority
+          unoptimized
+        />
+      </div> */}
+      <div className="w-full max-w-xl px-4">
+        <div className="rounded-t-2xl h-1.5 bg-blue-500"></div>
+        <Card className="overflow-hidden w-full bg-white shadow-lg rounded-b-2xl border-0">
+          <div className="px-8 pt-8 pb-6">
+            <h2 className="text-2xl font-medium text-slate-800 text-center">
+              Welcome Back
+            </h2>
             <p className="text-center text-slate-500 text-sm mt-1">
               Sign in to access your dashboard
             </p>
           </div>
-          
           <div className="p-8">
             {error && (
               <div className="bg-red-50 border-l-4 border-red-400 text-red-600 px-4 py-3 rounded mb-6 text-sm flex items-start">
@@ -91,7 +92,10 @@ export default function LoginPage() {
 
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-1">
-                <label htmlFor="username" className="block text-sm font-medium text-slate-700">
+                <label
+                  htmlFor="username"
+                  className="block text-sm font-medium text-slate-700"
+                >
                   Username
                 </label>
                 <div className="relative">
@@ -102,23 +106,30 @@ export default function LoginPage() {
                     required
                     value={formData.username}
                     onChange={handleChange}
-                    className={`w-full pl-11 pr-4 py-3 bg-white border ${
-                      fieldErrors.username ? "border-red-400" : "border-slate-200"
+                    className={`w-full pl-11 pr-4 py-3 bg-white border shadow-md shadow-slate-300/50  ${
+                      fieldErrors.username
+                        ? "border-red-400"
+                        : "border-slate-200"
                     } rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 ${
                       fieldErrors.username ? "animate-field-shake" : ""
                     }`}
                     placeholder="Enter your username"
                   />
                   <div className="absolute left-0 inset-y-0 flex items-center pl-3 pointer-events-none">
-                    <User className={`h-5 w-5 ${
-                      fieldErrors.username ? "text-red-400" : "text-blue-400"
-                    }`} />
+                    <User
+                      className={`h-5 w-5 ${
+                        fieldErrors.username ? "text-red-400" : "text-blue-400"
+                      }`}
+                    />
                   </div>
                 </div>
               </div>
 
               <div className="space-y-1">
-                <label htmlFor="password" className="block text-sm font-medium text-slate-700">
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-slate-700"
+                >
                   Password
                 </label>
                 <div className="relative">
@@ -129,17 +140,21 @@ export default function LoginPage() {
                     required
                     value={formData.password}
                     onChange={handleChange}
-                    className={`w-full pl-11 pr-11 py-3 bg-white border ${
-                      fieldErrors.password ? "border-red-400" : "border-slate-200"
+                    className={`w-full pl-11 pr-11 py-3 bg-white border shadow-md shadow-slate-300/50 ${
+                      fieldErrors.password
+                        ? "border-red-400"
+                        : "border-slate-200"
                     } rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 ${
                       fieldErrors.password ? "animate-field-shake" : ""
                     }`}
                     placeholder="Enter your password"
                   />
                   <div className="absolute left-0 inset-y-0 flex items-center pl-3 pointer-events-none">
-                    <Lock className={`h-5 w-5 ${
-                      fieldErrors.password ? "text-red-400" : "text-blue-400"
-                    }`} />
+                    <Lock
+                      className={`h-5 w-5 ${
+                        fieldErrors.password ? "text-red-400" : "text-blue-400"
+                      }`}
+                    />
                   </div>
                   <button
                     type="button"
@@ -163,35 +178,51 @@ export default function LoginPage() {
                     type="checkbox"
                     className="h-4 w-4 text-blue-500 focus:ring-blue-400 border-slate-300 rounded"
                   />
-                  <label htmlFor="remember-me" className="ml-2 text-sm text-slate-600">
+                  <label
+                    htmlFor="remember-me"
+                    className="ml-2 text-sm text-slate-600"
+                  >
                     Remember me
                   </label>
                 </div>
-                <a href="#" className="text-sm text-blue-500 hover:text-blue-700 transition-colors">
+                <a
+                  href="#"
+                  className="text-sm text-blue-500 hover:text-blue-700 transition-colors"
+                >
                   Forgot password?
                 </a>
               </div>
 
-              <Button 
-                type="submit" 
-                disabled={isLoading} 
+              <Button
+                type="submit"
+                disabled={isLoading}
                 className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-xl mt-2 transition-all duration-200 shadow-sm hover:shadow font-medium"
               >
                 {isLoading ? "Signing in..." : "Sign in"}
               </Button>
             </form>
-            
           </div>
         </Card>
       </div>
 
       <style jsx global>{`
         @keyframes fieldShake {
-          0%, 100% { transform: translateX(0); }
-          20% { transform: translateX(-4px); }
-          40% { transform: translateX(4px); }
-          60% { transform: translateX(-4px); }
-          80% { transform: translateX(4px); }
+          0%,
+          100% {
+            transform: translateX(0);
+          }
+          20% {
+            transform: translateX(-4px);
+          }
+          40% {
+            transform: translateX(4px);
+          }
+          60% {
+            transform: translateX(-4px);
+          }
+          80% {
+            transform: translateX(4px);
+          }
         }
         .animate-field-shake {
           animation: fieldShake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
