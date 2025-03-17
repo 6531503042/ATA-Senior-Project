@@ -78,7 +78,15 @@ export async function createFeedback(data: CreateFeedbackDto): Promise<Feedback>
 
 export async function updateFeedback(id: number, data: CreateFeedbackDto): Promise<void> {
   try {
-    await feedbackApi.put(`/api/v1/admin/feedbacks/update/${id}`, data);
+    // Format dates if they are provided
+    const feedbackData = {
+      ...data,
+      startDate: new Date(data.startDate).toISOString(),
+      endDate: new Date(data.endDate).toISOString()
+    };
+
+    console.log('Updating feedback with data:', feedbackData);
+    await feedbackApi.put(`/api/v1/admin/feedbacks/update/${id}`, feedbackData);
   } catch (error) {
     console.error('Error updating feedback:', error);
     throw error;

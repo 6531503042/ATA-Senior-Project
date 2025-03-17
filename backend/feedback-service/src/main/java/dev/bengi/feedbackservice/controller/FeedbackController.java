@@ -1,5 +1,21 @@
 package dev.bengi.feedbackservice.controller;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import dev.bengi.feedbackservice.domain.model.Feedback;
 import dev.bengi.feedbackservice.domain.model.Project;
 import dev.bengi.feedbackservice.domain.payload.request.CreateFeedbackRequest;
@@ -8,16 +24,6 @@ import dev.bengi.feedbackservice.service.ProjectService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.HashSet;
 
 @Slf4j
 @RestController
@@ -63,9 +69,30 @@ public class FeedbackController {
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<Feedback> updateFeedback(@PathVariable Long id, @RequestBody Feedback feedback) {
+    public ResponseEntity<Feedback> updateFeedback(@PathVariable Long id, @RequestBody CreateFeedbackRequest request) {
         log.debug("Updating feedback with ID: {}", id);
-        return ResponseEntity.ok(feedbackService.updateFeedback(id, feedback));
+        
+        // Get current authenticated user
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String currentUser = auth.getName();
+        
+        // Fetch the existing feedback
+        Feedback existingFeedback = feedbackService.getFeedback(id);
+        
+        // Fetch the actual project from database
+        Project project = projectService.getProject(request.getProjectId());
+        
+        // Update the feedback with new values
+        existingFeedback.setTitle(request.getTitle());
+        existingFeedback.setDescription(request.getDescription());
+        existingFeedback.setProject(project);
+        existingFeedback.setQuestionIds(request.getQuestionIds());
+        existingFeedback.setStartDate(request.getStartDate());
+        existingFeedback.setEndDate(request.getEndDate());
+        
+        Feedback updatedFeedback = feedbackService.updateFeedback(id, existingFeedback);
+        log.info("Updated feedback with ID: {}", updatedFeedback.getId());
+        return ResponseEntity.ok(updatedFeedback);
     }
 
     @DeleteMapping("/delete/{id}")

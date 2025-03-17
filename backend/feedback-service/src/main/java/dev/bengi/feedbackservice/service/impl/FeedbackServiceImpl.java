@@ -81,7 +81,18 @@ public class FeedbackServiceImpl implements FeedbackService {
     @Override
     public Feedback updateFeedback(Long id, Feedback feedback) {
         Feedback existingFeedback = getFeedback(id);
+        
+        // Set the ID to ensure we're updating the existing record
         feedback.setId(id);
+        
+        // Preserve fields that shouldn't be modified during update
+        feedback.setCreatedAt(existingFeedback.getCreatedAt());
+        feedback.setCreatedBy(existingFeedback.getCreatedBy());
+        
+        // Set the updated timestamp
+        feedback.setUpdatedAt(LocalDateTime.now());
+        
+        // Update the record
         return feedbackRepository.save(feedback);
     }
 
