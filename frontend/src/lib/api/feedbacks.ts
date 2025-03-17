@@ -78,7 +78,7 @@ export async function createFeedback(data: CreateFeedbackDto): Promise<Feedback>
 
 export async function updateFeedback(id: number, data: CreateFeedbackDto): Promise<void> {
   try {
-    await feedbackApi.put(`/api/v1/admin/feedbacks/${id}`, data);
+    await feedbackApi.put(`/api/v1/admin/feedbacks/update/${id}`, data);
   } catch (error) {
     console.error('Error updating feedback:', error);
     throw error;

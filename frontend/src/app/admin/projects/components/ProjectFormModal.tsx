@@ -19,7 +19,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import api from "@/utils/api";
 import type { User } from "@/types/auth";
-import { Project, ProjectStatus } from "../models/types";
+import { Project } from "../models/types";
 
 interface ProjectFormModalProps {
   project?: Project;
@@ -44,8 +44,7 @@ export function ProjectFormModal({
     name: project?.name || "",
     description: project?.description || "",
     projectStartDate: project?.projectStartDate || "",
-    projectEndDate: project?.projectEndDate || "",
-    status: project?.status || ProjectStatus.ACTIVE,
+    projectEndDate: project?.projectEndDate || ""
   });
   const [startDateError, setStartDateError] = useState<string>("");
   const [endDateError, setEndDateError] = useState<string>("");
@@ -292,31 +291,6 @@ export function ProjectFormModal({
                       placeholder="Enter project description"
                       required
                     />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Status
-                    </label>
-                    <select
-                      name="status"
-                      value={formData.status}
-                      onChange={handleInputChange}
-                      className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
-                    >
-                      {Object.values(ProjectStatus).map((status) => (
-                        <option key={status} value={status}>
-                          {status
-                            .split("_")
-                            .map(
-                              (word) =>
-                                word.charAt(0).toUpperCase() +
-                                word.slice(1).toLowerCase()
-                            )
-                            .join(" ")}
-                        </option>
-                      ))}
-                    </select>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

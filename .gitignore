@@ -203,3 +203,14 @@ docker-compose.override.yml
 frontend/bun.lockb
 bun.lockb
 frontend/bun.lockb
+.cursor/rules/ai-func.mdc
+.cursor/rules/ai.mdc
+.cursor/rules/frontend.mdc
+.gitignore
+.cursor/rules/overall-structure.mdc
+backend/feedback-scoring-service/.cursor/rules/ai.mdc
+.gitignore
+backend/feedback-scoring-service/.cursor/rules/frontend.mdc
+frontend/bun.lockb
+frontend/bun.lockb
+frontend/bun.lockb

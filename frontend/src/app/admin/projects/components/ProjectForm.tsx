@@ -3,7 +3,7 @@
 import React from 'react';
 import { DatePicker } from '@/components/shared/date-picker';
 import { TeamSelector } from '@/components/shared/team-selector';
-import { Project, ProjectStatus } from '../models/types';
+import { Project } from '../models/types';
 import { User } from '@/types/auth';
 import '../styles/ProjectForm.css';
 
@@ -18,7 +18,6 @@ export function ProjectForm({ project, users, onSubmit, isLoading }: ProjectForm
   const [formData, setFormData] = React.useState<Omit<Project, 'id' | 'createdAt' | 'updatedAt'>>({
     name: project?.name ?? '',
     description: project?.description ?? '',
-    status: project?.status ?? ProjectStatus.ACTIVE,
     memberIds: project?.memberIds || [],
     projectStartDate: project?.projectStartDate ?? new Date().toISOString(),
     projectEndDate: project?.projectEndDate ?? new Date().toISOString(),
@@ -57,24 +56,6 @@ export function ProjectForm({ project, users, onSubmit, isLoading }: ProjectForm
           required
           disabled={isLoading}
         />
-      </div>
-
-      <div className="form-group">
-        <label htmlFor="status">Status</label>
-        <select
-          id="status"
-          value={formData.status}
-          onChange={(e) => handleChange('status', e.target.value)}
-          disabled={isLoading}
-        >
-          {Object.values(ProjectStatus).map((status) => (
-            <option key={status} value={status}>
-              {status.split('_').map(word => 
-                word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-              ).join(' ')}
-            </option>
-          ))}
-        </select>
       </div>
 
       <div className="form-row">

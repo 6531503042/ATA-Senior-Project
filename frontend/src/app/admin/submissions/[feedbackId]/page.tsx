@@ -102,6 +102,7 @@ interface SubmissionListItemProps {
   onClick: () => void;
 }
 
+//Unused file
 interface CacheManager {
   setFeedbackData: (feedbackId: number, data: Partial<FeedbackCache>) => void;
   getFeedbackData: (feedbackId: number) => FeedbackCache | null;
@@ -523,7 +524,7 @@ export default function FeedbackSubmissionPage({ params }: { params: Promise<{ f
         if (validSubmissions.length > 0) {
           setSubmissions(validSubmissions);
           setSatisfactionAnalysis(cachedData.satisfaction);
-          setAiInsights(cachedData.insights);
+          setAiInsights(cachedData.insights as AIInsights);
           setIsLoading(false);
 
           // If cache is getting old, trigger a background refresh

@@ -39,6 +39,7 @@ interface AIInsights {
     performanceInsights: InsightSection;
     engagementAnalysis: InsightSection;
     improvementOpportunities: InsightSection;
+    recommendations: { text: string; priority: string; impact: number; category: string }[];
   };
   metadata: {
     totalSubmissions: number;

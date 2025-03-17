@@ -25,7 +25,6 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { getFeedbacks, deleteFeedback, toggleFeedbackStatus } from '@/lib/api/feedbacks';
 import type { Feedback, FeedbackFilters } from './models/types';
-import { CreateFeedbackForm } from './components/CreateFeedbackForm';
 import { FeedbackFormModal } from './components/FeedbackFormModal';
 import { useRouter } from 'next/navigation';
 

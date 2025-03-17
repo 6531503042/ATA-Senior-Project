@@ -4,7 +4,6 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import { ProjectList } from './components/ProjectList';
 import { ProjectFilters } from './components/ProjectFilters';
-import { CreateProjectForm } from './components/CreateProjectForm';
 import { Project, ProjectStatus, ProjectStats } from './models/types';
 import { getProjects, deleteProject, getProjectMetrics } from '@/lib/api/projects';
 import { useToast } from '@/hooks/use-toast';
@@ -23,6 +22,10 @@ export default function ProjectsPage() {
   const [showFilters, setShowFilters] = React.useState(false);
   const [projects, setProjects] = React.useState<Project[]>([]);
   const [projectMetrics, setProjectMetrics] = React.useState<ProjectStats>({
+    active: 0,
+    teamMembers: 0,
+    upcoming: 0,
+    completed: 0,
     totalMembers: 0,
     totalProjects: 0,
     activeProjects: 0,
@@ -135,6 +138,7 @@ export default function ProjectsPage() {
         variant: 'success',
       });
       await fetchProjects();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('Failed to delete project:', error);
       toast({

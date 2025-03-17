@@ -13,7 +13,6 @@ export interface Project {
   projectEndDate: string;
   createdAt: string;
   updatedAt: string;
-  status?: ProjectStatus;
 }
 
 export interface ProjectStats {

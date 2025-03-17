@@ -52,9 +52,7 @@ export function FeedbackFormModal({ feedback, onClose, onSuccess, mode }: Feedba
     description: feedback?.description || '',
     projectId: feedback?.project?.id || 0,
     startDate: feedback?.startDate || '',
-    endDate: feedback?.endDate || '',
-    allowAnonymous: feedback?.allowAnonymous || false,
-    allowedUserIds: feedback?.allowedUserIds || []
+    endDate: feedback?.endDate || ''
   });
 
   useEffect(() => {
@@ -121,9 +119,7 @@ export function FeedbackFormModal({ feedback, onClose, onSuccess, mode }: Feedba
         projectId: Number(formData.projectId),
         questionIds: selectedQuestions,
         startDate: formData.startDate,
-        endDate: formData.endDate,
-        allowAnonymous: formData.allowAnonymous,
-        allowedUserIds: formData.allowedUserIds
+        endDate: formData.endDate
       };
 
       if (mode === 'create') {
@@ -416,22 +412,6 @@ export function FeedbackFormModal({ feedback, onClose, onSuccess, mode }: Feedba
                     </p>
                   </div>
                 )}
-              </div>
-
-              <div>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="allowAnonymous"
-                    checked={formData.allowAnonymous}
-                    onChange={(e) => setFormData(prev => ({ ...prev, allowAnonymous: e.target.checked }))}
-                    className="rounded border-gray-300 text-violet-600 focus:ring-violet-500"
-                    disabled={isViewOnly}
-                  />
-                  <label htmlFor="allowAnonymous" className="text-sm text-gray-700">
-                    Allow anonymous submissions
-                  </label>
-                </div>
               </div>
             </div>
           </div>
