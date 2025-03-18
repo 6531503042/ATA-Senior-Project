@@ -1,57 +1,58 @@
 "use client";
 
 import React, { useState } from "react";
-import { useAuth } from "@/hooks/use-auth";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/Button";
-import { User, Lock, Eye, EyeOff } from "lucide-react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
-import Logo from "@assets/ata-logo.png";
+import Link from "next/link";
+import { Eye, EyeOff, Lock, Mail } from "lucide-react";
+import { Toaster, toast } from "sonner";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import Waves from "@/components/ui/Waves";
+import ataLogo from "@assets/ata-logo.png";
+
+// Mock login function since the real one isn't available yet
+const mockLogin = async (email: string, password: string): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      if (email === 'admin@atabank.com' && password === 'password') {
+        resolve();
+      } else {
+        reject(new Error('Invalid credentials'));
+      }
+    }, 1500);
+  });
+};
 
 export default function LoginPage() {
-  const { login, isLoading, error } = useAuth();
-  const [formData, setFormData] = useState({
-    username: "",
-    password: "",
-  });
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [fieldErrors, setFieldErrors] = useState({
-    username: false,
-    password: false,
-  });
+  const [rememberMe, setRememberMe] = useState(false);
+  const router = useRouter();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    try {
-      await login(formData);
-    } catch (err) {
-      setFieldErrors({
-        username: true,
-        password: true,
-      });
-
-      setTimeout(() => {
-        setFieldErrors({
-          username: false,
-          password: false,
-        });
-      }, 600);
+    
+    if (!email || !password) {
+      toast.error("Please enter both email and password");
+      return;
     }
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-
-    if (fieldErrors[name]) {
-      setFieldErrors((prev) => ({
-        ...prev,
-        [name]: false,
-      }));
+    
+    try {
+      setIsLoading(true);
+      // Call the mock login function
+      await mockLogin(email, password);
+      
+      // If we get here, login was successful
+      router.push("/admin/dashboard");
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Login failed. Please check your credentials.';
+      toast.error(errorMessage);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -60,175 +61,147 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-white to-blue-100 relative">
-      {/* <div className="absolute top-5 ">
-        <Image
-          src={Logo}
-          alt="ATA Logo"
-          width={250}
-          height={250}
-          priority
-          unoptimized
-        />
-      </div> */}
-      <div className="w-full max-w-xl px-4">
-        <div className="rounded-t-2xl h-1.5 bg-blue-500"></div>
-        <Card className="overflow-hidden w-full bg-white shadow-lg rounded-b-2xl border-0">
-          <div className="px-8 pt-8 pb-6">
-            <h2 className="text-2xl font-medium text-slate-800 text-center">
-              Welcome Back
-            </h2>
-            <p className="text-center text-slate-500 text-sm mt-1">
-              Sign in to access your dashboard
-            </p>
-          </div>
-          <div className="p-8">
-            {error && (
-              <div className="bg-red-50 border-l-4 border-red-400 text-red-600 px-4 py-3 rounded mb-6 text-sm flex items-start">
-                <div className="mr-2 mt-0.5">⚠️</div>
-                <div>{error}</div>
+    <div className="relative h-screen w-full bg-gradient-to-br from-indigo-900 via-purple-800 to-violet-700 overflow-hidden flex items-center justify-center">
+      <Waves
+        lineColor="rgba(255, 255, 255, 0.2)"
+        backgroundColor="transparent"
+        waveSpeedX={0.015}
+        waveSpeedY={0.01}
+        waveAmpX={40}
+        waveAmpY={20}
+        friction={0.9}
+        tension={0.02}
+        maxCursorMove={100}
+        xGap={16}
+        yGap={40}
+      />
+      
+      <div className="container mx-auto px-4 z-10">
+        <div className="max-w-md mx-auto">
+          <div className="flex flex-col items-center mb-8">
+            <div className="relative w-64 h-auto mb-6 flex items-center justify-center">
+              {/* Glow effect - using multiple layers with different opacities and blur */}
+              <div className="absolute inset-0 -m-2 bg-white/40 blur-md rounded-lg"></div>
+              <div className="absolute inset-0 -m-3 bg-white/20 blur-lg rounded-lg"></div>
+              <div className="absolute inset-0 -m-4 bg-white/10 blur-xl rounded-lg"></div>
+              
+              {/* Logo container - no background */}
+              <div className="relative z-10 flex items-center justify-center">
+                <Image 
+                  src={ataLogo} 
+                  alt="ATA Bank"
+                  className="object-contain filter brightness-125 contrast-110"
+                  width={240}
+                  height={120}
+                  priority
+                />
               </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div className="space-y-1">
-                <label
-                  htmlFor="username"
-                  className="block text-sm font-medium text-slate-700"
-                >
-                  Username
-                </label>
-                <div className="relative">
-                  <input
-                    id="username"
-                    name="username"
-                    type="text"
-                    required
-                    value={formData.username}
-                    onChange={handleChange}
-                    className={`w-full pl-11 pr-4 py-3 bg-white border shadow-md shadow-slate-300/50  ${
-                      fieldErrors.username
-                        ? "border-red-400"
-                        : "border-slate-200"
-                    } rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 ${
-                      fieldErrors.username ? "animate-field-shake" : ""
-                    }`}
-                    placeholder="Enter your username"
-                  />
-                  <div className="absolute left-0 inset-y-0 flex items-center pl-3 pointer-events-none">
-                    <User
-                      className={`h-5 w-5 ${
-                        fieldErrors.username ? "text-red-400" : "text-blue-400"
-                      }`}
+            </div>
+            <h1 className="text-3xl font-bold text-white mb-1">ATA Bank</h1>
+            <p className="text-white/80 text-center">Feedback Management System</p>
+          </div>
+          <Card className="bg-white/10 backdrop-blur-lg border-white/20 shadow-xl">
+            <CardHeader className="space-y-1">
+              <CardTitle className="text-2xl font-bold text-white">Sign In</CardTitle>
+              <CardDescription className="text-white/70">
+                Enter your credentials to access your account
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <div className="relative">
+                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60">
+                      <Mail size={18} />
+                    </div>
+                    <Input
+                      type="email"
+                      placeholder="Email Address"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="pl-10 bg-white/10 text-white border-white/20 focus:border-white/40 placeholder:text-white/50"
+                      required
                     />
                   </div>
                 </div>
-              </div>
-
-              <div className="space-y-1">
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-slate-700"
-                >
-                  Password
-                </label>
-                <div className="relative">
-                  <input
-                    id="password"
-                    name="password"
-                    type={showPassword ? "text" : "password"}
-                    required
-                    value={formData.password}
-                    onChange={handleChange}
-                    className={`w-full pl-11 pr-11 py-3 bg-white border shadow-md shadow-slate-300/50 ${
-                      fieldErrors.password
-                        ? "border-red-400"
-                        : "border-slate-200"
-                    } rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 ${
-                      fieldErrors.password ? "animate-field-shake" : ""
-                    }`}
-                    placeholder="Enter your password"
-                  />
-                  <div className="absolute left-0 inset-y-0 flex items-center pl-3 pointer-events-none">
-                    <Lock
-                      className={`h-5 w-5 ${
-                        fieldErrors.password ? "text-red-400" : "text-blue-400"
-                      }`}
+                
+                <div className="space-y-2">
+                  <div className="relative">
+                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60">
+                      <Lock size={18} />
+                    </div>
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="pl-10 pr-10 bg-white/10 text-white border-white/20 focus:border-white/40 placeholder:text-white/50"
+                      required
                     />
+                    <button
+                      type="button"
+                      onClick={togglePasswordVisibility}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/60 hover:text-white/90"
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    onClick={togglePasswordVisibility}
-                    className="absolute right-0 inset-y-0 pr-3 flex items-center text-slate-500 hover:text-blue-500 transition-colors focus:outline-none"
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-5 w-5" />
-                    ) : (
-                      <Eye className="h-5 w-5" />
-                    )}
-                  </button>
                 </div>
-              </div>
-
-              <div className="flex items-center justify-between pt-1">
-                <div className="flex items-center">
-                  <input
-                    id="remember-me"
-                    name="remember-me"
-                    type="checkbox"
-                    className="h-4 w-4 text-blue-500 focus:ring-blue-400 border-slate-300 rounded"
-                  />
-                  <label
-                    htmlFor="remember-me"
-                    className="ml-2 text-sm text-slate-600"
-                  >
-                    Remember me
-                  </label>
+                
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="remember-me"
+                      checked={rememberMe}
+                      onChange={() => setRememberMe(!rememberMe)}
+                      className="h-4 w-4 rounded border-white/20 bg-white/10 text-indigo-600"
+                    />
+                    <label htmlFor="remember-me" className="text-sm text-white/80">
+                      Remember me
+                    </label>
+                  </div>
+                  <Link href="/auth/forgot-password" className="text-sm text-white/80 hover:text-white">
+                    Forgot password?
+                  </Link>
                 </div>
-                <a
-                  href="#"
-                  className="text-sm text-blue-500 hover:text-blue-700 transition-colors"
+                
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                  variant="primary"
+                  className="w-full py-2 rounded transition-all duration-300 shadow-lg"
                 >
-                  Forgot password?
-                </a>
-              </div>
-
-              <Button
-                type="submit"
-                disabled={isLoading}
-                className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-xl mt-2 transition-all duration-200 shadow-sm hover:shadow font-medium"
-              >
-                {isLoading ? "Signing in..." : "Sign in"}
-              </Button>
-            </form>
+                  {isLoading ? (
+                    <div className="flex items-center justify-center">
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Signing in...
+                    </div>
+                  ) : (
+                    "Sign In"
+                  )}
+                </Button>
+              </form>
+            </CardContent>
+            
+            <CardFooter>
+              <p className="text-center w-full text-white/70 text-sm">
+                Need help? Contact <a href="mailto:support@atabank.com" className="text-white hover:underline">IT Support</a>
+              </p>
+            </CardFooter>
+          </Card>
+          
+          <div className="mt-8 text-center text-white/60 text-xs">
+            <p>© {new Date().getFullYear()} ATA Bank. All rights reserved.</p>
+            <p className="mt-1">Secure login with end-to-end encryption</p>
           </div>
-        </Card>
+        </div>
       </div>
-
-      <style jsx global>{`
-        @keyframes fieldShake {
-          0%,
-          100% {
-            transform: translateX(0);
-          }
-          20% {
-            transform: translateX(-4px);
-          }
-          40% {
-            transform: translateX(4px);
-          }
-          60% {
-            transform: translateX(-4px);
-          }
-          80% {
-            transform: translateX(4px);
-          }
-        }
-        .animate-field-shake {
-          animation: fieldShake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
-          animation-iteration-count: 1;
-        }
-      `}</style>
+      
+      <Toaster position="top-right" richColors />
     </div>
   );
 }

@@ -36,10 +36,9 @@ const buttonVariants = cva(
 )
 
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
-  asChild?: boolean;
-  leftIcon?: React.ReactNode;
+  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: "default" | "primary" | "destructive" | "outline" | "ghost" | "link";
+  size?: "default" | "sm" | "lg" | "icon";
 }
 
 // const getSizeClasses = (size: ButtonProps['size'] = 'default') => {
@@ -56,22 +55,39 @@ export interface ButtonProps
 // };
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, leftIcon, children, ...props }, ref) => {
-    const Comp = asChild ? Slot : "button"
+  ({ className, variant = "default", size = "default", ...props }, ref) => {
     return (
-      <Comp
-        className={cn(buttonVariants({ variant, size, className }))}
+      <button
+        className={cn(
+          "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+          // Variants
+          variant === "default" &&
+            "bg-primary text-primary-foreground hover:bg-primary/90",
+          variant === "primary" &&
+            "bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white shadow-md",
+          variant === "destructive" &&
+            "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+          variant === "outline" &&
+            "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+          variant === "ghost" &&
+            "hover:bg-accent hover:text-accent-foreground",
+          variant === "link" &&
+            "text-primary underline-offset-4 hover:underline",
+          // Sizes
+          size === "default" && "h-10 px-4 py-2",
+          size === "sm" && "h-9 rounded-md px-3",
+          size === "lg" && "h-11 rounded-md px-8",
+          size === "icon" && "h-10 w-10",
+          className
+        )}
         ref={ref}
         {...props}
-      >
-        {leftIcon && <span className="mr-2">{leftIcon}</span>}
-        {children}
-      </Comp>
+      />
     )
   }
 )
 Button.displayName = "Button"
 
-export { Button, buttonVariants }
+export { Button }
 
 export default Button 
