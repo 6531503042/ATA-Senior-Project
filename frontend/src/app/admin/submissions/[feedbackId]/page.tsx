@@ -39,7 +39,7 @@ import type {
   Analysis as ImportedAnalysis
 } from '@/lib/api/submissions';
 import { getFeedbackData } from '@/lib/api/submissions';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
@@ -103,20 +103,9 @@ interface SubmissionListItemProps {
 }
 
 //Unused file
-interface CacheManager {
-  setFeedbackData: (feedbackId: number, data: Partial<FeedbackCache>) => void;
-  getFeedbackData: (feedbackId: number) => FeedbackCache | null;
-  clearCache: (feedbackId?: number) => void;
-  isCacheValid: (feedbackId: number) => boolean;
-  shouldBackgroundUpdate: (feedbackId: number) => boolean;
-}
 
-interface FeedbackCache {
-  submissions: SubmissionResponse[];
-  analysis: FeedbackAnalysis | null;
-  satisfaction: SatisfactionAnalysis | null;
-  insights: AIInsights | null;
-}
+
+
 
 interface AIInsightsRecommendation {
   text: string;
@@ -460,7 +449,6 @@ function NoSubmissionsState() {
         variant="outline"
         onClick={() => window.history.back()}
         className="bg-white"
-        leftIcon={<ArrowLeft className="h-4 w-4" />}
       >
         Go Back
       </Button>

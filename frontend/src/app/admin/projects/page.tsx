@@ -8,7 +8,7 @@ import { Project, ProjectStatus, ProjectStats } from './models/types';
 import { getProjects, deleteProject, getProjectMetrics } from '@/lib/api/projects';
 import { useToast } from '@/hooks/use-toast';
 import { Card } from '@/components/ui/card';
-import Button from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { PlusIcon, TrashIcon, PencilIcon, ChevronDownIcon, FilterIcon, RefreshCwIcon } from 'lucide-react';
 import { ProjectFormModal } from './components/ProjectFormModal';
 
@@ -131,6 +131,7 @@ export default function ProjectsPage() {
 
   const handleDelete = async (id: number) => {
     try {
+      // First try to delete without cascade
       await deleteProject(id);
       toast({
         title: 'Success',
@@ -138,14 +139,38 @@ export default function ProjectsPage() {
         variant: 'success',
       });
       await fetchProjects();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('Failed to delete project:', error);
-      toast({
-        title: 'Error',
-        description: error?.message || 'Failed to delete project. Please try again.',
-        variant: 'destructive',
-      });
+      
+      // Check if the error is related to foreign key constraints
+      if (error.message && error.message.includes('associated feedbacks')) {
+        // Ask for confirmation to delete with cascade
+        if (confirm('This project has associated feedbacks. Would you like to delete the project and all its feedbacks?')) {
+          try {
+            await deleteProject(id, true); // Call with cascade=true
+            toast({
+              title: 'Success',
+              description: 'Project and all associated feedbacks deleted successfully.',
+              variant: 'success',
+            });
+            await fetchProjects();
+          } catch (cascadeError: any) {
+            console.error('Failed to delete project with cascade:', cascadeError);
+            toast({
+              title: 'Error',
+              description: cascadeError?.message || 'Failed to delete project and feedbacks. Please try again.',
+              variant: 'destructive',
+            });
+          }
+        }
+      } else {
+        // Show the original error
+        toast({
+          title: 'Error',
+          description: error?.message || 'Failed to delete project. Please try again.',
+          variant: 'destructive',
+        });
+      }
     }
   };
 

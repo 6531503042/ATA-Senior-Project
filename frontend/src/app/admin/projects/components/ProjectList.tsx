@@ -18,10 +18,6 @@ interface ProjectListProps {
 }
 
 const determineProjectStatus = (project: Project): string => {
-  // If project has a manual status, use that
-  if (project.status) {
-    return project.status;
-  }
 
   try {
     const currentDate = new Date();

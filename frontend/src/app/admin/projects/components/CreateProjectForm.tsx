@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { FolderPlus, X, Rocket, CalendarIcon } from 'lucide-react';
+import { FolderPlus, X, CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import Button from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { TeamSelector } from '@/components/shared/team-selector';
 import { createProject, updateProjectMembers } from '@/lib/api/projects';
@@ -321,8 +321,6 @@ export function CreateProjectForm({ onClose }: CreateProjectFormProps) {
                 type="submit"
                 onClick={handleSubmit}
                 disabled={isLoading}
-                isLoading={isLoading}
-                leftIcon={<Rocket className="h-4 w-4" />}
               >
                 Create Project
               </Button>

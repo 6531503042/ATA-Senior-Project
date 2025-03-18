@@ -69,8 +69,12 @@ export default function ProjectDashboard() {
     active: 0,
     upcoming: 0,
     completed: 0,
-    total: 0,
     teamMembers: 0,
+    totalMembers: 0,
+    totalProjects: 0,
+    activeProjects: 0,
+    completedProjects: 0,
+    averageTeamSize: 0,
   });
   const [isLoading, setIsLoading] = React.useState(true);
 

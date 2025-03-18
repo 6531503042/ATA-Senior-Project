@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/Input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import Waves from "@/components/ui/Waves";
@@ -103,8 +103,9 @@ return (
             <h1 className="text-3xl font-bold text-white mb-1"></h1>
             <p className="text-white/80 text-center">Feedback Management System</p>
           </div>
-          <Card className="bg-white/10 backdrop-blur-lg border-white/20 shadow-xl">
-            <CardHeader className="space-y-1">
+          <Card className="bg-white/10 backdrop-blur-lg border-white/20 shadow-xl overflow-hidden rounded-xl animate-fadeIn">
+            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/10 pointer-events-none"></div>
+            <CardHeader className="space-y-1 relative z-10">
               <CardTitle className="text-2xl font-bold text-white">Sign In</CardTitle>
               <CardDescription className="text-white/70">
                 Enter your credentials to access your account
@@ -128,7 +129,7 @@ return (
                       placeholder="Email Address"
                       value={formData.username}
                       onChange={handleChange}
-                      className={`pl-10 bg-white/5 border-white/10 text-white ${
+                      className={`pl-10 bg-white/5 border-white/10 text-white focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 transition-all duration-200 ${
                         fieldErrors.username ? "animate-field-shake border-red-400" : ""
                       }`}
                       required
@@ -145,7 +146,7 @@ return (
                       placeholder="Password"
                       value={formData.password}
                       onChange={handleChange}
-                      className={`pl-10 bg-white/5 border-white/10 text-white ${
+                      className={`pl-10 bg-white/5 border-white/10 text-white focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 transition-all duration-200 ${
                         fieldErrors.password ? "animate-field-shake border-red-400" : ""
                       }`}
                       required
@@ -153,7 +154,7 @@ return (
                     <button
                       type="button"
                       onClick={togglePasswordVisibility}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-white/70 hover:text-white"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-white/70 hover:text-white transition-colors duration-150"
                     >
                       {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
@@ -165,20 +166,20 @@ return (
                     <input
                       type="checkbox"
                       id="remember"
-                      className="rounded bg-white/5 border-white/10"
+                      className="rounded bg-white/5 border-white/10 focus:ring-1 focus:ring-indigo-400 text-indigo-500"
                       checked={rememberMe}
                       onChange={() => setRememberMe(!rememberMe)}
                     />
                     <label htmlFor="remember" className="text-sm text-white/70">Remember me</label>
                   </div>
-                  <Link href="/auth/forgot-password" className="text-sm text-white hover:underline">
+                  <Link href="/auth/forgot-password" className="text-sm text-white/80 hover:text-white hover:underline transition-colors duration-150">
                     Forgot password?
                   </Link>
                 </div>
                 
                 <Button
                   type="submit" 
-                  className="w-full bg-indigo-600 hover:bg-indigo-700"
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-md transition-all duration-200 ease-in-out shadow-lg hover:shadow-indigo-500/30 border border-indigo-500/20"
                   disabled={isLoading}
                 >
                   {isLoading ? "Signing In..." : "Sign In"}
@@ -210,6 +211,14 @@ return (
         .animate-field-shake {
           animation: fieldShake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
           animation-iteration-count: 1;
+        }
+        
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.5s ease-out forwards;
         }
       `}</style>
     </div>

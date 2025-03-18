@@ -2,9 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
-  PlusCircle, 
-  Filter, 
-  RefreshCw, 
   Search, 
   BarChart2, 
   MessageSquare,
@@ -16,8 +13,6 @@ import {
   CheckSquare,
   Star,
   MessageCircleQuestion,
-  Trash2,
-  Pencil,
   Briefcase,
   Heart,
   UserPlus,
@@ -30,7 +25,7 @@ import {
   GraduationCap
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import Button from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { QuestionForm } from './components/QuestionForm';
 import { 
@@ -290,7 +285,6 @@ export default function QuestionsPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => setShowFilters(!showFilters)}
-                leftIcon={<Filter className="w-4 h-4" />}
               >
                 Filters
               </Button>
@@ -300,14 +294,12 @@ export default function QuestionsPage() {
                 onClick={() => {
                   fetchData();
                 }}
-                leftIcon={<RefreshCw className="w-4 h-4" />}
               >
                 Refresh
               </Button>
               <Button
                 size="sm"
                 onClick={() => setIsCreateModalOpen(true)}
-                leftIcon={<PlusCircle className="w-4 h-4" />}
               >
                 Create Question
               </Button>
@@ -527,7 +519,6 @@ export default function QuestionsPage() {
                           variant="outline"
                           size="sm"
                           onClick={() => setEditingQuestion(question)}
-                          leftIcon={<Pencil className="w-4 h-4" />}
                         >
                           Edit
                         </Button>
@@ -535,7 +526,6 @@ export default function QuestionsPage() {
                           variant="destructive"
                           size="sm"
                           onClick={() => handleDelete(question.id)}
-                          leftIcon={<Trash2 className="w-4 h-4" />}
                         >
                           Delete
                         </Button>

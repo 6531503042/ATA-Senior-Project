@@ -1,14 +1,14 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { FolderPlus, X, Rocket, PencilIcon } from "lucide-react";
+import { FolderPlus, X, PencilIcon } from "lucide-react";
 import {
   Card,
   CardHeader,
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
-import Button from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/shared/date-picker";
 import { TeamSelector } from "@/components/shared/team-selector";
 import {
@@ -346,14 +346,6 @@ export function ProjectFormModal({
                 type="submit"
                 onClick={handleSubmit}
                 disabled={isLoading}
-                isLoading={isLoading}
-                leftIcon={
-                  mode === "create" ? (
-                    <Rocket className="h-4 w-4" />
-                  ) : (
-                    <PencilIcon className="h-4 w-4" />
-                  )
-                }
               >
                 {mode === "create" ? "Create Project" : "Update Project"}
               </Button>

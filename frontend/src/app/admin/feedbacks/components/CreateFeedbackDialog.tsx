@@ -2,9 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Rocket } from 'lucide-react';
 import FormHeader from './FormHeader';
 import FormBody from './FormBody';
 import { createFeedback } from '@/lib/api/feedbacks';
@@ -175,8 +174,6 @@ export function CreateFeedbackDialog({ isOpen, setIsOpen, onSuccess }: CreateFee
               <Button
                 onClick={handleSubmit}
                 disabled={isLoading}
-                isLoading={isLoading}
-                leftIcon={<Rocket className="h-4 w-4" />}
               >
                 Create Feedback
               </Button>

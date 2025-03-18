@@ -8,7 +8,6 @@ import {
   Loader2, 
   MessageSquare, 
   Calendar,
-  RefreshCw,
   Search,
   CheckCircle2,
   BarChart2,
@@ -21,7 +20,7 @@ import {
 import { format } from 'date-fns';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import axios from 'axios';
 import { getCookie } from 'cookies-next';
 import { useRouter } from 'next/navigation';
@@ -462,7 +461,6 @@ export default function FeedbackSubmissionsPage() {
                 size="sm"
                 onClick={fetchData}
                 className="bg-white"
-                leftIcon={<RefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />}
               >
                 Refresh
               </Button>

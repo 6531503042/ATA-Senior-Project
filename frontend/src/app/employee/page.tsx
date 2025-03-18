@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { motion } from 'framer-motion';
 import { 
@@ -267,7 +267,7 @@ export default function EmployeeDashboard() {
                       <Button 
                         onClick={() => handleSubmitFeedback(feedback.id)}
                         disabled={isSubmitting}
-                        className="bg-violet-600 hover:bg-violet-700"
+                        className="bg-violet-600 hover:bg-violet-300 text-white"
                       >
                         {isSubmitting ? (
                           <>
