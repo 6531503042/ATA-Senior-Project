@@ -1,58 +1,61 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
-import { Toaster, toast } from "sonner";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import Waves from "@/components/ui/Waves";
 import ataLogo from "@assets/ata-logo.png";
-
-// Mock login function since the real one isn't available yet
-const mockLogin = async (email: string, password: string): Promise<void> => {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      if (email === 'admin@atabank.com' && password === 'password') {
-        resolve();
-      } else {
-        reject(new Error('Invalid credentials'));
-      }
-    }, 1500);
-  });
-};
+import { useAuth } from "@/hooks/use-auth";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const { login, isLoading, error } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const router = useRouter();
+  const [formData, setFormData] = useState({
+    username: "",
+    password: "",
+  }); 
+  const [fieldErrors, setFieldErrors] = useState({
+    username: false,
+    password: false,
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!email || !password) {
-      toast.error("Please enter both email and password");
-      return;
-    }
-    
+
     try {
-      setIsLoading(true);
-      // Call the mock login function
-      await mockLogin(email, password);
-      
-      // If we get here, login was successful
-      router.push("/admin/dashboard");
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Login failed. Please check your credentials.';
-      toast.error(errorMessage);
-    } finally {
-      setIsLoading(false);
+      await login(formData);
+    } catch {
+      setFieldErrors({
+        username: true,
+        password: true,
+      });
+
+      setTimeout(() => {
+        setFieldErrors({
+          username: false,
+          password: false,
+        });
+      }, 600);
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+
+    if (fieldErrors[name as keyof typeof fieldErrors]) {
+      setFieldErrors((prev) => ({
+        ...prev,
+        [name]: false,
+      }));
     }
   };
 
@@ -60,8 +63,8 @@ export default function LoginPage() {
     setShowPassword(!showPassword);
   };
 
-  return (
-    <div className="relative h-screen w-full bg-gradient-to-br from-indigo-900 via-purple-800 to-violet-700 overflow-hidden flex items-center justify-center">
+return (
+    <div className="relative h-screen w-full bg-gradient-to-br from-indigo-900 via-purple-800 to-violet-700 overflow-hidden flex flex-col justify-center items-center">
       <Waves
         lineColor="rgba(255, 255, 255, 0.2)"
         backgroundColor="transparent"
@@ -76,8 +79,8 @@ export default function LoginPage() {
         yGap={40}
       />
       
-      <div className="container mx-auto px-4 z-10">
-        <div className="max-w-md mx-auto">
+      <div className="container px-4 z-10 flex flex-col items-center">
+        <div className="max-w-md w-full">
           <div className="flex flex-col items-center mb-8">
             <div className="relative w-64 h-auto mb-6 flex items-center justify-center">
               {/* Glow effect - using multiple layers with different opacities and blur */}
@@ -108,40 +111,49 @@ export default function LoginPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
+              {error && (
+                <div className="bg-red-400/10 border border-red-400/20 rounded-md px-4 py-3 mb-4 text-sm text-red-200">
+                  <p>{error}</p>
+                </div>
+              )}
+              
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <div className="relative">
-                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60">
-                      <Mail size={18} />
-                    </div>
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-white/70" size={18} />
                     <Input
-                      type="email"
+                      id="username"
+                      name="username"
+                      type="text"
                       placeholder="Email Address"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="pl-10 bg-white/10 text-white border-white/20 focus:border-white/40 placeholder:text-white/50"
+                      value={formData.username}
+                      onChange={handleChange}
+                      className={`pl-10 bg-white/5 border-white/10 text-white ${
+                        fieldErrors.username ? "animate-field-shake border-red-400" : ""
+                      }`}
                       required
                     />
                   </div>
                 </div>
-                
                 <div className="space-y-2">
                   <div className="relative">
-                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60">
-                      <Lock size={18} />
-                    </div>
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-white/70" size={18} />
                     <Input
+                      id="password"
+                      name="password"
                       type={showPassword ? "text" : "password"}
                       placeholder="Password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="pl-10 pr-10 bg-white/10 text-white border-white/20 focus:border-white/40 placeholder:text-white/50"
+                      value={formData.password}
+                      onChange={handleChange}
+                      className={`pl-10 bg-white/5 border-white/10 text-white ${
+                        fieldErrors.password ? "animate-field-shake border-red-400" : ""
+                      }`}
                       required
                     />
                     <button
                       type="button"
                       onClick={togglePasswordVisibility}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/60 hover:text-white/90"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-white/70 hover:text-white"
                     >
                       {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
@@ -152,56 +164,54 @@ export default function LoginPage() {
                   <div className="flex items-center space-x-2">
                     <input
                       type="checkbox"
-                      id="remember-me"
+                      id="remember"
+                      className="rounded bg-white/5 border-white/10"
                       checked={rememberMe}
                       onChange={() => setRememberMe(!rememberMe)}
-                      className="h-4 w-4 rounded border-white/20 bg-white/10 text-indigo-600"
                     />
-                    <label htmlFor="remember-me" className="text-sm text-white/80">
-                      Remember me
-                    </label>
+                    <label htmlFor="remember" className="text-sm text-white/70">Remember me</label>
                   </div>
-                  <Link href="/auth/forgot-password" className="text-sm text-white/80 hover:text-white">
+                  <Link href="/auth/forgot-password" className="text-sm text-white hover:underline">
                     Forgot password?
                   </Link>
                 </div>
                 
                 <Button
-                  type="submit"
+                  type="submit" 
+                  className="w-full bg-indigo-600 hover:bg-indigo-700"
                   disabled={isLoading}
-                  variant="primary"
-                  className="w-full py-2 rounded transition-all duration-300 shadow-lg"
                 >
-                  {isLoading ? (
-                    <div className="flex items-center justify-center">
-                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Signing in...
-                    </div>
-                  ) : (
-                    "Sign In"
-                  )}
+                  {isLoading ? "Signing In..." : "Sign In"}
                 </Button>
               </form>
             </CardContent>
-            
             <CardFooter>
-              <p className="text-center w-full text-white/70 text-sm">
-                Need help? Contact <a href="mailto:support@atabank.com" className="text-white hover:underline">IT Support</a>
+              <p className="text-center w-full text-sm text-white/70">
+                Need help? Contact <a href="#" className="text-white hover:underline">IT Support</a>
               </p>
             </CardFooter>
           </Card>
-          
-          <div className="mt-8 text-center text-white/60 text-xs">
-            <p>© {new Date().getFullYear()} ATA Bank. All rights reserved.</p>
-            <p className="mt-1">Secure login with end-to-end encryption</p>
-          </div>
         </div>
       </div>
       
-      <Toaster position="top-right" richColors />
+      <div className="text-center py-4 text-white/60 text-sm z-10 absolute bottom-0 left-0 right-0">
+        © 2025 ATA Bank. All rights reserved.<br />
+        Secure login with end-to-end encryption
+      </div>
+
+      <style jsx global>{`
+        @keyframes fieldShake {
+          0%, 100% { transform: translateX(0); }
+          20% { transform: translateX(-4px); }
+          40% { transform: translateX(4px); }
+          60% { transform: translateX(-4px); }
+          80% { transform: translateX(4px); }
+        }
+        .animate-field-shake {
+          animation: fieldShake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+          animation-iteration-count: 1;
+        }
+      `}</style>
     </div>
   );
 }
