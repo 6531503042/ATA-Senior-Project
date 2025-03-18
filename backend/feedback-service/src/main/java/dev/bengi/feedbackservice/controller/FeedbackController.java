@@ -69,7 +69,7 @@ public class FeedbackController {
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<Feedback> updateFeedback(@PathVariable Long id, @RequestBody CreateFeedbackRequest request) {
+    public ResponseEntity<Feedback> updateFeedback(@PathVariable Long id, @Valid @RequestBody CreateFeedbackRequest request) {
         log.debug("Updating feedback with ID: {}", id);
         
         // Get current authenticated user

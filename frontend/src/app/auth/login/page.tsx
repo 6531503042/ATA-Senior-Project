@@ -97,7 +97,7 @@ export default function LoginPage() {
                 />
               </div>
             </div>
-            <h1 className="text-3xl font-bold text-white mb-1">ATA Bank</h1>
+            <h1 className="text-3xl font-bold text-white mb-1"></h1>
             <p className="text-white/80 text-center">Feedback Management System</p>
           </div>
           <Card className="bg-white/10 backdrop-blur-lg border-white/20 shadow-xl">
