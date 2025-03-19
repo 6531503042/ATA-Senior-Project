@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { 
-  Search, 
-  BarChart2, 
+import React, { useState, useEffect } from "react";
+import {
+  Search,
+  BarChart2,
   MessageSquare,
   ListChecks,
   Users,
@@ -22,24 +22,27 @@ import {
   MessagesSquare,
   Target,
   Lightbulb,
-  GraduationCap
-} from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { QuestionForm } from './components/QuestionForm';
-import { 
-  getAllQuestions, 
+  GraduationCap,
+  Plus,
+  RotateCw,
+  Filter,
+} from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { QuestionForm } from "./components/QuestionForm";
+import {
+  getAllQuestions,
   createQuestion,
   updateQuestion,
-  deleteQuestion, 
+  deleteQuestion,
   getQuestionMetrics,
   getQuestionResponses,
   QuestionMetrics,
-  QuestionResponses
-} from '@/lib/api/questions';
-import { Question, QuestionType, CreateQuestionDto } from './models/types';
-import { useToast } from '@/hooks/use-toast';
+  QuestionResponses,
+} from "@/lib/api/questions";
+import { Question, QuestionType, CreateQuestionDto } from "./models/types";
+import { useToast } from "@/hooks/use-toast";
 
 export default function QuestionsPage() {
   const { toast } = useToast();
@@ -49,8 +52,8 @@ export default function QuestionsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedType, setSelectedType] = useState<QuestionType | 'ALL'>('ALL');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedType, setSelectedType] = useState<QuestionType | "ALL">("ALL");
   const [showFilters, setShowFilters] = useState(false);
 
   const fetchData = async () => {
@@ -59,7 +62,7 @@ export default function QuestionsPage() {
       const [questionsData, metricsData, responsesData] = await Promise.all([
         getAllQuestions(),
         getQuestionMetrics(),
-        getQuestionResponses()
+        getQuestionResponses(),
       ]);
       setQuestions(questionsData);
       setMetrics(metricsData);
@@ -67,9 +70,10 @@ export default function QuestionsPage() {
     } catch (err) {
       const error = err as Error;
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to fetch questions data. Please try again.',
-        variant: 'destructive',
+        title: "Error",
+        description:
+          error.message || "Failed to fetch questions data. Please try again.",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -84,45 +88,47 @@ export default function QuestionsPage() {
     try {
       await createQuestion(data);
       toast({
-        title: 'Success',
-        description: 'Question created successfully.',
+        title: "Success",
+        description: "Question created successfully.",
       });
       setIsCreateModalOpen(false);
       fetchData();
     } catch (err) {
       const error = err as Error;
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to create question. Please try again.',
-        variant: 'destructive',
+        title: "Error",
+        description:
+          error.message || "Failed to create question. Please try again.",
+        variant: "destructive",
       });
     }
   };
 
   const handleUpdateQuestion = async (data: CreateQuestionDto) => {
     if (!editingQuestion) return;
-    
+
     try {
       await updateQuestion(editingQuestion.id, data);
       toast({
-        title: 'Success',
-        description: 'Question updated successfully.',
+        title: "Success",
+        description: "Question updated successfully.",
       });
       setEditingQuestion(null);
       fetchData();
     } catch (err) {
       const error = err as Error;
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to update question. Please try again.',
-        variant: 'destructive',
+        title: "Error",
+        description:
+          error.message || "Failed to update question. Please try again.",
+        variant: "destructive",
       });
     }
   };
 
   const handleDelete = async (id: number) => {
     const confirmDelete = window.confirm(
-      'Are you sure you want to delete this question? This action cannot be undone.'
+      "Are you sure you want to delete this question? This action cannot be undone."
     );
 
     if (!confirmDelete) return;
@@ -130,16 +136,17 @@ export default function QuestionsPage() {
     try {
       await deleteQuestion(id);
       toast({
-        title: 'Success',
-        description: 'Question deleted successfully.',
+        title: "Success",
+        description: "Question deleted successfully.",
       });
       fetchData();
     } catch (err) {
       const error = err as Error;
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to delete question. Please try again.',
-        variant: 'destructive',
+        title: "Error",
+        description:
+          error.message || "Failed to delete question. Please try again.",
+        variant: "destructive",
       });
     }
   };
@@ -149,15 +156,31 @@ export default function QuestionsPage() {
       ? question.text.toLowerCase().includes(searchTerm.toLowerCase()) ||
         question.description.toLowerCase().includes(searchTerm.toLowerCase())
       : true;
-    
-    const matchesType = selectedType === 'ALL' || question.questionType === selectedType;
+
+    const matchesType =
+      selectedType === "ALL" || question.questionType === selectedType;
     return matchesSearch && matchesType;
   });
 
   const sentimentEmojis = [
-    { sentiment: 'Negative', emoji: '😞', color: 'text-red-500', bg: 'bg-red-50' },
-    { sentiment: 'Neutral', emoji: '😐', color: 'text-gray-500', bg: 'bg-gray-50' },
-    { sentiment: 'Positive', emoji: '😊', color: 'text-green-500', bg: 'bg-green-50' },
+    {
+      sentiment: "Negative",
+      emoji: "😞",
+      color: "text-red-500",
+      bg: "bg-red-50",
+    },
+    {
+      sentiment: "Neutral",
+      emoji: "😐",
+      color: "text-gray-500",
+      bg: "bg-gray-50",
+    },
+    {
+      sentiment: "Positive",
+      emoji: "😊",
+      color: "text-green-500",
+      bg: "bg-green-50",
+    },
   ];
 
   const getQuestionTypeIcon = (type: QuestionType) => {
@@ -179,55 +202,55 @@ export default function QuestionsPage() {
     switch (type) {
       case QuestionType.SINGLE_CHOICE:
         return {
-          badge: 'bg-blue-100 text-blue-800',
-          bgLight: 'bg-blue-50'
+          badge: "bg-blue-100 text-blue-800",
+          bgLight: "bg-blue-50",
         };
       case QuestionType.MULTIPLE_CHOICE:
         return {
-          badge: 'bg-purple-100 text-purple-800',
-          bgLight: 'bg-purple-50'
+          badge: "bg-purple-100 text-purple-800",
+          bgLight: "bg-purple-50",
         };
       case QuestionType.SENTIMENT:
         return {
-          badge: 'bg-yellow-100 text-yellow-800',
-          bgLight: 'bg-yellow-50'
+          badge: "bg-yellow-100 text-yellow-800",
+          bgLight: "bg-yellow-50",
         };
       case QuestionType.TEXT_BASED:
         return {
-          badge: 'bg-green-100 text-green-800',
-          bgLight: 'bg-green-50'
+          badge: "bg-green-100 text-green-800",
+          bgLight: "bg-green-50",
         };
       default:
         return {
-          badge: 'bg-gray-100 text-gray-800',
-          bgLight: 'bg-gray-50'
+          badge: "bg-gray-100 text-gray-800",
+          bgLight: "bg-gray-50",
         };
     }
   };
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
-      case 'WORK_ENVIRONMENT':
+      case "WORK_ENVIRONMENT":
         return <Briefcase className="h-4 w-4 text-blue-600" />;
-      case 'WORK_LIFE_BALANCE':
+      case "WORK_LIFE_BALANCE":
         return <Heart className="h-4 w-4 text-pink-600" />;
-      case 'TEAM_COLLABORATION':
+      case "TEAM_COLLABORATION":
         return <UserPlus className="h-4 w-4 text-indigo-600" />;
-      case 'PROJECT_MANAGEMENT':
+      case "PROJECT_MANAGEMENT":
         return <ClipboardList className="h-4 w-4 text-purple-600" />;
-      case 'PROJECT_SATISFACTION':
+      case "PROJECT_SATISFACTION":
         return <ThumbsUp className="h-4 w-4 text-cyan-600" />;
-      case 'TECHNICAL_SKILLS':
+      case "TECHNICAL_SKILLS":
         return <Code className="h-4 w-4 text-emerald-600" />;
-      case 'COMMUNICATION':
+      case "COMMUNICATION":
         return <MessagesSquare className="h-4 w-4 text-orange-600" />;
-      case 'LEADERSHIP':
+      case "LEADERSHIP":
         return <Target className="h-4 w-4 text-red-600" />;
-      case 'INNOVATION':
+      case "INNOVATION":
         return <Lightbulb className="h-4 w-4 text-yellow-600" />;
-      case 'PERSONAL_GROWTH':
+      case "PERSONAL_GROWTH":
         return <GraduationCap className="h-4 w-4 text-teal-600" />;
-      case 'GENERAL':
+      case "GENERAL":
         return <MessageCircleQuestion className="h-4 w-4 text-gray-600" />;
       default:
         return <HelpCircle className="h-4 w-4 text-gray-600" />;
@@ -236,30 +259,30 @@ export default function QuestionsPage() {
 
   const getCategoryColor = (category: string) => {
     switch (category) {
-      case 'WORK_ENVIRONMENT':
-        return 'bg-blue-100 text-blue-800';
-      case 'WORK_LIFE_BALANCE':
-        return 'bg-pink-100 text-pink-800';
-      case 'TEAM_COLLABORATION':
-        return 'bg-indigo-100 text-indigo-800';
-      case 'PROJECT_MANAGEMENT':
-        return 'bg-purple-100 text-purple-800';
-      case 'PROJECT_SATISFACTION':
-        return 'bg-cyan-100 text-cyan-800';
-      case 'TECHNICAL_SKILLS':
-        return 'bg-emerald-100 text-emerald-800';
-      case 'COMMUNICATION':
-        return 'bg-orange-100 text-orange-800';
-      case 'LEADERSHIP':
-        return 'bg-red-100 text-red-800';
-      case 'INNOVATION':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'PERSONAL_GROWTH':
-        return 'bg-teal-100 text-teal-800';
-      case 'GENERAL':
-        return 'bg-gray-100 text-gray-800';
+      case "WORK_ENVIRONMENT":
+        return "bg-blue-100 text-blue-800";
+      case "WORK_LIFE_BALANCE":
+        return "bg-pink-100 text-pink-800";
+      case "TEAM_COLLABORATION":
+        return "bg-indigo-100 text-indigo-800";
+      case "PROJECT_MANAGEMENT":
+        return "bg-purple-100 text-purple-800";
+      case "PROJECT_SATISFACTION":
+        return "bg-cyan-100 text-cyan-800";
+      case "TECHNICAL_SKILLS":
+        return "bg-emerald-100 text-emerald-800";
+      case "COMMUNICATION":
+        return "bg-orange-100 text-orange-800";
+      case "LEADERSHIP":
+        return "bg-red-100 text-red-800";
+      case "INNOVATION":
+        return "bg-yellow-100 text-yellow-800";
+      case "PERSONAL_GROWTH":
+        return "bg-teal-100 text-teal-800";
+      case "GENERAL":
+        return "bg-gray-100 text-gray-800";
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-gray-100 text-gray-800";
     }
   };
 
@@ -274,7 +297,9 @@ export default function QuestionsPage() {
                 <ListChecks className="h-6 w-6 text-violet-600" />
               </div>
               <div>
-                <h1 className="text-2xl font-semibold text-gray-900">Questions</h1>
+                <h1 className="text-2xl font-semibold text-gray-900">
+                  Questions
+                </h1>
                 <p className="mt-1 text-sm text-gray-600">
                   Manage and customize your feedback questions
                 </p>
@@ -282,26 +307,27 @@ export default function QuestionsPage() {
             </div>
             <div className="flex items-center gap-3">
               <Button
-                variant="outline"
-                size="sm"
                 onClick={() => setShowFilters(!showFilters)}
+                className="gap-2 flex items-center border border-black/50 rounded-lg text-black/80"
               >
+                <Filter className="w-4 h-4" />
                 Filters
               </Button>
               <Button
-                variant="outline"
-                size="sm"
                 onClick={() => {
                   fetchData();
                 }}
+                className="group gap-2 flex items-center border border-black/50 rounded-lg text-black/80"
               >
+                <RotateCw className="w-4 h-4 group-hover:animate-spin" />
                 Refresh
               </Button>
               <Button
-                size="sm"
                 onClick={() => setIsCreateModalOpen(true)}
+                className="gap-2 flex items-center border border-transparent bg-violet-700  rounded-lg text-white hover:bg-violet-700"
               >
-                Create Question
+                <Plus className="w-4 h-4" />
+                Create Project
               </Button>
             </div>
           </div>
@@ -316,8 +342,12 @@ export default function QuestionsPage() {
                       <BarChart2 className="h-6 w-6 text-blue-600" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-600">Total Questions</p>
-                      <h3 className="text-2xl font-bold text-gray-900">{metrics.totalQuestions}</h3>
+                      <p className="text-sm font-medium text-gray-600">
+                        Total Questions
+                      </p>
+                      <h3 className="text-2xl font-bold text-gray-900">
+                        {metrics.totalQuestions}
+                      </h3>
                     </div>
                   </div>
                 </CardContent>
@@ -330,7 +360,9 @@ export default function QuestionsPage() {
                       <MessageSquare className="h-6 w-6 text-green-600" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-600">Question Types</p>
+                      <p className="text-sm font-medium text-gray-600">
+                        Question Types
+                      </p>
                       <h3 className="text-2xl font-bold text-gray-900">
                         {Object.keys(metrics.questionsByType).length}
                       </h3>
@@ -346,9 +378,14 @@ export default function QuestionsPage() {
                       <Users className="h-6 w-6 text-purple-600" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-600">Total Responses</p>
+                      <p className="text-sm font-medium text-gray-600">
+                        Total Responses
+                      </p>
                       <h3 className="text-2xl font-bold text-gray-900">
-                        {Object.values(responses).reduce((acc, curr) => acc + (curr.responseCount || 0), 0)}
+                        {Object.values(responses).reduce(
+                          (acc, curr) => acc + (curr.responseCount || 0),
+                          0
+                        )}
                       </h3>
                     </div>
                   </div>
@@ -362,7 +399,9 @@ export default function QuestionsPage() {
                       <HelpCircle className="h-6 w-6 text-yellow-600" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-600">Categories</p>
+                      <p className="text-sm font-medium text-gray-600">
+                        Categories
+                      </p>
                       <h3 className="text-2xl font-bold text-gray-900">
                         {Object.keys(metrics.questionsByCategory).length}
                       </h3>
@@ -393,13 +432,20 @@ export default function QuestionsPage() {
               <div className="flex items-center gap-3">
                 <select
                   value={selectedType}
-                  onChange={(e) => setSelectedType(e.target.value as QuestionType | 'ALL')}
+                  onChange={(e) =>
+                    setSelectedType(e.target.value as QuestionType | "ALL")
+                  }
                   className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500"
                 >
                   <option value="ALL">All Types</option>
                   {Object.values(QuestionType).map((type) => (
                     <option key={type} value={type}>
-                      {type.split('_').map(word => word.charAt(0) + word.slice(1).toLowerCase()).join(' ')}
+                      {type
+                        .split("_")
+                        .map(
+                          (word) => word.charAt(0) + word.slice(1).toLowerCase()
+                        )
+                        .join(" ")}
                     </option>
                   ))}
                 </select>
@@ -423,7 +469,9 @@ export default function QuestionsPage() {
                 <div className="p-3 bg-gray-100 rounded-full mb-4">
                   <AlertCircle className="w-6 h-6 text-gray-400" />
                 </div>
-                <h3 className="text-sm font-medium text-gray-900">No questions found</h3>
+                <h3 className="text-sm font-medium text-gray-900">
+                  No questions found
+                </h3>
                 <p className="mt-1 text-sm text-gray-500">
                   Try adjusting your search or filter criteria
                 </p>
@@ -431,12 +479,20 @@ export default function QuestionsPage() {
             ) : (
               <div className="divide-y divide-gray-200">
                 {filteredQuestions.map((question) => (
-                  <div key={question.id} className="p-6 hover:bg-gray-50/50 transition-all">
+                  <div
+                    key={question.id}
+                    className="p-6 hover:bg-gray-50/50 transition-all"
+                  >
                     <div className="flex items-start justify-between gap-4">
                       <div className="space-y-4 flex-1">
                         {/* Question Header */}
                         <div className="flex items-center gap-3">
-                          <div className={`p-2 rounded-lg ${getQuestionTypeColor(question.questionType).bgLight}`}>
+                          <div
+                            className={`p-2 rounded-lg ${
+                              getQuestionTypeColor(question.questionType)
+                                .bgLight
+                            }`}
+                          >
                             {getQuestionTypeIcon(question.questionType)}
                           </div>
                           <div className="space-y-1">
@@ -445,28 +501,51 @@ export default function QuestionsPage() {
                                 {question.text}
                               </h3>
                               <div className="flex items-center gap-2">
-                                <Badge className={getQuestionTypeColor(question.questionType).badge}>
+                                <Badge
+                                  className={
+                                    getQuestionTypeColor(question.questionType)
+                                      .badge
+                                  }
+                                >
                                   {getQuestionTypeIcon(question.questionType)}
                                   <span className="ml-1">
-                                    {question.questionType.split('_').map(word => 
-                                      word.charAt(0) + word.slice(1).toLowerCase()
-                                    ).join(' ')}
+                                    {question.questionType
+                                      .split("_")
+                                      .map(
+                                        (word) =>
+                                          word.charAt(0) +
+                                          word.slice(1).toLowerCase()
+                                      )
+                                      .join(" ")}
                                   </span>
                                 </Badge>
-                                <Badge className={getCategoryColor(question.category)}>
+                                <Badge
+                                  className={getCategoryColor(
+                                    question.category
+                                  )}
+                                >
                                   {getCategoryIcon(question.category)}
                                   <span className="ml-1">
-                                    {question.category.split('_').map(word => 
-                                      word.charAt(0) + word.slice(1).toLowerCase()
-                                    ).join(' ')}
+                                    {question.category
+                                      .split("_")
+                                      .map(
+                                        (word) =>
+                                          word.charAt(0) +
+                                          word.slice(1).toLowerCase()
+                                      )
+                                      .join(" ")}
                                   </span>
                                 </Badge>
                                 <Badge className="bg-white border border-gray-200 text-gray-700">
-                                  {responses[`question_${question.id}`]?.responseCount || 0} Responses
+                                  {responses[`question_${question.id}`]
+                                    ?.responseCount || 0}{" "}
+                                  Responses
                                 </Badge>
                               </div>
                             </div>
-                            <p className="text-sm text-gray-600">{question.description}</p>
+                            <p className="text-sm text-gray-600">
+                              {question.description}
+                            </p>
                           </div>
                         </div>
 
@@ -474,22 +553,34 @@ export default function QuestionsPage() {
                         <div className="pl-12">
                           {question.choices && question.choices.length > 0 && (
                             <div className="space-y-2">
-                              {question.questionType === QuestionType.SENTIMENT ? (
+                              {question.questionType ===
+                              QuestionType.SENTIMENT ? (
                                 <div className="flex items-center gap-4">
-                                  {sentimentEmojis.map(({ sentiment, emoji, color, bg }) => (
-                                    <div
-                                      key={sentiment}
-                                      className={`flex items-center gap-2 px-4 py-2 rounded-lg ${bg}`}
-                                    >
-                                      <span className="text-2xl">{emoji}</span>
-                                      <span className={`text-sm font-medium ${color}`}>{sentiment}</span>
-                                    </div>
-                                  ))}
+                                  {sentimentEmojis.map(
+                                    ({ sentiment, emoji, color, bg }) => (
+                                      <div
+                                        key={sentiment}
+                                        className={`flex items-center gap-2 px-4 py-2 rounded-lg ${bg}`}
+                                      >
+                                        <span className="text-2xl">
+                                          {emoji}
+                                        </span>
+                                        <span
+                                          className={`text-sm font-medium ${color}`}
+                                        >
+                                          {sentiment}
+                                        </span>
+                                      </div>
+                                    )
+                                  )}
                                 </div>
-                              ) : question.questionType === QuestionType.TEXT_BASED ? (
+                              ) : question.questionType ===
+                                QuestionType.TEXT_BASED ? (
                                 <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                                   <MessageSquare className="h-5 w-5 text-gray-400 mb-2" />
-                                  <p className="text-sm text-gray-500">Text response field</p>
+                                  <p className="text-sm text-gray-500">
+                                    Text response field
+                                  </p>
                                 </div>
                               ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -498,12 +589,15 @@ export default function QuestionsPage() {
                                       key={index}
                                       className="flex items-center gap-2 p-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 transition-colors"
                                     >
-                                      {question.questionType === QuestionType.SINGLE_CHOICE ? (
+                                      {question.questionType ===
+                                      QuestionType.SINGLE_CHOICE ? (
                                         <div className="w-4 h-4 rounded-full border-2 border-gray-300" />
                                       ) : (
                                         <div className="w-4 h-4 rounded border-2 border-gray-300" />
                                       )}
-                                      <span className="text-sm text-gray-700">{choice}</span>
+                                      <span className="text-sm text-gray-700">
+                                        {choice}
+                                      </span>
                                     </div>
                                   ))}
                                 </div>
@@ -542,8 +636,10 @@ export default function QuestionsPage() {
       {/* Create/Edit Question Modal */}
       {(isCreateModalOpen || editingQuestion) && (
         <QuestionForm
-          mode={editingQuestion ? 'edit' : 'create'}
-          onSubmit={editingQuestion ? handleUpdateQuestion : handleCreateQuestion}
+          mode={editingQuestion ? "edit" : "create"}
+          onSubmit={
+            editingQuestion ? handleUpdateQuestion : handleCreateQuestion
+          }
           onCancel={() => {
             setIsCreateModalOpen(false);
             setEditingQuestion(null);
@@ -554,4 +650,4 @@ export default function QuestionsPage() {
       )}
     </div>
   );
-} 
+}

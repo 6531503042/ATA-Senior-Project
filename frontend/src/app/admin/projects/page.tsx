@@ -1,24 +1,38 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { useRouter } from 'next/navigation';
-import { ProjectList } from './components/ProjectList';
-import { ProjectFilters } from './components/ProjectFilters';
-import { Project, ProjectStatus, ProjectStats } from './models/types';
-import { getProjects, deleteProject, getProjectMetrics } from '@/lib/api/projects';
-import { useToast } from '@/hooks/use-toast';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { PlusIcon, TrashIcon, PencilIcon, ChevronDownIcon, FilterIcon, RefreshCwIcon } from 'lucide-react';
-import { ProjectFormModal } from './components/ProjectFormModal';
+import React from "react";
+import { useRouter } from "next/navigation";
+import { ProjectList } from "./components/ProjectList";
+import { ProjectFilters } from "./components/ProjectFilters";
+import { Project, ProjectStatus, ProjectStats } from "./models/types";
+import {
+  getProjects,
+  deleteProject,
+  getProjectMetrics,
+} from "@/lib/api/projects";
+import { useToast } from "@/hooks/use-toast";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  PlusIcon,
+  TrashIcon,
+  PencilIcon,
+  ChevronDownIcon,
+  Filter,
+  RotateCw,
+  Plus,
+} from "lucide-react";
+import { ProjectFormModal } from "./components/ProjectFormModal";
 
 export default function ProjectsPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = React.useState(true);
   const [isModalOpen, setIsModalOpen] = React.useState(false);
-  const [modalMode, setModalMode] = React.useState<'create' | 'edit'>('create');
-  const [selectedProject, setSelectedProject] = React.useState<Project | undefined>(undefined);
+  const [modalMode, setModalMode] = React.useState<"create" | "edit">("create");
+  const [selectedProject, setSelectedProject] = React.useState<
+    Project | undefined
+  >(undefined);
   const [showFilters, setShowFilters] = React.useState(false);
   const [projects, setProjects] = React.useState<Project[]>([]);
   const [projectMetrics, setProjectMetrics] = React.useState<ProjectStats>({
@@ -33,7 +47,7 @@ export default function ProjectsPage() {
     averageTeamSize: 0,
   });
   const [filters, setFilters] = React.useState({
-    search: '',
+    search: "",
     status: [] as ProjectStatus[],
     startDate: undefined,
     endDate: undefined,
@@ -46,11 +60,11 @@ export default function ProjectsPage() {
       const metrics = await getProjectMetrics();
       setProjectMetrics(metrics);
     } catch (error) {
-      console.error('Failed to fetch project metrics:', error);
+      console.error("Failed to fetch project metrics:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to fetch project metrics',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to fetch project metrics",
+        variant: "destructive",
       });
     }
   }, [toast]);
@@ -59,45 +73,51 @@ export default function ProjectsPage() {
     try {
       setIsLoading(true);
       const response = await getProjects(filters);
-      console.log('Projects response:', response);
-      
+      console.log("Projects response:", response);
+
       if (Array.isArray(response)) {
         setProjects(response);
         if (response.length === 0) {
           toast({
-            title: 'No Projects',
-            description: 'No projects found matching your criteria.',
-            variant: 'default',
+            title: "No Projects",
+            description: "No projects found matching your criteria.",
+            variant: "default",
           });
         }
       } else {
         setProjects([]);
         toast({
-          title: 'Warning',
-          description: 'Invalid response format. Please try again.',
-          variant: 'default',
+          title: "Warning",
+          description: "Invalid response format. Please try again.",
+          variant: "default",
         });
       }
     } catch (error) {
-      console.error('Failed to fetch projects:', error);
+      console.error("Failed to fetch projects:", error);
       setProjects([]);
-      
+
       if (error instanceof Error) {
-        if (error.message.includes('401') || error.message.includes('unauthorized')) {
+        if (
+          error.message.includes("401") ||
+          error.message.includes("unauthorized")
+        ) {
           toast({
-            title: 'Authentication Error',
-            description: 'Please log in again to continue.',
-            variant: 'destructive',
+            title: "Authentication Error",
+            description: "Please log in again to continue.",
+            variant: "destructive",
           });
-          router.push('/auth/login');
+          router.push("/auth/login");
           return;
         }
       }
-      
+
       toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to fetch projects. Please try again.',
-        variant: 'destructive',
+        title: "Error",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to fetch projects. Please try again.",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -114,10 +134,10 @@ export default function ProjectsPage() {
   };
 
   const handleEdit = async (id: number) => {
-    const projectToEdit = projects.find(p => p.id === id);
+    const projectToEdit = projects.find((p) => p.id === id);
     if (projectToEdit) {
       setSelectedProject(projectToEdit);
-      setModalMode('edit');
+      setModalMode("edit");
       setIsModalOpen(true);
     }
   };
@@ -125,7 +145,7 @@ export default function ProjectsPage() {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedProject(undefined);
-    setModalMode('create');
+    setModalMode("create");
     fetchProjects();
   };
 
@@ -134,41 +154,52 @@ export default function ProjectsPage() {
       // First try to delete without cascade
       await deleteProject(id);
       toast({
-        title: 'Success',
-        description: 'Project deleted successfully.',
-        variant: 'success',
+        title: "Success",
+        description: "Project deleted successfully.",
+        variant: "success",
       });
       await fetchProjects();
     } catch (error: any) {
-      console.error('Failed to delete project:', error);
-      
+      console.error("Failed to delete project:", error);
+
       // Check if the error is related to foreign key constraints
-      if (error.message && error.message.includes('associated feedbacks')) {
+      if (error.message && error.message.includes("associated feedbacks")) {
         // Ask for confirmation to delete with cascade
-        if (confirm('This project has associated feedbacks. Would you like to delete the project and all its feedbacks?')) {
+        if (
+          confirm(
+            "This project has associated feedbacks. Would you like to delete the project and all its feedbacks?"
+          )
+        ) {
           try {
             await deleteProject(id, true); // Call with cascade=true
             toast({
-              title: 'Success',
-              description: 'Project and all associated feedbacks deleted successfully.',
-              variant: 'success',
+              title: "Success",
+              description:
+                "Project and all associated feedbacks deleted successfully.",
+              variant: "success",
             });
             await fetchProjects();
           } catch (cascadeError: any) {
-            console.error('Failed to delete project with cascade:', cascadeError);
+            console.error(
+              "Failed to delete project with cascade:",
+              cascadeError
+            );
             toast({
-              title: 'Error',
-              description: cascadeError?.message || 'Failed to delete project and feedbacks. Please try again.',
-              variant: 'destructive',
+              title: "Error",
+              description:
+                cascadeError?.message ||
+                "Failed to delete project and feedbacks. Please try again.",
+              variant: "destructive",
             });
           }
         }
       } else {
         // Show the original error
         toast({
-          title: 'Error',
-          description: error?.message || 'Failed to delete project. Please try again.',
-          variant: 'destructive',
+          title: "Error",
+          description:
+            error?.message || "Failed to delete project. Please try again.",
+          variant: "destructive",
         });
       }
     }
@@ -188,31 +219,30 @@ export default function ProjectsPage() {
             </div>
             <div className="flex items-center gap-3">
               <Button
-                variant="outline"
-                size="sm"
                 onClick={() => setShowFilters(!showFilters)}
-                leftIcon={<FilterIcon className="w-4 h-4" />}
+                className="gap-2 flex items-center border border-black/50 rounded-lg text-black/80"
               >
+                <Filter className="w-4 h-4" />
                 Filters
               </Button>
               <Button
-                variant="outline"
-                size="sm"
                 onClick={() => {
                   fetchProjects();
                   fetchProjectMetrics();
                 }}
-                leftIcon={<RefreshCwIcon className="w-4 h-4" />}
+                className="group gap-2 flex items-center border border-black/50 rounded-lg text-black/80"
               >
+                <RotateCw className="w-4 h-4 group-hover:animate-spin" />
                 Refresh
               </Button>
               <Button
                 onClick={() => {
-                  setModalMode('create');
+                  setModalMode("create");
                   setIsModalOpen(true);
                 }}
-                leftIcon={<PlusIcon className="h-4 w-4" />}
+                className="gap-2 flex items-center border border-transparent bg-violet-700  rounded-lg text-white hover:bg-violet-700"
               >
+                <Plus className="w-4 h-4" />
                 Create Project
               </Button>
             </div>
@@ -229,8 +259,12 @@ export default function ProjectsPage() {
                     </div>
                   </div>
                   <div className="ml-4">
-                    <dt className="text-sm font-medium text-gray-500">Total Projects</dt>
-                    <dd className="mt-1 text-2xl font-semibold text-gray-900">{projectMetrics.totalProjects}</dd>
+                    <dt className="text-sm font-medium text-gray-500">
+                      Total Projects
+                    </dt>
+                    <dd className="mt-1 text-2xl font-semibold text-gray-900">
+                      {projectMetrics.totalProjects}
+                    </dd>
                   </div>
                 </div>
               </div>
@@ -245,8 +279,12 @@ export default function ProjectsPage() {
                     </div>
                   </div>
                   <div className="ml-4">
-                    <dt className="text-sm font-medium text-gray-500">Active Projects</dt>
-                    <dd className="mt-1 text-2xl font-semibold text-gray-900">{projectMetrics.activeProjects}</dd>
+                    <dt className="text-sm font-medium text-gray-500">
+                      Active Projects
+                    </dt>
+                    <dd className="mt-1 text-2xl font-semibold text-gray-900">
+                      {projectMetrics.activeProjects}
+                    </dd>
                   </div>
                 </div>
               </div>
@@ -261,8 +299,12 @@ export default function ProjectsPage() {
                     </div>
                   </div>
                   <div className="ml-4">
-                    <dt className="text-sm font-medium text-gray-500">Completed Projects</dt>
-                    <dd className="mt-1 text-2xl font-semibold text-gray-900">{projectMetrics.completedProjects}</dd>
+                    <dt className="text-sm font-medium text-gray-500">
+                      Completed Projects
+                    </dt>
+                    <dd className="mt-1 text-2xl font-semibold text-gray-900">
+                      {projectMetrics.completedProjects}
+                    </dd>
                   </div>
                 </div>
               </div>
@@ -277,8 +319,12 @@ export default function ProjectsPage() {
                     </div>
                   </div>
                   <div className="ml-4">
-                    <dt className="text-sm font-medium text-gray-500">Total Members</dt>
-                    <dd className="mt-1 text-2xl font-semibold text-gray-900">{projectMetrics.totalMembers}</dd>
+                    <dt className="text-sm font-medium text-gray-500">
+                      Total Members
+                    </dt>
+                    <dd className="mt-1 text-2xl font-semibold text-gray-900">
+                      {projectMetrics.totalMembers}
+                    </dd>
                   </div>
                 </div>
               </div>
