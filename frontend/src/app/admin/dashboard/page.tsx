@@ -318,16 +318,15 @@ export default function DashboardPage() {
               <Button
                 variant="outline"
                 size="sm"
-                className="gap-2"
+                icon={<Calendar className="h-4 w-4" />}
               >
-                <Calendar className="h-4 w-4" />
+                
                 Last 30 Days
               </Button>
               <Button
                 variant="outline"
                 size="sm"
-                className="gap-2"
-                leftIcon={<Download className="h-4 w-4" />}
+                icon={<Download className="h-4 w-4" />}
               >
                 Export Report
               </Button>
