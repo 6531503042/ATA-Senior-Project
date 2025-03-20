@@ -1,10 +1,17 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { DatePicker } from '@/components/shared/date-picker';
-import { Project } from '../../projects/models/types';
-import { Question } from '../../questions/models/types';
-import { cn } from '@/lib/utils';
+import React from "react";
+import { DatePicker } from "@/components/shared/date-picker";
+import { Project } from "../../projects/models/types";
+import { Question } from "../../questions/models/types";
+import { cn } from "@/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface FormBodyProps {
   title: string;
@@ -44,7 +51,7 @@ const FormBody: React.FC<FormBodyProps> = ({
   const handleQuestionToggle = (questionId: number) => {
     setSelectedQuestions(
       selectedQuestions.includes(questionId)
-        ? selectedQuestions.filter(id => id !== questionId)
+        ? selectedQuestions.filter((id) => id !== questionId)
         : [...selectedQuestions, questionId]
     );
   };
@@ -55,8 +62,12 @@ const FormBody: React.FC<FormBodyProps> = ({
       <div className="space-y-4">
         <div>
           <div className="flex items-center justify-between">
-            <label className="text-sm font-medium text-gray-700">Form Title</label>
-            {errors.title && <span className="text-xs text-red-500">{errors.title}</span>}
+            <label className="text-sm font-medium text-gray-700">
+              Form Title
+            </label>
+            {errors.title && (
+              <span className="text-xs text-red-500">{errors.title}</span>
+            )}
           </div>
           <input
             type="text"
@@ -74,8 +85,12 @@ const FormBody: React.FC<FormBodyProps> = ({
 
         <div>
           <div className="flex items-center justify-between">
-            <label className="text-sm font-medium text-gray-700">Description</label>
-            {errors.description && <span className="text-xs text-red-500">{errors.description}</span>}
+            <label className="text-sm font-medium text-gray-700">
+              Description
+            </label>
+            {errors.description && (
+              <span className="text-xs text-red-500">{errors.description}</span>
+            )}
           </div>
           <textarea
             value={description}
@@ -93,24 +108,32 @@ const FormBody: React.FC<FormBodyProps> = ({
         <div>
           <div className="flex items-center justify-between">
             <label className="text-sm font-medium text-gray-700">Project</label>
-            {errors.project && <span className="text-xs text-red-500">{errors.project}</span>}
-          </div>
-          <select
-            value={selectedProject}
-            onChange={(e) => setSelectedProject(Number(e.target.value))}
-            className={cn(
-              "w-full mt-1 px-3 py-2 bg-white border rounded-md text-sm",
-              "focus:outline-none focus:ring-2 focus:ring-violet-500",
-              errors.project ? "border-red-500" : "border-gray-300"
+            {errors.project && (
+              <span className="text-xs text-red-500">{errors.project}</span>
             )}
+          </div>
+          <Select
+            value={selectedProject ? String(selectedProject) : ""}
+            onValueChange={(value) => setSelectedProject(Number(value))}
           >
-            <option value={0}>Select a project</option>
-            {projects.map(project => (
-              <option key={project.id} value={project.id}>
-                {project.name}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger
+              className={cn(
+                "w-full mt-1 px-3 py-2 bg-white border rounded-md text-sm",
+                "focus:outline-none focus:ring-2 focus:ring-violet-500",
+                errors.project ? "border-red-500" : "border-gray-300"
+              )}
+            >
+              <SelectValue placeholder="Select a project" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="0">Select a project</SelectItem>
+              {projects.map((project) => (
+                <SelectItem key={project.id} value={String(project.id)}>
+                  {project.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
@@ -135,10 +158,12 @@ const FormBody: React.FC<FormBodyProps> = ({
       <div>
         <div className="flex items-center justify-between mb-2">
           <label className="text-sm font-medium text-gray-700">Questions</label>
-          {errors.questions && <span className="text-xs text-red-500">{errors.questions}</span>}
+          {errors.questions && (
+            <span className="text-xs text-red-500">{errors.questions}</span>
+          )}
         </div>
         <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
-          {questions.map(question => (
+          {questions.map((question) => (
             <div
               key={question.id}
               className={cn(
@@ -157,14 +182,20 @@ const FormBody: React.FC<FormBodyProps> = ({
               />
               <div className="flex-1 space-y-2">
                 <div>
-                  <p className="text-sm font-medium text-gray-900">{question.text}</p>
-                  <p className="text-xs text-gray-500">{question.description}</p>
+                  <p className="text-sm font-medium text-gray-900">
+                    {question.text}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {question.description}
+                  </p>
                 </div>
-                
+
                 {/* Answer Options */}
                 {question.choices && question.choices.length > 0 && (
                   <div className="mt-2 space-y-1">
-                    <p className="text-xs font-medium text-gray-600">Answer Options:</p>
+                    <p className="text-xs font-medium text-gray-600">
+                      Answer Options:
+                    </p>
                     <div className="grid grid-cols-2 gap-1">
                       {question.choices.map((choice, index) => (
                         <div
@@ -178,29 +209,39 @@ const FormBody: React.FC<FormBodyProps> = ({
                   </div>
                 )}
 
-                {question.questionType === 'SENTIMENT' && (
+                {question.questionType === "SENTIMENT" && (
                   <div className="mt-2 space-y-1">
-                    <p className="text-xs font-medium text-gray-600">Sentiment Options:</p>
+                    <p className="text-xs font-medium text-gray-600">
+                      Sentiment Options:
+                    </p>
                     <div className="flex gap-2">
-                      <span className="text-xs px-2 py-1 bg-red-50 text-red-600 rounded">Negative</span>
-                      <span className="text-xs px-2 py-1 bg-gray-50 text-gray-600 rounded">Neutral</span>
-                      <span className="text-xs px-2 py-1 bg-green-50 text-green-600 rounded">Positive</span>
+                      <span className="text-xs px-2 py-1 bg-red-50 text-red-600 rounded">
+                        Negative
+                      </span>
+                      <span className="text-xs px-2 py-1 bg-gray-50 text-gray-600 rounded">
+                        Neutral
+                      </span>
+                      <span className="text-xs px-2 py-1 bg-green-50 text-green-600 rounded">
+                        Positive
+                      </span>
                     </div>
                   </div>
                 )}
 
-                {question.questionType === 'TEXT_BASED' && (
+                {question.questionType === "TEXT_BASED" && (
                   <div className="mt-2">
-                    <p className="text-xs text-gray-500 italic">Free text response</p>
+                    <p className="text-xs text-gray-500 italic">
+                      Free text response
+                    </p>
                   </div>
                 )}
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">
-                  {question.questionType.replace('_', ' ')}
+                  {question.questionType.replace("_", " ")}
                 </span>
                 <span className="text-xs px-2 py-1 rounded-full bg-violet-100 text-violet-600">
-                  {question.category.replace('_', ' ')}
+                  {question.category.replace("_", " ")}
                 </span>
               </div>
             </div>
@@ -211,4 +252,4 @@ const FormBody: React.FC<FormBodyProps> = ({
   );
 };
 
-export default FormBody; 
+export default FormBody;

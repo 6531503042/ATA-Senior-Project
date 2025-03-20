@@ -220,29 +220,32 @@ export default function ProjectsPage() {
             <div className="flex items-center gap-3">
               <Button
                 onClick={() => setShowFilters(!showFilters)}
-                className="gap-2 flex items-center border border-black/50 rounded-lg text-black/80"
+                variant="outline"
+                icon={<Filter className="w-4 h-4" />}
               >
-                <Filter className="w-4 h-4" />
                 Filters
               </Button>
+
               <Button
                 onClick={() => {
                   fetchProjects();
                   fetchProjectMetrics();
                 }}
-                className="group gap-2 flex items-center border border-black/50 rounded-lg text-black/80"
+                variant="outline"
+                icon={<RotateCw className="w-4 h-4 group-hover:animate-spin" />}
+                className="group"
               >
-                <RotateCw className="w-4 h-4 group-hover:animate-spin" />
                 Refresh
               </Button>
+
               <Button
                 onClick={() => {
                   setModalMode("create");
                   setIsModalOpen(true);
                 }}
-                className="gap-2 flex items-center border border-transparent bg-violet-700  rounded-lg text-white hover:bg-violet-700"
+                variant="primary"
+                icon={<Plus className="w-4 h-4" />}
               >
-                <Plus className="w-4 h-4" />
                 Create Project
               </Button>
             </div>
@@ -355,18 +358,18 @@ export default function ProjectsPage() {
               actions={(project) => (
                 <div className="flex gap-2">
                   <Button
-                    variant="secondary"
+                    variant="edit"
                     size="sm"
                     onClick={() => handleEdit(project.id)}
-                    leftIcon={<PencilIcon className="w-4 h-4" />}
+                    icon={<PencilIcon className="w-4 h-4" />}
                   >
                     Edit
                   </Button>
                   <Button
-                    variant="destructive"
+                    variant="delete"
                     size="sm"
                     onClick={() => handleDelete(project.id)}
-                    leftIcon={<TrashIcon className="w-4 h-4" />}
+                    icon={<TrashIcon className="w-4 h-4" />}
                   >
                     Delete
                   </Button>

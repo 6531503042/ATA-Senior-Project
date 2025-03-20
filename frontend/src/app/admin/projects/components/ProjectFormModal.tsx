@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { FolderPlus, X, PencilIcon } from "lucide-react";
+import { FolderPlus, X, PencilIcon, Plus, Rocket } from "lucide-react";
 import {
   Card,
   CardHeader,
@@ -44,7 +44,7 @@ export function ProjectFormModal({
     name: project?.name || "",
     description: project?.description || "",
     projectStartDate: project?.projectStartDate || "",
-    projectEndDate: project?.projectEndDate || ""
+    projectEndDate: project?.projectEndDate || "",
   });
   const [startDateError, setStartDateError] = useState<string>("");
   const [endDateError, setEndDateError] = useState<string>("");
@@ -339,11 +339,13 @@ export function ProjectFormModal({
             </CardContent>
 
             <CardFooter className="flex justify-end space-x-2 p-6 pt-0">
-              <Button variant="outline" onClick={onClose} disabled={isLoading}>
+              <Button variant="edit" onClick={onClose} disabled={isLoading}>
                 Cancel
               </Button>
               <Button
                 type="submit"
+                variant="primary"
+                icon={<Rocket className="w-4 h-4" />}
                 onClick={handleSubmit}
                 disabled={isLoading}
               >

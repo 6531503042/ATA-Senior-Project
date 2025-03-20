@@ -4,9 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { format } from "date-fns";
 import {
   ClipboardList,
-  PlusCircle,
   Filter,
-  RefreshCw,
   Search,
   Calendar,
   Users,
@@ -33,6 +31,13 @@ import {
 import type { Feedback, FeedbackFilters } from "./models/types";
 import { FeedbackFormModal } from "./components/FeedbackFormModal";
 import { useRouter } from "next/navigation";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function FeedbacksPage() {
   const { toast } = useToast();
@@ -155,16 +160,18 @@ export default function FeedbacksPage() {
             <div className="flex items-center gap-3">
               <Button
                 onClick={() => setShowFilters(!showFilters)}
-                className="gap-2 flex items-center border border-black/50 rounded-lg text-black/80"
+                variant="outline"
+                icon={<Filter className="w-4 h-4" />}
+                className="border-black/50 text-black/80"
               >
-                <Filter className="w-4 h-4" />
                 Filters
               </Button>
               <Button
                 onClick={fetchFeedbacks}
-                className="group gap-2 flex items-center border border-black/50 rounded-lg text-black/80"
+                variant="outline"
+                icon={<RotateCw className="w-4 h-4 group-hover:animate-spin" />}
+                className="group border-black/50 text-black/80"
               >
-                <RotateCw className="w-4 h-4 group-hover:animate-spin" />
                 Refresh
               </Button>
               <Button
@@ -172,9 +179,9 @@ export default function FeedbacksPage() {
                   setModalMode("create");
                   setIsModalOpen(true);
                 }}
-                className="gap-2 flex items-center border border-transparent bg-violet-700  rounded-lg text-white hover:bg-violet-700"
+                variant="primary"
+                icon={<Plus className="w-4 h-4" />}
               >
-                <Plus className="w-4 h-4" />
                 Create Project
               </Button>
             </div>
@@ -281,27 +288,28 @@ export default function FeedbacksPage() {
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <select
+                <Select
                   value={
                     filters.active === undefined
                       ? "all"
                       : filters.active.toString()
                   }
-                  onChange={(e) =>
+                  onValueChange={(value) =>
                     setFilters((prev) => ({
                       ...prev,
-                      active:
-                        e.target.value === "all"
-                          ? undefined
-                          : e.target.value === "true",
+                      active: value === "all" ? undefined : value === "true",
                     }))
                   }
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500"
                 >
-                  <option value="all">All Status</option>
-                  <option value="true">Active</option>
-                  <option value="false">Inactive</option>
-                </select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="All Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="true">Active</SelectItem>
+                    <SelectItem value="false">Inactive</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </CardContent>
@@ -408,24 +416,24 @@ export default function FeedbacksPage() {
                       {/* Actions */}
                       <div className="flex items-center gap-2">
                         <Button
-                          variant="outline"
+                          variant="edit"
                           size="sm"
                           onClick={() =>
                             router.push(
                               `/admin/feedbacks/${feedback.id}/satisfaction`
                             )
                           }
-                          leftIcon={<BarChart2 className="w-4 h-4" />}
+                          icon={<BarChart2 className="w-4 h-4" />}
                         >
                           Satisfaction
                         </Button>
                         <Button
-                          variant="outline"
+                          variant="edit"
                           size="sm"
                           onClick={() =>
                             handleToggleStatus(feedback.id, feedback.active)
                           }
-                          leftIcon={
+                          icon={
                             feedback.active ? (
                               <XCircle className="w-4 h-4" />
                             ) : (
@@ -436,26 +444,26 @@ export default function FeedbacksPage() {
                           {feedback.active ? "Deactivate" : "Activate"}
                         </Button>
                         <Button
-                          variant="outline"
+                          variant="edit"
                           size="sm"
                           onClick={() => handleView(feedback)}
-                          leftIcon={<Eye className="w-4 h-4" />}
+                          icon={<Eye className="w-4 h-4" />}
                         >
                           View
                         </Button>
                         <Button
-                          variant="outline"
+                          variant="edit"
                           size="sm"
                           onClick={() => handleEdit(feedback)}
-                          leftIcon={<PencilIcon className="w-4 h-4" />}
+                          icon={<PencilIcon className="w-4 h-4" />}
                         >
                           Edit
                         </Button>
                         <Button
-                          variant="destructive"
+                          variant="delete"
                           size="sm"
                           onClick={() => handleDelete(feedback.id)}
-                          leftIcon={<Trash2 className="w-4 h-4" />}
+                          icon={<Trash2 className="w-4 h-4" />}
                         >
                           Delete
                         </Button>

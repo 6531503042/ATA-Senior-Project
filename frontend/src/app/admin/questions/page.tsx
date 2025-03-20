@@ -26,6 +26,8 @@ import {
   Plus,
   RotateCw,
   Filter,
+  PencilIcon,
+  Trash2,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -43,6 +45,13 @@ import {
 } from "@/lib/api/questions";
 import { Question, QuestionType, CreateQuestionDto } from "./models/types";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function QuestionsPage() {
   const { toast } = useToast();
@@ -308,25 +317,27 @@ export default function QuestionsPage() {
             <div className="flex items-center gap-3">
               <Button
                 onClick={() => setShowFilters(!showFilters)}
-                className="gap-2 flex items-center border border-black/50 rounded-lg text-black/80"
+                variant="outline"
+                icon={<Filter className="w-4 h-4" />}
+                className="border-black/50 text-black/80"
               >
-                <Filter className="w-4 h-4" />
                 Filters
               </Button>
               <Button
                 onClick={() => {
                   fetchData();
                 }}
-                className="group gap-2 flex items-center border border-black/50 rounded-lg text-black/80"
+                variant="outline"
+                icon={<RotateCw className="w-4 h-4 group-hover:animate-spin" />}
+                className="group border-black/50 text-black/80"
               >
-                <RotateCw className="w-4 h-4 group-hover:animate-spin" />
                 Refresh
               </Button>
               <Button
                 onClick={() => setIsCreateModalOpen(true)}
-                className="gap-2 flex items-center border border-transparent bg-violet-700  rounded-lg text-white hover:bg-violet-700"
+                variant="primary"
+                icon={<Plus className="w-4 h-4" />}
               >
-                <Plus className="w-4 h-4" />
                 Create Project
               </Button>
             </div>
@@ -430,25 +441,30 @@ export default function QuestionsPage() {
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <select
+                <Select
                   value={selectedType}
-                  onChange={(e) =>
-                    setSelectedType(e.target.value as QuestionType | "ALL")
+                  onValueChange={(value) =>
+                    setSelectedType(value as QuestionType | "ALL")
                   }
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500"
                 >
-                  <option value="ALL">All Types</option>
-                  {Object.values(QuestionType).map((type) => (
-                    <option key={type} value={type}>
-                      {type
-                        .split("_")
-                        .map(
-                          (word) => word.charAt(0) + word.slice(1).toLowerCase()
-                        )
-                        .join(" ")}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500">
+                    <SelectValue placeholder="All Types" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ALL">All Types</SelectItem>
+                    {Object.values(QuestionType).map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {type
+                          .split("_")
+                          .map(
+                            (word) =>
+                              word.charAt(0) + word.slice(1).toLowerCase()
+                          )
+                          .join(" ")}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </CardContent>
@@ -610,16 +626,18 @@ export default function QuestionsPage() {
                       {/* Actions */}
                       <div className="flex items-center gap-2">
                         <Button
-                          variant="outline"
+                          variant="edit"
                           size="sm"
                           onClick={() => setEditingQuestion(question)}
+                          icon={<PencilIcon className="w-4 h-4" />}
                         >
                           Edit
                         </Button>
                         <Button
-                          variant="destructive"
+                          variant="delete"
                           size="sm"
                           onClick={() => handleDelete(question.id)}
+                          icon={<Trash2 className="w-4 h-4" />}
                         >
                           Delete
                         </Button>
