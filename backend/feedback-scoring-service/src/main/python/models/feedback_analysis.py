@@ -44,8 +44,6 @@ class QuestionAnalysis(BaseModel):
 
 class FeedbackAnalysis(BaseModel):
     feedback_id: int
-    project_id: int = 0
-    project_name: str = "Unknown Project"
     submitted_by: Optional[str] = None
     submitted_at: datetime
     executive_summary: ExecutiveSummary

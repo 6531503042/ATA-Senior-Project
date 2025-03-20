@@ -132,7 +132,6 @@ interface SubmissionMetricsProps {
 export function SubmissionMetrics({
   totalSubmissions,
   analyzedCount,
-  totalProjects,
   totalUsers,
   feedbackId,
   recentSubmissions,

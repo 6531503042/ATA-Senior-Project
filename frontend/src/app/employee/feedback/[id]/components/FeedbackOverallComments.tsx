@@ -6,14 +6,15 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import { Users, Lock, UserCircle2 } from 'lucide-react';
 
 const MAX_TEXT_LENGTH = 255;
 
 interface FeedbackOverallCommentsProps {
   overallComments: string;
-  privacyLevel: 'PUBLIC' | 'PRIVATE';
+  privacyLevel: 'PUBLIC' | 'PRIVATE' | 'ANONYMOUS';
   onCommentsChange: (comments: string) => void;
-  onPrivacyChange: (privacy: 'PUBLIC' | 'PRIVATE') => void;
+  onPrivacyChange: (privacy: 'PUBLIC' | 'PRIVATE' | 'ANONYMOUS') => void;
 }
 
 export function FeedbackOverallComments({
@@ -73,7 +74,7 @@ export function FeedbackOverallComments({
         </div>
         <RadioGroup
           value={privacyLevel}
-          onValueChange={(value: 'PUBLIC' | 'PRIVATE') => onPrivacyChange(value)}
+          onValueChange={(value: 'PUBLIC' | 'PRIVATE' | 'ANONYMOUS') => onPrivacyChange(value)}
           className="space-y-4"
         >
           <div className={cn(
@@ -85,8 +86,11 @@ export function FeedbackOverallComments({
           )}>
             <RadioGroupItem value="PUBLIC" id="public" />
             <Label htmlFor="public" className="flex-1 cursor-pointer">
-              <div className="text-lg font-medium text-gray-900">Public</div>
-              <div className="text-sm text-gray-600">Your feedback will be visible to the team</div>
+              <div className="flex items-center gap-2">
+                <Users className="h-5 w-5 text-violet-600" />
+                <div className="text-lg font-medium text-gray-900">Public</div>
+              </div>
+              <div className="text-sm text-gray-600 ml-7">Your feedback will be visible to the team</div>
             </Label>
           </div>
           <div className={cn(
@@ -98,8 +102,27 @@ export function FeedbackOverallComments({
           )}>
             <RadioGroupItem value="PRIVATE" id="private" />
             <Label htmlFor="private" className="flex-1 cursor-pointer">
-              <div className="text-lg font-medium text-gray-900">Private</div>
-              <div className="text-sm text-gray-600">Only administrators can see your feedback</div>
+              <div className="flex items-center gap-2">
+                <Lock className="h-5 w-5 text-violet-600" />
+                <div className="text-lg font-medium text-gray-900">Private</div>
+              </div>
+              <div className="text-sm text-gray-600 ml-7">Only administrators can see your feedback</div>
+            </Label>
+          </div>
+          <div className={cn(
+            "flex items-center gap-4 p-4 rounded-xl border-2 transition-all cursor-pointer",
+            "hover:bg-violet-50/50 hover:border-violet-200 hover:shadow-md",
+            privacyLevel === 'ANONYMOUS'
+              ? "border-violet-500 bg-violet-50/50 shadow-md"
+              : "border-gray-200"
+          )}>
+            <RadioGroupItem value="ANONYMOUS" id="anonymous" />
+            <Label htmlFor="anonymous" className="flex-1 cursor-pointer">
+              <div className="flex items-center gap-2">
+                <UserCircle2 className="h-5 w-5 text-violet-600" />
+                <div className="text-lg font-medium text-gray-900">Anonymous</div>
+              </div>
+              <div className="text-sm text-gray-600 ml-7">Your feedback will be visible but without your name</div>
             </Label>
           </div>
         </RadioGroup>
