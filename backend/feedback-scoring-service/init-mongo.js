@@ -1,4 +1,23 @@
+// Create feedback_analytics database user
+db.createUser(
+  {
+    user: "feedback_user",
+    pwd: "feedback_password",
+    roles: [
+      {
+        role: "readWrite",
+        db: "feedback_analytics"
+      }
+    ]
+  }
+);
+
+// Create collections
 db = db.getSiblingDB('feedback_analytics');
+
+db.createCollection('feedback_submissions');
+db.createCollection('scoring_results');
+db.createCollection('text_analyses');
 
 // Create collections with validation
 db.createCollection('feedback_analyses', {
@@ -22,18 +41,9 @@ db.createCollection('feedback_analyses', {
 });
 
 // Create indexes
+db.feedback_submissions.createIndex({ "feedback_id": 1 });
+db.scoring_results.createIndex({ "feedback_id": 1 });
+db.text_analyses.createIndex({ "text_hash": 1 }, { unique: true });
 db.feedback_analyses.createIndex({ "feedback_id": 1 }, { unique: true });
 db.feedback_analyses.createIndex({ "project_id": 1 });
-db.feedback_analyses.createIndex({ "submitted_by": 1 });
-
-// Create user for the application
-db.createUser({
-    user: 'feedback_app',
-    pwd: 'feedback_password',
-    roles: [
-        {
-            role: 'readWrite',
-            db: 'feedback_analytics'
-        }
-    ]
-}); 
+db.feedback_analyses.createIndex({ "submitted_by": 1 }); 

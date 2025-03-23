@@ -4,12 +4,26 @@ server:
 spring:
   application:
     name: discovery-service
+  cloud:
+    config:
+      enabled: false  # Disable config server lookup
+
+# Add actuator config for health checks
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
 
 eureka:
   instance:
-    hostname: localhost
+    hostname: discovery-service  # Changed to match container name in docker-compose
+    prefer-ip-address: true
   client:
     register-with-eureka: false
     fetch-registry: false
     service-url:
-      defaultZone: http://localhost:8087/eureka/  # ✅ Use same port as server.port
+      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/

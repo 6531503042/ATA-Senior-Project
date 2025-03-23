@@ -16,6 +16,7 @@ import {
 } from '@/types/employee';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import { getFeedbackServiceUrl, buildApiUrl, API_ENDPOINTS } from '@/lib/api-urls';
 
 const MAX_TEXT_LENGTH = 255; // Maximum character length for text responses
 
@@ -60,7 +61,8 @@ export default function FeedbackForm({ id }: FeedbackFormProps) {
         return;
       }
 
-      const response = await fetch('http://localhost:8084/api/v1/feedback-submissions/available', {
+      const apiUrl = buildApiUrl(getFeedbackServiceUrl(), API_ENDPOINTS.AVAILABLE_FEEDBACKS);
+      const response = await fetch(apiUrl, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -199,7 +201,8 @@ export default function FeedbackForm({ id }: FeedbackFormProps) {
 
       console.log('Submitting feedback:', submissionData);
 
-      const response = await fetch('http://localhost:8084/api/v1/feedback-submissions/submit', {
+      const apiUrl = buildApiUrl(getFeedbackServiceUrl(), API_ENDPOINTS.SUBMIT_FEEDBACK);
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

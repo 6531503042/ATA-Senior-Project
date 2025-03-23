@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  # Traefik as reverse proxy
+  traefik:
+    image: traefik:v2.10
+    container_name: traefik
+    restart: unless-stopped
+    command:
+      - "--configFile=/etc/traefik/traefik.toml"
+    ports:
+      - "80:80"   # Single external port
+      - "443:443" # HTTPS port
+      - "8080:8080" # Traefik dashboard (remove in production)
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik.toml:/etc/traefik/traefik.toml:ro
+      - ./dynamic_conf.toml:/etc/traefik/dynamic_conf.toml:ro
+      - ./certs:/etc/traefik/certs:ro
+    networks:
+      - hr-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.localhost`)"
+      - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.http.routers.traefik.entrypoints=websecure"
+      - "traefik.http.routers.traefik.tls=true"
+      - "traefik.http.middlewares.traefik-auth.basicauth.users=admin:$$apr1$$q8eZFHjF$$Fvmkk//V6Btb8pqh1HYkf1" # admin/admin
+      - "traefik.http.routers.traefik.middlewares=traefik-auth@docker"
+
+networks:
+  hr-network:
+    driver: bridge 

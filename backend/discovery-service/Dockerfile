@@ -1,15 +1,27 @@
+# Use OpenJDK 17 as base image
 FROM openjdk:17-slim
 
-# Install wget for health check
-RUN apt-get update && apt-get install -y wget && rm -rf /var/lib/apt/lists/*
-
+# Set working directory
 WORKDIR /app
 
-COPY build/libs/discovery-service-0.0.1-SNAPSHOT.jar discovery-service.jar
+# Install curl for health checks
+RUN apt-get update && apt-get install -y curl ca-certificates && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
+# Copy the necessary files
+COPY entrypoint.sh .
+COPY build.gradle settings.gradle ./
+COPY gradle gradle/
+COPY gradlew ./
+COPY src src/
+
+# Make entrypoint script executable
+RUN chmod +x ./entrypoint.sh
+RUN chmod +x ./gradlew
+
+# Expose port 8087 for the Discovery Service
 EXPOSE 8087
 
-# Add proper Java options for containerized environment
-ENV JAVA_OPTS="-XX:+UseContainerSupport -Xmx512m"
-
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar discovery-service.jar"] 
+# Run the application
+ENTRYPOINT ["./entrypoint.sh"] 

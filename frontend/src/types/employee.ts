@@ -66,7 +66,7 @@ export interface FeedbackSubmissionPayload {
   feedbackId: number;
   responses: FeedbackResponse;
   overallComments: string;
-  privacyLevel: 'PUBLIC' | 'PRIVATE';
+  privacyLevel: 'PUBLIC' | 'PRIVATE' | 'ANONYMOUS';
 }
 
 // State Types
@@ -75,7 +75,7 @@ export interface FeedbackFormState {
   currentStep: number;
   answers: Record<number, string | string[]>;
   overallComments: string;
-  privacyLevel: 'PUBLIC' | 'PRIVATE';
+  privacyLevel: 'PUBLIC' | 'PRIVATE' | 'ANONYMOUS';
   loading: boolean;
   submitting: boolean;
 }

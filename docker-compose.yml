@@ -1,0 +1,266 @@
+services:
+  # Traefik as reverse proxy
+  traefik:
+    image: traefik:v2.10
+    container_name: traefik
+    restart: unless-stopped
+    command:
+      - "--configFile=/etc/traefik/traefik.toml"
+    ports:
+      - "80:80"   # Single external port
+      - "443:443" # HTTPS port
+      - "8080:8080" # Traefik dashboard (remove in production)
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik.toml:/etc/traefik/traefik.toml:ro
+      - ./dynamic_conf.toml:/etc/traefik/dynamic_conf.toml:ro
+      - ./certs:/etc/traefik/certs:ro
+    networks:
+      - hr-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.localhost`)"
+      - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.http.routers.traefik.entrypoints=websecure"
+      - "traefik.http.routers.traefik.tls=true"
+      - "traefik.http.middlewares.traefik-auth.basicauth.users=admin:$$apr1$$q8eZFHjF$$Fvmkk//V6Btb8pqh1HYkf1" # admin/admin
+      - "traefik.http.routers.traefik.middlewares=traefik-auth@docker"
+
+  # PostgreSQL Database for microservices
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_MULTIPLE_DATABASES=user_service,feedback_service
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./docker-scripts/create-multiple-postgresql-databases.sh:/docker-entrypoint-initdb.d/01-create-multiple-postgresql-databases.sh
+      - ./docker-scripts/postgres-init:/docker-entrypoint-initdb.d/init-scripts
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - hr-network
+
+  # MongoDB for feedback-scoring-service
+  mongodb:
+    image: mongo:6.0
+    container_name: mongodb
+    restart: unless-stopped
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+      - MONGO_INITDB_DATABASE=feedback_analytics
+    volumes:
+      - mongodb-data:/data/db
+      - ./backend/feedback-scoring-service/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/feedback_analytics --quiet
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    networks:
+      - hr-network
+
+  # Service Discovery (Eureka)
+  discovery-service:
+    build:
+      context: ./backend/discovery-service
+      dockerfile: Dockerfile
+    container_name: discovery-service
+    restart: on-failure:5
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8087/actuator/health || exit 0"]
+      interval: 30s
+      timeout: 15s
+      retries: 3
+      start_period: 90s
+    networks:
+      - hr-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.discovery.rule=Host(`api.localhost`) && PathPrefix(`/eureka`)"
+      - "traefik.http.routers.discovery.entrypoints=websecure"
+      - "traefik.http.routers.discovery.tls=true"
+      - "traefik.http.services.discovery.loadbalancer.server.port=8087"
+      - "traefik.http.middlewares.discovery-cors.headers.accessControlAllowOriginList=*"
+      - "traefik.http.routers.discovery.middlewares=discovery-cors@docker"
+
+  # User Service
+  user-service:
+    container_name: user-service
+    build:
+      context: ./backend/user-service
+      dockerfile: Dockerfile
+    environment:
+      - EUREKA_URI=http://discovery-service:8087/eureka/
+    ports:
+      - "8081:8081"
+    networks:
+      - hr-network
+    depends_on:
+      discovery-service:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8087/actuator/health || exit 0"]
+      interval: 30s
+      timeout: 15s
+      retries: 3
+      start_period: 90s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.user.rule=Host(`api.localhost`) && PathPrefix(`/user`)"
+      - "traefik.http.routers.user.entrypoints=websecure"
+      - "traefik.http.routers.user.tls=true"
+      - "traefik.http.services.user.loadbalancer.server.port=8081"
+      - "traefik.http.middlewares.strip-user-prefix.stripprefix.prefixes=/user"
+      - "traefik.http.middlewares.user-cors.headers.accessControlAllowOriginList=*"
+      - "traefik.http.middlewares.user-cors.headers.accessControlAllowMethods=GET,POST,PUT,DELETE,OPTIONS"
+      - "traefik.http.middlewares.user-cors.headers.accessControlAllowHeaders=Content-Type,Authorization,Refresh-Token"
+      - "traefik.http.middlewares.user-cors.headers.accessControlExposeHeaders=Authorization,Refresh-Token"
+      - "traefik.http.middlewares.user-cors.headers.accessControlAllowCredentials=true"
+      - "traefik.http.routers.user.middlewares=strip-user-prefix@docker,user-cors@docker"
+
+  # Feedback Service
+  feedback-service:
+    build:
+      context: ./backend/feedback-service
+      dockerfile: Dockerfile
+    container_name: feedback-service
+    restart: on-failure:5
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      discovery-service:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/feedback_service
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-service:8087/eureka/
+      - USER_SERVICE_URL=http://user-service:8081
+      - CORS_ALLOWED_ORIGINS=http://localhost,https://localhost
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8084/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    networks:
+      - hr-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.feedback.rule=Host(`api.localhost`) && PathPrefix(`/feedback`)"
+      - "traefik.http.routers.feedback.entrypoints=websecure"
+      - "traefik.http.routers.feedback.tls=true"
+      - "traefik.http.services.feedback.loadbalancer.server.port=8084"
+      - "traefik.http.middlewares.strip-feedback-prefix.stripprefix.prefixes=/feedback"
+      - "traefik.http.middlewares.feedback-cors.headers.accessControlAllowOriginList=*"
+      - "traefik.http.middlewares.feedback-cors.headers.accessControlAllowMethods=GET,POST,PUT,DELETE,OPTIONS"
+      - "traefik.http.middlewares.feedback-cors.headers.accessControlAllowHeaders=Content-Type,Authorization"
+      - "traefik.http.middlewares.feedback-cors.headers.accessControlAllowCredentials=true"
+      - "traefik.http.routers.feedback.middlewares=strip-feedback-prefix@docker,feedback-cors@docker"
+
+  # Feedback Scoring Service
+  feedback-scoring-service:
+    build:
+      context: ./backend/feedback-scoring-service
+      dockerfile: Dockerfile
+    container_name: feedback-scoring-service
+    restart: unless-stopped
+    environment:
+      - API_HOST=0.0.0.0
+      - API_PORT=8085
+      - API_RELOAD=False
+      - API_WORKERS=2
+      - MONGODB_URL=mongodb://admin:password@mongodb:27017
+      - MONGODB_DB_NAME=feedback_analytics
+      - FEEDBACK_SERVICE_URL=http://feedback-service:8084
+      - USE_GPU=False
+      - LOG_LEVEL=INFO
+      - BATCH_SIZE=16
+      - MAX_WORKERS=4
+      - CORS_ORIGINS=http://localhost,https://localhost
+    volumes:
+      - ./backend/feedback-scoring-service/models:/app/models
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - hr-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8085/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.scoring.rule=Host(`api.localhost`) && PathPrefix(`/scoring`)"
+      - "traefik.http.routers.scoring.entrypoints=websecure"
+      - "traefik.http.routers.scoring.tls=true"
+      - "traefik.http.services.scoring.loadbalancer.server.port=8085"
+      - "traefik.http.middlewares.strip-scoring-prefix.stripprefix.prefixes=/scoring"
+      - "traefik.http.middlewares.scoring-cors.headers.accessControlAllowOriginList=*"
+      - "traefik.http.middlewares.scoring-cors.headers.accessControlAllowMethods=GET,POST,PUT,DELETE,OPTIONS"
+      - "traefik.http.middlewares.scoring-cors.headers.accessControlAllowHeaders=Content-Type,Authorization"
+      - "traefik.http.middlewares.scoring-cors.headers.accessControlAllowCredentials=true"
+      - "traefik.http.routers.scoring.middlewares=strip-scoring-prefix@docker,scoring-cors@docker"
+
+  # Frontend Application
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    restart: unless-stopped
+    environment:
+      # Using Traefik routes via api.localhost
+      - NEXT_PUBLIC_API_BASE_URL=https://api.localhost
+      - NEXT_PUBLIC_USER_SERVICE_URL=https://api.localhost/user
+      - NEXT_PUBLIC_FEEDBACK_SERVICE_URL=https://api.localhost/feedback
+      - NEXT_PUBLIC_FEEDBACK_SCORING_SERVICE_URL=https://api.localhost/scoring
+      # Browser-side URLs
+      - NEXT_PUBLIC_BROWSER_USER_SERVICE_URL=https://api.localhost/user
+      - NEXT_PUBLIC_BROWSER_FEEDBACK_SERVICE_URL=https://api.localhost/feedback
+      - NEXT_PUBLIC_BROWSER_FEEDBACK_SCORING_SERVICE_URL=https://api.localhost/scoring
+    networks:
+      - hr-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`localhost`)"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls=true"
+      - "traefik.http.services.frontend.loadbalancer.server.port=3000"
+
+networks:
+  hr-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  mongodb-data: 

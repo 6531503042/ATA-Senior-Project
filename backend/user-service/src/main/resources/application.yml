@@ -69,3 +69,13 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:8087/eureka/  # ✅ Match Eureka Server port
+
+# Add actuator config for health checks
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always

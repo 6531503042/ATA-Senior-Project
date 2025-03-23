@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Feedback Service</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #2c3e50;
+        }
+        .endpoint {
+            background-color: #f8f9fa;
+            border-left: 4px solid #6c5ce7;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        .method {
+            font-weight: bold;
+            color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <h1>Feedback Service Mock API</h1>
+    <p>This is a mock Feedback Service for development purposes.</p>
+    
+    <h2>Available Endpoints:</h2>
+    
+    <div class="endpoint">
+        <p><span class="method">GET</span> /health</p>
+        <p>Returns the health status of the service.</p>
+    </div>
+    
+    <div class="endpoint">
+        <p><span class="method">GET</span> /api/v1/feedback-submissions/available</p>
+        <p>Returns a list of available feedback submissions for the authenticated user.</p>
+    </div>
+    
+    <div class="endpoint">
+        <p><span class="method">POST</span> /api/v1/feedback-submissions/submit</p>
+        <p>Submits feedback responses.</p>
+    </div>
+    
+    <div class="endpoint">
+        <p><span class="method">GET</span> /api/v1/projects</p>
+        <p>Returns a list of projects.</p>
+    </div>
+    
+    <div class="endpoint">
+        <p><span class="method">GET</span> /api/v1/questions</p>
+        <p>Returns a list of questions.</p>
+    </div>
+</body>
+</html> 

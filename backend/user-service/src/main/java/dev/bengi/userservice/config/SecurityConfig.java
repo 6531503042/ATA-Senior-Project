@@ -45,6 +45,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/manager/**").permitAll()
                         .requestMatchers("/api/manager/validate-username/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_USER")
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        .requestMatchers("/actuator/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)

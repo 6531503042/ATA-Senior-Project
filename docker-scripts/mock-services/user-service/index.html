@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Service</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #2c3e50;
+        }
+        .endpoint {
+            background-color: #f8f9fa;
+            border-left: 4px solid #6c5ce7;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        .method {
+            font-weight: bold;
+            color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <h1>User Service Mock API</h1>
+    <p>This is a mock User Service for development purposes.</p>
+    
+    <h2>Available Endpoints:</h2>
+    
+    <div class="endpoint">
+        <p><span class="method">GET</span> /health</p>
+        <p>Returns the health status of the service.</p>
+    </div>
+    
+    <div class="endpoint">
+        <p><span class="method">POST</span> /api/v1/auth/login</p>
+        <p>Authenticates a user and returns a JWT token.</p>
+    </div>
+    
+    <div class="endpoint">
+        <p><span class="method">POST</span> /api/v1/auth/register</p>
+        <p>Registers a new user.</p>
+    </div>
+    
+    <div class="endpoint">
+        <p><span class="method">GET</span> /api/v1/users/profile</p>
+        <p>Returns the profile of the authenticated user.</p>
+    </div>
+    
+    <div class="endpoint">
+        <p><span class="method">GET</span> /api/v1/auth/validate-token</p>
+        <p>Validates a JWT token.</p>
+    </div>
+</body>
+</html> 
