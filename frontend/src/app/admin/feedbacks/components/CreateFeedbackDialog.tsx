@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
+import { useAlertDialog } from '@/components/ui/alert-dialog';
 import FormHeader from './FormHeader';
 import FormBody from './FormBody';
 import { createFeedback } from '@/lib/api/feedbacks';
@@ -19,7 +19,7 @@ interface CreateFeedbackDialogProps {
 }
 
 export function CreateFeedbackDialog({ isOpen, setIsOpen, onSuccess }: CreateFeedbackDialogProps) {
-  const { toast } = useToast();
+  const { showAlert } = useAlertDialog();
   const [isLoading, setIsLoading] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -44,10 +44,11 @@ export function CreateFeedbackDialog({ isOpen, setIsOpen, onSuccess }: CreateFee
         setQuestions(questionsData);
       } catch (error) {
         console.error('Failed to fetch data:', error);
-        toast({
+        showAlert({
           title: 'Error',
           description: 'Failed to load required data. Please try again.',
-          variant: 'destructive',
+          variant: 'solid',
+          color: 'danger',
         });
       }
     };
@@ -55,7 +56,7 @@ export function CreateFeedbackDialog({ isOpen, setIsOpen, onSuccess }: CreateFee
     if (isOpen) {
       fetchData();
     }
-  }, [isOpen, toast]);
+  }, [isOpen, showAlert]);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -97,9 +98,11 @@ export function CreateFeedbackDialog({ isOpen, setIsOpen, onSuccess }: CreateFee
         endDate: dueDate!.toISOString(),
       });
 
-      toast({
+      showAlert({
         title: 'Success',
         description: 'Feedback form created successfully.',
+        variant: 'solid',
+        color: 'success',
       });
       
       onSuccess();
@@ -107,10 +110,11 @@ export function CreateFeedbackDialog({ isOpen, setIsOpen, onSuccess }: CreateFee
       resetForm();
     } catch (error) {
       console.error('Failed to create feedback:', error);
-      toast({
+      showAlert({
         title: 'Error',
         description: 'Failed to create feedback form. Please try again.',
-        variant: 'destructive',
+        variant: 'solid',
+        color: 'danger',
       });
     } finally {
       setIsLoading(false);

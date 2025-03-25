@@ -5,6 +5,7 @@ import { DatePicker } from "@/components/shared/date-picker";
 import { Project } from "../../projects/models/types";
 import { Question } from "../../questions/models/types";
 import { cn } from "@/lib/utils";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -174,11 +175,10 @@ const FormBody: React.FC<FormBodyProps> = ({
               )}
               onClick={() => handleQuestionToggle(question.id)}
             >
-              <input
-                type="checkbox"
+              <Checkbox
                 checked={selectedQuestions.includes(question.id)}
-                onChange={() => handleQuestionToggle(question.id)}
-                className="h-4 w-4 text-violet-600 rounded border-gray-300 focus:ring-violet-500"
+                onCheckedChange={() => handleQuestionToggle(question.id)}
+                className="data-[state=checked]:bg-violet-600 data-[state=checked]:border-violet-600"
               />
               <div className="flex-1 space-y-2">
                 <div>

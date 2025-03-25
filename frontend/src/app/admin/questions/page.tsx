@@ -3,48 +3,20 @@
 import React, { useState, useEffect } from "react";
 import {
   Search,
-  BarChart2,
-  MessageSquare,
-  ListChecks,
-  Users,
-  Loader2,
-  HelpCircle,
-  AlertCircle,
-  CheckSquare,
-  Star,
-  MessageCircleQuestion,
-  Briefcase,
-  Heart,
-  UserPlus,
-  ClipboardList,
-  ThumbsUp,
-  Code,
-  MessagesSquare,
-  Target,
-  Lightbulb,
-  GraduationCap,
-  Plus,
-  RotateCw,
   Filter,
-  PencilIcon,
+  Plus,
+  Edit,
   Trash2,
+  MessageSquare,
+  SquareCheck,
+  CircleSlash,
+  FileText,
+  Loader2,
+  RotateCw,
 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { QuestionForm } from "./components/QuestionForm";
-import {
-  getAllQuestions,
-  createQuestion,
-  updateQuestion,
-  deleteQuestion,
-  getQuestionMetrics,
-  getQuestionResponses,
-  QuestionMetrics,
-  QuestionResponses,
-} from "@/lib/api/questions";
-import { Question, QuestionType, CreateQuestionDto } from "./models/types";
-import { useToast } from "@/hooks/use-toast";
 import {
   Select,
   SelectContent,
@@ -52,12 +24,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useAlertDialog } from "@/components/ui/alert-dialog";
+
+import {
+  getAllQuestions,
+  createQuestion,
+  updateQuestion,
+  deleteQuestion,
+} from "@/lib/api/questions";
+import { Question, QuestionType, CreateQuestionDto } from "./models/types";
+import { QuestionForm } from "./components/QuestionForm";
 
 export default function QuestionsPage() {
-  const { toast } = useToast();
+  const { showAlert } = useAlertDialog();
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [metrics, setMetrics] = useState<QuestionMetrics | null>(null);
-  const [responses, setResponses] = useState<QuestionResponses>({});
   const [isLoading, setIsLoading] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
@@ -68,21 +48,17 @@ export default function QuestionsPage() {
   const fetchData = async () => {
     try {
       setIsLoading(true);
-      const [questionsData, metricsData, responsesData] = await Promise.all([
-        getAllQuestions(),
-        getQuestionMetrics(),
-        getQuestionResponses(),
-      ]);
+      const questionsData = await getAllQuestions();
       setQuestions(questionsData);
-      setMetrics(metricsData);
-      setResponses(responsesData);
     } catch (err) {
       const error = err as Error;
-      toast({
+      showAlert({
         title: "Error",
         description:
           error.message || "Failed to fetch questions data. Please try again.",
-        variant: "destructive",
+        variant: "solid",
+        color: "danger",
+        duration: 5000,
       });
     } finally {
       setIsLoading(false);
@@ -96,19 +72,24 @@ export default function QuestionsPage() {
   const handleCreateQuestion = async (data: CreateQuestionDto) => {
     try {
       await createQuestion(data);
-      toast({
+      showAlert({
         title: "Success",
         description: "Question created successfully.",
+        variant: "solid",
+        color: "success",
+        duration: 5000,
       });
       setIsCreateModalOpen(false);
       fetchData();
     } catch (err) {
       const error = err as Error;
-      toast({
+      showAlert({
         title: "Error",
         description:
           error.message || "Failed to create question. Please try again.",
-        variant: "destructive",
+        variant: "solid",
+        color: "danger",
+        duration: 5000,
       });
     }
   };
@@ -118,44 +99,50 @@ export default function QuestionsPage() {
 
     try {
       await updateQuestion(editingQuestion.id, data);
-      toast({
+      showAlert({
         title: "Success",
         description: "Question updated successfully.",
+        variant: "solid",
+        color: "success",
+        duration: 5000,
       });
       setEditingQuestion(null);
       fetchData();
     } catch (err) {
       const error = err as Error;
-      toast({
+      showAlert({
         title: "Error",
         description:
           error.message || "Failed to update question. Please try again.",
-        variant: "destructive",
+        variant: "solid",
+        color: "danger",
+        duration: 5000,
       });
     }
   };
 
   const handleDelete = async (id: number) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this question? This action cannot be undone."
-    );
-
-    if (!confirmDelete) return;
+    if (!confirm("Are you sure you want to delete this question?")) return;
 
     try {
       await deleteQuestion(id);
-      toast({
+      showAlert({
         title: "Success",
         description: "Question deleted successfully.",
+        variant: "solid",
+        color: "success",
+        duration: 5000,
       });
       fetchData();
     } catch (err) {
       const error = err as Error;
-      toast({
+      showAlert({
         title: "Error",
         description:
           error.message || "Failed to delete question. Please try again.",
-        variant: "destructive",
+        variant: "solid",
+        color: "danger",
+        duration: 5000,
       });
     }
   };
@@ -195,15 +182,15 @@ export default function QuestionsPage() {
   const getQuestionTypeIcon = (type: QuestionType) => {
     switch (type) {
       case QuestionType.SINGLE_CHOICE:
-        return <CheckSquare className="h-5 w-5 text-blue-600" />;
+        return <SquareCheck className="h-5 w-5 text-blue-600" />;
       case QuestionType.MULTIPLE_CHOICE:
-        return <ListChecks className="h-5 w-5 text-purple-600" />;
+        return <SquareCheck className="h-5 w-5 text-purple-600" />;
       case QuestionType.SENTIMENT:
-        return <Star className="h-5 w-5 text-yellow-600" />;
+        return <SquareCheck className="h-5 w-5 text-yellow-600" />;
       case QuestionType.TEXT_BASED:
         return <MessageSquare className="h-5 w-5 text-green-600" />;
       default:
-        return <MessageCircleQuestion className="h-5 w-5 text-gray-600" />;
+        return <MessageSquare className="h-5 w-5 text-gray-600" />;
     }
   };
 
@@ -240,29 +227,29 @@ export default function QuestionsPage() {
   const getCategoryIcon = (category: string) => {
     switch (category) {
       case "WORK_ENVIRONMENT":
-        return <Briefcase className="h-4 w-4 text-blue-600" />;
+        return <FileText className="h-4 w-4 text-blue-600" />;
       case "WORK_LIFE_BALANCE":
-        return <Heart className="h-4 w-4 text-pink-600" />;
+        return <FileText className="h-4 w-4 text-pink-600" />;
       case "TEAM_COLLABORATION":
-        return <UserPlus className="h-4 w-4 text-indigo-600" />;
+        return <FileText className="h-4 w-4 text-indigo-600" />;
       case "PROJECT_MANAGEMENT":
-        return <ClipboardList className="h-4 w-4 text-purple-600" />;
+        return <FileText className="h-4 w-4 text-purple-600" />;
       case "PROJECT_SATISFACTION":
-        return <ThumbsUp className="h-4 w-4 text-cyan-600" />;
+        return <FileText className="h-4 w-4 text-cyan-600" />;
       case "TECHNICAL_SKILLS":
-        return <Code className="h-4 w-4 text-emerald-600" />;
+        return <FileText className="h-4 w-4 text-emerald-600" />;
       case "COMMUNICATION":
-        return <MessagesSquare className="h-4 w-4 text-orange-600" />;
+        return <FileText className="h-4 w-4 text-orange-600" />;
       case "LEADERSHIP":
-        return <Target className="h-4 w-4 text-red-600" />;
+        return <FileText className="h-4 w-4 text-red-600" />;
       case "INNOVATION":
-        return <Lightbulb className="h-4 w-4 text-yellow-600" />;
+        return <FileText className="h-4 w-4 text-yellow-600" />;
       case "PERSONAL_GROWTH":
-        return <GraduationCap className="h-4 w-4 text-teal-600" />;
+        return <FileText className="h-4 w-4 text-teal-600" />;
       case "GENERAL":
-        return <MessageCircleQuestion className="h-4 w-4 text-gray-600" />;
+        return <FileText className="h-4 w-4 text-gray-600" />;
       default:
-        return <HelpCircle className="h-4 w-4 text-gray-600" />;
+        return <FileText className="h-4 w-4 text-gray-600" />;
     }
   };
 
@@ -303,7 +290,7 @@ export default function QuestionsPage() {
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
               <div className="p-2 bg-violet-100 rounded-lg">
-                <ListChecks className="h-6 w-6 text-violet-600" />
+                <SquareCheck className="h-6 w-6 text-violet-600" />
               </div>
               <div>
                 <h1 className="text-2xl font-semibold text-gray-900">
@@ -342,86 +329,6 @@ export default function QuestionsPage() {
               </Button>
             </div>
           </div>
-
-          {/* Metrics Overview */}
-          {metrics && (
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Card className="bg-white shadow-sm hover:shadow-md transition-shadow">
-                <CardContent className="p-6">
-                  <div className="flex items-center space-x-4">
-                    <div className="p-3 bg-blue-100 rounded-full">
-                      <BarChart2 className="h-6 w-6 text-blue-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">
-                        Total Questions
-                      </p>
-                      <h3 className="text-2xl font-bold text-gray-900">
-                        {metrics.totalQuestions}
-                      </h3>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-white shadow-sm hover:shadow-md transition-shadow">
-                <CardContent className="p-6">
-                  <div className="flex items-center space-x-4">
-                    <div className="p-3 bg-green-100 rounded-full">
-                      <MessageSquare className="h-6 w-6 text-green-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">
-                        Question Types
-                      </p>
-                      <h3 className="text-2xl font-bold text-gray-900">
-                        {Object.keys(metrics.questionsByType).length}
-                      </h3>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-white shadow-sm hover:shadow-md transition-shadow">
-                <CardContent className="p-6">
-                  <div className="flex items-center space-x-4">
-                    <div className="p-3 bg-purple-100 rounded-full">
-                      <Users className="h-6 w-6 text-purple-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">
-                        Total Responses
-                      </p>
-                      <h3 className="text-2xl font-bold text-gray-900">
-                        {Object.values(responses).reduce(
-                          (acc, curr) => acc + (curr.responseCount || 0),
-                          0
-                        )}
-                      </h3>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-white shadow-sm hover:shadow-md transition-shadow">
-                <CardContent className="p-6">
-                  <div className="flex items-center space-x-4">
-                    <div className="p-3 bg-yellow-100 rounded-full">
-                      <HelpCircle className="h-6 w-6 text-yellow-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">
-                        Categories
-                      </p>
-                      <h3 className="text-2xl font-bold text-gray-900">
-                        {Object.keys(metrics.questionsByCategory).length}
-                      </h3>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
         </div>
 
         {/* Search and Filters */}
@@ -483,7 +390,7 @@ export default function QuestionsPage() {
             ) : filteredQuestions.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-64 text-center">
                 <div className="p-3 bg-gray-100 rounded-full mb-4">
-                  <AlertCircle className="w-6 h-6 text-gray-400" />
+                  <CircleSlash className="w-6 h-6 text-gray-400" />
                 </div>
                 <h3 className="text-sm font-medium text-gray-900">
                   No questions found
@@ -551,11 +458,6 @@ export default function QuestionsPage() {
                                       )
                                       .join(" ")}
                                   </span>
-                                </Badge>
-                                <Badge className="bg-white border border-gray-200 text-gray-700">
-                                  {responses[`question_${question.id}`]
-                                    ?.responseCount || 0}{" "}
-                                  Responses
                                 </Badge>
                               </div>
                             </div>
@@ -629,7 +531,7 @@ export default function QuestionsPage() {
                           variant="edit"
                           size="sm"
                           onClick={() => setEditingQuestion(question)}
-                          icon={<PencilIcon className="w-4 h-4" />}
+                          icon={<Edit className="w-4 h-4" />}
                         >
                           Edit
                         </Button>
@@ -663,7 +565,7 @@ export default function QuestionsPage() {
             setEditingQuestion(null);
           }}
           isLoading={isLoading}
-          initialData={editingQuestion}
+          initialData={editingQuestion || undefined}
         />
       )}
     </div>

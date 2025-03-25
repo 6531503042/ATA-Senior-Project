@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { format } from 'date-fns';
 import { Project } from '../models/types';
 import Table from '@/components/ui/Table';
@@ -8,6 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { CalendarIcon } from 'lucide-react';
 import { FolderPlus } from 'lucide-react';
 import { ProjectStatus } from '../models/types';
+import { motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
 interface ProjectListProps {
   projects: Project[];
@@ -71,6 +73,94 @@ const formatStatus = (status: string = ProjectStatus.ACTIVE): string => {
     .join(' ');
 };
 
+const getInitials = (name: string) => {
+  return name
+    .split(' ')
+    .map(part => part[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+};
+
+const getRandomColor = (userId: number) => {
+  const colors = [
+    'bg-violet-500 text-violet-50',
+    'bg-blue-500 text-blue-50',
+    'bg-emerald-500 text-emerald-50',
+    'bg-amber-500 text-amber-50',
+    'bg-rose-500 text-rose-50',
+    'bg-indigo-500 text-indigo-50',
+    'bg-cyan-500 text-cyan-50',
+    'bg-pink-500 text-pink-50',
+    'bg-teal-500 text-teal-50',
+  ];
+  return colors[userId % colors.length];
+};
+
+const UserAvatar = ({ userId, index, total }: { userId: number; index: number; total: number }) => {
+  const initials = getInitials(`User ${userId}`); // Replace with actual user name when available
+  const colorClass = getRandomColor(userId);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.5 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.2, delay: index * 0.1 }}
+      className={cn(
+        "relative flex items-center justify-center",
+        "w-9 h-9 rounded-full border-2 border-white",
+        "font-medium text-sm shadow-sm",
+        colorClass,
+        "transform transition-transform duration-200 hover:scale-110",
+        "hover:z-10"
+      )}
+      style={{
+        marginLeft: index > 0 ? '-0.75rem' : '0',
+        zIndex: total - index
+      }}
+    >
+      {initials}
+    </motion.div>
+  );
+};
+
+const TeamSection = ({ memberIds }: { memberIds: number[] }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const displayCount = isExpanded ? memberIds.length : 5;
+
+  return (
+    <div className="flex items-center">
+      <div className="flex">
+        {memberIds.slice(0, displayCount).map((memberId, index) => (
+          <UserAvatar
+            key={memberId}
+            userId={memberId}
+            index={index}
+            total={memberIds.length}
+          />
+        ))}
+      </div>
+      {memberIds.length > 5 && !isExpanded && (
+        <motion.button
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.2, delay: 0.5 }}
+          onClick={() => setIsExpanded(true)}
+          className={cn(
+            "relative -ml-2 flex items-center justify-center",
+            "w-9 h-9 rounded-full border-2 border-white",
+            "bg-gray-100 text-gray-600 font-medium text-sm",
+            "hover:bg-gray-200 transition-colors duration-200",
+            "shadow-sm"
+          )}
+        >
+          +{memberIds.length - 4}
+        </motion.button>
+      )}
+    </div>
+  );
+};
+
 export function ProjectList({ projects, isLoading, actions }: ProjectListProps) {
   const columns = [
     {
@@ -118,20 +208,7 @@ export function ProjectList({ projects, isLoading, actions }: ProjectListProps) 
       header: 'Team',
       render: (project: Project) => (
         <div className="flex items-center space-x-2">
-          <div className="flex -space-x-2">
-            {project.memberIds.slice(0, 3).map((memberId, index) => (
-              <div
-                key={memberId}
-                className="w-8 h-8 rounded-full bg-gray-200 border-2 border-white"
-                style={{ zIndex: 3 - index }}
-              />
-            ))}
-          </div>
-          {project.memberIds.length > 3 && (
-            <span className="text-sm text-gray-500">
-              +{project.memberIds.length - 3} more
-            </span>
-          )}
+          <TeamSection memberIds={project.memberIds} />
         </div>
       ),
     },

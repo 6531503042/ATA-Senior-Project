@@ -18,9 +18,11 @@ import Waves from "@/components/ui/Waves";
 import ataLogo from "@assets/ata-removebg-preview.png";
 import { useAuth } from "@/hooks/use-auth";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useAlertDialog } from "@/components/ui/alert-dialog";
 
 export default function LoginPage() {
   const { login, isLoading, error } = useAuth();
+  const { showAlert } = useAlertDialog();
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [formData, setFormData] = useState({
@@ -37,10 +39,17 @@ export default function LoginPage() {
 
     try {
       await login(formData);
-    } catch {
+    } catch (error) {
       setFieldErrors({
         username: true,
         password: true,
+      });
+
+      showAlert({
+        title: "Login Failed",
+        description: "Invalid username or password. Please try again.",
+        variant: "solid",
+        color: "danger"
       });
 
       setTimeout(() => {

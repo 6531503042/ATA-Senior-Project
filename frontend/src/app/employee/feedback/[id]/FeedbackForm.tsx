@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
-import { useToast } from '@/components/ui/use-toast';
+import { useAlertDialog } from '@/components/ui/alert-dialog';
 import { getCookie } from 'cookies-next';
 import { useRouter } from 'next/navigation';
 import { AlertCircle, CheckCircle2, MessageSquare, ChevronLeft, ChevronRight, ClipboardList, Clock, User2, BarChart } from 'lucide-react';
@@ -30,7 +30,7 @@ export default function FeedbackForm({ id }: FeedbackFormProps) {
     submitting: false,
   });
 
-  const { toast } = useToast();
+  const { showAlert } = useAlertDialog();
   const router = useRouter();
 
   // Reset state when feedback ID changes
@@ -51,10 +51,12 @@ export default function FeedbackForm({ id }: FeedbackFormProps) {
     try {
       const token = getCookie('accessToken');
       if (!token) {
-        toast({
+        showAlert({
           title: "Authentication Error",
           description: "Please log in again.",
-          variant: "destructive",
+          variant: "solid",
+          color: "danger",
+          duration: 5000,
         });
         router.push('/auth/login');
         return;
@@ -86,10 +88,12 @@ export default function FeedbackForm({ id }: FeedbackFormProps) {
       }
     } catch (error) {
       console.error('Error fetching feedback:', error);
-      toast({
+      showAlert({
         title: "Error",
         description: "Failed to load feedback questions. Please try again.",
-        variant: "destructive",
+        variant: "solid",
+        color: "danger",
+        duration: 5000,
       });
       setState(prev => ({ ...prev, loading: false }));
     }
@@ -110,20 +114,24 @@ export default function FeedbackForm({ id }: FeedbackFormProps) {
     if (textLengthValidation) {
       const [questionId] = textLengthValidation;
       const question = state.feedback.questions.find(q => q.id === parseInt(questionId));
-      toast({
+      showAlert({
         title: "Text Too Long",
         description: `The response for "${question?.text}" exceeds the maximum length of ${MAX_TEXT_LENGTH} characters. Please shorten your response.`,
-        variant: "destructive",
+        variant: "solid",
+        color: "warning",
+        duration: 5000,
       });
       return;
     }
 
     // Validate overall comments length
     if (state.overallComments.length > MAX_TEXT_LENGTH) {
-      toast({
+      showAlert({
         title: "Overall Comments Too Long",
         description: `Overall comments exceed the maximum length of ${MAX_TEXT_LENGTH} characters. Please shorten your response.`,
-        variant: "destructive",
+        variant: "solid",
+        color: "warning",
+        duration: 5000,
       });
       return;
     }
@@ -134,19 +142,23 @@ export default function FeedbackForm({ id }: FeedbackFormProps) {
     );
 
     if (unansweredRequired) {
-      toast({
+      showAlert({
         title: "Required Questions",
         description: "Please answer all required questions before submitting.",
-        variant: "destructive",
+        variant: "solid",
+        color: "warning",
+        duration: 5000,
       });
       return;
     }
 
     if (!state.overallComments.trim()) {
-      toast({
+      showAlert({
         title: "Overall Comments Required",
         description: "Please provide overall comments before submitting.",
-        variant: "destructive",
+        variant: "solid",
+        color: "warning",
+        duration: 5000,
       });
       return;
     }
@@ -156,10 +168,12 @@ export default function FeedbackForm({ id }: FeedbackFormProps) {
     try {
       const token = getCookie('accessToken');
       if (!token) {
-        toast({
+        showAlert({
           title: "Session Expired",
           description: "Please log in again to continue.",
-          variant: "destructive",
+          variant: "solid",
+          color: "danger",
+          duration: 5000,
         });
         router.push('/auth/login');
         return;
@@ -216,18 +230,22 @@ export default function FeedbackForm({ id }: FeedbackFormProps) {
         throw new Error(responseData.message || 'Failed to submit feedback');
       }
 
-      toast({
+      showAlert({
         title: "Success!",
         description: "Your feedback has been submitted successfully.",
-        variant: "default",
+        variant: "solid",
+        color: "success",
+        duration: 5000,
       });
       router.push('/employee');
     } catch (error) {
       console.error('Submission error:', error);
-      toast({
+      showAlert({
         title: "Submission Failed",
         description: error instanceof Error ? error.message : "Unable to submit your feedback. Please try again.",
-        variant: "destructive",
+        variant: "solid",
+        color: "danger",
+        duration: 5000,
       });
     } finally {
       setState(prev => ({ ...prev, submitting: false }));

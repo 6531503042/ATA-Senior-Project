@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@heroui/alert": "^2.2.16"
+  }
+}

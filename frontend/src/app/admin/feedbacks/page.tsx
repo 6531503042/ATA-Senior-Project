@@ -11,7 +11,6 @@ import {
   Loader2,
   AlertCircle,
   CheckCircle2,
-  XCircle,
   Trash2,
   PencilIcon,
   Eye,
@@ -22,11 +21,10 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
+import { useAlertDialog } from "@/components/ui/alert-dialog";
 import {
   getFeedbacks,
   deleteFeedback,
-  toggleFeedbackStatus,
 } from "@/lib/api/feedbacks";
 import type { Feedback, FeedbackFilters } from "./models/types";
 import { FeedbackFormModal } from "./components/FeedbackFormModal";
@@ -40,7 +38,7 @@ import {
 } from "@/components/ui/select";
 
 export default function FeedbacksPage() {
-  const { toast } = useToast();
+  const { showAlert } = useAlertDialog();
   const router = useRouter();
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -66,56 +64,40 @@ export default function FeedbacksPage() {
       setFeedbacks(data);
     } catch (error) {
       console.error("Failed to fetch feedbacks:", error);
-      toast({
+      showAlert({
         title: "Error",
         description: "Failed to fetch feedbacks. Please try again.",
-        variant: "destructive",
+        variant: "solid",
+        color: "danger",
       });
     } finally {
       setIsLoading(false);
     }
-  }, [filters]);
+  }, [filters, showAlert]);
 
   useEffect(() => {
     fetchFeedbacks();
-  }, [filters]);
+  }, [filters, fetchFeedbacks]);
 
   const handleDelete = async (id: number) => {
     if (!confirm("Are you sure you want to delete this feedback?")) return;
 
     try {
       await deleteFeedback(id);
-      toast({
+      showAlert({
         title: "Success",
         description: "Feedback deleted successfully.",
+        variant: "solid",
+        color: "success",
       });
       fetchFeedbacks();
     } catch (error) {
       console.error("Failed to delete feedback:", error);
-      toast({
+      showAlert({
         title: "Error",
         description: "Failed to delete feedback. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleToggleStatus = async (id: number, currentStatus: boolean) => {
-    try {
-      await toggleFeedbackStatus(id, !currentStatus);
-      toast({
-        title: "Success",
-        description: `Feedback ${
-          !currentStatus ? "activated" : "deactivated"
-        } successfully.`,
-      });
-      fetchFeedbacks();
-    } catch (error) {
-      console.error("Failed to toggle feedback status:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update feedback status. Please try again.",
-        variant: "destructive",
+        variant: "solid",
+        color: "danger",
       });
     }
   };
@@ -426,22 +408,6 @@ export default function FeedbacksPage() {
                           icon={<BarChart2 className="w-4 h-4" />}
                         >
                           Satisfaction
-                        </Button>
-                        <Button
-                          variant="edit"
-                          size="sm"
-                          onClick={() =>
-                            handleToggleStatus(feedback.id, feedback.active)
-                          }
-                          icon={
-                            feedback.active ? (
-                              <XCircle className="w-4 h-4" />
-                            ) : (
-                              <CheckCircle2 className="w-4 h-4" />
-                            )
-                          }
-                        >
-                          {feedback.active ? "Deactivate" : "Activate"}
                         </Button>
                         <Button
                           variant="edit"

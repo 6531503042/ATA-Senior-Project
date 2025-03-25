@@ -10,7 +10,7 @@ import {
   deleteProject,
   getProjectMetrics,
 } from "@/lib/api/projects";
-import { useToast } from "@/hooks/use-toast";
+import { useAlertDialog } from "@/components/ui/alert-dialog";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,7 +26,7 @@ import { ProjectFormModal } from "./components/ProjectFormModal";
 
 export default function ProjectsPage() {
   const router = useRouter();
-  const { toast } = useToast();
+  const { showAlert } = useAlertDialog();
   const [isLoading, setIsLoading] = React.useState(true);
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [modalMode, setModalMode] = React.useState<"create" | "edit">("create");
@@ -61,13 +61,14 @@ export default function ProjectsPage() {
       setProjectMetrics(metrics);
     } catch (error) {
       console.error("Failed to fetch project metrics:", error);
-      toast({
+      showAlert({
         title: "Error",
         description: "Failed to fetch project metrics",
-        variant: "destructive",
+        variant: "solid",
+        color: "danger"
       });
     }
-  }, [toast]);
+  }, [showAlert]);
 
   const fetchProjects = React.useCallback(async () => {
     try {
@@ -78,18 +79,20 @@ export default function ProjectsPage() {
       if (Array.isArray(response)) {
         setProjects(response);
         if (response.length === 0) {
-          toast({
+          showAlert({
             title: "No Projects",
             description: "No projects found matching your criteria.",
-            variant: "default",
+            variant: "solid",
+            color: "info"
           });
         }
       } else {
         setProjects([]);
-        toast({
+        showAlert({
           title: "Warning",
           description: "Invalid response format. Please try again.",
-          variant: "default",
+          variant: "solid",
+          color: "warning"
         });
       }
     } catch (error) {
@@ -101,28 +104,27 @@ export default function ProjectsPage() {
           error.message.includes("401") ||
           error.message.includes("unauthorized")
         ) {
-          toast({
+          showAlert({
             title: "Authentication Error",
             description: "Please log in again to continue.",
-            variant: "destructive",
+            variant: "solid",
+            color: "danger"
           });
           router.push("/auth/login");
           return;
         }
       }
 
-      toast({
+      showAlert({
         title: "Error",
-        description:
-          error instanceof Error
-            ? error.message
-            : "Failed to fetch projects. Please try again.",
-        variant: "destructive",
+        description: error instanceof Error ? error.message : "Failed to fetch projects. Please try again.",
+        variant: "solid",
+        color: "danger"
       });
     } finally {
       setIsLoading(false);
     }
-  }, [filters, toast, router]);
+  }, [filters, showAlert, router]);
 
   React.useEffect(() => {
     fetchProjects();
@@ -153,10 +155,11 @@ export default function ProjectsPage() {
     try {
       // First try to delete without cascade
       await deleteProject(id);
-      toast({
+      showAlert({
         title: "Success",
         description: "Project deleted successfully.",
-        variant: "success",
+        variant: "solid",
+        color: "success"
       });
       await fetchProjects();
     } catch (error: any) {
@@ -172,11 +175,11 @@ export default function ProjectsPage() {
         ) {
           try {
             await deleteProject(id, true); // Call with cascade=true
-            toast({
+            showAlert({
               title: "Success",
-              description:
-                "Project and all associated feedbacks deleted successfully.",
-              variant: "success",
+              description: "Project and all associated feedbacks deleted successfully.",
+              variant: "solid",
+              color: "success"
             });
             await fetchProjects();
           } catch (cascadeError: any) {
@@ -184,22 +187,21 @@ export default function ProjectsPage() {
               "Failed to delete project with cascade:",
               cascadeError
             );
-            toast({
+            showAlert({
               title: "Error",
-              description:
-                cascadeError?.message ||
-                "Failed to delete project and feedbacks. Please try again.",
-              variant: "destructive",
+              description: cascadeError?.message || "Failed to delete project and feedbacks. Please try again.",
+              variant: "solid",
+              color: "danger"
             });
           }
         }
       } else {
         // Show the original error
-        toast({
+        showAlert({
           title: "Error",
-          description:
-            error?.message || "Failed to delete project. Please try again.",
-          variant: "destructive",
+          description: error?.message || "Failed to delete project. Please try again.",
+          variant: "solid",
+          color: "danger"
         });
       }
     }

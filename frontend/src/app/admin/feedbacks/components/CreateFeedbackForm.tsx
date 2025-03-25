@@ -9,7 +9,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+import { useAlertDialog } from "@/components/ui/alert-dialog";
 import { createFeedback } from "@/lib/api/feedbacks";
 import { getProjects } from "@/lib/api/projects";
 import { getAllQuestions } from "@/lib/api/questions";
@@ -41,7 +41,7 @@ export function CreateFeedbackForm({
   onClose,
   onSuccess,
 }: CreateFeedbackFormProps) {
-  const { toast } = useToast();
+  const { showAlert } = useAlertDialog();
   const [isLoading, setIsLoading] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -69,10 +69,11 @@ export function CreateFeedbackForm({
         setQuestions(questionsData);
       } catch (error) {
         console.error("Failed to fetch data:", error);
-        toast({
+        showAlert({
           title: "Error",
           description: "Failed to load required data. Please try again.",
-          variant: "destructive",
+          variant: "solid",
+          color: "danger",
         });
       } finally {
         setIsLoading(false);
@@ -80,7 +81,7 @@ export function CreateFeedbackForm({
     };
 
     fetchData();
-  }, [toast]);
+  }, [showAlert]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -124,13 +125,21 @@ export function CreateFeedbackForm({
       };
 
       await createFeedback(feedbackData);
+      showAlert({
+        title: "Success",
+        description: "Feedback created successfully.",
+        variant: "solid",
+        color: "success",
+      });
       onSuccess?.();
       onClose();
     } catch (error) {
       console.error("Failed to create feedback:", error);
-      setFormErrors({
-        ...formErrors,
-        submit: "Failed to create feedback. Please try again.",
+      showAlert({
+        title: "Error",
+        description: "Failed to create feedback. Please try again.",
+        variant: "solid",
+        color: "danger",
       });
     } finally {
       setIsLoading(false);
@@ -146,10 +155,11 @@ export function CreateFeedbackForm({
       today.setHours(0, 0, 0, 0);
 
       if (date < today) {
-        toast({
+        showAlert({
           title: "Invalid Date",
           description: "Please select a date in the future.",
-          variant: "destructive",
+          variant: "solid",
+          color: "warning",
         });
         return;
       }
@@ -157,10 +167,11 @@ export function CreateFeedbackForm({
       if (field === "endDate" && formData.startDate) {
         const startDate = new Date(formData.startDate);
         if (date < startDate) {
-          toast({
+          showAlert({
             title: "Invalid Date",
             description: "End date must be after start date.",
-            variant: "destructive",
+            variant: "solid",
+            color: "warning",
           });
           return;
         }

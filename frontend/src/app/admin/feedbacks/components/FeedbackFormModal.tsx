@@ -3,13 +3,14 @@
 import React, { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+import { useAlertDialog } from "@/components/ui/alert-dialog";
 import { createFeedback, updateFeedback } from "@/lib/api/feedbacks";
 import { getProjects } from "@/lib/api/projects";
 import { getAllQuestions } from "@/lib/api/questions";
@@ -47,7 +48,7 @@ export function FeedbackFormModal({
   onSuccess,
   mode,
 }: FeedbackFormModalProps) {
-  const { toast } = useToast();
+  const { showAlert } = useAlertDialog();
   const [isLoading, setIsLoading] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -77,10 +78,12 @@ export function FeedbackFormModal({
         setQuestions(questionsData);
       } catch (error) {
         console.error("Failed to fetch data:", error);
-        toast({
+        showAlert({
           title: "Error",
           description: "Failed to load required data. Please try again.",
-          variant: "destructive",
+          variant: "solid",
+          color: "danger",
+          duration: 5000,
         });
       } finally {
         setIsLoading(false);
@@ -88,7 +91,7 @@ export function FeedbackFormModal({
     };
 
     fetchData();
-  }, [toast]);
+  }, [showAlert]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -101,25 +104,62 @@ export function FeedbackFormModal({
       const errors: Record<string, string> = {};
       if (!formData.title.trim()) {
         errors.title = "Title is required";
+        showAlert({
+          title: "Missing Title",
+          description: "Please enter a title for the feedback form.",
+          variant: "solid",
+          color: "warning",
+        });
+        return;
       }
       if (!formData.description.trim()) {
         errors.description = "Description is required";
+        showAlert({
+          title: "Missing Description",
+          description: "Please enter a description for the feedback form.",
+          variant: "solid",
+          color: "warning",
+        });
+        return;
       }
       if (!formData.projectId) {
         errors.project = "Please select a project";
+        showAlert({
+          title: "No Project Selected",
+          description: "Please select a project for the feedback form.",
+          variant: "solid",
+          color: "warning",
+        });
+        return;
       }
       if (!formData.startDate) {
         errors.startDate = "Start date is required";
+        showAlert({
+          title: "Missing Start Date",
+          description: "Please select a start date for the feedback form.",
+          variant: "solid",
+          color: "warning",
+        });
+        return;
       }
       if (!formData.endDate) {
         errors.dueDate = "Due date is required";
+        showAlert({
+          title: "Missing Due Date",
+          description: "Please select a due date for the feedback form.",
+          variant: "solid",
+          color: "warning",
+        });
+        return;
       }
       if (selectedQuestions.length === 0) {
         errors.questions = "Please select at least one question";
-      }
-
-      if (Object.keys(errors).length > 0) {
-        setFormErrors(errors);
+        showAlert({
+          title: "No Questions Selected",
+          description: "Please select at least one question for the feedback form.",
+          variant: "solid",
+          color: "warning",
+        });
         return;
       }
 
@@ -138,19 +178,21 @@ export function FeedbackFormModal({
         await updateFeedback(feedback!.id, feedbackData);
       }
 
-      toast({
+      showAlert({
         title: "Success",
-        description: `Feedback ${
-          mode === "create" ? "created" : "updated"
-        } successfully.`,
+        description: `Feedback ${mode === "create" ? "created" : "updated"} successfully.`,
+        variant: "solid",
+        color: "success",
       });
       onSuccess?.();
       onClose();
     } catch (error) {
       console.error(`Failed to ${mode} feedback:`, error);
-      setFormErrors({
-        ...formErrors,
-        submit: `Failed to ${mode} feedback. Please try again.`,
+      showAlert({
+        title: "Error",
+        description: `Failed to ${mode} feedback. Please try again.`,
+        variant: "solid",
+        color: "danger",
       });
     } finally {
       setIsLoading(false);
@@ -166,10 +208,11 @@ export function FeedbackFormModal({
       today.setHours(0, 0, 0, 0);
 
       if (date < today && mode === "create") {
-        toast({
+        showAlert({
           title: "Invalid Date",
           description: "Please select a date in the future.",
-          variant: "destructive",
+          variant: "solid",
+          color: "warning",
         });
         return;
       }
@@ -177,10 +220,11 @@ export function FeedbackFormModal({
       if (field === "endDate" && formData.startDate) {
         const startDate = new Date(formData.startDate);
         if (date < startDate) {
-          toast({
+          showAlert({
             title: "Invalid Date",
             description: "End date must be after start date.",
-            variant: "destructive",
+            variant: "solid",
+            color: "warning",
           });
           return;
         }
@@ -534,18 +578,19 @@ export function FeedbackFormModal({
                     <div className="flex items-start gap-3">
                       {!isViewOnly && (
                         <div className="flex-shrink-0 mt-1">
-                          <div
-                            className={cn(
-                              "w-4 h-4 rounded border transition-colors",
-                              selectedQuestions.includes(question.id)
-                                ? "border-violet-500 bg-violet-500"
-                                : "border-gray-300"
-                            )}
-                          >
-                            {selectedQuestions.includes(question.id) && (
-                              <CheckCircle2 className="h-4 w-4 text-white" />
-                            )}
-                          </div>
+                          <Checkbox
+                            checked={selectedQuestions.includes(question.id)}
+                            onCheckedChange={() => {
+                              if (!isViewOnly) {
+                                setSelectedQuestions((prev) =>
+                                  prev.includes(question.id)
+                                    ? prev.filter((id) => id !== question.id)
+                                    : [...prev, question.id]
+                                );
+                              }
+                            }}
+                            className="data-[state=checked]:bg-violet-600 data-[state=checked]:border-violet-600"
+                          />
                         </div>
                       )}
                       <div className="flex-1 min-w-0">

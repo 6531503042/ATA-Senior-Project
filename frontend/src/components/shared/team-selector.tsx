@@ -1,23 +1,51 @@
 'use client';
 
 import React from 'react';
-import { Search, UserPlus, X } from 'lucide-react';
-import type { User } from '@/types/auth';
-
-interface TeamMember {
-  id: string;
-  userId: number;
-}
+import { Button } from '@/components/ui/button';
+import { UserPlus, X, User } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { cn } from '@/lib/utils';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import type { User as UserType } from '@/types/auth';
 
 interface TeamSelectorProps {
-  users: User[];
-  selectedMembers: TeamMember[];
+  users: UserType[];
+  selectedMembers: { id: string; userId: number }[];
   onAddMember: () => void;
   onRemoveMember: (id: string) => void;
   onMemberSelect: (id: string, userId: number) => void;
-  error?: string;
   disabled?: boolean;
 }
+
+const getInitials = (name: string) => {
+  return name
+    .split(' ')
+    .map(part => part[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+};
+
+const getRandomColor = (userId: number) => {
+  const colors = [
+    'bg-violet-100 text-violet-700',
+    'bg-blue-100 text-blue-700',
+    'bg-emerald-100 text-emerald-700',
+    'bg-amber-100 text-amber-700',
+    'bg-rose-100 text-rose-700',
+    'bg-indigo-100 text-indigo-700',
+    'bg-cyan-100 text-cyan-700',
+    'bg-pink-100 text-pink-700',
+    'bg-teal-100 text-teal-700',
+  ];
+  return colors[userId % colors.length];
+};
 
 export function TeamSelector({
   users,
@@ -25,127 +53,108 @@ export function TeamSelector({
   onAddMember,
   onRemoveMember,
   onMemberSelect,
-  error,
-  disabled,
+  disabled = false,
 }: TeamSelectorProps) {
-  const searchTerm = '';
-
-  const filteredUsers = users.filter((user) =>
-    user.fullname.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const getSelectedUser = (userId: number) =>
-    users.find((user) => user.id === userId);
-
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <label className="block text-sm font-medium text-gray-700">
-          Team Members
-        </label>
-        <button
-          type="button"
+      <AnimatePresence>
+        {selectedMembers.map((member, index) => (
+          <motion.div
+            key={member.id}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            transition={{ duration: 0.2, delay: index * 0.05 }}
+            className={cn(
+              "flex items-center gap-3 p-3 rounded-lg border",
+              "bg-white hover:bg-gray-50/80 transition-colors",
+              "group"
+            )}
+          >
+            <div className={cn(
+              "flex items-center justify-center w-10 h-10 rounded-full",
+              getRandomColor(member.userId),
+              "transition-transform group-hover:scale-105"
+            )}>
+              {getInitials(users.find(u => u.id === member.userId)?.fullname || 'User')}
+            </div>
+            
+            <div className="flex-1 min-w-0">
+              <Select
+                value={String(member.userId)}
+                onValueChange={(value) => onMemberSelect(member.id, Number(value))}
+                disabled={disabled}
+              >
+                <SelectTrigger className={cn(
+                  "w-full border-0 bg-transparent p-0 h-auto",
+                  "focus:ring-0 focus:ring-offset-0",
+                  "text-sm font-medium"
+                )}>
+                  <SelectValue>
+                    {users.find(u => u.id === member.userId)?.fullname || 'Select member'}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {users.map((user) => (
+                    <SelectItem
+                      key={user.id}
+                      value={String(user.id)}
+                      className={cn(
+                        "cursor-pointer",
+                        selectedMembers.some(m => m.userId === user.id) &&
+                        "opacity-50 cursor-not-allowed"
+                      )}
+                      disabled={selectedMembers.some(m => m.userId === user.id)}
+                    >
+                      <div className="flex items-center gap-2">
+                        <User className="h-4 w-4" />
+                        <span>{user.fullname}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-sm text-gray-500 truncate">
+                {users.find(u => u.id === member.userId)?.email}
+              </p>
+            </div>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onRemoveMember(member.id)}
+              disabled={disabled}
+              className={cn(
+                "opacity-0 group-hover:opacity-100",
+                "transition-opacity duration-200",
+                "hover:bg-red-50 hover:text-red-600"
+              )}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </motion.div>
+        ))}
+      </AnimatePresence>
+
+      <motion.div
+        initial={false}
+        animate={{ height: selectedMembers.length === 0 ? "auto" : "48px" }}
+        className="overflow-hidden"
+      >
+        <Button
+          variant="outline"
           onClick={onAddMember}
           disabled={disabled}
-          className={`
-            inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-lg
-            ${
-              disabled
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
-            }
-          `}
+          className={cn(
+            "w-full border-dashed",
+            "hover:border-violet-500 hover:text-violet-600",
+            "transition-colors duration-200"
+          )}
         >
-          <UserPlus className="w-4 h-4 mr-1.5" />
-          Add Member
-        </button>
-      </div>
-
-      <div className="space-y-3">
-        {selectedMembers.map((member) => {
-          const user = getSelectedUser(member.userId);
-          return (
-            <div
-              key={member.id}
-              className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg"
-            >
-              {user?.avatar ? (
-                <img
-                  src={user.avatar}
-                  alt={user.fullname}
-                  className="w-8 h-8 rounded-full"
-                />
-              ) : (
-                <div className="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center">
-                  {user?.fullname.charAt(0) || '?'}
-                </div>
-              )}
-
-              <div className="flex-1">
-                <div className="relative">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                    <select
-                      value={member.userId || ''}
-                      onChange={(e) => onMemberSelect(member.id, Number(e.target.value))}
-                      disabled={disabled}
-                      className={`
-                        w-full pl-9 pr-4 py-2 appearance-none
-                        border rounded-lg text-sm
-                        ${
-                          disabled
-                            ? 'bg-gray-50 text-gray-500 cursor-not-allowed'
-                            : 'bg-white text-gray-900'
-                        }
-                        ${error ? 'border-red-300' : 'border-gray-300'}
-                        focus:outline-none focus:ring-2 focus:ring-blue-500
-                      `}
-                    >
-                      <option value="">Select a team member</option>
-                      {filteredUsers.map((user) => (
-                        <option key={user.id} value={user.id}>
-                          {user.fullname} - {user.roles.join(', ')}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                {user && (
-                  <p className="mt-1 text-sm text-gray-500">
-                    {user.roles.join(', ')}
-                  </p>
-                )}
-              </div>
-
-              <button
-                type="button"
-                onClick={() => onRemoveMember(member.id)}
-                disabled={disabled}
-                className={`
-                  p-1.5 rounded-md
-                  ${
-                    disabled
-                      ? 'text-gray-400 cursor-not-allowed'
-                      : 'text-gray-500 hover:bg-gray-200'
-                  }
-                `}
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          );
-        })}
-      </div>
-
-      {error && (
-        <p className="mt-1 text-sm text-red-600">{error}</p>
-      )}
-
-      {selectedMembers.length === 0 && (
-        <p className="text-sm text-gray-500 text-center py-4">
-          No team members selected. Click &quot;Add Member&quot; to start building your team.
-        </p>
-      )}
+          <UserPlus className="h-4 w-4 mr-2" />
+          Add Team Member
+        </Button>
+      </motion.div>
     </div>
   );
 }

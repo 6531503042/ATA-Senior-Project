@@ -3,10 +3,12 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
+import { useAlertDialog } from '@/components/ui/alert-dialog';
 
 export default function HomePage() {
   const router = useRouter();
   const { isAuthenticated, isLoading, user } = useAuth();
+  const { showAlert } = useAlertDialog();
 
   React.useEffect(() => {
     if (!isLoading) {
@@ -17,15 +19,27 @@ export default function HomePage() {
         } else if (user.roles.includes('ROLE_USER')) {
           router.push('/employee');
         } else {
-          // If no valid role, logout and redirect to login
+          // If no valid role, show alert and redirect to login
+          showAlert({
+            title: "Access Denied",
+            description: "You don't have the required permissions to access the system.",
+            variant: "solid",
+            color: "danger"
+          });
           router.push('/auth/login');
         }
       } else {
-        // Not authenticated, redirect to login
+        // Not authenticated, show alert and redirect to login
+        showAlert({
+          title: "Authentication Required",
+          description: "Please log in to access the system.",
+          variant: "solid",
+          color: "warning"
+        });
         router.push('/auth/login');
       }
     }
-  }, [isLoading, isAuthenticated, user, router]);
+  }, [isLoading, isAuthenticated, user, router, showAlert]);
 
   // Loading state
   if (isLoading) {

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { FolderPlus, X, PencilIcon, Plus, Rocket } from "lucide-react";
+import { FolderPlus, X, PencilIcon, Rocket, Loader2 } from "lucide-react";
 import {
   Card,
   CardHeader,
@@ -16,10 +16,13 @@ import {
   updateProject,
   updateProjectMembers,
 } from "@/lib/api/projects";
-import { useToast } from "@/hooks/use-toast";
+import { useAlertDialog } from "@/components/ui/alert-dialog";
 import api from "@/utils/api";
 import type { User } from "@/types/auth";
 import { Project } from "../models/types";
+import { motion } from "framer-motion";
+import { FormField } from '@/components/ui/form-field';
+import { useFormValidation } from '@/hooks/use-form-validation';
 
 interface ProjectFormModalProps {
   project?: Project;
@@ -37,7 +40,7 @@ export function ProjectFormModal({
   onClose,
   mode,
 }: ProjectFormModalProps) {
-  const { toast } = useToast();
+  const { showAlert } = useAlertDialog();
   const [isLoading, setIsLoading] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
   const [formData, setFormData] = useState({
@@ -52,6 +55,33 @@ export function ProjectFormModal({
     project?.memberIds?.map((id) => ({ id: id.toString(), userId: id })) || []
   );
 
+  const validationRules = {
+    name: {
+      required: true,
+      minLength: 3,
+      message: 'Project name must be at least 3 characters'
+    },
+    description: {
+      required: true,
+      minLength: 10,
+      message: 'Description must be at least 10 characters'
+    },
+    projectStartDate: {
+      required: true,
+      message: 'Start date is required'
+    },
+    projectEndDate: {
+      required: true,
+      custom: (value: string) => {
+        if (!value || !formData.projectStartDate) return true;
+        return new Date(value) > new Date(formData.projectStartDate);
+      },
+      message: 'End date must be after start date'
+    }
+  };
+
+  const { validateForm, getFieldProps } = useFormValidation(validationRules);
+
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -60,10 +90,11 @@ export function ProjectFormModal({
         setUsers(response.data);
       } catch (error) {
         console.error("Failed to fetch users:", error);
-        toast({
+        showAlert({
           title: "Error",
           description: "Failed to load team members. Please try again.",
-          variant: "destructive",
+          variant: "solid",
+          color: "danger"
         });
       } finally {
         setIsLoading(false);
@@ -71,7 +102,7 @@ export function ProjectFormModal({
     };
 
     fetchUsers();
-  }, [toast]);
+  }, [showAlert]);
 
   const handleInputChange = (
     e: React.ChangeEvent<
@@ -96,7 +127,12 @@ export function ProjectFormModal({
             projectStartDate: date.toISOString(),
             projectEndDate: "",
           }));
-          setEndDateError("End date must be after start date");
+          showAlert({
+            title: "Invalid Date",
+            description: "End date must be after start date.",
+            variant: "solid",
+            color: "warning"
+          });
           return;
         }
       }
@@ -106,28 +142,29 @@ export function ProjectFormModal({
         projectStartDate: date.toISOString(),
       }));
     } else {
-      // If date is cleared
       setFormData((prev) => ({ ...prev, projectStartDate: "" }));
     }
   };
 
   const handleEndDateChange = (date: Date | undefined) => {
     if (date) {
-      // Clear any previous errors
       setEndDateError("");
 
-      // Validate end date is after start date
       if (formData.projectStartDate) {
         const startDate = new Date(formData.projectStartDate);
         if (date < startDate) {
-          setEndDateError("End date must be after start date");
+          showAlert({
+            title: "Invalid Date",
+            description: "End date must be after start date.",
+            variant: "solid",
+            color: "warning"
+          });
           return;
         }
       }
 
       setFormData((prev) => ({ ...prev, projectEndDate: date.toISOString() }));
     } else {
-      // If date is cleared
       setFormData((prev) => ({ ...prev, projectEndDate: "" }));
     }
   };
@@ -149,15 +186,8 @@ export function ProjectFormModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate dates before submission
-    if (formData.projectStartDate && formData.projectEndDate) {
-      const startDate = new Date(formData.projectStartDate);
-      const endDate = new Date(formData.projectEndDate);
-
-      if (endDate < startDate) {
-        setEndDateError("End date must be after start date");
-        return;
-      }
+    if (!validateForm(formData)) {
+      return;
     }
 
     setIsLoading(true);
@@ -186,30 +216,30 @@ export function ProjectFormModal({
             );
           } catch (memberError) {
             console.error("Failed to update team members:", memberError);
-            toast({
+            showAlert({
               title: "Warning",
-              description: `Project ${
-                mode === "create" ? "created" : "updated"
-              } but failed to update team members.`,
-              variant: "destructive",
+              description: `Project ${mode === "create" ? "created" : "updated"} but failed to update team members.`,
+              variant: "solid",
+              color: "warning"
             });
           }
         }
       }
 
-      toast({
+      showAlert({
         title: "Success",
-        description: `Project ${
-          mode === "create" ? "created" : "updated"
-        } successfully.`,
+        description: `Project ${mode === "create" ? "created" : "updated"} successfully.`,
+        variant: "solid",
+        color: "success"
       });
       onClose();
     } catch (error) {
       console.error(`Failed to ${mode} project:`, error);
-      toast({
+      showAlert({
         title: "Error",
         description: `Failed to ${mode} project. Please try again.`,
-        variant: "destructive",
+        variant: "solid",
+        color: "danger"
       });
     } finally {
       setIsLoading(false);
@@ -218,142 +248,200 @@ export function ProjectFormModal({
 
   return (
     <div className="fixed inset-0 z-50">
-      <div
-        className="fixed inset-0 bg-black/30 backdrop-blur-sm transition-opacity"
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/30 backdrop-blur-sm"
         onClick={onClose}
       />
 
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
-        <div className="w-full max-w-3xl mx-auto animate-in fade-in zoom-in duration-200">
-          <Card className="bg-white shadow-xl border-0">
-            <CardHeader className="space-y-1 p-6">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 20 }}
+          transition={{ duration: 0.2 }}
+          className="w-full max-w-4xl mx-auto"
+        >
+          <Card className="bg-white shadow-2xl border-0 overflow-hidden">
+            <CardHeader className="p-6 bg-gradient-to-r from-violet-50 to-purple-50">
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <div className="p-2 bg-violet-50 rounded-lg">
+                <div className="flex items-center gap-4">
+                  <motion.div 
+                    initial={{ rotate: -180, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    transition={{ duration: 0.3, delay: 0.1 }}
+                    className="p-2 bg-violet-100 rounded-xl"
+                  >
                     {mode === "create" ? (
                       <FolderPlus className="h-6 w-6 text-violet-600" />
                     ) : (
                       <PencilIcon className="h-6 w-6 text-violet-600" />
                     )}
-                  </div>
+                  </motion.div>
                   <div>
-                    <h2 className="text-xl font-semibold text-gray-900">
-                      {mode === "create"
-                        ? "Create New Project"
-                        : "Edit Project"}
-                    </h2>
-                    <p className="text-sm text-gray-500">
+                    <motion.h2 
+                      initial={{ x: -20, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      transition={{ duration: 0.3, delay: 0.2 }}
+                      className="text-xl font-semibold text-gray-900"
+                    >
+                      {mode === "create" ? "Create New Project" : "Edit Project"}
+                    </motion.h2>
+                    <motion.p 
+                      initial={{ x: -20, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      transition={{ duration: 0.3, delay: 0.3 }}
+                      className="text-sm text-gray-500"
+                    >
                       {mode === "create"
                         ? "Fill in the details to create a new project"
                         : "Update project details"}
-                    </p>
+                    </motion.p>
                   </div>
                 </div>
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 w-8 p-0"
                   onClick={onClose}
+                  className="h-8 w-8 p-0 hover:bg-violet-50"
                 >
                   <X className="h-4 w-4" />
                 </Button>
               </div>
             </CardHeader>
 
-            <CardContent className="p-6 pt-0">
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Project Name
-                    </label>
-                    <input
-                      type="text"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
-                      placeholder="Enter project name"
+            <div className="max-h-[calc(90vh-16rem)] overflow-y-auto">
+              <CardContent className="p-6">
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div className="space-y-6">
+                    <FormField
+                      label="Project Name"
                       required
-                    />
-                  </div>
+                      {...getFieldProps('name')}
+                      helpText="Enter a unique project name"
+                    >
+                      <input
+                        type="text"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-colors"
+                        placeholder="Enter project name"
+                      />
+                    </FormField>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Description
-                    </label>
-                    <textarea
-                      name="description"
-                      value={formData.description}
-                      onChange={handleInputChange}
-                      rows={3}
-                      className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
-                      placeholder="Enter project description"
+                    <FormField
+                      label="Description"
                       required
-                    />
+                      {...getFieldProps('description')}
+                      helpText="Provide a detailed project description"
+                    >
+                      <textarea
+                        name="description"
+                        value={formData.description}
+                        onChange={handleInputChange}
+                        rows={4}
+                        className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition-colors"
+                        placeholder="Enter project description"
+                      />
+                    </FormField>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                      <FormField
+                        label="Start Date"
+                        required
+                        {...getFieldProps('projectStartDate')}
+                      >
+                        <DatePicker
+                          date={
+                            formData.projectStartDate
+                              ? new Date(formData.projectStartDate)
+                              : undefined
+                          }
+                          setDate={handleStartDateChange}
+                          error={startDateError}
+                          disabled={isLoading}
+                          placeholder="Select start date"
+                        />
+                      </FormField>
+
+                      <FormField
+                        label="End Date"
+                        required
+                        {...getFieldProps('projectEndDate')}
+                      >
+                        <DatePicker
+                          date={
+                            formData.projectEndDate
+                              ? new Date(formData.projectEndDate)
+                              : undefined
+                          }
+                          setDate={handleEndDateChange}
+                          minDate={
+                            formData.projectStartDate
+                              ? new Date(formData.projectStartDate)
+                              : undefined
+                          }
+                          error={endDateError}
+                          disabled={isLoading || !formData.projectStartDate}
+                          placeholder="Select end date"
+                        />
+                      </FormField>
+                    </div>
+
+                    <FormField
+                      label="Team Members"
+                      helpText={`${teamMembers.length} members selected`}
+                    >
+                      <div className="max-h-[240px] overflow-y-auto rounded-lg border border-gray-200 bg-gray-50/50 p-4">
+                        <TeamSelector
+                          users={users}
+                          selectedMembers={teamMembers}
+                          onAddMember={handleAddMember}
+                          onRemoveMember={handleRemoveMember}
+                          onMemberSelect={handleMemberSelect}
+                          disabled={isLoading}
+                        />
+                      </div>
+                    </FormField>
                   </div>
+                </form>
+              </CardContent>
+            </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <DatePicker
-                      label="Start Date"
-                      date={
-                        formData.projectStartDate
-                          ? new Date(formData.projectStartDate)
-                          : undefined
-                      }
-                      setDate={handleStartDateChange}
-                      error={startDateError}
-                      disabled={isLoading}
-                    />
-
-                    <DatePicker
-                      label="End Date"
-                      date={
-                        formData.projectEndDate
-                          ? new Date(formData.projectEndDate)
-                          : undefined
-                      }
-                      setDate={handleEndDateChange}
-                      minDate={
-                        formData.projectStartDate
-                          ? new Date(formData.projectStartDate)
-                          : undefined
-                      }
-                      error={endDateError}
-                      disabled={isLoading || !formData.projectStartDate}
-                    />
-                  </div>
-
-                  <div>
-                    <TeamSelector
-                      users={users}
-                      selectedMembers={teamMembers}
-                      onAddMember={handleAddMember}
-                      onRemoveMember={handleRemoveMember}
-                      onMemberSelect={handleMemberSelect}
-                      disabled={isLoading}
-                    />
-                  </div>
-                </div>
-              </form>
-            </CardContent>
-
-            <CardFooter className="flex justify-end space-x-2 p-6 pt-0">
-              <Button variant="edit" onClick={onClose} disabled={isLoading}>
+            <CardFooter className="flex justify-end gap-3 p-6 bg-gradient-to-r from-gray-50 to-violet-50/50 border-t">
+              <Button
+                variant="outline"
+                onClick={onClose}
+                disabled={isLoading}
+                className="hover:bg-violet-50"
+              >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 variant="primary"
-                icon={<Rocket className="w-4 h-4" />}
                 onClick={handleSubmit}
                 disabled={isLoading}
+                className="bg-violet-600 hover:bg-violet-700 text-white gap-2"
               >
-                {mode === "create" ? "Create Project" : "Update Project"}
+                {isLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Saving...</span>
+                  </>
+                ) : (
+                  <>
+                    <Rocket className="h-4 w-4" />
+                    <span>{mode === "create" ? "Create Project" : "Update Project"}</span>
+                  </>
+                )}
               </Button>
             </CardFooter>
           </Card>
-        </div>
+        </motion.div>
       </div>
     </div>
   );
