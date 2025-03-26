@@ -11,6 +11,7 @@ import {
   MessageSquare,
   LogOut,
   ClipboardList,
+  Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Logo from "@assets/ata-logo.png";
@@ -53,6 +54,12 @@ const menuItems: MenuItem[] = [
     href: "/admin/submissions",
     icon: ClipboardList,
     description: "View submissions",
+  },
+  {
+    name: "Users",
+    href: "/admin/users",
+    icon: Users,
+    description: "Manage users and departments",
   },
 ];
 

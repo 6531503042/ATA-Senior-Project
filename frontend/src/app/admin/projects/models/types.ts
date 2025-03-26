@@ -46,4 +46,10 @@ export interface ProjectFilters {
   limit: number;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
+}
+
+export interface ApiError {
+  message: string;
+  status?: number;
+  response?: any;
 } 
