@@ -22,7 +22,6 @@ import type { User } from "@/types/auth";
 import { Project } from "../models/types";
 import { motion } from "framer-motion";
 import { FormField } from '@/components/ui/form-field';
-import { useFormValidation } from '@/hooks/use-form-validation';
 
 interface ProjectFormModalProps {
   project?: Project;
@@ -55,32 +54,7 @@ export function ProjectFormModal({
     project?.memberIds?.map((id) => ({ id: id.toString(), userId: id })) || []
   );
 
-  const validationRules = {
-    name: {
-      required: true,
-      minLength: 3,
-      message: 'Project name must be at least 3 characters'
-    },
-    description: {
-      required: true,
-      minLength: 10,
-      message: 'Description must be at least 10 characters'
-    },
-    projectStartDate: {
-      required: true,
-      message: 'Start date is required'
-    },
-    projectEndDate: {
-      required: true,
-      custom: (value: string) => {
-        if (!value || !formData.projectStartDate) return true;
-        return new Date(value) > new Date(formData.projectStartDate);
-      },
-      message: 'End date must be after start date'
-    }
-  };
 
-  const { validateForm, getFieldProps } = useFormValidation(validationRules);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -190,9 +164,6 @@ export function ProjectFormModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!validateForm(formData)) {
-      return;
-    }
 
     setIsLoading(true);
 
@@ -326,7 +297,6 @@ export function ProjectFormModal({
                     <FormField
                       label="Project Name"
                       required
-                      {...getFieldProps('name')}
                       helpText="Enter a unique project name"
                     >
                       <input
@@ -342,7 +312,6 @@ export function ProjectFormModal({
                     <FormField
                       label="Description"
                       required
-                      {...getFieldProps('description')}
                       helpText="Provide a detailed project description"
                     >
                       <textarea
@@ -359,7 +328,6 @@ export function ProjectFormModal({
                       <FormField
                         label="Start Date"
                         required
-                        {...getFieldProps('projectStartDate')}
                       >
                         <DatePicker
                           date={
@@ -377,7 +345,6 @@ export function ProjectFormModal({
                       <FormField
                         label="End Date"
                         required
-                        {...getFieldProps('projectEndDate')}
                       >
                         <DatePicker
                           date={
@@ -406,7 +373,7 @@ export function ProjectFormModal({
                         <TeamSelector
                           users={users}
                           selectedMembers={teamMembers}
-                          onAddMember={(e) => handleAddMember(e)}
+                          onAddMember={handleAddMember}
                           onRemoveMember={handleRemoveMember}
                           onMemberSelect={handleMemberSelect}
                           disabled={isLoading}

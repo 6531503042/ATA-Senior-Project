@@ -1,6 +1,6 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { getCookie } from 'cookies-next';
-import type { ProjectStats, CreateProjectDto, ProjectMembersDto } from '@/app/admin/projects/models/types';
+import type { ProjectStats, CreateProjectDto, ProjectMembersDto, ApiError } from '@/app/admin/projects/models/types';
 
 // Create axios instance for feedback service
 const feedbackApi = axios.create({
@@ -83,6 +83,11 @@ export async function getProjectById(id: number) {
 
 export async function createProject(data: CreateProjectDto) {
   try {
+    // Validate required fields
+    if (!data.name || !data.description || !data.projectStartDate || !data.projectEndDate) {
+      throw new Error('Missing required fields');
+    }
+
     // Ensure dates are in the correct format
     const projectData = {
       ...data,
@@ -90,12 +95,31 @@ export async function createProject(data: CreateProjectDto) {
       projectEndDate: new Date(data.projectEndDate).toISOString()
     };
 
-    console.log('Creating project with data:', projectData);
+    // Log request data for debugging
+    console.log('Creating project with data:', {
+      ...projectData,
+      projectStartDate: new Date(projectData.projectStartDate).toLocaleString(),
+      projectEndDate: new Date(projectData.projectEndDate).toLocaleString()
+    });
+
     const response = await feedbackApi.post('/api/v1/admin/projects/create', projectData);
+    
+    // Log successful response
+    console.log('Project creation response:', response.data);
+    
     return response.data;
   } catch (error) {
-    console.error('Failed to create project:', error);
-    throw error;
+    const axiosError = error as AxiosError;
+    const apiError: ApiError = {
+      message: axiosError.response?.data?.message || axiosError.message || 'Failed to create project',
+      status: axiosError.response?.status,
+      response: axiosError.response?.data
+    };
+    
+    // Enhanced error logging
+    console.error('Failed to create project:', apiError);
+    
+    throw apiError;
   }
 }
 

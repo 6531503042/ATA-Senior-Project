@@ -7,12 +7,12 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { TeamSelector } from '@/components/shared/team-selector';
 import { createProject, updateProjectMembers } from '@/lib/api/projects';
-import { useToast } from '@/hooks/use-toast';
-import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import api from '@/utils/api';
 import type { User } from '@/types/auth';
+import type { ApiError } from '../models/types';
+import { useToast } from '@/hooks/use-toast';
 
 interface CreateProjectFormProps {
   onClose: () => void;
@@ -34,6 +34,14 @@ export function CreateProjectForm({ onClose }: CreateProjectFormProps) {
     projectEndDate: '',
   });
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [formErrors, setFormErrors] = useState({
+    name: '',
+    description: '',
+    projectStartDate: '',
+    projectEndDate: '',
+    memberIds: [] as never[]
+  });
+
 
   useEffect(() => {
       const fetchUsers = async () => {
@@ -123,23 +131,93 @@ export function CreateProjectForm({ onClose }: CreateProjectFormProps) {
     );
   };
 
+  const validateForm = () => {
+    const errors = {
+      name: '',
+      description: '',
+      projectStartDate: '',
+      projectEndDate: '',
+      memberIds: [] as never[]
+    };
+    let isValid = true;
+
+    if (!formData.name.trim()) {
+      errors.name = 'Project name is required';
+      isValid = false;
+    }
+
+    if (!formData.description.trim()) {
+      errors.description = 'Project description is required';
+      isValid = false;
+    }
+
+    if (!formData.projectStartDate) {
+      errors.projectStartDate = 'Start date is required';
+      isValid = false;
+    }
+
+    if (!formData.projectEndDate) {
+      errors.projectEndDate = 'End date is required';
+      isValid = false;
+    }
+
+    if (formData.projectStartDate && formData.projectEndDate) {
+      const startDate = new Date(formData.projectStartDate);
+      const endDate = new Date(formData.projectEndDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      if (startDate < today) {
+        errors.projectStartDate = 'Start date cannot be in the past';
+        isValid = false;
+      }
+
+      if (endDate < startDate) {
+        errors.projectEndDate = 'End date must be after start date';
+        isValid = false;
+      }
+    }
+
+    setFormErrors(errors);
+    return isValid;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      // Create project first
-      const projectResponse = await createProject(formData);
+      // Prepare project data
+      const projectData = {
+        name: formData.name.trim(),
+        description: formData.description.trim(),
+        projectStartDate: new Date(formData.projectStartDate).toISOString(),
+        projectEndDate: new Date(formData.projectEndDate).toISOString(),
+      };
+
+      console.log('Submitting project data:', projectData);
       
-      // Only add members if there are any selected
+      // Create project
+      const projectResponse = await createProject(projectData);
+      console.log('Project creation response:', projectResponse);
+      
+      // Add team members if any are selected
       if (teamMembers.length > 0) {
         const validMembers = teamMembers.filter(member => member.userId !== 0);
+        console.log('Valid team members:', validMembers);
+        
         if (validMembers.length > 0) {
           try {
             await updateProjectMembers(
               projectResponse.id,
               validMembers.map((member) => member.userId)
             );
+            console.log('Team members added successfully');
           } catch (memberError) {
             console.error('Failed to add team members:', memberError);
             toast({
@@ -157,10 +235,19 @@ export function CreateProjectForm({ onClose }: CreateProjectFormProps) {
       });
       onClose();
     } catch (error) {
-      console.error('Failed to create project:', error);
+      const apiError = error as ApiError;
+      console.error('Failed to create project:', apiError);
+      
+      let errorMessage = 'Failed to create project. Please try again.';
+      if (apiError.response?.message) {
+        errorMessage = apiError.response.message;
+      } else if (apiError.message) {
+        errorMessage = apiError.message;
+      }
+      
       toast({
         title: 'Error',
-        description: 'Failed to create project. Please try again.',
+        description: errorMessage,
         variant: 'destructive',
       });
     } finally {
@@ -204,6 +291,19 @@ export function CreateProjectForm({ onClose }: CreateProjectFormProps) {
 
             <CardContent className="p-6 pt-0">
               <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Warning Messages Section */}
+                {(formErrors.name || formErrors.description || formErrors.projectStartDate || formErrors.projectEndDate) && (
+                  <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <h3 className="text-sm font-medium text-red-800 mb-2">Please fix the following errors:</h3>
+                    <ul className="list-disc list-inside space-y-1">
+                      {formErrors.name && <li className="text-sm text-red-600">{formErrors.name}</li>}
+                      {formErrors.description && <li className="text-sm text-red-600">{formErrors.description}</li>}
+                      {formErrors.projectStartDate && <li className="text-sm text-red-600">{formErrors.projectStartDate}</li>}
+                      {formErrors.projectEndDate && <li className="text-sm text-red-600">{formErrors.projectEndDate}</li>}
+                    </ul>
+                  </div>
+                )}
+
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Project Name</label>
@@ -212,10 +312,15 @@ export function CreateProjectForm({ onClose }: CreateProjectFormProps) {
                       name="name"
                       value={formData.name}
                       onChange={handleInputChange}
-                      className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                      className={cn(
+                        "mt-1 block w-full rounded-md border px-3 py-2 text-sm focus:border-violet-500 focus:ring-1 focus:ring-violet-500",
+                        formErrors.name ? "border-red-500 animate-shake" : "border-gray-300"
+                      )}
                       placeholder="Enter project name"
-                      required
                     />
+                    {formErrors.name && (
+                      <p className="mt-1 text-sm text-red-500">{formErrors.name}</p>
+                    )}
                   </div>
 
                   <div>
@@ -225,10 +330,15 @@ export function CreateProjectForm({ onClose }: CreateProjectFormProps) {
                       value={formData.description}
                       onChange={handleInputChange}
                       rows={3}
-                      className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                      className={cn(
+                        "mt-1 block w-full rounded-md border px-3 py-2 text-sm focus:border-violet-500 focus:ring-1 focus:ring-violet-500",
+                        formErrors.description ? "border-red-500 animate-shake" : "border-gray-300"
+                      )}
                       placeholder="Enter project description"
-                      required
                     />
+                    {formErrors.description && (
+                      <p className="mt-1 text-sm text-red-500">{formErrors.description}</p>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -237,10 +347,12 @@ export function CreateProjectForm({ onClose }: CreateProjectFormProps) {
                       <Popover>
                         <PopoverTrigger asChild>
                           <Button
+                            type="button"
                             variant="outline"
                             className={cn(
                               'w-full justify-start text-left font-normal mt-1',
-                              !formData.projectStartDate && 'text-gray-400'
+                              !formData.projectStartDate && 'text-gray-400',
+                              formErrors.projectStartDate && 'border-red-500 animate-shake'
                             )}
                           >
                             <CalendarIcon className="mr-2 h-4 w-4" />
@@ -260,6 +372,9 @@ export function CreateProjectForm({ onClose }: CreateProjectFormProps) {
                           />
                         </PopoverContent>
                       </Popover>
+                      {formErrors.projectStartDate && (
+                        <p className="mt-1 text-sm text-red-500">{formErrors.projectStartDate}</p>
+                      )}
                     </div>
 
                     <div>
@@ -267,10 +382,12 @@ export function CreateProjectForm({ onClose }: CreateProjectFormProps) {
                       <Popover>
                         <PopoverTrigger asChild>
                           <Button
+                            type="button"
                             variant="outline"
                             className={cn(
                               'w-full justify-start text-left font-normal mt-1',
-                              !formData.projectEndDate && 'text-gray-400'
+                              !formData.projectEndDate && 'text-gray-400',
+                              formErrors.projectEndDate && 'border-red-500 animate-shake'
                             )}
                           >
                             <CalendarIcon className="mr-2 h-4 w-4" />
@@ -286,45 +403,76 @@ export function CreateProjectForm({ onClose }: CreateProjectFormProps) {
                             mode="single"
                             selected={formData.projectEndDate ? new Date(formData.projectEndDate) : undefined}
                             onSelect={(date: Date | undefined) => handleDateChange('projectEndDate', date)}
-                            disabled={{ 
-                              before: formData.projectStartDate ? new Date(formData.projectStartDate) : new Date()
-                            }}
+                            disabled={{ before: new Date() }}
                           />
                         </PopoverContent>
                       </Popover>
+                      {formErrors.projectEndDate && (
+                        <p className="mt-1 text-sm text-red-500">{formErrors.projectEndDate}</p>
+                      )}
                     </div>
                   </div>
 
                   <div>
-                    <TeamSelector
-                      users={users}
-                      selectedMembers={teamMembers}
-                      onAddMember={handleAddMember}
-                      onRemoveMember={handleRemoveMember}
-                      onMemberSelect={handleMemberSelect}
-                      disabled={isLoading}
-                    />
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Team Members</label>
+                    <div className="space-y-2">
+                      {teamMembers.map((member) => (
+                        <div key={member.id} className="flex items-center gap-2">
+                          <select
+                            value={member.userId}
+                            onChange={(e) => handleMemberSelect(member.id, Number(e.target.value))}
+                            className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                          >
+                            <option value={0}>Select a team member</option>
+                            {users.map((user) => (
+                              <option key={user.id} value={user.id}>
+                                {user.fullname}
+                              </option>
+                            ))}
+                          </select>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRemoveMember(member.id)}
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleAddMember}
+                        className="w-full"
+                      >
+                        Add Team Member
+                      </Button>
+                    </div>
                   </div>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={onClose}
+                    disabled={isLoading}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    variant="default"
+                    disabled={isLoading}
+                    className="bg-violet-600 hover:bg-violet-700"
+                  >
+                    {isLoading ? 'Creating...' : 'Create Project'}
+                  </Button>
                 </div>
               </form>
             </CardContent>
-
-            <CardFooter className="flex justify-end space-x-2 p-6 pt-0">
-              <Button
-                variant="outline"
-                onClick={onClose}
-                disabled={isLoading}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                onClick={handleSubmit}
-                disabled={isLoading}
-              >
-                Create Project
-              </Button>
-            </CardFooter>
           </Card>
         </div>
       </div>
