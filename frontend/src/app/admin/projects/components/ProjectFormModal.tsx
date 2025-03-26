@@ -169,8 +169,12 @@ export function ProjectFormModal({
     }
   };
 
-  const handleAddMember = () => {
-    setTeamMembers((prev) => [...prev, { id: crypto.randomUUID(), userId: 0 }]);
+  const handleAddMember = (e: React.MouseEvent) => {
+    e.preventDefault(); // Explicitly prevent form submission
+    setTeamMembers((prev) => [...prev, { 
+      id: crypto.randomUUID(), 
+      userId: 0 
+    }]);
   };
 
   const handleRemoveMember = (id: string) => {
@@ -222,6 +226,9 @@ export function ProjectFormModal({
               variant: "solid",
               color: "warning"
             });
+          }
+          finally {
+            setIsLoading(false);
           }
         }
       }
@@ -399,7 +406,7 @@ export function ProjectFormModal({
                         <TeamSelector
                           users={users}
                           selectedMembers={teamMembers}
-                          onAddMember={handleAddMember}
+                          onAddMember={(e) => handleAddMember(e)}
                           onRemoveMember={handleRemoveMember}
                           onMemberSelect={handleMemberSelect}
                           disabled={isLoading}

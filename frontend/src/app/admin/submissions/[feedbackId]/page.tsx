@@ -26,7 +26,10 @@ import {
   Activity,
   Star,
   Unlock,
-  Lock
+  Lock,
+  ChartColumnBig,
+  Meh,
+  MessageSquareMore
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -777,10 +780,6 @@ export default function FeedbackSubmissionPage({ params }: { params: Promise<{ f
             <MessageSquare className="h-4 w-4" />
             Submissions
           </TabsTrigger>
-          <TabsTrigger value="metrics" className="gap-2">
-            <LineChart className="h-4 w-4" />
-            Metrics
-          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -832,7 +831,7 @@ export default function FeedbackSubmissionPage({ params }: { params: Promise<{ f
                       <div className="space-y-4">
                         <div>
                           <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-medium text-gray-500">Analysis Progress</span>
+                            <span className="text-sm font-medium text-gray-500 flex flex-row gap-2 items-center"><ChartColumnBig className='h-5 w-5 text-red-500'/>Analysis Progress</span>
                             <span className="text-sm font-medium text-violet-600">75%</span>
                           </div>
                           <Progress value={75} className="h-2" />
@@ -840,7 +839,7 @@ export default function FeedbackSubmissionPage({ params }: { params: Promise<{ f
 
                         <div>
                           <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-medium text-gray-500">Satisfaction Rate</span>
+                            <span className="text-sm font-medium text-gray-500 flex flex-row gap-2 items-center"><Meh className='h-5 w-5 text-green-500'/>Satisfaction Rate</span>
                             <span className="text-sm font-medium text-emerald-600">92%</span>
                           </div>
                           <Progress value={92} className="h-2" />
@@ -848,7 +847,7 @@ export default function FeedbackSubmissionPage({ params }: { params: Promise<{ f
 
                         <div>
                           <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-medium text-gray-500">Response Rate</span>
+                            <span className="text-sm font-medium text-gray-500 flex flex-row gap-2 items-center"><MessageSquareMore className='h-5 w-5 text-blue-500'/>Response Rate</span>
                             <span className="text-sm font-medium text-blue-600">88%</span>
                           </div>
                           <Progress value={88} className="h-2" />

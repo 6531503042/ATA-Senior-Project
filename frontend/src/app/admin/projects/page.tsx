@@ -65,7 +65,7 @@ export default function ProjectsPage() {
         title: "Error",
         description: "Failed to fetch project metrics",
         variant: "solid",
-        color: "danger"
+        color: "danger",
       });
     }
   }, [showAlert]);
@@ -83,7 +83,7 @@ export default function ProjectsPage() {
             title: "No Projects",
             description: "No projects found matching your criteria.",
             variant: "solid",
-            color: "info"
+            color: "info",
           });
         }
       } else {
@@ -92,7 +92,7 @@ export default function ProjectsPage() {
           title: "Warning",
           description: "Invalid response format. Please try again.",
           variant: "solid",
-          color: "warning"
+          color: "warning",
         });
       }
     } catch (error) {
@@ -108,7 +108,7 @@ export default function ProjectsPage() {
             title: "Authentication Error",
             description: "Please log in again to continue.",
             variant: "solid",
-            color: "danger"
+            color: "danger",
           });
           router.push("/auth/login");
           return;
@@ -117,9 +117,12 @@ export default function ProjectsPage() {
 
       showAlert({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to fetch projects. Please try again.",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to fetch projects. Please try again.",
         variant: "solid",
-        color: "danger"
+        color: "danger",
       });
     } finally {
       setIsLoading(false);
@@ -159,7 +162,7 @@ export default function ProjectsPage() {
         title: "Success",
         description: "Project deleted successfully.",
         variant: "solid",
-        color: "success"
+        color: "success",
       });
       await fetchProjects();
     } catch (error: any) {
@@ -177,9 +180,10 @@ export default function ProjectsPage() {
             await deleteProject(id, true); // Call with cascade=true
             showAlert({
               title: "Success",
-              description: "Project and all associated feedbacks deleted successfully.",
+              description:
+                "Project and all associated feedbacks deleted successfully.",
               variant: "solid",
-              color: "success"
+              color: "success",
             });
             await fetchProjects();
           } catch (cascadeError: any) {
@@ -189,9 +193,11 @@ export default function ProjectsPage() {
             );
             showAlert({
               title: "Error",
-              description: cascadeError?.message || "Failed to delete project and feedbacks. Please try again.",
+              description:
+                cascadeError?.message ||
+                "Failed to delete project and feedbacks. Please try again.",
               variant: "solid",
-              color: "danger"
+              color: "danger",
             });
           }
         }
@@ -199,9 +205,10 @@ export default function ProjectsPage() {
         // Show the original error
         showAlert({
           title: "Error",
-          description: error?.message || "Failed to delete project. Please try again.",
+          description:
+            error?.message || "Failed to delete project. Please try again.",
           variant: "solid",
-          color: "danger"
+          color: "danger",
         });
       }
     }
@@ -358,7 +365,7 @@ export default function ProjectsPage() {
               onEdit={handleEdit}
               onDelete={handleDelete}
               actions={(project) => (
-                <div className="flex gap-2">
+                <div className="flex items-center gap-2 justify-end">
                   <Button
                     variant="edit"
                     size="sm"
