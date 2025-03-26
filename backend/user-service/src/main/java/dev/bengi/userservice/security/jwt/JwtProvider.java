@@ -19,6 +19,11 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.SignatureException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.UnsupportedJwtException;
 
 @Component
 @Slf4j
@@ -144,15 +149,21 @@ public class JwtProvider {
                     .build()
                     .parseSignedClaims(token)
                     .getPayload();
-            
             log.debug("Token validation successful. Subject: {}, Roles: {}", 
-                    claims.getSubject(), 
-                    claims.get("roles", List.class));
+                claims.getSubject(), claims.get("roles"));
             return true;
-        } catch (Exception e) {
-            log.error("JWT validation failed: {}", e.getMessage(), e);
-            return false;
+        } catch (SignatureException e) {
+            log.error("Invalid JWT signature: {}", e.getMessage(), e);
+        } catch (MalformedJwtException e) {
+            log.error("Invalid JWT token structure: {}", e.getMessage(), e);
+        } catch (ExpiredJwtException e) {
+            log.error("JWT token is expired: {}", e.getMessage(), e);
+        } catch (UnsupportedJwtException e) {
+            log.error("JWT token is unsupported: {}", e.getMessage(), e);
+        } catch (IllegalArgumentException e) {
+            log.error("JWT claims string is empty: {}", e.getMessage(), e);
         }
+        return false;
     }
 
     public String getUserNameFromToken(String token) {

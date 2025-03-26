@@ -1,14 +1,15 @@
 package dev.bengi.userservice.repository;
 
-import dev.bengi.userservice.domain.enums.RoleName;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
-import dev.bengi.userservice.domain.model.Role;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-import java.util.Optional;
+import dev.bengi.userservice.domain.enums.RoleName;
+import dev.bengi.userservice.domain.model.Role;
 
 @Repository
 public interface RoleRepository extends JpaRepository<Role, Long> {

@@ -1,21 +1,38 @@
 package dev.bengi.userservice.domain.payload.request;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 
 import java.util.Set;
 
 @Data
-@RequiredArgsConstructor
+@Builder
+@NoArgsConstructor
 @AllArgsConstructor
 public class RegisterRequest {
-    private String fullname;
+    @NotBlank
+    @Size(min = 3, max = 50)
     private String username;
-    private String password;
-    private String email;
-    private String gender;
-    private String avatar;
-    private Set<String> roles;
 
+    @NotBlank
+    @Size(max = 50)
+    @Email
+    private String email;
+
+    @NotBlank
+    @Size(min = 6, max = 120)
+    private String password;
+
+    @NotBlank
+    @Size(max = 50)
+    private String fullname;
+
+    private String avatar;
+    private String gender;
+    private Set<String> roles;
 }

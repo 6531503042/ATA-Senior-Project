@@ -16,6 +16,9 @@ import io.jsonwebtoken.security.SecurityException;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Base64;
+import java.util.Date;
+
 @Component
 @Slf4j
 public class TokenValidate {
@@ -37,16 +40,18 @@ public class TokenValidate {
         }
         
         try {
-            byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
+            byte[] keyBytes = Base64.getDecoder().decode(jwtSecret);
             return Keys.hmacShaKeyFor(keyBytes);
-        } catch (Exception e) {
-            log.error("Failed to decode JWT secret: {}", e.getMessage(), e);
+        } catch (IllegalArgumentException e) {
+            log.error("JWT secret key cannot be null or empty");
             throw new RuntimeException("Failed to decode JWT secret", e);
         }
     }
 
     public boolean validateToken(String token) {
+        log.warn("JWT Secret configured: {}", jwtSecret != null && !jwtSecret.isEmpty());
         if (jwtSecret == null || jwtSecret.isEmpty()) {
+            log.error("SECURITY WARNING: No JWT secret configured!");
             log.error("JWT secret key cannot be null or empty");
             return false;
         }

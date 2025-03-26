@@ -6,8 +6,8 @@ import dev.bengi.userservice.domain.payload.request.ChangePasswordRequest;
 import dev.bengi.userservice.domain.payload.request.ForgotPasswordRequest;
 import dev.bengi.userservice.domain.payload.request.LoginRequest;
 import dev.bengi.userservice.domain.payload.request.RegisterRequest;
-import dev.bengi.userservice.domain.payload.response.AuthResponse;
 import dev.bengi.userservice.domain.payload.response.JwtResponse;
+import dev.bengi.userservice.domain.payload.response.UserResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,7 +39,7 @@ public interface UserService {
 
     Mono<JwtResponse> refreshToken(String refreshToken);
 
-    Mono<Page<AuthResponse>> findAllUser(Pageable pageable);
+    Mono<Page<UserResponse>> findAllUser(Pageable pageable);
 
     Mono<List<User>> findAllUsers();
 

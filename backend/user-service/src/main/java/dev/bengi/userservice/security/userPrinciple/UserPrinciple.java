@@ -11,6 +11,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Data
 @With
 @Builder
@@ -20,8 +22,10 @@ import java.util.stream.Collectors;
 public class UserPrinciple implements UserDetails {
     private Long id;
     private String username;
+    @Getter
     private String fullName;
     private String email;
+    @JsonIgnore
     private String password;
     private String avatar;
     private String gender;
@@ -57,10 +61,6 @@ public class UserPrinciple implements UserDetails {
     @Override
     public String getUsername() {
         return username;
-    }
-
-    public String getFullName() {
-        return fullName;
     }
 
     @Override

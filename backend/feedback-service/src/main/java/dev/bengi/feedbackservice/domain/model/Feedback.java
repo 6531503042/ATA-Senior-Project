@@ -65,11 +65,39 @@ public class Feedback {
     @Builder.Default
     private boolean allowAnonymous = true;
 
+    @Column(name = "department_id")
+    private String departmentId;
+
+    @Column(name = "status")
+    private String status;
+
+    @Column(name = "is_anonymous")
+    private boolean isAnonymous;
+
+    @Column(name = "is_department_wide")
+    private boolean isDepartmentWide;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "feedback_target_users",
+            joinColumns = @JoinColumn(name = "feedback_id"))
+    @Column(name = "user_id")
+    @Builder.Default
+    private Set<String> targetUserIds = new HashSet<>();
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "feedback_target_departments",
+            joinColumns = @JoinColumn(name = "feedback_id"))
+    @Column(name = "department_id")
+    @Builder.Default
+    private Set<String> targetDepartmentIds = new HashSet<>();
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
         if (questionIds == null) questionIds = new ArrayList<>();
+        if (targetUserIds == null) targetUserIds = new HashSet<>();
+        if (targetDepartmentIds == null) targetDepartmentIds = new HashSet<>();
     }
 
     @PreUpdate

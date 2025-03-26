@@ -6,10 +6,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Builder
 @Data
-@AllArgsConstructor
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 public class JwtResponse {
 
     @JsonProperty("access_token")
@@ -19,5 +19,5 @@ public class JwtResponse {
     private String refreshToken;
 
     @JsonProperty("user_info")
-    private AuthResponse authResponse;
+    private AuthResponse auth;
 }

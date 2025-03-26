@@ -1,12 +1,19 @@
 package dev.bengi.userservice.domain.payload.request;
 
+import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 
 @Data
-@RequiredArgsConstructor
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class LoginRequest {
-    
+    @NotBlank
     private String username;
+
+    @NotBlank
     private String password;
 }

@@ -30,7 +30,7 @@ public class ApplicationConfig {
 
     @Bean
     public UserDetailsService userDetailsService() {
-        return username -> userRepository.findByUserNameOrEmail(username)
+        return username -> userRepository.findByUsernameOrEmail(username)
                 .map(UserPrinciple::build)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with username/email: " + username));
     }

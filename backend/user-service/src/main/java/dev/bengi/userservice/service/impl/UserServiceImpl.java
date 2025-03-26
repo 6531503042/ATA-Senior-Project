@@ -3,13 +3,18 @@ package dev.bengi.userservice.service.impl;
 import dev.bengi.userservice.domain.model.Role;
 import dev.bengi.userservice.domain.enums.RoleName;
 import dev.bengi.userservice.domain.model.User;
-import dev.bengi.userservice.domain.payload.request.*;
+import dev.bengi.userservice.domain.payload.request.AddUserRequest;
+import dev.bengi.userservice.domain.payload.request.LoginRequest;
+import dev.bengi.userservice.domain.payload.request.RegisterRequest;
 import dev.bengi.userservice.exception.EmailOrUsernameNotFoundException;
 import dev.bengi.userservice.exception.RoleNotFoundException;
 import dev.bengi.userservice.exception.wrapper.UserNotFoundException;
 import dev.bengi.userservice.domain.payload.response.AuthResponse;
 import dev.bengi.userservice.domain.payload.response.JwtResponse;
+import dev.bengi.userservice.domain.payload.response.UserResponse;
+import dev.bengi.userservice.domain.payload.response.DepartmentResponse;
 import dev.bengi.userservice.repository.UserRepository;
+import dev.bengi.userservice.repository.RoleRepository;
 import dev.bengi.userservice.security.jwt.JwtProvider;
 import dev.bengi.userservice.service.RoleService;
 import dev.bengi.userservice.service.UserService;
@@ -28,15 +33,21 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.core.GrantedAuthority;
+import dev.bengi.userservice.security.userPrinciple.UserPrinciple;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 @Slf4j
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final ModelMapper modelMapper;
     private final RoleService roleService;
@@ -62,13 +73,38 @@ public class UserServiceImpl implements UserService {
                 .build();
     }
 
+    private UserResponse buildUserResponse(User user) {
+        DepartmentResponse departmentResponse = null;
+        if (user.getDepartment() != null) {
+            departmentResponse = DepartmentResponse.builder()
+                    .id(user.getDepartment().getId())
+                    .name(user.getDepartment().getName())
+                    .description(user.getDepartment().getDescription())
+                    .active(user.getDepartment().isActive())
+                    .build();
+        }
+
+        return UserResponse.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .fullname(user.getFullname())
+                .gender(user.getGender())
+                .avatar(user.getAvatar())
+                .department(departmentResponse)
+                .roles(user.getRoles().stream()
+                        .map(role -> role.getName().name())
+                        .collect(Collectors.toList()))
+                .build();
+    }
+
     private JwtResponse buildJwtResponse(Authentication authentication, AuthResponse authResponse) {
         String jwt = jwtProvider.createToken(authentication);
         String refreshToken = jwtProvider.createRefreshToken(authentication);
         return JwtResponse.builder()
                 .accessToken(jwt)
                 .refreshToken(refreshToken)
-                .authResponse(authResponse)
+                .auth(authResponse)
                 .build();
     }
 
@@ -80,7 +116,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Optional<User> findByUsername(String username) {
-        return userRepository.findByUserName(username);
+        return userRepository.findByUsername(username);
     }
 
 //     Core business logic methods
@@ -90,7 +126,7 @@ public class UserServiceImpl implements UserService {
             try {
                 log.info("Starting registration for user: {}", register.getUsername());
 
-                if (userRepository.existsByUserName(register.getUsername())) {
+                if (userRepository.existsByUsername(register.getUsername())) {
                     log.warn("Registration failed: Username {} is already taken", register.getUsername());
                     return Mono.error(new EmailOrUsernameNotFoundException("Username is already taken."));
                 }
@@ -137,7 +173,7 @@ public class UserServiceImpl implements UserService {
     public Mono<User> addNewUser(AddUserRequest user) {
         return Mono.defer(() -> {
             try {
-                if (userRepository.existsByUserName(user.getUsername())) {
+                if (userRepository.existsByUsername(user.getUsername())) {
                     log.warn("Registration failed: Username {} is already taken", user.getUsername());
                     return Mono.error(new EmailOrUsernameNotFoundException("Username is already taken."));
                 }
@@ -180,33 +216,59 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Mono<JwtResponse> login(LoginRequest loginRequest) {
-        return Mono.defer(() -> {
+        return Mono.create(sink -> {
             try {
-                log.info("Attempting login for user: {}", loginRequest.getUsername());
-                
-                User user = userRepository.findByUserNameOrEmail(loginRequest.getUsername())
-                        .orElseThrow(() -> new UserNotFoundException("User not found with username or email: " + loginRequest.getUsername()));
+                // Find user by username or email
+                User user = userRepository.findByUsernameOrEmail(loginRequest.getUsername())
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-                log.info("Found user: {} with email: {}", user.getUsername(), user.getEmail());
-
+                // Create authentication token
                 Authentication authentication = authenticationManager.authenticate(
-                        new UsernamePasswordAuthenticationToken(
-                                user.getUsername(),
-                                loginRequest.getPassword()
-                        )
+                    new UsernamePasswordAuthenticationToken(
+                        loginRequest.getUsername(),
+                        loginRequest.getPassword()
+                    )
                 );
 
+                // Set authentication in security context
                 SecurityContextHolder.getContext().setAuthentication(authentication);
 
-                AuthResponse authResponse = buildAuthResponse(user);
-                JwtResponse response = buildJwtResponse(authentication, authResponse);
+                // Generate JWT token
+                String accessToken = jwtProvider.createToken(authentication);
+                String refreshToken = jwtProvider.createRefreshToken(authentication);
 
-                log.info("Login successful for user: {}", user.getUsername());
-                return Mono.just(response);
+                // Get user details
+                UserPrinciple userPrinciple = (UserPrinciple) authentication.getPrincipal();
+                List<String> roles = userPrinciple.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .collect(Collectors.toList());
+
+                // Create auth response
+                AuthResponse authResponse = AuthResponse.builder()
+                    .id(userPrinciple.getId())
+                    .username(userPrinciple.getUsername())
+                    .fullname(userPrinciple.getFullName())
+                    .email(userPrinciple.getEmail())
+                    .gender(userPrinciple.getGender())
+                    .avatar(userPrinciple.getAvatar())
+                    .roles(roles)
+                    .build();
+
+                // Create JWT response
+                JwtResponse response = JwtResponse.builder()
+                    .accessToken(accessToken)
+                    .refreshToken(refreshToken)
+                    .auth(authResponse)
+                    .build();
+
+                sink.success(response);
+
+            } catch (AuthenticationException e) {
+                sink.error(new BadCredentialsException("Invalid username or password"));
             } catch (Exception e) {
-                log.error("Login error for user {}: {}", loginRequest.getUsername(), e.getMessage());
-                return Mono.error(e);
+                sink.error(new RuntimeException("Error during authentication", e));
             }
         });
     }
@@ -242,7 +304,7 @@ public class UserServiceImpl implements UserService {
 
                 // Update fields if provided
                 if (request.getUsername() != null && !request.getUsername().equals(existingUser.getUsername())) {
-                    if (userRepository.existsByUserName(request.getUsername())) {
+                    if (userRepository.existsByUsername(request.getUsername())) {
                         return Mono.error(new EmailOrUsernameNotFoundException("Username is already taken."));
                     }
                     existingUser.setUsername(request.getUsername());
@@ -332,17 +394,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Mono<Page<AuthResponse>> findAllUser(Pageable pageable) {
+    public Mono<Page<UserResponse>> findAllUser(Pageable pageable) {
         try {
             Page<User> users = userRepository.findAll(pageable);
-            Page<AuthResponse> authResponses = users.map(user -> {
-                AuthResponse response = modelMapper.map(user, AuthResponse.class);
+            Page<UserResponse> userResponses = users.map(user -> {
+                UserResponse response = modelMapper.map(user, UserResponse.class);
                 response.setRoles(user.getRoles().stream()
                         .map(role -> role.getName().name())
                         .collect(Collectors.toList()));
                 return response;
             });
-            return Mono.just(authResponses);
+            return Mono.just(userResponses);
         } catch (Exception e) {
             log.error("Error fetching users: {}", e.getMessage());
             return Mono.error(e);

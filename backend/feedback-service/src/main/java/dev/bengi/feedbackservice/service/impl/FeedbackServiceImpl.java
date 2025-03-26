@@ -5,11 +5,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -30,7 +32,9 @@ import dev.bengi.feedbackservice.service.FeedbackPermissionService;
 import dev.bengi.feedbackservice.service.FeedbackService;
 import dev.bengi.feedbackservice.service.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -40,7 +44,6 @@ public class FeedbackServiceImpl implements FeedbackService {
     private final QuestionRepository questionRepository;
     private final UserService userService;
     private final FeedbackPermissionService permissionService;
-    private static final Logger log = LoggerFactory.getLogger(FeedbackServiceImpl.class);
 
     @Override
     @Transactional
@@ -62,6 +65,8 @@ public class FeedbackServiceImpl implements FeedbackService {
         LocalDateTime now = LocalDateTime.now();
         feedback.setCreatedAt(now);
         feedback.setUpdatedAt(now);
+        feedback.setActive(true);
+        feedback.setStatus("DRAFT");
         
         // Validate questions exist
         List<Long> questionIds = feedback.getQuestionIds();
@@ -79,59 +84,146 @@ public class FeedbackServiceImpl implements FeedbackService {
     }
 
     @Override
+    @Transactional
     public Feedback updateFeedback(Long id, Feedback feedback) {
-        Feedback existingFeedback = getFeedback(id);
-        
-        // Set the ID to ensure we're updating the existing record
-        feedback.setId(id);
-        
-        // Preserve fields that shouldn't be modified during update
-        feedback.setCreatedAt(existingFeedback.getCreatedAt());
-        feedback.setCreatedBy(existingFeedback.getCreatedBy());
-        
-        // Set the updated timestamp
-        feedback.setUpdatedAt(LocalDateTime.now());
-        
-        // Update the record
-        return feedbackRepository.save(feedback);
+        Optional<Feedback> existingFeedback = feedbackRepository.findById(id);
+        if (existingFeedback.isPresent()) {
+            Feedback updatedFeedback = existingFeedback.get();
+            updatedFeedback.setTitle(feedback.getTitle());
+            updatedFeedback.setDescription(feedback.getDescription());
+            updatedFeedback.setProject(feedback.getProject());
+            updatedFeedback.setQuestionIds(feedback.getQuestionIds());
+            updatedFeedback.setStartDate(feedback.getStartDate());
+            updatedFeedback.setEndDate(feedback.getEndDate());
+            updatedFeedback.setUpdatedAt(LocalDateTime.now());
+            return feedbackRepository.save(updatedFeedback);
+        }
+        throw new RuntimeException("Feedback not found with id: " + id);
     }
 
     @Override
+    @Transactional
     public void deleteFeedback(Long id) {
-        feedbackRepository.deleteById(id);
+        Optional<Feedback> feedback = feedbackRepository.findById(id);
+        if (feedback.isPresent()) {
+            Feedback deletedFeedback = feedback.get();
+            deletedFeedback.setActive(false);
+            deletedFeedback.setUpdatedAt(LocalDateTime.now());
+            feedbackRepository.save(deletedFeedback);
+        } else {
+            throw new RuntimeException("Feedback not found with id: " + id);
+        }
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public Feedback getFeedback(Long id) {
-        return feedbackRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Feedback not found"));
+    public Optional<Feedback> getFeedbackById(Long id) {
+        return feedbackRepository.findById(id);
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<Feedback> getAllFeedbacks() {
-        return feedbackRepository.findAll().stream()
-                .filter(Feedback::isActive)  // Only return active feedbacks
-                .collect(Collectors.toList());
+        return feedbackRepository.findByActive(true);
+    }
+
+    @Override
+    public List<Feedback> getFeedbacksByDepartment(String departmentId) {
+        return feedbackRepository.findByDepartmentIdAndActive(departmentId, true);
+    }
+
+    @Override
+    public List<Feedback> getDepartmentWideFeedbacks(String departmentId) {
+        return feedbackRepository.findByDepartmentIdAndIsDepartmentWideAndActive(departmentId, true, true);
+    }
+
+    @Override
+    public List<Feedback> getFeedbacksByUser(String userId) {
+        return feedbackRepository.findByTargetUserIdsContainingAndActive(userId, true);
+    }
+
+    @Override
+    @Transactional
+    public Feedback activateFeedback(Long id) {
+        Optional<Feedback> feedback = feedbackRepository.findById(id);
+        if (feedback.isPresent()) {
+            Feedback activatedFeedback = feedback.get();
+            activatedFeedback.setActive(true);
+            activatedFeedback.setStatus("ACTIVE");
+            activatedFeedback.setUpdatedAt(LocalDateTime.now());
+            return feedbackRepository.save(activatedFeedback);
+        }
+        throw new RuntimeException("Feedback not found with id: " + id);
+    }
+
+    @Override
+    @Transactional
+    public Feedback closeFeedback(Long id) {
+        Optional<Feedback> feedback = feedbackRepository.findById(id);
+        if (feedback.isPresent()) {
+            Feedback closedFeedback = feedback.get();
+            closedFeedback.setActive(false);
+            closedFeedback.setStatus("CLOSED");
+            closedFeedback.setUpdatedAt(LocalDateTime.now());
+            return feedbackRepository.save(closedFeedback);
+        }
+        throw new RuntimeException("Feedback not found with id: " + id);
+    }
+
+    @Override
+    @Transactional
+    public Feedback addTargetUser(Long feedbackId, String userId) {
+        Optional<Feedback> feedback = feedbackRepository.findById(feedbackId);
+        if (feedback.isPresent()) {
+            Feedback updatedFeedback = feedback.get();
+            updatedFeedback.getTargetUserIds().add(userId);
+            updatedFeedback.setUpdatedAt(LocalDateTime.now());
+            return feedbackRepository.save(updatedFeedback);
+        }
+        throw new RuntimeException("Feedback not found with id: " + feedbackId);
+    }
+
+    @Override
+    @Transactional
+    public Feedback removeTargetUser(Long feedbackId, String userId) {
+        Optional<Feedback> feedback = feedbackRepository.findById(feedbackId);
+        if (feedback.isPresent()) {
+            Feedback updatedFeedback = feedback.get();
+            updatedFeedback.getTargetUserIds().remove(userId);
+            updatedFeedback.setUpdatedAt(LocalDateTime.now());
+            return feedbackRepository.save(updatedFeedback);
+        }
+        throw new RuntimeException("Feedback not found with id: " + feedbackId);
+    }
+
+    @Override
+    @Transactional
+    public Feedback addTargetDepartment(Long feedbackId, String departmentId) {
+        Optional<Feedback> feedback = feedbackRepository.findById(feedbackId);
+        if (feedback.isPresent()) {
+            Feedback updatedFeedback = feedback.get();
+            updatedFeedback.getTargetDepartmentIds().add(departmentId);
+            updatedFeedback.setUpdatedAt(LocalDateTime.now());
+            return feedbackRepository.save(updatedFeedback);
+        }
+        throw new RuntimeException("Feedback not found with id: " + feedbackId);
+    }
+
+    @Override
+    @Transactional
+    public Feedback removeTargetDepartment(Long feedbackId, String departmentId) {
+        Optional<Feedback> feedback = feedbackRepository.findById(feedbackId);
+        if (feedback.isPresent()) {
+            Feedback updatedFeedback = feedback.get();
+            updatedFeedback.getTargetDepartmentIds().remove(departmentId);
+            updatedFeedback.setUpdatedAt(LocalDateTime.now());
+            return feedbackRepository.save(updatedFeedback);
+        }
+        throw new RuntimeException("Feedback not found with id: " + feedbackId);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<Feedback> getFeedbacksByProject(Long projectId) {
         return feedbackRepository.findByProjectId(projectId);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<Feedback> getFeedbacksByUser(String userId) {
-        try {
-            Long userIdLong = Long.parseLong(userId);
-            return feedbackRepository.findByProjectMemberId(userIdLong);
-        } catch (NumberFormatException e) {
-            log.error("Invalid user ID format: {}", userId);
-            throw new IllegalArgumentException("Invalid user ID format", e);
-        }
     }
 
     @Override
@@ -198,7 +290,7 @@ public class FeedbackServiceImpl implements FeedbackService {
     public Map<String, Long> getFeedbackStatistics() {
         Map<String, Long> statistics = new HashMap<>();
         statistics.put("totalFeedbacks", feedbackRepository.count());
-        statistics.put("activeFeedbacks", feedbackRepository.countActiveFeedbacks());
+        statistics.put("activeFeedbacks", feedbackRepository.countByActiveTrue());
         return statistics;
     }
 
@@ -206,7 +298,8 @@ public class FeedbackServiceImpl implements FeedbackService {
     @Transactional(readOnly = true)
     public Map<String, Double> getFeedbackMetrics() {
         Map<String, Double> metrics = new HashMap<>();
-        metrics.put("averageResponseTime", feedbackRepository.getAverageResponseTime());
+        Double averageResponseTime = feedbackRepository.getAverageResponseTime();
+        metrics.put("averageResponseTime", averageResponseTime != null ? averageResponseTime : 0.0);
         return metrics;
     }
 
@@ -288,5 +381,10 @@ public class FeedbackServiceImpl implements FeedbackService {
         rules.put("maxQuestions", feedback.getQuestionIds().size());
         rules.put("requiresComments", true);
         return rules;
+    }
+
+    private Feedback getFeedback(Long feedbackId) {
+        return feedbackRepository.findById(feedbackId)
+                .orElseThrow(() -> new RuntimeException("Feedback not found with id: " + feedbackId));
     }
 }

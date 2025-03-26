@@ -24,6 +24,7 @@ import dev.bengi.feedbackservice.service.ProjectService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @Slf4j
 @RestController
@@ -34,6 +35,7 @@ public class FeedbackController {
     private final ProjectService projectService;
 
     @PostMapping("/create")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Feedback> createFeedback(@Valid @RequestBody CreateFeedbackRequest request) {
         log.debug("Creating new feedback: {}", request.getTitle());
         
@@ -69,6 +71,7 @@ public class FeedbackController {
     }
 
     @PutMapping("/update/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Feedback> updateFeedback(@PathVariable Long id, @Valid @RequestBody CreateFeedbackRequest request) {
         log.debug("Updating feedback with ID: {}", id);
         
@@ -77,7 +80,8 @@ public class FeedbackController {
         String currentUser = auth.getName();
         
         // Fetch the existing feedback
-        Feedback existingFeedback = feedbackService.getFeedback(id);
+        Feedback existingFeedback = feedbackService.getFeedbackById(id)
+                .orElseThrow(() -> new RuntimeException("Feedback not found with id: " + id));
         
         // Fetch the actual project from database
         Project project = projectService.getProject(request.getProjectId());
@@ -96,6 +100,7 @@ public class FeedbackController {
     }
 
     @DeleteMapping("/delete/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteFeedback(@PathVariable Long id) {
         log.debug("Deleting feedback with ID: {}", id);
         feedbackService.deleteFeedback(id);
@@ -103,24 +108,30 @@ public class FeedbackController {
     }
 
     @GetMapping("/get/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<Feedback> getFeedback(@PathVariable Long id) {
         log.debug("Fetching feedback with ID: {}", id);
-        return ResponseEntity.ok(feedbackService.getFeedback(id));
+        return feedbackService.getFeedbackById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/get-all")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<List<Feedback>> getAllFeedbacks() {
         log.debug("Fetching all feedbacks");
         return ResponseEntity.ok(feedbackService.getAllFeedbacks());
     }
 
     @GetMapping("/project/{projectId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<List<Feedback>> getFeedbacksByProject(@PathVariable Long projectId) {
         log.debug("Fetching feedbacks for project ID: {}", projectId);
         return ResponseEntity.ok(feedbackService.getFeedbacksByProject(projectId));
     }
 
     @GetMapping("/user/{userId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<List<Feedback>> getFeedbacksByUser(@PathVariable String userId) {
         log.debug("Fetching feedbacks for user ID: {}", userId);
         return ResponseEntity.ok(feedbackService.getFeedbacksByUser(userId));
@@ -128,20 +139,79 @@ public class FeedbackController {
 
     // Dashboard endpoints
     @GetMapping("/statistics")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<Map<String, Long>> getFeedbackStatistics() {
         log.debug("Fetching feedback statistics");
         return ResponseEntity.ok(feedbackService.getFeedbackStatistics());
     }
 
     @GetMapping("/metrics")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<Map<String, Double>> getFeedbackMetrics() {
         log.debug("Fetching feedback metrics");
         return ResponseEntity.ok(feedbackService.getFeedbackMetrics());
     }
 
     @GetMapping("/recent")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<List<Feedback>> getRecentFeedbacks() {
         log.debug("Fetching recent feedbacks");
         return ResponseEntity.ok(feedbackService.getRecentFeedbacks());
+    }
+
+    @GetMapping("/department/{departmentId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    public ResponseEntity<List<Feedback>> getFeedbacksByDepartment(@PathVariable String departmentId) {
+        return ResponseEntity.ok(feedbackService.getFeedbacksByDepartment(departmentId));
+    }
+
+    @GetMapping("/department/{departmentId}/wide")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    public ResponseEntity<List<Feedback>> getDepartmentWideFeedbacks(@PathVariable String departmentId) {
+        return ResponseEntity.ok(feedbackService.getDepartmentWideFeedbacks(departmentId));
+    }
+
+    @PostMapping("/{id}/activate")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Feedback> activateFeedback(@PathVariable Long id) {
+        return ResponseEntity.ok(feedbackService.activateFeedback(id));
+    }
+
+    @PostMapping("/{id}/close")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Feedback> closeFeedback(@PathVariable Long id) {
+        return ResponseEntity.ok(feedbackService.closeFeedback(id));
+    }
+
+    @PostMapping("/{feedbackId}/users/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Feedback> addTargetUser(
+            @PathVariable Long feedbackId,
+            @PathVariable String userId) {
+        return ResponseEntity.ok(feedbackService.addTargetUser(feedbackId, userId));
+    }
+
+    @DeleteMapping("/{feedbackId}/users/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Feedback> removeTargetUser(
+            @PathVariable Long feedbackId,
+            @PathVariable String userId) {
+        return ResponseEntity.ok(feedbackService.removeTargetUser(feedbackId, userId));
+    }
+
+    @PostMapping("/{feedbackId}/departments/{departmentId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Feedback> addTargetDepartment(
+            @PathVariable Long feedbackId,
+            @PathVariable String departmentId) {
+        return ResponseEntity.ok(feedbackService.addTargetDepartment(feedbackId, departmentId));
+    }
+
+    @DeleteMapping("/{feedbackId}/departments/{departmentId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Feedback> removeTargetDepartment(
+            @PathVariable Long feedbackId,
+            @PathVariable String departmentId) {
+        return ResponseEntity.ok(feedbackService.removeTargetDepartment(feedbackId, departmentId));
     }
 } 

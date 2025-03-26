@@ -34,10 +34,23 @@ refresh:
 
 # CORS configuration
 cors:
-  allowed-origins: http://localhost:3000
-  allowed-methods: GET,POST,PUT,DELETE,OPTIONS
-  allowed-headers: Authorization,Content-Type
-  exposed-headers: Authorization,Refresh-Token
+  allowed-origins: 
+    - http://localhost:3000
+    - http://127.0.0.1:3000
+  allowed-methods: GET,POST,PUT,DELETE,OPTIONS,PATCH
+  allowed-headers: 
+    - Authorization
+    - Content-Type
+    - X-Requested-With
+    - Accept
+    - Origin
+    - Access-Control-Request-Method
+    - Access-Control-Request-Headers
+    - Refresh-Token
+  exposed-headers: 
+    - Authorization
+    - Refresh-Token
+  allow-credentials: true
   max-age: 3600
 
 # OpenAPI Configuration
@@ -52,20 +65,24 @@ springdoc:
       activated: true
 
 # Email Configuration
-spring.mail.host: smtp.gmail.com
-spring.mail.port: 587
-spring.mail.username: your-email@gmail.com
-spring.mail.password: your-app-specific-password
-spring.mail.properties.mail.smtp.auth: true
-spring.mail.properties.mail.smtp.starttls.enable: true
+spring.mail:
+  host: smtp.gmail.com
+  port: 587
+  username: your-email@gmail.com
+  password: your-app-specific-password
+  properties:
+    mail.smtp:
+      auth: true
+      starttls.enable: true
 
 # Frontend URL for password reset
-app.frontend-url: http://localhost:3000
-
-# Reset Password Token Configuration
-app.reset-password.token.expiration: 900000
+app:
+  frontend-url: http://localhost:3000
+  reset-password:
+    token:
+      expiration: 900000
 
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8087/eureka/  # ✅ Match Eureka Server port
+      defaultZone: http://localhost:8087/eureka/

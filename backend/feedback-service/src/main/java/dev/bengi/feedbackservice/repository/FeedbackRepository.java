@@ -1,13 +1,13 @@
 package dev.bengi.feedbackservice.repository;
 
-import dev.bengi.feedbackservice.domain.model.Feedback;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import dev.bengi.feedbackservice.domain.model.Feedback;
 
 @Repository
 public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
@@ -26,5 +26,14 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
            "FROM Feedback f JOIN FeedbackSubmission s ON f.id = s.feedback.id")
     Double getAverageResponseTime();
 
+    List<Feedback> findByDepartmentIdAndActive(String departmentId, boolean active);
+    List<Feedback> findByDepartmentIdAndIsDepartmentWideAndActive(String departmentId, boolean isDepartmentWide, boolean active);
+    List<Feedback> findByTargetUserIdsContainingAndActive(String userId, boolean active);
+    List<Feedback> findByTargetDepartmentIdsContainingAndActive(String departmentId, boolean active);
+    List<Feedback> findByStatusAndActive(String status, boolean active);
+    List<Feedback> findByDepartmentIdAndStatusAndActive(String departmentId, String status, boolean active);
+    
     long countByActiveTrue();
+    
+    List<Feedback> findByActive(boolean active);
 }

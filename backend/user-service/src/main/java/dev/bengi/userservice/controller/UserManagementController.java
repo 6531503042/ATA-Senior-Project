@@ -5,6 +5,7 @@ import dev.bengi.userservice.exception.wrapper.UserNotFoundException;
 import dev.bengi.userservice.http.HeaderGenerator;
 import dev.bengi.userservice.domain.payload.request.AddUserRequest;
 import dev.bengi.userservice.domain.payload.response.AuthResponse;
+import dev.bengi.userservice.domain.payload.response.UserResponse;
 import dev.bengi.userservice.domain.payload.response.ResponseMessage;
 import dev.bengi.userservice.security.jwt.JwtProvider;
 import dev.bengi.userservice.service.UserService;
@@ -102,7 +103,7 @@ public class UserManagementController {
 
     @GetMapping("/all")
     @Operation(summary = "Get all users with pagination", description = "Retrieve all users with pagination (Admin only)")
-    public Mono<ResponseEntity<Page<AuthResponse>>> getAllUsersWithPagination(
+    public Mono<ResponseEntity<Page<UserResponse>>> getAllUsersWithPagination(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id") String sortBy,
@@ -122,13 +123,13 @@ public class UserManagementController {
 
     @GetMapping("/list")
     @Operation(summary = "Get all users without pagination", description = "Retrieve all users without pagination (Admin only)")
-    public Mono<ResponseEntity<List<AuthResponse>>> getAllUsers() {
+    public Mono<ResponseEntity<List<UserResponse>>> getAllUsers() {
         log.info("Fetching all users without pagination");
         return userService.findAllUsers()
                 .map(users -> {
-                    List<AuthResponse> responses = users.stream()
+                    List<UserResponse> responses = users.stream()
                             .map(user -> {
-                                AuthResponse response = modelMapper.map(user, AuthResponse.class);
+                                UserResponse response = modelMapper.map(user, UserResponse.class);
                                 response.setRoles(user.getRoles().stream()
                                         .map(role -> role.getName().name())
                                         .collect(Collectors.toList()));
