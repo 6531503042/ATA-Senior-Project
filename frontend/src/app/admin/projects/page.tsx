@@ -365,7 +365,7 @@ export default function ProjectsPage() {
               onEdit={handleEdit}
               onDelete={handleDelete}
               actions={(project) => (
-                <div className="flex items-center gap-2 justify-center">
+                <div className="flex items-center gap-2 justify-end">
                   <Button
                     variant="edit"
                     size="sm"

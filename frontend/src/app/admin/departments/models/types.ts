@@ -2,32 +2,46 @@ export interface Department {
   id: number;
   name: string;
   description: string;
-  managerId?: number;
-  parentDepartmentId?: number;
-  createdAt: string;
-  updatedAt: string;
-  memberCount: number;
-  status: 'ACTIVE' | 'INACTIVE';
+  active: boolean;
+  employeeCount?: number;
 }
 
-export interface CreateDepartmentDto {
+export interface DepartmentHierarchy {
+  id: number;
   name: string;
   description: string;
-  managerId?: number;
-  parentDepartmentId?: number;
-  status?: 'ACTIVE' | 'INACTIVE';
+  active: boolean;
+  employeeCount?: number;
 }
 
 export interface DepartmentMetrics {
   totalDepartments: number;
   activeDepartments: number;
+  departmentsByLevel: Record<number, number>;
   totalMembers: number;
-  departmentsByLevel: {
-    [key: string]: number;
-  };
 }
 
-export interface DepartmentHierarchy extends Department {
-  children: DepartmentHierarchy[];
-  level: number;
+export interface DepartmentMember {
+  id: number;
+  fullname: string;
+  email: string;
+  role: string;
+}
+
+export interface CreateDepartmentDto {
+  name: string;
+  description: string;
+  active?: boolean;
+}
+
+export interface CreateDepartmentRequest {
+  name: string;
+  description: string;
+  active?: boolean;
+}
+
+export interface UpdateDepartmentRequest {
+  name?: string;
+  description?: string;
+  active?: boolean;
 } 

@@ -24,7 +24,7 @@ export interface UpdateUserRequest {
   email?: string;
   gender?: 'MALE' | 'FEMALE' | 'OTHER';
   departmentId?: number;
-  roles?: Role[];
+  roles: Role[];
 }
 
 export interface Department {
@@ -37,6 +37,7 @@ export interface Department {
 export interface CreateDepartmentRequest {
   name: string;
   description: string;
+  active?: boolean;
 }
 
 export interface UpdateDepartmentRequest {

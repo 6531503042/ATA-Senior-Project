@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/label";
 import { useUsers } from "@/app/admin/users/hooks/use-users";
 import { CreateDepartmentRequest } from "@/app/admin/users/models/types";
-import { Building2, X } from "lucide-react";
+import { Building2 } from "lucide-react";
 
 interface CreateDepartmentModalProps {
   open: boolean;
@@ -63,14 +63,6 @@ export function CreateDepartmentModal({ open, onOpenChange }: CreateDepartmentMo
                 </p>
               </div>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onOpenChange(false)}
-              className="h-10 w-10 p-0 hover:bg-violet-50 rounded-full"
-            >
-              <X className="h-5 w-5 text-gray-600" />
-            </Button>
           </div>
         </DialogHeader>
 

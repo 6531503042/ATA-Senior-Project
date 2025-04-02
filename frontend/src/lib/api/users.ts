@@ -15,6 +15,12 @@ export interface Department {
   description: string;
   employeeCount: number;
   status: 'active' | 'inactive';
+  members?: Array<{
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  }>;
 }
 
 export interface CreateUserRequest {
@@ -28,6 +34,11 @@ export interface CreateUserRequest {
 export interface CreateDepartmentRequest {
   name: string;
   description: string;
+  status?: 'active' | 'inactive';
+  members?: Array<{
+    id: string;
+    role: string;
+  }>;
 }
 
 export const userApi = {
