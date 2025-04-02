@@ -1,21 +1,10 @@
 package dev.bengi.userservice.controller;
 
-import dev.bengi.userservice.domain.model.User;
-import dev.bengi.userservice.exception.wrapper.UserNotFoundException;
-import dev.bengi.userservice.http.HeaderGenerator;
-import dev.bengi.userservice.domain.payload.request.AddUserRequest;
-import dev.bengi.userservice.domain.payload.response.AuthResponse;
-import dev.bengi.userservice.domain.payload.response.UserResponse;
-import dev.bengi.userservice.domain.payload.response.ResponseMessage;
-import dev.bengi.userservice.security.jwt.JwtProvider;
-import dev.bengi.userservice.service.UserService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -23,12 +12,33 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import dev.bengi.userservice.domain.model.User;
+import dev.bengi.userservice.domain.payload.request.AddUserRequest;
+import dev.bengi.userservice.domain.payload.response.AuthResponse;
+import dev.bengi.userservice.domain.payload.response.ResponseMessage;
+import dev.bengi.userservice.domain.payload.response.UserResponse;
+import dev.bengi.userservice.exception.wrapper.UserNotFoundException;
+import dev.bengi.userservice.http.HeaderGenerator;
+import dev.bengi.userservice.security.jwt.JwtProvider;
+import dev.bengi.userservice.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -129,11 +139,65 @@ public class UserManagementController {
                 .map(users -> {
                     List<UserResponse> responses = users.stream()
                             .map(user -> {
-                                UserResponse response = modelMapper.map(user, UserResponse.class);
-                                response.setRoles(user.getRoles().stream()
-                                        .map(role -> role.getName().name())
-                                        .collect(Collectors.toList()));
-                                log.debug("Mapped user {} to response {}", user.getUsername(), response);
+                                // Manual mapping instead of using ModelMapper to avoid LazyInitializationException
+                                UserResponse response = UserResponse.builder()
+                                        .id(user.getId())
+                                        .username(user.getUsername())
+                                        .fullname(user.getFullname())
+                                        .email(user.getEmail())
+                                        .avatar(user.getAvatar())
+                                        .gender(user.getGender())
+                                        .roles(user.getRoles().stream()
+                                               .map(role -> role.getName().name())
+                                               .collect(Collectors.toList()))
+                                        .build();
+                                
+                                // Set department info if available
+                                if (user.getDepartment() != null) {
+                                    response.setDepartmentId(user.getDepartment().getId());
+                                    response.setDepartmentName(user.getDepartment().getName());
+                                }
+                                
+                                // Set other fields that may not need collections
+                                response.setTeam(user.getTeam());
+                                response.setManagerId(user.getManagerId());
+                                response.setTeamRole(user.getTeamRole());
+                                response.setSkillLevel(user.getSkillLevel());
+                                response.setYearsOfExperience(user.getYearsOfExperience());
+                                response.setPrimarySkill(user.getPrimarySkill());
+                                response.setEmploymentType(user.getEmploymentType());
+                                response.setWorkMode(user.getWorkMode());
+                                response.setJoiningDate(user.getJoiningDate());
+                                response.setLastPromotionDate(user.getLastPromotionDate());
+                                response.setWorkAnniversary(user.getWorkAnniversary());
+                                response.setShiftType(user.getShiftType());
+                                response.setRemoteWorkDays(user.getRemoteWorkDays());
+                                response.setLastLogin(user.getLastLogin());
+                                response.setLastActiveTime(user.getLastActiveTime());
+                                response.setLoginFrequency(user.getLoginFrequency());
+                                response.setAccountStatus(user.getAccountStatus());
+                                response.setSystemAccessLevel(user.getSystemAccessLevel());
+                                response.setPreferredCommunication(user.getPreferredCommunication());
+                                response.setNationality(user.getNationality());
+                                response.setPreferredLanguage(user.getPreferredLanguage());
+                                response.setTimezone(user.getTimezone());
+                                response.setLinkedinProfile(user.getLinkedinProfile());
+                                response.setGithubProfile(user.getGithubProfile());
+                                
+                                // Safely copy collections
+                                if (user.getSkills() != null) {
+                                    response.setSkills(new HashSet<>(user.getSkills()));
+                                }
+                                if (user.getSkillProficiency() != null) {
+                                    response.setSkillProficiency(new HashMap<>(user.getSkillProficiency()));
+                                }
+                                if (user.getTechnologyStack() != null) {
+                                    response.setTechnologyStack(new HashSet<>(user.getTechnologyStack()));
+                                }
+                                if (user.getLanguagesSpoken() != null) {
+                                    response.setLanguagesSpoken(new HashSet<>(user.getLanguagesSpoken()));
+                                }
+                                
                                 return response;
                             })
                             .collect(Collectors.toList());

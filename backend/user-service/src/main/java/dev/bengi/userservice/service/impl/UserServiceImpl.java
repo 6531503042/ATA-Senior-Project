@@ -1,25 +1,12 @@
 package dev.bengi.userservice.service.impl;
 
-import dev.bengi.userservice.domain.model.Role;
-import dev.bengi.userservice.domain.enums.RoleName;
-import dev.bengi.userservice.domain.model.User;
-import dev.bengi.userservice.domain.payload.request.AddUserRequest;
-import dev.bengi.userservice.domain.payload.request.LoginRequest;
-import dev.bengi.userservice.domain.payload.request.RegisterRequest;
-import dev.bengi.userservice.exception.EmailOrUsernameNotFoundException;
-import dev.bengi.userservice.exception.RoleNotFoundException;
-import dev.bengi.userservice.exception.wrapper.UserNotFoundException;
-import dev.bengi.userservice.domain.payload.response.AuthResponse;
-import dev.bengi.userservice.domain.payload.response.JwtResponse;
-import dev.bengi.userservice.domain.payload.response.UserResponse;
-import dev.bengi.userservice.domain.payload.response.DepartmentResponse;
-import dev.bengi.userservice.repository.UserRepository;
-import dev.bengi.userservice.repository.RoleRepository;
-import dev.bengi.userservice.security.jwt.JwtProvider;
-import dev.bengi.userservice.service.RoleService;
-import dev.bengi.userservice.service.UserService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,19 +14,36 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Mono;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.core.GrantedAuthority;
+import dev.bengi.userservice.domain.enums.RoleName;
+import dev.bengi.userservice.domain.model.Role;
+import dev.bengi.userservice.domain.model.User;
+import dev.bengi.userservice.domain.payload.request.AddUserRequest;
+import dev.bengi.userservice.domain.payload.request.LoginRequest;
+import dev.bengi.userservice.domain.payload.request.RegisterRequest;
+import dev.bengi.userservice.domain.payload.response.AuthResponse;
+import dev.bengi.userservice.domain.payload.response.JwtResponse;
+import dev.bengi.userservice.domain.payload.response.UserResponse;
+import dev.bengi.userservice.exception.EmailOrUsernameNotFoundException;
+import dev.bengi.userservice.exception.RoleNotFoundException;
+import dev.bengi.userservice.exception.wrapper.UserNotFoundException;
+import dev.bengi.userservice.repository.DepartmentRepository;
+import dev.bengi.userservice.repository.RoleRepository;
+import dev.bengi.userservice.repository.UserRepository;
+import dev.bengi.userservice.security.jwt.JwtProvider;
 import dev.bengi.userservice.security.userPrinciple.UserPrinciple;
-
-import java.util.*;
-import java.util.stream.Collectors;
+import dev.bengi.userservice.service.RoleService;
+import dev.bengi.userservice.service.UserService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Mono;
 
 @Service
 @Transactional
@@ -48,6 +52,7 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final DepartmentRepository departmentRepository;
     private final PasswordEncoder passwordEncoder;
     private final ModelMapper modelMapper;
     private final RoleService roleService;
@@ -60,6 +65,13 @@ public class UserServiceImpl implements UserService {
     }
 
     private AuthResponse buildAuthResponse(User user) {
+        Long departmentId = null;
+        String departmentName = null;
+        if (user.getDepartment() != null) {
+            departmentId = user.getDepartment().getId();
+            departmentName = user.getDepartment().getName();
+        }
+        
         return AuthResponse.builder()
                 .id(user.getId())
                 .username(user.getUsername())
@@ -67,6 +79,8 @@ public class UserServiceImpl implements UserService {
                 .fullname(user.getFullname())
                 .gender(user.getGender())
                 .avatar(user.getAvatar())
+                .departmentId(departmentId)
+                .departmentName(departmentName)
                 .roles(user.getRoles().stream()
                         .map(role -> role.getName().name())
                         .collect(Collectors.toList()))
@@ -74,14 +88,11 @@ public class UserServiceImpl implements UserService {
     }
 
     private UserResponse buildUserResponse(User user) {
-        DepartmentResponse departmentResponse = null;
+        Long departmentId = null;
+        String departmentName = null;
         if (user.getDepartment() != null) {
-            departmentResponse = DepartmentResponse.builder()
-                    .id(user.getDepartment().getId())
-                    .name(user.getDepartment().getName())
-                    .description(user.getDepartment().getDescription())
-                    .active(user.getDepartment().isActive())
-                    .build();
+            departmentId = user.getDepartment().getId();
+            departmentName = user.getDepartment().getName();
         }
 
         return UserResponse.builder()
@@ -91,10 +102,43 @@ public class UserServiceImpl implements UserService {
                 .fullname(user.getFullname())
                 .gender(user.getGender())
                 .avatar(user.getAvatar())
-                .department(departmentResponse)
+                .departmentId(departmentId)
+                .departmentName(departmentName)
                 .roles(user.getRoles().stream()
                         .map(role -> role.getName().name())
                         .collect(Collectors.toList()))
+                .team(user.getTeam())
+                .managerId(user.getManagerId())
+                .teamRole(user.getTeamRole())
+                // Skills & Experience
+                .skillLevel(user.getSkillLevel())
+                .yearsOfExperience(user.getYearsOfExperience())
+                .skills(user.getSkills())
+                .skillProficiency(user.getSkillProficiency())
+                .primarySkill(user.getPrimarySkill())
+                .technologyStack(user.getTechnologyStack())
+                // Employment & Work Details
+                .employmentType(user.getEmploymentType())
+                .workMode(user.getWorkMode())
+                .joiningDate(user.getJoiningDate())
+                .lastPromotionDate(user.getLastPromotionDate())
+                .workAnniversary(user.getWorkAnniversary())
+                .shiftType(user.getShiftType())
+                .remoteWorkDays(user.getRemoteWorkDays())
+                // Engagement & Activity Tracking
+                .lastLogin(user.getLastLogin())
+                .lastActiveTime(user.getLastActiveTime())
+                .loginFrequency(user.getLoginFrequency())
+                .accountStatus(user.getAccountStatus())
+                .systemAccessLevel(user.getSystemAccessLevel())
+                .preferredCommunication(user.getPreferredCommunication())
+                // Personal & Social Details
+                .nationality(user.getNationality())
+                .languagesSpoken(user.getLanguagesSpoken())
+                .preferredLanguage(user.getPreferredLanguage())
+                .timezone(user.getTimezone())
+                .linkedinProfile(user.getLinkedinProfile())
+                .githubProfile(user.getGithubProfile())
                 .build();
     }
 
@@ -170,49 +214,168 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public Mono<User> addNewUser(AddUserRequest user) {
-        return Mono.defer(() -> {
-            try {
-                if (userRepository.existsByUsername(user.getUsername())) {
-                    log.warn("Registration failed: Username {} is already taken", user.getUsername());
-                    return Mono.error(new EmailOrUsernameNotFoundException("Username is already taken."));
-                }
-                if (userRepository.existsByEmail(user.getEmail())) {
-                    log.warn("Registration failed: Email {} is already taken", user.getEmail());
-                    return Mono.error(new EmailOrUsernameNotFoundException("Email is already taken."));
-                }
+    @Transactional
+    public Mono<User> addNewUser(AddUserRequest request) {
+        log.info("Creating new user with username: {}", request.getUsername());
+        if (userRepository.existsByUsername(request.getUsername())) {
+            return Mono.error(new RuntimeException("Username is already taken!"));
+        }
 
-                User newUser = modelMapper.map(user, User.class);
-                newUser.setPassword(passwordEncoder.encode(user.getPassword()));
-                newUser.setAvatar(getTemporaryProfileImageUrl(user.getEmail()));
-                newUser.setFullname(user.getFullname());
+        if (userRepository.existsByEmail(request.getEmail())) {
+            return Mono.error(new RuntimeException("Email is already in use!"));
+        }
 
-                // Convert role strings to Role entities
-                Set<Role> roles = new HashSet<>();
-                for (String roleName : user.getRoles()) {
-                    try {
-                        RoleName roleEnum = RoleName.valueOf(roleName.toUpperCase());
-                        Role role = roleService.findByName(roleEnum)
-                                .orElseThrow(() -> new RoleNotFoundException("Role not found: " + roleName));
-                        roles.add(role);
-                    } catch (IllegalArgumentException e) {
-                        log.error("Invalid role name: {}", roleName);
-                        return Mono.error(new RoleNotFoundException("Invalid role name: " + roleName));
-                    }
+        User user = User.builder()
+                .username(request.getUsername())
+                .fullname(request.getFullname())
+                .email(request.getEmail())
+                .gender(request.getGender())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .avatar(request.getAvatar() != null ? request.getAvatar() : getTemporaryProfileImageUrl(request.getEmail()))
+                .roles(new HashSet<>())
+                .projectAuthorities(new HashSet<>())
+                // Department related
+                .team(request.getTeam())
+                .managerId(request.getManagerId())
+                .teamRole(request.getTeamRole())
+                // Skills & Experience
+                .skillLevel(request.getSkillLevel())
+                .yearsOfExperience(request.getYearsOfExperience())
+                .skills(request.getSkills())
+                .skillProficiency(request.getSkillProficiency())
+                .primarySkill(request.getPrimarySkill())
+                .technologyStack(request.getTechnologyStack())
+                // Employment & Work Details
+                .employmentType(request.getEmploymentType())
+                .workMode(request.getWorkMode())
+                .joiningDate(request.getJoiningDate())
+                .lastPromotionDate(request.getLastPromotionDate())
+                .shiftType(request.getShiftType())
+                .remoteWorkDays(request.getRemoteWorkDays())
+                // Personal & Social Details
+                .nationality(request.getNationality())
+                .languagesSpoken(request.getLanguagesSpoken())
+                .preferredLanguage(request.getPreferredLanguage())
+                .timezone(request.getTimezone())
+                .linkedinProfile(request.getLinkedinProfile())
+                .githubProfile(request.getGithubProfile())
+                .build();
+
+        // Default to USER if no roles specified
+        Set<String> strRoles = request.getRoles();
+        if (strRoles == null || strRoles.isEmpty()) {
+            Role userRole = roleRepository.findByName(RoleName.ROLE_USER)
+                    .orElseThrow(() -> new RuntimeException("Error: User Role is not found."));
+            user.getRoles().add(userRole);
+        } else {
+            strRoles.forEach(role -> {
+                try {
+                    roleService.addRoleToUser(user, role);
+                } catch (RoleNotFoundException e) {
+                    log.error("Error adding role: {}", e.getMessage());
                 }
-                
-                newUser.setRoles(roles);
-                
-                log.info("Saving new user: {} with roles: {}", newUser.getUsername(), 
-                    roles.stream().map(role -> role.getName().name()).collect(Collectors.joining(", ")));
-                    
-                User savedUser = userRepository.save(newUser);
-                return Mono.just(savedUser);
-            } catch (Exception e) {
-                log.error("Error creating new user: {}", e.getMessage());
-                return Mono.error(e);
-            }
-        });
+            });
+        }
+
+        // Set department if provided
+        if (request.getDepartmentId() != null) {
+            departmentRepository.findById(request.getDepartmentId())
+                    .ifPresent(user::setDepartment);
+        }
+
+        User savedUser = userRepository.save(user);
+        return Mono.just(savedUser);
+    }
+
+    @Override
+    @Transactional
+    public Mono<User> updateUser(Long userId, AddUserRequest request) {
+        log.info("Updating user with id: {}", userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
+
+        if (!user.getUsername().equals(request.getUsername()) && userRepository.existsByUsername(request.getUsername())) {
+            return Mono.error(new RuntimeException("Username is already taken!"));
+        }
+
+        if (!user.getEmail().equals(request.getEmail()) && userRepository.existsByEmail(request.getEmail())) {
+            return Mono.error(new RuntimeException("Email is already in use!"));
+        }
+
+        user.setUsername(request.getUsername());
+        user.setFullname(request.getFullname());
+        user.setEmail(request.getEmail());
+        user.setGender(request.getGender());
+        user.setAvatar(request.getAvatar() != null ? request.getAvatar() : user.getAvatar());
+        
+        // Only update password if provided
+        if (request.getPassword() != null && !request.getPassword().isEmpty()) {
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
+        
+        // Department related
+        user.setTeam(request.getTeam());
+        user.setManagerId(request.getManagerId());
+        user.setTeamRole(request.getTeamRole());
+        
+        // Skills & Experience
+        user.setSkillLevel(request.getSkillLevel());
+        user.setYearsOfExperience(request.getYearsOfExperience());
+        if (request.getSkills() != null) {
+            user.setSkills(request.getSkills());
+        }
+        if (request.getSkillProficiency() != null) {
+            user.setSkillProficiency(request.getSkillProficiency());
+        }
+        user.setPrimarySkill(request.getPrimarySkill());
+        if (request.getTechnologyStack() != null) {
+            user.setTechnologyStack(request.getTechnologyStack());
+        }
+        
+        // Employment & Work Details
+        user.setEmploymentType(request.getEmploymentType());
+        user.setWorkMode(request.getWorkMode());
+        user.setJoiningDate(request.getJoiningDate());
+        user.setLastPromotionDate(request.getLastPromotionDate());
+        user.setShiftType(request.getShiftType());
+        user.setRemoteWorkDays(request.getRemoteWorkDays());
+        
+        // Personal & Social Details
+        user.setNationality(request.getNationality());
+        if (request.getLanguagesSpoken() != null) {
+            user.setLanguagesSpoken(request.getLanguagesSpoken());
+        }
+        user.setPreferredLanguage(request.getPreferredLanguage());
+        user.setTimezone(request.getTimezone());
+        user.setLinkedinProfile(request.getLinkedinProfile());
+        user.setGithubProfile(request.getGithubProfile());
+
+        // Update roles if provided
+        if (request.getRoles() != null && !request.getRoles().isEmpty()) {
+            // Clear existing roles
+            user.getRoles().clear();
+            
+            // Add new roles
+            request.getRoles().forEach(role -> {
+                try {
+                    roleService.addRoleToUser(user, role);
+                } catch (RoleNotFoundException e) {
+                    log.error("Error adding role: {}", e.getMessage());
+                }
+            });
+        }
+
+        // Update department if provided
+        if (request.getDepartmentId() != null) {
+            departmentRepository.findById(request.getDepartmentId())
+                    .ifPresent(user::setDepartment);
+        } else if (request.getDepartmentId() == null) {
+            // Remove department assignment if explicitly set to null
+            user.setDepartment(null);
+        }
+
+        User updatedUser = userRepository.save(user);
+        return Mono.just(updatedUser);
     }
 
     @Override
@@ -296,62 +459,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Mono<User> updateUser(Long userId, AddUserRequest request) {
-        return Mono.defer(() -> {
-            try {
-                User existingUser = findById(userId)
-                        .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
-
-                // Update fields if provided
-                if (request.getUsername() != null && !request.getUsername().equals(existingUser.getUsername())) {
-                    if (userRepository.existsByUsername(request.getUsername())) {
-                        return Mono.error(new EmailOrUsernameNotFoundException("Username is already taken."));
-                    }
-                    existingUser.setUsername(request.getUsername());
-                }
-
-                if (request.getEmail() != null && !request.getEmail().equals(existingUser.getEmail())) {
-                    if (userRepository.existsByEmail(request.getEmail())) {
-                        return Mono.error(new EmailOrUsernameNotFoundException("Email is already taken."));
-                    }
-                    existingUser.setEmail(request.getEmail());
-                }
-
-                if (request.getPassword() != null) {
-                    existingUser.setPassword(passwordEncoder.encode(request.getPassword()));
-                }
-
-                if (request.getFullname() != null) {
-                    existingUser.setFullname(request.getFullname());
-                }
-
-                if (request.getRoles() != null && !request.getRoles().isEmpty()) {
-                    Set<Role> roles = new HashSet<>();
-                    for (String roleName : request.getRoles()) {
-                        try {
-                            RoleName roleEnum = RoleName.valueOf(roleName.toUpperCase());
-                            Role role = roleService.findByName(roleEnum)
-                                    .orElseThrow(() -> new RoleNotFoundException("Role not found: " + roleName));
-                            roles.add(role);
-                        } catch (IllegalArgumentException e) {
-                            log.error("Invalid role name: {}", roleName);
-                            return Mono.error(new RoleNotFoundException("Invalid role name: " + roleName));
-                        }
-                    }
-                    existingUser.setRoles(roles);
-                }
-
-                log.info("Updating user: {}", existingUser.getUsername());
-                User updatedUser = userRepository.save(existingUser);
-                return Mono.just(updatedUser);
-            } catch (Exception e) {
-                log.error("Error updating user: {}", e.getMessage());
-                return Mono.error(e);
-            }
-        });
-    }
-
-    @Override
     public Mono<User> getUserById(Long userId) {
         return Mono.defer(() -> {
             try {
@@ -398,10 +505,65 @@ public class UserServiceImpl implements UserService {
         try {
             Page<User> users = userRepository.findAll(pageable);
             Page<UserResponse> userResponses = users.map(user -> {
-                UserResponse response = modelMapper.map(user, UserResponse.class);
-                response.setRoles(user.getRoles().stream()
-                        .map(role -> role.getName().name())
-                        .collect(Collectors.toList()));
+                // Manual mapping instead of ModelMapper to avoid LazyInitializationException
+                UserResponse response = UserResponse.builder()
+                        .id(user.getId())
+                        .username(user.getUsername())
+                        .fullname(user.getFullname())
+                        .email(user.getEmail())
+                        .avatar(user.getAvatar())
+                        .gender(user.getGender())
+                        .roles(user.getRoles().stream()
+                               .map(role -> role.getName().name())
+                               .collect(Collectors.toList()))
+                        .build();
+                
+                // Set department info if available
+                if (user.getDepartment() != null) {
+                    response.setDepartmentId(user.getDepartment().getId());
+                    response.setDepartmentName(user.getDepartment().getName());
+                }
+                
+                // Set other fields that may not need collections
+                response.setTeam(user.getTeam());
+                response.setManagerId(user.getManagerId());
+                response.setTeamRole(user.getTeamRole());
+                response.setSkillLevel(user.getSkillLevel());
+                response.setYearsOfExperience(user.getYearsOfExperience());
+                response.setPrimarySkill(user.getPrimarySkill());
+                response.setEmploymentType(user.getEmploymentType());
+                response.setWorkMode(user.getWorkMode());
+                response.setJoiningDate(user.getJoiningDate());
+                response.setLastPromotionDate(user.getLastPromotionDate());
+                response.setWorkAnniversary(user.getWorkAnniversary());
+                response.setShiftType(user.getShiftType());
+                response.setRemoteWorkDays(user.getRemoteWorkDays());
+                response.setLastLogin(user.getLastLogin());
+                response.setLastActiveTime(user.getLastActiveTime());
+                response.setLoginFrequency(user.getLoginFrequency());
+                response.setAccountStatus(user.getAccountStatus());
+                response.setSystemAccessLevel(user.getSystemAccessLevel());
+                response.setPreferredCommunication(user.getPreferredCommunication());
+                response.setNationality(user.getNationality());
+                response.setPreferredLanguage(user.getPreferredLanguage());
+                response.setTimezone(user.getTimezone());
+                response.setLinkedinProfile(user.getLinkedinProfile());
+                response.setGithubProfile(user.getGithubProfile());
+                
+                // Safely copy collections
+                if (user.getSkills() != null) {
+                    response.setSkills(new HashSet<>(user.getSkills()));
+                }
+                if (user.getSkillProficiency() != null) {
+                    response.setSkillProficiency(new HashMap<>(user.getSkillProficiency()));
+                }
+                if (user.getTechnologyStack() != null) {
+                    response.setTechnologyStack(new HashSet<>(user.getTechnologyStack()));
+                }
+                if (user.getLanguagesSpoken() != null) {
+                    response.setLanguagesSpoken(new HashSet<>(user.getLanguagesSpoken()));
+                }
+                
                 return response;
             });
             return Mono.just(userResponses);
@@ -414,8 +576,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public Mono<List<User>> findAllUsers() {
         try {
-            List<User> users = userRepository.findAll();
-            log.debug("Fetched {} users from the database", users.size());
+            List<User> users = userRepository.findAllWithCollections();
+            log.debug("Fetched {} users from the database with all collections", users.size());
             return Mono.just(users);
         } catch (Exception e) {
             log.error("Error fetching all users: {}", e.getMessage());

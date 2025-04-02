@@ -1,16 +1,19 @@
 package dev.bengi.userservice.service.impl;
 
-import dev.bengi.userservice.exception.wrapper.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import dev.bengi.userservice.domain.enums.RoleName;
 import dev.bengi.userservice.domain.model.Role;
 import dev.bengi.userservice.domain.model.User;
+import dev.bengi.userservice.exception.wrapper.RoleNotFoundException;
+import dev.bengi.userservice.exception.wrapper.UserNotFoundException;
 import dev.bengi.userservice.repository.RoleRepository;
 import dev.bengi.userservice.repository.UserRepository;
 import dev.bengi.userservice.service.RoleService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -67,6 +70,17 @@ public class RoleServiceImpl implements RoleService {
         }
 
         return roleNames;
+    }
+
+    @Override
+    @Transactional
+    public void addRoleToUser(User user, String roleName) throws RoleNotFoundException {
+        Role role = roleRepository.findByName(mapStringToRoleName(roleName))
+                .orElseThrow(() -> new RoleNotFoundException("Role not found with name: " + roleName));
+        
+        if (!user.getRoles().contains(role)) {
+            user.getRoles().add(role);
+        }
     }
 
     private RoleName mapStringToRoleName(String roleName) {

@@ -1,15 +1,14 @@
 package dev.bengi.userservice.repository;
 
-import dev.bengi.userservice.domain.model.User;
-import dev.bengi.userservice.domain.model.Role;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import dev.bengi.userservice.domain.model.Role;
+import dev.bengi.userservice.domain.model.User;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
@@ -41,4 +40,16 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean hasProjectAuthority(@Param("userId") Long userId, @Param("projectId") Long projectId);
 
     List<User> findByRolesContaining(Role role);
+
+    /**
+     * Find all users with eager loading of collections to avoid LazyInitializationException
+     */
+    @Query("SELECT DISTINCT u FROM User u " +
+           "LEFT JOIN FETCH u.roles " +
+           "LEFT JOIN FETCH u.projectAuthorities " +
+           "LEFT JOIN FETCH u.skills " +
+           "LEFT JOIN FETCH u.skillProficiency " +
+           "LEFT JOIN FETCH u.technologyStack " +
+           "LEFT JOIN FETCH u.languagesSpoken")
+    List<User> findAllWithCollections();
 }
