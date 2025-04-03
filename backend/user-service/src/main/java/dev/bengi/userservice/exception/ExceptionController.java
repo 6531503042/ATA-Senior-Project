@@ -1,7 +1,6 @@
 package dev.bengi.userservice.exception;
 
 import dev.bengi.userservice.exception.payload.ExceptionMessage;
-import dev.bengi.userservice.exception.wrapper.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

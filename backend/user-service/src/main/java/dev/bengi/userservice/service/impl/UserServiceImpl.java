@@ -33,7 +33,7 @@ import dev.bengi.userservice.domain.payload.response.JwtResponse;
 import dev.bengi.userservice.domain.payload.response.UserResponse;
 import dev.bengi.userservice.exception.EmailOrUsernameNotFoundException;
 import dev.bengi.userservice.exception.RoleNotFoundException;
-import dev.bengi.userservice.exception.wrapper.UserNotFoundException;
+import dev.bengi.userservice.exception.UserNotFoundException;
 import dev.bengi.userservice.repository.DepartmentRepository;
 import dev.bengi.userservice.repository.RoleRepository;
 import dev.bengi.userservice.repository.UserRepository;

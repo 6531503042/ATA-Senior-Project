@@ -1,4 +1,4 @@
-package dev.bengi.userservice.exception.wrapper;
+package dev.bengi.userservice.exception;
 
 public class UserNotFoundException extends RuntimeException {
 

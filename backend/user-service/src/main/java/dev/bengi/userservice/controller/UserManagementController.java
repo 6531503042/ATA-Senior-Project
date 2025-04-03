@@ -28,7 +28,7 @@ import dev.bengi.userservice.domain.payload.request.AddUserRequest;
 import dev.bengi.userservice.domain.payload.response.AuthResponse;
 import dev.bengi.userservice.domain.payload.response.ResponseMessage;
 import dev.bengi.userservice.domain.payload.response.UserResponse;
-import dev.bengi.userservice.exception.wrapper.UserNotFoundException;
+import dev.bengi.userservice.exception.UserNotFoundException;
 import dev.bengi.userservice.http.HeaderGenerator;
 import dev.bengi.userservice.security.jwt.JwtProvider;
 import dev.bengi.userservice.service.UserService;
