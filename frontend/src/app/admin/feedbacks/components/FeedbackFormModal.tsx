@@ -33,7 +33,7 @@ import { cn } from "@/lib/utils";
 import type { Project } from "@/app/admin/projects/models/types";
 import type { Question } from "@/app/admin/questions/models/types";
 import type { Feedback, CreateFeedbackDto } from "../models/types";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CustomProjectSelect } from "./CustomProjectSelect";
 
 interface FeedbackFormModalProps {
   feedback?: Feedback;
@@ -92,6 +92,16 @@ export function FeedbackFormModal({
 
     fetchData();
   }, [showAlert]);
+
+  useEffect(() => {
+    // Disable scrolling when modal is open
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      // Re-enable scrolling when modal is closed
+      document.body.style.overflow = "auto";
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -245,9 +255,9 @@ export function FeedbackFormModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-lg w-full max-w-[1200px] flex flex-col max-h-[90vh]">
+      <div className="bg-white shadow-lg rounded-xl w-full max-w-[1200px] flex flex-col max-h-[90vh] ">
         {/* Header */}
-        <div className="px-6 py-4 border-b flex items-center justify-between bg-gradient-to-r from-violet-50 to-purple-50">
+        <div className="px-6 py-4 flex items-center justify-between bg-gradient-to-r from-violet-50 to-purple-50 rounded-t-xl">
           <div className="flex items-center gap-4">
             <div className="p-2.5 bg-violet-100 rounded-xl">
               {mode === "create" ? (
@@ -288,7 +298,7 @@ export function FeedbackFormModal({
         {/* Form Content */}
         <div className="flex-1 overflow-hidden flex">
           {/* Left Column - Form Fields */}
-          <div className="w-[400px] border-r p-6 overflow-y-auto">
+          <div className="w-[400px] border-r border-r-black/10 p-6 overflow-y-auto">
             <div className="space-y-6">
               <div>
                 <div className="flex items-center gap-2 mb-4">
@@ -368,40 +378,19 @@ export function FeedbackFormModal({
                     Project
                   </label>
                 </div>
-                <Select
-                  value={formData.projectId ? String(formData.projectId) : ""}
-                  onValueChange={(value) => {
-                    setFormData((prev) => ({
-                      ...prev,
-                      projectId: parseInt(value, 10),
-                    }));
+                
+                {/* Custom Project Select Component */}
+                <CustomProjectSelect
+                  projects={projects}
+                  selectedProjectId={formData.projectId}
+                  onChange={(projectId) => {
+                    setFormData((prev) => ({ ...prev, projectId }));
                     setFormErrors((prev) => ({ ...prev, projectId: "" }));
                   }}
-                  disabled={isViewOnly}
-                >
-                  <SelectTrigger
-                    className={cn(
-                      "w-full px-3 py-2 bg-white border rounded-md text-sm",
-                      "focus:ring-2 focus:ring-violet-500 focus:border-violet-500",
-                      "transition-colors duration-200",
-                      formErrors.projectId
-                        ? "border-red-300"
-                        : "border-gray-300",
-                      isViewOnly && "opacity-50 cursor-not-allowed"
-                    )}
-                  >
-                    <SelectValue placeholder="Select a project" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="0">Select a project</SelectItem>
-                    {projects.map((project) => (
-                      <SelectItem key={project.id} value={String(project.id)}>
-                        {project.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
+                  isDisabled={isViewOnly}
+                  hasError={!!formErrors.projectId}
+                />
+                
                 {formErrors.projectId && (
                   <div className="flex items-center gap-1.5 mt-1.5">
                     <AlertCircle className="h-4 w-4 text-red-500" />
@@ -518,7 +507,7 @@ export function FeedbackFormModal({
 
           {/* Right Column - Questions */}
           <div className="flex-1 flex flex-col min-w-0">
-            <div className="p-4 border-b bg-gradient-to-r from-gray-50 to-violet-50">
+            <div className="p-4 bg-gradient-to-r from-gray-50 to-violet-50">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   <ListChecks className="h-5 w-5 text-violet-500" />
@@ -620,7 +609,7 @@ export function FeedbackFormModal({
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t bg-gradient-to-r from-gray-50 to-violet-50 flex items-center justify-between">
+        <div className="px-6 py-4 bg-gradient-to-r from-gray-50 to-violet-50 flex items-center justify-between rounded-b-xl">
           <div className="flex items-center gap-2 text-sm text-gray-500">
             <ListChecks className="h-4 w-4" />
             {selectedQuestions.length} questions selected

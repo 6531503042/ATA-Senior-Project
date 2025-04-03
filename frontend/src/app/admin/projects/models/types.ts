@@ -53,3 +53,17 @@ export interface ApiError {
   status?: number;
   response?: any;
 } 
+
+export interface TeamMember {
+  id: number;
+  userId: number;
+}
+
+export interface User {
+  id: number;
+  name: string;
+  email: string;
+  avatar?: string;
+  role?: string;
+  department?: string;
+}

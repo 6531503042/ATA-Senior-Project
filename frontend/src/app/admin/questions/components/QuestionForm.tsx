@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   QuestionType,
   QuestionCategory,
@@ -191,6 +191,16 @@ export function QuestionForm({
         }
   );
 
+  useEffect(() => {
+    // Disable scrolling when modal is open
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      // Re-enable scrolling when modal is closed
+      document.body.style.overflow = "auto";
+    };
+  }, []);
+
   const [options, setOptions] = useState<OptionItem[]>(
     formData.choices?.map((choice) => ({ text: choice })) || [
       { text: "" },
@@ -253,7 +263,7 @@ export function QuestionForm({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="p-6 space-y-6">
           <div className="flex items-center justify-between border-b pb-4">

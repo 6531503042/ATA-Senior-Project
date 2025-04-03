@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/shared/date-picker";
-import { TeamSelector } from "@/components/shared/team-selector";
+import { TeamSelector } from "../components/TeamSelector";
 import {
   createProject,
   updateProject,
@@ -18,7 +18,7 @@ import {
 } from "@/lib/api/projects";
 import { useAlertDialog } from "@/components/ui/alert-dialog";
 import api from "@/utils/api";
-import type { User } from "@/types/auth";
+import { User, TeamMember } from "../models/types";
 import { Project } from "../models/types";
 import { motion } from "framer-motion";
 import { FormField } from '@/components/ui/form-field';
@@ -27,11 +27,6 @@ interface ProjectFormModalProps {
   project?: Project;
   onClose: () => void;
   mode: "create" | "edit";
-}
-
-interface TeamMember {
-  id: string;
-  userId: number;
 }
 
 export function ProjectFormModal({
@@ -54,8 +49,6 @@ export function ProjectFormModal({
     project?.memberIds?.map((id) => ({ id: id.toString(), userId: id })) || []
   );
 
-
-
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -77,6 +70,16 @@ export function ProjectFormModal({
 
     fetchUsers();
   }, [showAlert]);
+
+  useEffect(() => {
+      // Disable scrolling when modal is open
+      document.body.style.overflow = "hidden";
+  
+      return () => {
+        // Re-enable scrolling when modal is closed
+        document.body.style.overflow = "auto";
+      };
+    }, []);
 
   const handleInputChange = (
     e: React.ChangeEvent<
@@ -145,17 +148,18 @@ export function ProjectFormModal({
 
   const handleAddMember = (e: React.MouseEvent) => {
     e.preventDefault(); // Explicitly prevent form submission
-    setTeamMembers((prev) => [...prev, { 
-      id: crypto.randomUUID(), 
-      userId: 0 
-    }]);
+    setTeamMembers((prev) => [
+      ...prev,
+      { id: Date.now(), userId: 0 }, // Use a number as id (e.g., Date.now())
+    ]);
   };
+  
 
-  const handleRemoveMember = (id: string) => {
+  const handleRemoveMember = (id: number) => {
     setTeamMembers((prev) => prev.filter((member) => member.id !== id));
   };
 
-  const handleMemberSelect = (id: string, userId: number) => {
+  const handleMemberSelect = (id: number, userId: number) => {
     setTeamMembers((prev) =>
       prev.map((member) => (member.id === id ? { ...member, userId } : member))
     );
@@ -163,7 +167,6 @@ export function ProjectFormModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
 
     setIsLoading(true);
 
@@ -367,7 +370,7 @@ export function ProjectFormModal({
 
                     <FormField
                       label="Team Members"
-                      helpText={`${teamMembers.length} members selected`}
+                      helpText={`${teamMembers.filter(m => m.userId > 0).length} members selected`}
                     >
                       <div className="max-h-[240px] overflow-y-auto rounded-lg border border-gray-200 bg-gray-50/50 p-4">
                         <TeamSelector

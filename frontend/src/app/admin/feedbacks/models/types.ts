@@ -36,3 +36,12 @@ export interface FeedbackFilters {
   page?: number;
   limit?: number;
 } 
+
+export interface SelectItem {
+  key: string | number;
+  label: string;
+}
+
+export interface ProjectItem extends SelectItem {
+  id: number;
+}
