@@ -1,38 +1,103 @@
 server:
   port: 8081
+
 spring:
   main:
     allow-bean-definition-overriding: true
-  datasource:
-    driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:3307/user
+    allow-circular-references: true
+  profiles:
+    active: dev
+  r2dbc:
+    url: r2dbc:postgresql://localhost:3307/user
     username: postgres
     password: 6531503042
+    host: localhost
+    port: 3307
+    database: user
+    pool:
+      enabled: true
+      initial-size: 5
+      max-size: 20
   application:
     name: user-service
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-    database: postgresql
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
-    generate-ddl: true
-    open-in-view: false
-    properties:
-      hibernate:
-        format_sql: true
+  data:
+    r2dbc:
+      repositories:
+        enabled: true
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+    url: jdbc:postgresql://localhost:3307/user
+    user: postgres
+    password: 6531503042
+    schemas: public
+    create-schemas: true
+    clean-disabled: false
+  cloud:
+    config:
+      enabled: false
 
 jwt:
   secret: ofBra2CqJO2JOC7CmN80hbaGdjZJqsBR2UqXxJh5Coo=
   expiration: 86400
   refresh-expiration: 604800
 
-# Token refresh endpoint URL
+---
+spring:
+  config:
+    activate:
+      on-profile: docker
+  r2dbc:
+    url: r2dbc:postgresql://postgres:3307/user_service
+    username: postgres
+    password: 6531503042
+    host: postgres
+    port: 5432
+    database: user
+    pool:
+      enabled: true
+      initial-size: 5
+      max-size: 20
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+    url: jdbc:postgresql://postgres:3307/user
+    user: postgres
+    password: 6531503042
+    schemas: public
+    create-schemas: true
+    clean-disabled: false
+
+jwt:
+  secret: ${JWT_SECRET:ofBra2CqJO2JOC7CmN80hbaGdjZJqsBR2UqXxJh5Coo=}
+  expiration: ${JWT_EXPIRATION:86400}
+  refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800}
+
+logging:
+  level:
+    root: INFO
+    org.springframework: INFO
+    org.springframework.security: DEBUG
+    org.springframework.r2dbc: DEBUG
+    org.springframework.data.r2dbc: DEBUG
+    io.r2dbc.postgresql: DEBUG
+    org.flywaydb: DEBUG
+    dev.bengi.userservice: DEBUG
+    dev.bengi.userservice.controller: DEBUG
+    dev.bengi.userservice.service: DEBUG
+    dev.bengi.userservice.config.security: DEBUG
+    dev.bengi.userservice.config.security.jwt: DEBUG
+    dev.bengi.userservice.config.security.userPrinciple: DEBUG
+    com.netflix.discovery: DEBUG
+    org.springframework.cloud.netflix.eureka: DEBUG
+    org.springframework.web.reactive: DEBUG
+
 refresh:
   token:
     url: http://localhost:8081/api/auth/refresh
 
-# CORS configuration
 cors:
   allowed-origins: 
     - http://localhost:3000
@@ -53,7 +118,6 @@ cors:
   allow-credentials: true
   max-age: 3600
 
-# OpenAPI Configuration
 springdoc:
   api-docs:
     path: /api-docs
@@ -64,18 +128,6 @@ springdoc:
     syntaxHighlight:
       activated: true
 
-# Email Configuration
-spring.mail:
-  host: smtp.gmail.com
-  port: 587
-  username: your-email@gmail.com
-  password: your-app-specific-password
-  properties:
-    mail.smtp:
-      auth: true
-      starttls.enable: true
-
-# Frontend URL for password reset
 app:
   frontend-url: http://localhost:3000
   reset-password:
@@ -84,5 +136,29 @@ app:
 
 eureka:
   client:
+    enabled: true
+    eureka-service-url-poll-interval-seconds: 10
     service-url:
       defaultZone: http://localhost:8087/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+    eureka-server-connect-timeout-seconds: 5
+    eureka-server-read-timeout-seconds: 8
+    eureka-server-port: 8087
+    eureka-server-d-n-s-name: localhost
+    eureka-server-u-r-l-context: eureka
+    region: default
+    registry-fetch-interval-seconds: 5
+  instance:
+    prefer-ip-address: true
+    hostname: localhost
+    non-secure-port: 8081
+    home-page-url: http://localhost:8081
+    status-page-url: http://localhost:8081/actuator/info
+    health-check-url: http://localhost:8081/actuator/health
+    lease-renewal-interval-in-seconds: 10
+    
+ribbon:
+  eureka:
+    enabled: true
+  ServerListRefreshInterval: 1000

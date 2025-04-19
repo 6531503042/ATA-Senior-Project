@@ -5,6 +5,12 @@ import dev.bengi.feedbackservice.service.ProjectDashboardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+/**
+ * Implementation for project dashboard metrics
+ * 
+ * Note: Using block() for backward compatibility. This should be refactored to a fully
+ * reactive approach in the future.
+ */
 @Service
 @RequiredArgsConstructor
 public class ProjectDashboardServiceImpl implements ProjectDashboardService {
@@ -13,11 +19,13 @@ public class ProjectDashboardServiceImpl implements ProjectDashboardService {
 
     @Override
     public int getActiveProjectsCount() {
-        return projectRepository.countActiveProjects().intValue();
+        Long count = projectRepository.countActiveProjects().block();
+        return count != null ? count.intValue() : 0;
     }
 
     @Override
     public int getCompletedProjectsCount() {
-        return projectRepository.countCompletedProjects().intValue();
+        Long count = projectRepository.countCompletedProjects().block();
+        return count != null ? count.intValue() : 0;
     }
 }

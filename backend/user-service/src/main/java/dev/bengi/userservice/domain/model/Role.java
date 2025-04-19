@@ -1,43 +1,47 @@
 package dev.bengi.userservice.domain.model;
 
 import dev.bengi.userservice.domain.enums.RoleName;
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
 
 @Data
-@Entity
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "roles")
+@Table("roles")
 public class Role {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Enumerated(EnumType.STRING)
-    @Column(length = 20)
-    private RoleName name;
-
-    @Column(name = "created_at", nullable = false)
+    
+    @Column("name")
+    private String name;
+    
+    @Column("description")
+    private String description;
+    
+    @Column("created_at")
     private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
+    
+    @Column("updated_at")
     private LocalDateTime updatedAt;
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
+    
+    public RoleName getRoleName() {
+        if (name == null) return null;
+        try {
+            return RoleName.valueOf(name);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
+    
+    public void setRoleName(RoleName roleName) {
+        this.name = roleName != null ? roleName.name() : null;
     }
 }

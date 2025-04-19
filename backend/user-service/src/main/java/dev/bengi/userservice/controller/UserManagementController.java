@@ -30,7 +30,7 @@ import dev.bengi.userservice.domain.payload.response.ResponseMessage;
 import dev.bengi.userservice.domain.payload.response.UserResponse;
 import dev.bengi.userservice.exception.UserNotFoundException;
 import dev.bengi.userservice.http.HeaderGenerator;
-import dev.bengi.userservice.security.jwt.JwtProvider;
+import dev.bengi.userservice.config.security.jwt.JwtProvider;
 import dev.bengi.userservice.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -100,10 +100,23 @@ public class UserManagementController {
         log.info("Fetching user with ID: {}", userId);
         return userService.getUserById(userId)
                 .map(user -> {
-                    AuthResponse response = modelMapper.map(user, AuthResponse.class);
+                    AuthResponse response = new AuthResponse();
+                    response.setId(user.getId());
+                    response.setUsername(user.getUsername());
+                    response.setFullname(user.getFullname());
+                    response.setEmail(user.getEmail());
+                    response.setAvatar(user.getAvatar());
+                    response.setGender(user.getGender() != null ? user.getGender().name() : null);
+                    
                     response.setRoles(user.getRoles().stream()
-                            .map(role -> role.getName().name())
-                            .collect(Collectors.toList()));
+                           .map(role -> role.getName())
+                           .collect(Collectors.toList()));
+                    
+                    if (user.getDepartment() != null) {
+                        response.setDepartmentId(user.getDepartment().getId());
+                        response.setDepartmentName(user.getDepartment().getName());
+                    }
+                    
                     return ResponseEntity.ok()
                             .headers(headerGenerator.getHeadersForSuccessGetMethod())
                             .body(response);
@@ -136,73 +149,7 @@ public class UserManagementController {
     public Mono<ResponseEntity<List<UserResponse>>> getAllUsers() {
         log.info("Fetching all users without pagination");
         return userService.findAllUsers()
-                .map(users -> {
-                    List<UserResponse> responses = users.stream()
-                            .map(user -> {
-                                // Manual mapping instead of using ModelMapper to avoid LazyInitializationException
-                                UserResponse response = UserResponse.builder()
-                                        .id(user.getId())
-                                        .username(user.getUsername())
-                                        .fullname(user.getFullname())
-                                        .email(user.getEmail())
-                                        .avatar(user.getAvatar())
-                                        .gender(user.getGender())
-                                        .roles(user.getRoles().stream()
-                                               .map(role -> role.getName().name())
-                                               .collect(Collectors.toList()))
-                                        .build();
-                                
-                                // Set department info if available
-                                if (user.getDepartment() != null) {
-                                    response.setDepartmentId(user.getDepartment().getId());
-                                    response.setDepartmentName(user.getDepartment().getName());
-                                }
-                                
-                                // Set other fields that may not need collections
-                                response.setTeam(user.getTeam());
-                                response.setManagerId(user.getManagerId());
-                                response.setTeamRole(user.getTeamRole());
-                                response.setSkillLevel(user.getSkillLevel());
-                                response.setYearsOfExperience(user.getYearsOfExperience());
-                                response.setPrimarySkill(user.getPrimarySkill());
-                                response.setEmploymentType(user.getEmploymentType());
-                                response.setWorkMode(user.getWorkMode());
-                                response.setJoiningDate(user.getJoiningDate());
-                                response.setLastPromotionDate(user.getLastPromotionDate());
-                                response.setWorkAnniversary(user.getWorkAnniversary());
-                                response.setShiftType(user.getShiftType());
-                                response.setRemoteWorkDays(user.getRemoteWorkDays());
-                                response.setLastLogin(user.getLastLogin());
-                                response.setLastActiveTime(user.getLastActiveTime());
-                                response.setLoginFrequency(user.getLoginFrequency());
-                                response.setAccountStatus(user.getAccountStatus());
-                                response.setSystemAccessLevel(user.getSystemAccessLevel());
-                                response.setPreferredCommunication(user.getPreferredCommunication());
-                                response.setNationality(user.getNationality());
-                                response.setPreferredLanguage(user.getPreferredLanguage());
-                                response.setTimezone(user.getTimezone());
-                                response.setLinkedinProfile(user.getLinkedinProfile());
-                                response.setGithubProfile(user.getGithubProfile());
-                                
-                                // Safely copy collections
-                                if (user.getSkills() != null) {
-                                    response.setSkills(new HashSet<>(user.getSkills()));
-                                }
-                                if (user.getSkillProficiency() != null) {
-                                    response.setSkillProficiency(new HashMap<>(user.getSkillProficiency()));
-                                }
-                                if (user.getTechnologyStack() != null) {
-                                    response.setTechnologyStack(new HashSet<>(user.getTechnologyStack()));
-                                }
-                                if (user.getLanguagesSpoken() != null) {
-                                    response.setLanguagesSpoken(new HashSet<>(user.getLanguagesSpoken()));
-                                }
-                                
-                                return response;
-                            })
-                            .collect(Collectors.toList());
-                    return ResponseEntity.ok(responses);
-                })
+                .map(ResponseEntity::ok)
                 .doOnError(error -> log.error("Error fetching users without pagination: {}", error.getMessage()))
                 .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                         .body(Collections.emptyList()))); // Return empty list on error
@@ -215,49 +162,59 @@ public class UserManagementController {
     public Mono<ResponseEntity<AuthResponse>> getUserInfo(
             @Parameter(description = "JWT token with Bearer prefix")
             @RequestHeader(value = "Authorization", required = true) String token) {
-        try {
-            String jwtToken = token.startsWith("Bearer ") ? token.substring(7) : token;
-            String username = jwtProvider.getUserNameFromToken(jwtToken);
-            
-            log.info("Fetching user info for username: {}", username);
-            
-            return Mono.just(userService.findByUsername(username)
-                    .map(user -> {
-                        AuthResponse response = modelMapper.map(user, AuthResponse.class);
-                        response.setRoles(user.getRoles().stream()
-                                .map(role -> role.getName().name())
-                                .collect(Collectors.toList()));
-                        return ResponseEntity.ok()
-                                .headers(headerGenerator.getHeadersForSuccessGetMethod())
-                                .body(response);
-                    })
-                    .orElseThrow(() -> {
-                        log.error("User not found: {}", username);
-                        return new UserNotFoundException("User not found: " + username);
-                    }));
-        } catch (Exception e) {
-            log.error("Error retrieving user information: {}", e.getMessage());
-            return Mono.error(new UserNotFoundException("Error retrieving user information: " + e.getMessage()));
-        }
+        String username = jwtProvider.getUserNameFromToken(token.replace("Bearer ", ""));
+        log.debug("Getting user info for username: {}", username);
+        
+        return userService.findByUsername(username)
+                .map(user -> {
+                    List<String> roleNames = user.getRoles().stream()
+                            .map(role -> role.getName())
+                            .collect(Collectors.toList());
+                            
+                    AuthResponse response = AuthResponse.builder()
+                            .id(user.getId())
+                            .username(user.getUsername())
+                            .fullname(user.getFullname())
+                            .email(user.getEmail())
+                            .avatar(user.getAvatar())
+                            .gender(user.getGender() != null ? user.getGender().name() : null)
+                            .roles(roleNames)
+                            .build();
+                    
+                    if (user.getDepartment() != null) {
+                        response.setDepartmentId(user.getDepartment().getId());
+                        response.setDepartmentName(user.getDepartment().getName());
+                    }
+                    
+                    log.debug("User info retrieved successfully for: {}", username);
+                    return ResponseEntity.ok()
+                            .headers(headerGenerator.getHeadersForSuccessGetMethod())
+                            .body(response);
+                })
+                .switchIfEmpty(Mono.error(new UserNotFoundException("User not found: " + username)));
     }
 
     @GetMapping("/exists/{userId}")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER')")
     @Operation(summary = "Check if user exists", description = "Check if a user exists by ID")
-    public ResponseEntity<Boolean> checkUserExists(
+    public Mono<ResponseEntity<Boolean>> checkUserExists(
             @Parameter(description = "User ID to check")
             @PathVariable Long userId) {
         log.debug("Checking if user exists with ID: {}", userId);
-        return ResponseEntity.ok(userService.findById(userId).isPresent());
+        return userService.findById(userId)
+                .map(user -> ResponseEntity.ok(true))
+                .defaultIfEmpty(ResponseEntity.ok(false));
     }
 
     @GetMapping("/validate-username/{username}")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER')")
     @Operation(summary = "Check if username exists", description = "Check if a user exists by username")
-    public ResponseEntity<Boolean> checkUsernameExists(
+    public Mono<ResponseEntity<Boolean>> checkUsernameExists(
             @Parameter(description = "Username to check")
             @PathVariable String username) {
         log.debug("Checking if user exists with username: {}", username);
-        return ResponseEntity.ok(userService.findByUsername(username).isPresent());
+        return userService.findByUsername(username)
+                .map(user -> ResponseEntity.ok(true))
+                .defaultIfEmpty(ResponseEntity.ok(false));
     }
 }

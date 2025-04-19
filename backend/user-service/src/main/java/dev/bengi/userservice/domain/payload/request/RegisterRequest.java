@@ -3,6 +3,7 @@ package dev.bengi.userservice.domain.payload.request;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import dev.bengi.userservice.domain.enums.Gender;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -33,6 +34,6 @@ public class RegisterRequest {
     private String fullname;
 
     private String avatar;
-    private String gender;
+    private Gender gender;
     private Set<String> roles;
 }

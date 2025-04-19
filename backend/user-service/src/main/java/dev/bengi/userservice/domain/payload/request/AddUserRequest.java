@@ -3,7 +3,9 @@ package dev.bengi.userservice.domain.payload.request;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.Set;
+
 import dev.bengi.userservice.domain.enums.EmploymentType;
+import dev.bengi.userservice.domain.enums.Gender;
 import dev.bengi.userservice.domain.enums.ShiftType;
 import dev.bengi.userservice.domain.enums.SkillLevel;
 import dev.bengi.userservice.domain.enums.WorkMode;
@@ -19,7 +21,7 @@ public class AddUserRequest {
     private String fullname;
     private String password;
     private String email;
-    private String gender;
+    private Gender gender;
     private String avatar;
     private Long departmentId;
     private Set<String> roles;
@@ -52,4 +54,7 @@ public class AddUserRequest {
     private String timezone;
     private String linkedinProfile;
     private String githubProfile;
+    private String phoneNumber;
+
+
 }

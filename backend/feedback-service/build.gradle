@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.2.5'
     id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.flywaydb.flyway' version '10.7.1'
 }
 
 group = 'dev.bengi'
@@ -28,71 +29,78 @@ ext {
 }
 
 dependencies {
-
-    //Main dependencies
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    // Spring Boot
+    implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    
+    // Database - Include both during migration
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-data-r2dbc'
+    implementation 'io.r2dbc:r2dbc-postgresql:0.8.13.RELEASE'
+    implementation 'org.postgresql:postgresql'
+    
+    // Jakarta Servlet API for servlet-based components
+    implementation 'jakarta.servlet:jakarta.servlet-api:6.0.0'
+    
+    // Flyway for DB migrations
+    implementation 'org.flywaydb:flyway-core'
+    
+    // Security
+    implementation 'org.springframework.boot:spring-boot-starter-security'
 
-    //Eureka
-    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
-
-    //Model mapper
-    implementation 'org.modelmapper:modelmapper:3.2.2'
-
-    //Lombok
+    // Validation API
+    implementation 'jakarta.validation:jakarta.validation-api:3.0.2'
+    implementation 'org.hibernate.validator:hibernate-validator:8.0.1.Final'
+    
+    // JWT
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
+    implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+    
+    // ModelMapper
+    implementation 'org.modelmapper:modelmapper:3.1.1'
+    
+    // Lombok
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
-
-    //JWT
-    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
-    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
-    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
-
-    //Database
-    runtimeOnly 'org.postgresql:postgresql'
-
-    //feign
+    
+    // Service discovery
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+    
+    // Feign client
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
-    implementation 'io.github.openfeign:feign-jackson:13.1'
-
-    //WebFlux
-    implementation 'org.springframework.boot:spring-boot-starter-webflux'
-
-    //Caching
-    implementation 'org.springframework.boot:spring-boot-starter-cache'
-
-    //Security
-    implementation 'org.springframework.security:spring-security-core'
-    implementation 'org.springframework.security:spring-security-config'
-    implementation 'org.springframework.security:spring-security-web'
-
-    //Jackson
-    implementation 'com.fasterxml.jackson.core:jackson-databind'
-    implementation 'com.fasterxml.jackson.core:jackson-core'
-    implementation 'com.fasterxml.jackson.core:jackson-annotations'
-    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
-
-    //Jakarta EE
-    implementation 'jakarta.servlet:jakarta.servlet-api:6.0.0'
-    implementation 'jakarta.annotation:jakarta.annotation-api:2.1.1'
-
-    //SLF4J
-    implementation 'org.slf4j:slf4j-api'
-    implementation 'ch.qos.logback:logback-classic'
-
-    //Test
+    
+    // MapStruct for mapping
+    implementation 'org.mapstruct:mapstruct:1.5.3.Final'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.3.Final'
+    
+    // Test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'org.springframework.security:spring-security-test'
+    testImplementation 'io.projectreactor:reactor-test'
+    
+    // Reactive Streams
+    implementation 'org.reactivestreams:reactive-streams:1.0.4'
+    implementation 'io.projectreactor:reactor-core:3.5.9'
+    implementation 'io.projectreactor.addons:reactor-extra:3.5.1'
 }
 
 // Optional: Disable version compatibility check if needed
 ext['spring.cloud.compatibility.verifier.enabled'] = false
 
-
 dependencyManagement {
     imports {
         mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
     }
+}
+
+// Flyway configuration
+flyway {
+    url = 'jdbc:postgresql://localhost:3307/feedback'
+    user = 'postgres'
+    password = '6531503042'
+    baselineOnMigrate = true
+    locations = ['classpath:db/migration']
+    validateMigrationNaming = false
 }
