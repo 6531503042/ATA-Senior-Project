@@ -3,6 +3,8 @@ package dev.bengi.userservice.service.impl;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import dev.bengi.userservice.exception.ErrorCode;
+import dev.bengi.userservice.exception.GlobalServiceException;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.data.relational.core.query.Criteria;
 import org.springframework.data.relational.core.query.Query;
@@ -13,8 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 import dev.bengi.userservice.domain.enums.RoleName;
 import dev.bengi.userservice.domain.model.Role;
 import dev.bengi.userservice.domain.model.User;
-import dev.bengi.userservice.exception.RoleNotFoundException;
-import dev.bengi.userservice.exception.UserNotFoundException;
 import dev.bengi.userservice.repository.RoleRepository;
 import dev.bengi.userservice.repository.UserRepository;
 import dev.bengi.userservice.service.RoleService;
@@ -39,12 +39,16 @@ public class RoleServiceImpl implements RoleService {
                 .switchIfEmpty(Mono.defer(() -> {
                     log.warn("Role not found with name: {}, creating it", name);
                     return createRole(name);
-                }));
+                }))
+                .doOnSuccess(role -> log.info("Role found: {}", role.getName()))
+                .doOnError(e -> log.error("Error finding roles: {}", e.getMessage()));
     }
 
     @Override
     public Flux<Role> findAllRoles() {
-        return roleRepository.findAllRoles();
+
+        return roleRepository.findAllRoles()
+                .doOnNext(role -> log.debug("Found role: {}", role.getName()));
     }
 
     @Override
@@ -84,68 +88,82 @@ public class RoleServiceImpl implements RoleService {
         return template.select(Role.class)
                 .matching(Query.query(Criteria.where("description").like("%" + text + "%")))
                 .all()
-                .doOnNext(role -> log.debug("Found role with matching description: {}", role.getName()));
+                .doOnNext(role -> log.debug("Found role with matching description: {}", role.getName()))
+                .doOnError(e -> log.error("Error finding roles: {}", e.getMessage()));
     }
 
-    @Transactional
     @Override
+    @Transactional
     public Mono<Boolean> assignRole(Long userId, String roleName) {
         return userRepository.findById(userId)
-                .switchIfEmpty(Mono.error(new UserNotFoundException("UserId not found: " + userId)))
+                .switchIfEmpty(Mono.error(new GlobalServiceException(ErrorCode.USER_NOT_FOUND)))
                 .flatMap(user -> {
-                    String roleNameStr = mapStringToRoleName(roleName).name();
-                    return roleRepository.findByName(roleNameStr)
-                        .switchIfEmpty(Mono.error(new RoleNotFoundException("Role not found with name: " + roleName)))
-                        .flatMap(role -> {
-                            if (user.getRoles().contains(role)) {
-                                return Mono.just(false); // Role already assigned
-                            }
+                    RoleName mappedRoleName = mapStringToRoleName(roleName);
+                    return roleRepository.findByName(mappedRoleName.name())
+                            .switchIfEmpty(Mono.error(new GlobalServiceException(ErrorCode.ROLE_NOT_FOUND)))
+                            .flatMap(role -> {
+                                if (user.getRoles().contains(role)) {
+                                    log.warn("User {} already has role {}", userId, role.getName());
+                                    return Mono.just(false); // Role already assigned
+                                }
 
-                            // Add role to user and save
-                            user.getRoles().add(role);
-                            return userRepository.save(user)
-                                    .then(Mono.just(true)); // Return true after saving
-                        });
-                });
-    }
-
-    @Transactional
-    @Override
-    public Mono<Boolean> revokeRole(Long id, String roleName) {
-        return userRepository.findById(id)
-                .switchIfEmpty(Mono.error(new UserNotFoundException("UserId not found: " + id)))
-                .flatMap(user -> {
-                    boolean removed = user.getRoles().removeIf(role -> role.getName().equals(mapStringToRoleName(roleName).name()));
-                    if (removed) {
-                        return userRepository.save(user)
-                                .then(Mono.just(true));
+                                user.getRoles().add(role);
+                                return userRepository.save(user).thenReturn(true);
+                            });
+                })
+                .doOnSuccess(success -> {
+                    if (success) {
+                        log.info("Assigned role {} to user {}", roleName, userId);
                     }
+                })
+                .doOnError(e -> log.error("Error assigning role: {}", e.getMessage()));
+    }
+
+
+        @Override
+    @Transactional
+    public Mono<Boolean> revokeRole(Long userId, String roleName) {
+        return userRepository.findById(userId)
+                .switchIfEmpty(Mono.error(new GlobalServiceException(ErrorCode.USER_NOT_FOUND)))
+                .flatMap(user -> {
+                    boolean removed = user.getRoles().removeIf(role -> role.getName().equalsIgnoreCase(roleName));
+                    if (removed) {
+                        return userRepository.save(user).thenReturn(true);
+                    }
+                    log.warn("Role {} not found for user {}", roleName, userId);
                     return Mono.just(false);
-                });
+                })
+                .doOnSuccess(success -> {
+                    if (success) {
+                        log.info("Revoked role {} from user {}", roleName, userId);
+                    }
+                })
+                .doOnError(e -> log.error("Error revoking role: {}", e.getMessage()));
     }
 
     @Override
-    public Mono<List<String>> getUserRoles(long id) {
-        return userRepository.findById(id)
-                .switchIfEmpty(Mono.error(new UserNotFoundException("UserId not found : " + id)))
+    public Mono<List<String>> getUserRoles(long userId) {
+        return userRepository.findById(userId)
+                .switchIfEmpty(Mono.error(new GlobalServiceException(ErrorCode.USER_NOT_FOUND)))
                 .flatMap(user -> {
-                    List<String> roleName = user.getRoles().stream()
-                            .map(role -> role.getName())
+                    List<String> roleNames = user.getRoles().stream()
+                            .map(Role::getName)
                             .toList();
-                    return Mono.just(roleName);
-                });
+                    return Mono.just(roleNames);
+                })
+                .doOnError(e -> log.error("Error fetching user roles: {}", e.getMessage()));
     }
 
     @Override
     @Transactional
     public Mono<Void> addRoleToUser(User user, String roleName) {
-        String roleNameStr = mapStringToRoleName(roleName).name();
-        return roleRepository.findByName(roleNameStr)
-                .switchIfEmpty(Mono.error(new RoleNotFoundException("Role not found with name: " + roleName)))
+        return roleRepository.findByName(mapStringToRoleName(roleName).name())
+                .switchIfEmpty(Mono.error(new GlobalServiceException(ErrorCode.ROLE_NOT_FOUND)))
                 .flatMap(role -> {
                     user.getRoles().add(role);
                     return userRepository.save(user).then();
-                });
+                })
+                .doOnError(e -> log.error("Error adding role to user: {}", e.getMessage()));
     }
 
     private RoleName mapStringToRoleName(String roleName) {
@@ -153,8 +171,7 @@ public class RoleServiceImpl implements RoleService {
             case "ADMIN", "ROLE_ADMIN" -> RoleName.ROLE_ADMIN;
             case "USER", "ROLE_USER" -> RoleName.ROLE_USER;
             case "MANAGER", "ROLE_MANAGER" -> RoleName.ROLE_MANAGER;
-            default -> throw new IllegalArgumentException("Invalid role name: " + roleName);
+            default -> throw new GlobalServiceException(ErrorCode.ROLE_NOT_FOUND);
         };
     }
-
 }

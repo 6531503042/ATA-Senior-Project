@@ -7,7 +7,6 @@ import org.springframework.transaction.annotation.Transactional;
 import dev.bengi.userservice.domain.enums.RoleName;
 import dev.bengi.userservice.domain.model.Role;
 import dev.bengi.userservice.domain.model.User;
-import dev.bengi.userservice.exception.RoleNotFoundException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 

@@ -5,14 +5,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import dev.bengi.userservice.domain.enums.AccountStatus;
-import dev.bengi.userservice.domain.enums.EmploymentType;
-import dev.bengi.userservice.domain.enums.LoginFrequency;
-import dev.bengi.userservice.domain.enums.PreferredCommunication;
-import dev.bengi.userservice.domain.enums.ShiftType;
-import dev.bengi.userservice.domain.enums.SkillLevel;
-import dev.bengi.userservice.domain.enums.SystemAccessLevel;
-import dev.bengi.userservice.domain.enums.WorkMode;
+import java.util.stream.Collectors;
+
+import dev.bengi.userservice.domain.model.Role;
+import dev.bengi.userservice.domain.model.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -37,37 +33,24 @@ public class UserResponse {
     private String team;
     private Long managerId;
     private String teamRole;
-    
-    // Skills & Experience
-    private SkillLevel skillLevel;
-    private Integer yearsOfExperience;
-    private Set<String> skills;
-    private Map<String, String> skillProficiency;
-    private String primarySkill;
-    private Set<String> technologyStack;
-    
-    // Employment & Work Details
-    private EmploymentType employmentType;
-    private WorkMode workMode;
-    private LocalDate joiningDate;
-    private LocalDate lastPromotionDate;
-    private LocalDate workAnniversary;
-    private ShiftType shiftType;
-    private Integer remoteWorkDays;
-    
-    // Engagement & Activity Tracking
-    private LocalDateTime lastLogin;
-    private LocalDateTime lastActiveTime;
-    private LoginFrequency loginFrequency;
-    private AccountStatus accountStatus;
-    private SystemAccessLevel systemAccessLevel;
-    private PreferredCommunication preferredCommunication;
-    
-    // Personal & Social Details
-    private String nationality;
-    private Set<String> languagesSpoken;
-    private String preferredLanguage;
-    private String timezone;
-    private String linkedinProfile;
-    private String githubProfile;
+
+    // Static factory method for converting User to UserResponse
+    public static UserResponse fromUser(User user) {
+        return UserResponse.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .fullname(user.getFullname())
+                .email(user.getEmail())
+                .avatar(user.getAvatar())
+                .gender(user.getGender() != null ? user.getGender().name() : null)
+                .roles(user.getRoles().stream()
+                        .map(Role::getName)
+                        .collect(Collectors.toList()))
+                .departmentId(user.getDepartment() != null ? user.getDepartment().getId() : null)
+                .departmentName(user.getDepartment() != null ? user.getDepartment().getName() : null)
+                .team(user.getTeam())
+                .managerId(user.getManagerId())
+                .teamRole(user.getTeamRole())
+                .build();
+    }
 }

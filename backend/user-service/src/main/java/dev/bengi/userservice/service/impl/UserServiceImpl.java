@@ -1,27 +1,25 @@
 package dev.bengi.userservice.service.impl;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
+import dev.bengi.userservice.domain.mapper.UserMapper;
+import dev.bengi.userservice.exception.ErrorCode;
+import dev.bengi.userservice.exception.GlobalServiceException;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import dev.bengi.userservice.config.security.jwt.JwtProvider;
 import dev.bengi.userservice.domain.enums.RoleName;
 import dev.bengi.userservice.domain.model.Role;
@@ -32,11 +30,7 @@ import dev.bengi.userservice.domain.payload.request.RegisterRequest;
 import dev.bengi.userservice.domain.payload.response.AuthResponse;
 import dev.bengi.userservice.domain.payload.response.JwtResponse;
 import dev.bengi.userservice.domain.payload.response.UserResponse;
-import dev.bengi.userservice.exception.EmailOrUsernameNotFoundException;
-import dev.bengi.userservice.exception.RoleNotFoundException;
-import dev.bengi.userservice.exception.UserNotFoundException;
 import dev.bengi.userservice.repository.DepartmentRepository;
-import dev.bengi.userservice.repository.RoleRepository;
 import dev.bengi.userservice.repository.UserRepository;
 import dev.bengi.userservice.service.RoleService;
 import dev.bengi.userservice.service.UserService;
@@ -49,66 +43,26 @@ import reactor.core.publisher.Mono;
 @Slf4j
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
+
+    //Inject via lombok
     private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
     private final DepartmentRepository departmentRepository;
     private final PasswordEncoder passwordEncoder;
     private final ModelMapper modelMapper;
     private final RoleService roleService;
     private final JwtProvider jwtProvider;
-    private final AuthenticationManager authenticationManager;
-
-    // Helper methods
-    private String getTemporaryProfileImageUrl(String email) {
-        return "https://robohash.org/" + email + "?set=set2&size=180x180";
-    }
-
-    private AuthResponse buildAuthResponse(User user) {
-        Long departmentId = null;
-        String departmentName = null;
-        if (user.getDepartment() != null) {
-            departmentId = user.getDepartment().getId();
-            departmentName = user.getDepartment().getName();
-        }
-
-        List<String> roles = user.getRoles().stream()
-                .map(role -> role.getName())
-                .collect(Collectors.toList());
-
-        return AuthResponse.builder()
-                .id(user.getId())
-                .username(user.getUsername())
-                .fullname(user.getFullname())
-                .email(user.getEmail())
-                .gender(user.getGender() != null ? user.getGender().name() : null)
-                .avatar(user.getAvatar())
-                .departmentId(departmentId)
-                .departmentName(departmentName)
-                .roles(roles)
-                .build();
-    }
-
-    private JwtResponse buildJwtResponse(Authentication authentication, AuthResponse authResponse) {
-        String username = authentication.getName();
-        log.debug("Creating JWT tokens for user: {}", username);
-
-        return JwtResponse.builder()
-                .accessToken(jwtProvider.createToken(authentication))
-                .refreshToken(jwtProvider.createRefreshToken(authentication))
-                .auth(authResponse)
-                .build();
-    }
+    private final UserMapper userMapper;
 
     @Override
     public Mono<User> findById(Long userId) {
         return userRepository.findById(userId)
-                .switchIfEmpty(Mono.error(new UserNotFoundException("User  not found with id: " + userId)));
+                .switchIfEmpty(Mono.error(new GlobalServiceException(ErrorCode.USER_NOT_FOUND)));
     }
 
     @Override
     public Mono<User> findByUsername(String username) {
         return userRepository.findByUsername(username)
-                .switchIfEmpty(Mono.error(new UsernameNotFoundException("Username not found with id: " + username)));
+                .switchIfEmpty(Mono.error(new GlobalServiceException(ErrorCode.USER_NOT_FOUND)));
     }
 
 //     Core business logic methods
@@ -120,14 +74,14 @@ public Mono<User> register(RegisterRequest register) {
             .flatMap(usernameExists -> {
                 if (usernameExists) {
                     log.warn("Registration failed: Username {} is already taken", register.getUsername());
-                    return Mono.error(new EmailOrUsernameNotFoundException("Username is already taken."));
+                    return Mono.error(new GlobalServiceException(ErrorCode.USER_ALREADY_EXISTS));
                 }
                 return userRepository.existsByEmail(register.getEmail());
             })
             .flatMap(emailExists -> {
                 if (emailExists) {
                     log.warn("Registration failed: Email {} is already taken", register.getEmail());
-                    return Mono.error(new EmailOrUsernameNotFoundException("Email is already taken."));
+                    return Mono.error(new GlobalServiceException(ErrorCode.EMAIL_ALREADY_EXISTS));
                 }
 
                 User user = modelMapper.map(register, User.class);
@@ -138,14 +92,13 @@ public Mono<User> register(RegisterRequest register) {
 
                 // Determine which role to assign
                 return selectedRole(register)
-                        .switchIfEmpty(Mono.error(new RoleNotFoundException("Role not found: " + register.getRoles())))
+                        .switchIfEmpty(Mono.error(new GlobalServiceException(ErrorCode.ROLE_NOT_FOUND)))
                         .flatMap(role -> {
                             user.setRoles(Collections.singleton(role));
                             return userRepository.save(user);
                         });
             });
 }
-
 
     @Override
     @Transactional
@@ -155,18 +108,18 @@ public Mono<User> register(RegisterRequest register) {
         return userRepository.existsByUsername(request.getUsername())
                 .flatMap(usernameExists -> {
                     if (usernameExists) {
-                        return Mono.error(new RuntimeException("Username is already taken!"));
+                        return Mono.error(new GlobalServiceException(ErrorCode.USER_ALREADY_EXISTS));
                     }
                     return userRepository.existsByEmail(request.getEmail());
                 })
                 .flatMap(emailExists -> {
                     if (emailExists) {
-                        return Mono.error(new RuntimeException("Email is already in use!"));
+                        return Mono.error(new GlobalServiceException(ErrorCode.EMAIL_ALREADY_EXISTS));
                     }
 
                     // Determine default role
                     return selectedRole(request)
-                            .switchIfEmpty(Mono.error(new RoleNotFoundException("Role not found: " + request.getRoles())))
+                            .switchIfEmpty(Mono.error(new GlobalServiceException(ErrorCode.ROLE_NOT_FOUND)))
                             .flatMap(defaultRole -> {
                                 User user = User.builder()
                                         .username(request.getUsername())
@@ -182,27 +135,6 @@ public Mono<User> register(RegisterRequest register) {
                                         .team(request.getTeam())
                                         .managerId(request.getManagerId())
                                         .teamRole(request.getTeamRole())
-
-                                        // Skills & Experience
-                                        .skillLevel(request.getSkillLevel())
-                                        .yearsOfExperience(request.getYearsOfExperience())
-                                        .skills(request.getSkills())
-                                        .skillProficiency(request.getSkillProficiency())
-                                        .primarySkill(request.getPrimarySkill())
-                                        .technologyStack(request.getTechnologyStack())
-
-                                        // Employment & Work Details
-                                        .employmentType(request.getEmploymentType())
-                                        .workMode(request.getWorkMode())
-                                        .joiningDate(request.getJoiningDate())
-                                        .lastPromotionDate(request.getLastPromotionDate())
-                                        .shiftType(request.getShiftType())
-                                        .remoteWorkDays(request.getRemoteWorkDays())
-
-                                        // Personal & Social Details
-                                        .nationality(request.getNationality())
-                                        .languagesSpoken(request.getLanguagesSpoken())
-                                        .phoneNumber(request.getPhoneNumber())
                                         .build();
 
                                 return userRepository.save(user);
@@ -217,21 +149,21 @@ public Mono<User> register(RegisterRequest register) {
         log.info("Updating user with id: {}", userId);
 
         return userRepository.findById(userId)
-                .switchIfEmpty(Mono.error(new UserNotFoundException("User not found with id: " + userId)))
+                .switchIfEmpty(Mono.error(new GlobalServiceException(ErrorCode.USER_NOT_FOUND)))
 
                 .flatMap(user -> {
                     // First, check if the username is already taken
                     return userRepository.existsByUsername(request.getUsername())
                             .flatMap(usernameTaken -> {
                                 if (!user.getUsername().equals(request.getUsername()) && usernameTaken) {
-                                    return Mono.error(new RuntimeException("Username is already taken!"));
+                                    return Mono.error(new GlobalServiceException(ErrorCode.USER_ALREADY_EXISTS));
                                 }
 
                                 // Then check if the email is already taken
                                 return userRepository.existsByEmail(request.getEmail())
                                         .flatMap(emailTaken -> {
                                             if (!user.getEmail().equals(request.getEmail()) && emailTaken) {
-                                                return Mono.error(new RuntimeException("Email is already in use!"));
+                                                return Mono.error(new GlobalServiceException(ErrorCode.EMAIL_ALREADY_EXISTS));
                                             }
 
                                             // Proceed to update user if both checks pass
@@ -292,32 +224,6 @@ public Mono<User> register(RegisterRequest register) {
                     user.setTeam(request.getTeam());
                     user.setManagerId(request.getManagerId());
                     user.setTeamRole(request.getTeamRole());
-                    user.setSkillLevel(request.getSkillLevel());
-                    user.setYearsOfExperience(request.getYearsOfExperience());
-
-                    if (request.getSkills() != null) {
-                        user.setSkills(request.getSkills());
-                    }
-
-                    if (request.getSkillProficiency() != null) {
-                        user.setSkillProficiency(request.getSkillProficiency());
-                    }
-
-                    user.setPrimarySkill(request.getPrimarySkill());
-                    user.setTechnologyStack(request.getTechnologyStack());
-
-                    // Employment & work details
-                    user.setEmploymentType(request.getEmploymentType());
-                    user.setWorkMode(request.getWorkMode());
-                    user.setJoiningDate(request.getJoiningDate());
-                    user.setLastPromotionDate(request.getLastPromotionDate());
-                    user.setShiftType(request.getShiftType());
-                    user.setRemoteWorkDays(request.getRemoteWorkDays());
-
-                    // Personal & social details
-                    user.setNationality(request.getNationality());
-                    user.setLinkedinProfile(request.getLinkedinProfile());
-                    user.setGithubProfile(request.getGithubProfile());
 
                     // Save the updated user
                     return userRepository.save(user);
@@ -337,7 +243,7 @@ public Mono<User> register(RegisterRequest register) {
                 .flatMap(userList -> {
                     if (userList.isEmpty()) {
                         log.error("User not found with username or email: {}", loginRequest.getUsername());
-                        return Mono.error(new UsernameNotFoundException("User not found with username or email: " + loginRequest.getUsername()));
+                        return Mono.error(new GlobalServiceException(ErrorCode.USER_NOT_FOUND));
                     }
                     
                     // Take the first user since username/email should be unique
@@ -348,7 +254,7 @@ public Mono<User> register(RegisterRequest register) {
                     // Directly verify password instead of using authenticationManager
                     if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
                         log.error("Invalid password for user: {}", user.getUsername());
-                        return Mono.error(new BadCredentialsException("Invalid username or password"));
+                        return Mono.error(new GlobalServiceException(ErrorCode.INVALID_CREDENTIALS));
                     }
                     
                     log.info("User authenticated successfully: {}", user.getUsername());
@@ -400,7 +306,7 @@ public Mono<User> register(RegisterRequest register) {
     @Override
     public Mono<Void> deleteUser(Long userId) {
         return userRepository.findById(userId)
-                .switchIfEmpty(Mono.error(new UserNotFoundException("User not found with id: " + userId)))
+                .switchIfEmpty(Mono.error(new GlobalServiceException(ErrorCode.USER_NOT_FOUND)))
                 .flatMap(user -> {
                     log.info("User deleted successfully: {}", user.getUsername());
                     return userRepository.delete(user);
@@ -410,7 +316,7 @@ public Mono<User> register(RegisterRequest register) {
     @Override
     public Mono<User> getUserById(Long userId) {
         return userRepository.findById(userId)
-                .switchIfEmpty(Mono.error(new UserNotFoundException("User not found with id: " + userId)))
+                .switchIfEmpty(Mono.error(new GlobalServiceException(ErrorCode.USER_NOT_FOUND)))
                 .doOnError(error -> log.error("Error retrieving user: {}", error.getMessage()));
     }
 
@@ -423,7 +329,7 @@ public Mono<User> register(RegisterRequest register) {
 
         String username = jwtProvider.getUserNameFromToken(refreshToken);
         return userRepository.findByUsername(username)
-                .switchIfEmpty(Mono.error(new UserNotFoundException("User not found")))
+                .switchIfEmpty(Mono.error(new GlobalServiceException(ErrorCode.USER_NOT_FOUND)))
                 .flatMap(user -> {
                     // Create authentication object
                     List<SimpleGrantedAuthority> authorities = user.getRoles().stream()
@@ -479,88 +385,31 @@ public Mono<User> register(RegisterRequest register) {
             .doOnSuccess(users -> log.debug("Fetched {} users from the database with all collections", users.size()))
             .doOnError(e -> log.error("Error fetching all users: {}", e.getMessage()));
     }
-    
-    private UserResponse mapUserToUserResponse(User user) {
-        // Manual mapping to avoid issues with lazy loading
-        UserResponse response = UserResponse.builder()
-                .id(user.getId())
-                .username(user.getUsername())
-                .fullname(user.getFullname())
-                .email(user.getEmail())
-                .avatar(user.getAvatar())
-                .gender(user.getGender() != null ? user.getGender().name() : null)
-                .roles(user.getRoles().stream()
-                        .map(role -> role.getName())
-                        .collect(Collectors.toList()))
-                .build();
-        
-        // Set department info if available
-        if (user.getDepartment() != null) {
-            response.setDepartmentId(user.getDepartment().getId());
-            response.setDepartmentName(user.getDepartment().getName());
-        }
-        
-        // Set other fields that may not need collections
-        response.setTeam(user.getTeam());
-        response.setManagerId(user.getManagerId());
-        response.setTeamRole(user.getTeamRole());
-        response.setSkillLevel(user.getSkillLevel());
-        response.setYearsOfExperience(user.getYearsOfExperience());
-        response.setPrimarySkill(user.getPrimarySkill());
-        response.setEmploymentType(user.getEmploymentType());
-        response.setWorkMode(user.getWorkMode());
-        response.setJoiningDate(user.getJoiningDate());
-        response.setLastPromotionDate(user.getLastPromotionDate());
-        response.setWorkAnniversary(user.getWorkAnniversary());
-        response.setShiftType(user.getShiftType());
-        response.setRemoteWorkDays(user.getRemoteWorkDays());
-        response.setLastLogin(user.getLastLogin());
-        response.setLastActiveTime(user.getLastActiveTime());
-        response.setLoginFrequency(user.getLoginFrequency());
-        response.setAccountStatus(user.getAccountStatus());
-        response.setSystemAccessLevel(user.getSystemAccessLevel());
-        response.setPreferredCommunication(user.getPreferredCommunication());
-        response.setNationality(user.getNationality());
-        response.setPreferredLanguage(user.getPreferredLanguage());
-        response.setTimezone(user.getTimezone());
-        response.setLinkedinProfile(user.getLinkedinProfile());
-        response.setGithubProfile(user.getGithubProfile());
-        
-        // Safely copy collections
-        if (user.getSkills() != null) {
-            response.setSkills(new HashSet<>(user.getSkills()));
-        }
-        if (user.getSkillProficiency() != null) {
-            response.setSkillProficiency(new HashMap<>(user.getSkillProficiency()));
-        }
-        if (user.getTechnologyStack() != null) {
-            response.setTechnologyStack(new HashSet<>(user.getTechnologyStack()));
-        }
-        if (user.getLanguagesSpoken() != null) {
-            response.setLanguagesSpoken(new HashSet<>(user.getLanguagesSpoken()));
-        }
-        
-        return response;
-    }
+
 
     @Override
     @Transactional
     public Mono<Boolean> addProjectAuthority(Long userId, Long projectId) {
         return findById(userId)
-            .switchIfEmpty(Mono.error(new UserNotFoundException("User not found with id: " + userId)))
-            .flatMap(user -> {
-                user.getProjectAuthorities().add(projectId);
-                return userRepository.save(user).thenReturn(true);
-            })
-            .doOnSuccess(success -> log.info("Added project authority {} to user {}", projectId, userId))
-            .doOnError(e -> log.error("Error adding project authority: {}", e.getMessage()));
+                .switchIfEmpty(Mono.error(new GlobalServiceException(ErrorCode.USER_NOT_FOUND)))
+                .flatMap(user -> {
+                    user.getProjectAuthorities().add(projectId);
+                    return userRepository.save(user)
+                            .thenReturn(true);
+                })
+                .doOnSuccess(success -> log.info("Added project authority {} to user {}", projectId, userId))
+                .onErrorResume(e -> {
+                    log.error("Error adding project authority: {}", e.getMessage());
+                    return Mono.just(false);
+                });
     }
+
 
     @Override
     @Transactional
     public Mono<Boolean> removeProjectAuthority(Long userId, Long projectId) {
         return findById(userId)
-            .switchIfEmpty(Mono.error(new UserNotFoundException("User not found with id: " + userId)))
+                .switchIfEmpty(Mono.error(new GlobalServiceException(ErrorCode.USER_NOT_FOUND)))
             .flatMap(user -> {
                 user.getProjectAuthorities().remove(projectId);
                 return userRepository.save(user).thenReturn(true);
@@ -573,7 +422,7 @@ public Mono<User> register(RegisterRequest register) {
     @Transactional(readOnly = true)
     public Mono<Boolean> hasProjectAuthority(Long userId, Long projectId) {
         return findById(userId)
-            .switchIfEmpty(Mono.error(new UserNotFoundException("User not found with id: " + userId)))
+                .switchIfEmpty(Mono.error(new GlobalServiceException(ErrorCode.USER_NOT_FOUND)))
             .map(user -> {
                 boolean hasAuthority = user.getProjectAuthorities().contains(projectId);
                 log.debug("User {} {} project authority {}", userId, hasAuthority ? "has" : "does not have", projectId);
@@ -582,11 +431,12 @@ public Mono<User> register(RegisterRequest register) {
             .doOnError(e -> log.error("Error checking project authority: {}", e.getMessage()));
     }
 
+
     @Override
     @Transactional(readOnly = true)
     public Mono<Set<Long>> getUserProjectAuthorities(Long userId) {
         return findById(userId)
-            .switchIfEmpty(Mono.error(new UserNotFoundException("User not found with id: " + userId)))
+                .switchIfEmpty(Mono.error(new GlobalServiceException(ErrorCode.USER_NOT_FOUND)))
             .map(user -> {
                 Set<Long> authorities = new HashSet<>(user.getProjectAuthorities());
                 log.debug("Found {} project authorities for user {}", authorities.size(), userId);
@@ -617,5 +467,18 @@ public Mono<User> register(RegisterRequest register) {
             return roleService.findByName(RoleName.ROLE_ADMIN);
         }
         return roleService.findByName(RoleName.ROLE_USER);
+    }
+
+    // Helper methods
+    private String getTemporaryProfileImageUrl(String email) {
+        return "https://robohash.org/" + email + "?set=set2&size=180x180";
+    }
+
+    private AuthResponse buildAuthResponse(User user) {
+        return userMapper.toAuthResponse(user);
+    }
+
+    private UserResponse mapUserToUserResponse(User user) {
+        return userMapper.toUserResponse(user);
     }
 }

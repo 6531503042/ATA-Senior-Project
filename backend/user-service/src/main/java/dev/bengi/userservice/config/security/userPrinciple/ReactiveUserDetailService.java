@@ -22,11 +22,9 @@ public class ReactiveUserDetailService implements ReactiveUserDetailsService {
     @Override
     public Mono<UserDetails> findByUsername(String username) {
         log.debug("Finding user by username or email: {}", username);
-        
-        // ค้นหาด้วย username ก่อน
+
         return userRepository.findByUsername(username)
                 .switchIfEmpty(
-                    // ถ้าไม่พบ ให้ค้นหาด้วย email
                     userRepository.findByEmail(username)
                         .switchIfEmpty(Mono.defer(() -> {
                             log.error("User not found with username or email: {}", username);
@@ -44,7 +42,6 @@ public class ReactiveUserDetailService implements ReactiveUserDetailsService {
                 });
     }
 
-    // เพิ่มเมธอดช่วยเหลือสำหรับการค้นหาด้วย email โดยเฉพาะ
     public Mono<UserDetails> findByEmail(String email) {
         log.debug("Finding user by email: {}", email);
         return userRepository.findByEmail(email)

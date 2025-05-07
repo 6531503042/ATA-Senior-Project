@@ -42,18 +42,31 @@ public class AuthController {
     @PostMapping({"/register", "/signup"})
     public Mono<ResponseEntity<ResponseMessage>> register(@Valid @RequestBody RegisterRequest register) {
         log.info("Registering new user: {}", register.getUsername());
+
         return userService.register(register)
                 .map(user -> {
-                    log.info("User registered successfully: {}", register.getUsername());
-                    return ResponseEntity.status(HttpStatus.CREATED)
-                        .body(new ResponseMessage("Create user: " + register.getUsername() + " successfully."));
+                    try {
+                        log.info("User registered successfully: {}", register.getUsername());
+                        return ResponseEntity.status(HttpStatus.CREATED)
+                                .body(new ResponseMessage("Create user: " + register.getUsername() + " successfully."));
+                    } catch (Exception e) {
+                        log.error("Unexpected error while mapping register response: {}", e.getMessage());
+                        throw new RuntimeException("Internal error occurred during mapping register response", e);
+                    }
                 })
                 .onErrorResume(error -> {
-                    log.error("Error registering user: {}", error.getMessage());
-                    return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(new ResponseMessage("Error occurred while creating the account: " + error.getMessage())));
+                    try {
+                        log.error("Error registering user: {}", error.getMessage());
+                        return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                                .body(new ResponseMessage("Error occurred while creating the account: " + error.getMessage())));
+                    } catch (Exception e) {
+                        log.error("Unexpected error while handling registration error: {}", e.getMessage());
+                        return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                .body(new ResponseMessage("Critical failure during error handling: " + e.getMessage())));
+                    }
                 });
     }
+
 
     @PostMapping({"/login", "/signin"})
     public Mono<ResponseEntity<JwtResponse>> login(@Valid @RequestBody LoginRequest login) {

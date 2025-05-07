@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import javax.crypto.SecretKey;
 
+import dev.bengi.userservice.domain.model.Role;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -89,12 +90,12 @@ public class JwtProvider {
             log.debug("Creating token for user: {}", user.getUsername());
             
             Date now = new Date();
-            Date expiryDate = new Date(now.getTime() + jwtExpiration * 1000);
+            Date expiryDate = new Date(now.getTime() + jwtExpiration * 1000L);
 
             String token = Jwts.builder()
                     .subject(user.getUsername())
                     .claim("roles", user.getRoles().stream()
-                            .map(role -> role.getName())
+                            .map(Role::getName)
                             .collect(Collectors.toList()))
                     .claim("user_id", user.getId())
                     .claim("email", user.getEmail())

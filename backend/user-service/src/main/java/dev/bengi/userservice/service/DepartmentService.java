@@ -23,5 +23,7 @@ public interface DepartmentService {
 
     Mono<Department> removeUserFromDepartment(Long departmentId, Long userId);
 
+    Flux<Department> getActiveDepartments();
+
 //    Flux<Department> getActiveDepartments();
 }
