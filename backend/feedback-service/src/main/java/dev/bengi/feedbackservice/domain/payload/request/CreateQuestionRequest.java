@@ -29,6 +29,7 @@ public class CreateQuestionRequest {
 
     private List<String> choices;
 
+    @Builder.Default
     private boolean required = true;
 
     private String validationRules;

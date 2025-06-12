@@ -15,7 +15,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Waves from "@/components/ui/Waves";
-import ataLogo from "@assets/ata-removebg-preview.png";
+// import ataLogo from "@assets/ata-removebg-preview.png";
 import { useAuth } from "@/hooks/use-auth";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAlertDialog } from "@/components/ui/alert-dialog";
@@ -107,7 +107,7 @@ export default function LoginPage() {
                 {/* Additional softer outer glow */}
                 <div className="absolute inset-0 scale-175 bg-indigo-300/10 rounded-full blur-3xl"></div>
                 <Image
-                  src={ataLogo}
+                  src={""}
                   alt="ATA Bank"
                   className="brightness-125 contrast-110 relative z-10 w-[300px] h-auto"
                   priority

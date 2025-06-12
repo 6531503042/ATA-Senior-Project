@@ -1,28 +1,25 @@
 package dev.bengi.userservice.repository;
 
-import java.util.List;
-import java.util.Optional;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import org.springframework.data.r2dbc.repository.Query;
+import org.springframework.data.r2dbc.repository.R2dbcRepository;
 import org.springframework.stereotype.Repository;
+
 import dev.bengi.userservice.domain.model.Department;
 import dev.bengi.userservice.domain.model.User;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @Repository
-public interface DepartmentRepository extends JpaRepository<Department, Long> {
-    Optional<Department> findByName(String name);
-    
-    @Query("SELECT d FROM Department d WHERE d.id = :departmentId")
-    List<Department> findByDepartmentId(@Param("departmentId") Long departmentId);
-    
-    List<Department> findByActive(boolean active);
+public interface DepartmentRepository extends R2dbcRepository<Department, Long> {
 
-    boolean existsByName(String name);
+    Flux<Department> findByActive(boolean active);
     
-    @Query("SELECT u FROM User u WHERE u.department.id = :departmentId")
-    List<User> findUsersByDepartmentId(@Param("departmentId") Long departmentId);
+    @Query("SELECT id, name, description, active, created_at, updated_at FROM departments WHERE name = :name")
+    Mono<Department> findByName(String name);
     
-    @Query("SELECT COUNT(u) FROM User u WHERE u.department.id = :departmentId")
-    Long countUsersByDepartmentId(@Param("departmentId") Long departmentId);
+    @Query("SELECT * FROM users WHERE department_id = :departmentId")
+    Flux<User> findUsersByDepartmentId(Long departmentId);
+    
+    @Query("SELECT COUNT(*) FROM users WHERE department_id = :departmentId")
+    Mono<Long> countUsersByDepartmentId(Long departmentId);
 } 

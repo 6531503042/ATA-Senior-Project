@@ -13,6 +13,7 @@ import dev.bengi.feedbackservice.domain.payload.response.FeedbackSubmissionRespo
 import dev.bengi.feedbackservice.service.FeedbackSubmissionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Mono;
 
 @Slf4j
 @RestController
@@ -22,34 +23,43 @@ public class AdminFeedbackSubmissionController {
     private final FeedbackSubmissionService submissionService;
 
     @GetMapping("/all")
-    public ResponseEntity<List<FeedbackSubmissionResponse>> getAllSubmissions() {
+    public Mono<ResponseEntity<List<FeedbackSubmissionResponse>>> getAllSubmissions() {
         log.debug("Admin requesting all feedback submissions");
-        return ResponseEntity.ok(submissionService.getAllSubmissions());
+        return submissionService.getAllSubmissions()
+                .collectList()
+                .map(ResponseEntity::ok);
     }
 
     @GetMapping("/statistics")
-    public ResponseEntity<Map<String, Long>> getSubmissionStatistics() {
+    public Mono<ResponseEntity<Map<String, Long>>> getSubmissionStatistics() {
         log.debug("Admin requesting submission statistics");
-        return ResponseEntity.ok(submissionService.getSubmissionStatistics());
+        return submissionService.getSubmissionStatistics()
+                .map(ResponseEntity::ok);
     }
 
     @GetMapping("/pending")
-    public ResponseEntity<List<FeedbackSubmissionResponse>> getPendingSubmissions() {
+    public Mono<ResponseEntity<List<FeedbackSubmissionResponse>>> getPendingSubmissions() {
         log.debug("Admin requesting pending review submissions");
-        return ResponseEntity.ok(submissionService.getPendingReviewSubmissions());
+        return submissionService.getPendingReviewSubmissions()
+                .collectList()
+                .map(ResponseEntity::ok);
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<FeedbackSubmissionResponse>> getUserSubmissions(
+    public Mono<ResponseEntity<List<FeedbackSubmissionResponse>>> getUserSubmissions(
             @PathVariable String userId) {
         log.debug("Admin requesting submissions for user: {}", userId);
-        return ResponseEntity.ok(submissionService.getSubmissionsByUser(userId));
+        return submissionService.getSubmissionsByUser(userId)
+                .collectList()
+                .map(ResponseEntity::ok);
     }
 
     @GetMapping("/feedback/{feedbackId}")
-    public ResponseEntity<List<FeedbackSubmissionResponse>> getFeedbackSubmissions(
+    public Mono<ResponseEntity<List<FeedbackSubmissionResponse>>> getFeedbackSubmissions(
             @PathVariable Long feedbackId) {
         log.debug("Admin requesting submissions for feedback: {}", feedbackId);
-        return ResponseEntity.ok(submissionService.getSubmissionsByFeedback(feedbackId));
+        return submissionService.getSubmissionsByFeedback(feedbackId)
+                .collectList()
+                .map(ResponseEntity::ok);
     }
 } 

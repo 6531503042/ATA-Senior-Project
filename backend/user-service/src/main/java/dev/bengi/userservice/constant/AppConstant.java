@@ -2,7 +2,6 @@ package dev.bengi.userservice.constant;
 
 import lombok.NoArgsConstructor;
 
-// Fixed access level class
 @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public class AppConstant {
     public static final String LOCAL_DATE_FORMAT = "dd-MM-yyyy";

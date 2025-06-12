@@ -29,7 +29,7 @@ public class ProjectAuthorityController {
             @PathVariable Long projectId) {
         log.info("Adding project authority: User ID {} for Project ID {}", userId, projectId);
         return userService.addProjectAuthority(userId, projectId)
-                .map(added -> ResponseEntity.ok(added));
+                .map(ResponseEntity::ok);
     }
 
     @DeleteMapping("/{userId}/{projectId}")
@@ -39,7 +39,7 @@ public class ProjectAuthorityController {
             @PathVariable Long projectId) {
         log.info("Removing project authority: User ID {} for Project ID {}", userId, projectId);
         return userService.removeProjectAuthority(userId, projectId)
-                .map(removed -> ResponseEntity.ok(removed));
+                .map(ResponseEntity::ok);
     }
 
     @GetMapping("/user/{userId}")
@@ -47,7 +47,7 @@ public class ProjectAuthorityController {
             @PathVariable Long userId) {
         log.info("Getting project authorities for User ID {}", userId);
         return userService.getUserProjectAuthorities(userId)
-                .map(authorities -> ResponseEntity.ok(authorities));
+                .map(ResponseEntity::ok);
     }
 
     @GetMapping("/project/{projectId}")
@@ -55,7 +55,7 @@ public class ProjectAuthorityController {
             @PathVariable Long projectId) {
         log.info("Getting users for Project ID {}", projectId);
         return userService.getUsersByProjectId(projectId)
-                .map(users -> ResponseEntity.ok(users));
+                .map(ResponseEntity::ok);
     }
 
     @GetMapping("/check/{userId}/{projectId}")
@@ -64,6 +64,6 @@ public class ProjectAuthorityController {
             @PathVariable Long projectId) {
         log.info("Checking if User ID {} has authority for Project ID {}", userId, projectId);
         return userService.hasProjectAuthority(userId, projectId)
-                .map(hasAuthority -> ResponseEntity.ok(hasAuthority));
+                .map(ResponseEntity::ok);
     }
 } 

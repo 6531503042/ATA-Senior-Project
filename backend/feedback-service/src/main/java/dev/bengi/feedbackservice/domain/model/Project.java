@@ -1,75 +1,117 @@
 package dev.bengi.feedbackservice.domain.model;
 
-import jakarta.persistence.*;
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 @Data
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder(toBuilder = true)
-@Entity
-@Table(name = "projects")
+@Table("projects")
 public class Project {
-
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    @JoinColumn(name = "project_id")
-    @Builder.Default
-    private List<Question> questions = new ArrayList<>();
-
-    @Column(unique = true)
+    @Column("name")
     private String name;
+    
+    @Column("description")
     private String description;
     
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "project_members", 
-        joinColumns = @JoinColumn(name = "project_id"))
-    @Column(name = "member_id")
+    @Column("start_date")
+    private LocalDateTime startDate;
+    
+    @Column("end_date")
+    private LocalDateTime endDate;
+    
+    @Column("created_at")
+    @CreatedDate
+    private LocalDateTime createdAt;
+    
+    @Column("updated_at")
+    @LastModifiedDate
+    private LocalDateTime updatedAt;
+    
+    @Column("status")
+    private String status;
+    
+    @Column("department_id")
+    private String departmentId;
+    
+    // Using @Transient since R2DBC doesn't support collections
+    @Transient
     @Builder.Default
     private Set<Long> memberIds = new HashSet<>();
 
-    @Column(name = "project_start_date")
-    private ZonedDateTime projectStartDate;
+    // For compatibility with ProjectDTO properties
+    @Transient
+    private LocalDateTime projectStartDate;
+    
+    @Transient
+    private LocalDateTime projectEndDate;
 
-    @Column(name = "project_end_date")
-    private ZonedDateTime projectEndDate;
-
-    @Column(name = "created_at", updatable = false)
-    private ZonedDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private ZonedDateTime updatedAt;
-
-    @PrePersist
-    protected void onCreate() {
-        if (projectStartDate == null) {
-            projectStartDate = ZonedDateTime.now(ZoneId.of("Asia/Bangkok"));
+    public Project initializeForCreate() {
+        LocalDateTime now = LocalDateTime.now();
+        this.createdAt = now;
+        this.updatedAt = now;
+        if (this.startDate == null && this.projectStartDate != null) {
+            this.startDate = this.projectStartDate;
         }
-        if (projectEndDate == null) {
-            projectEndDate = ZonedDateTime.now(ZoneId.of("Asia/Bangkok"));
+        if (this.endDate == null && this.projectEndDate != null) {
+            this.endDate = this.projectEndDate;
         }
-        createdAt = ZonedDateTime.now(ZoneId.of("Asia/Bangkok"));
-        updatedAt = ZonedDateTime.now(ZoneId.of("Asia/Bangkok"));
-        if (memberIds == null) {
-            memberIds = new HashSet<>();
-        }
+        return this;
     }
 
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = ZonedDateTime.now(ZoneId.of("Asia/Bangkok"));
+    public Project initializeForUpdate() {
+        this.updatedAt = LocalDateTime.now();
+        if (this.projectStartDate != null) {
+            this.startDate = this.projectStartDate;
+        }
+        if (this.projectEndDate != null) {
+            this.endDate = this.projectEndDate;
+        }
+        return this;
+    }
+
+    public Set<Long> getMemberIds() {
+        return memberIds != null ? memberIds : new HashSet<>();
+    }
+
+    public void setProjectStartDate(LocalDateTime projectStartDate) {
+        this.projectStartDate = projectStartDate;
+        this.startDate = projectStartDate;
+    }
+
+    public void setProjectEndDate(LocalDateTime projectEndDate) {
+        this.projectEndDate = projectEndDate;
+        this.endDate = projectEndDate;
+    }
+
+    public LocalDateTime getProjectStartDate() {
+        return this.projectStartDate != null ? this.projectStartDate : this.startDate;
+    }
+
+    public LocalDateTime getProjectEndDate() {
+        return this.projectEndDate != null ? this.projectEndDate : this.endDate;
+    }
+
+    public boolean isActive() {
+        LocalDateTime now = LocalDateTime.now();
+        return startDate != null && endDate != null && 
+               !now.isBefore(startDate) && !now.isAfter(endDate);
     }
 }
