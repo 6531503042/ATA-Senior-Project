@@ -1,38 +1,51 @@
 server:
   port: 8081
+
 spring:
   main:
     allow-bean-definition-overriding: true
-  datasource:
-    driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:3307/user
+    allow-circular-references: true
+  profiles:
+    active: dev
+  r2dbc:
+    url: r2dbc:postgresql://localhost:3307/user
     username: postgres
-    password: 6531503042
+    password: postgres
+    pool:
+      enabled: true
+      initial-size: 10
+      max-size: 30
+      max-idle-time: 30m
+      validation-query: SELECT 1
   application:
     name: user-service
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-    database: postgresql
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
-    generate-ddl: true
-    open-in-view: false
-    properties:
-      hibernate:
-        format_sql: true
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+    url: jdbc:postgresql://localhost:3307/user
+    user: postgres
+    password: postgres
+    clean-disabled: true
+    repair-on-migrate: true
+  cloud:
+    config:
+      enabled: false
 
 jwt:
   secret: ofBra2CqJO2JOC7CmN80hbaGdjZJqsBR2UqXxJh5Coo=
   expiration: 86400
   refresh-expiration: 604800
 
-# Token refresh endpoint URL
-refresh:
-  token:
-    url: http://localhost:8081/api/auth/refresh
+logging:
+  level:
+    root: INFO
+    org.springframework.r2dbc: DEBUG
+    org.springframework.data.r2dbc: DEBUG
+    io.r2dbc.postgresql: DEBUG
+    dev.bengi.userservice: DEBUG
+    org.springframework.security: DEBUG
 
-# CORS configuration
 cors:
   allowed-origins: 
     - http://localhost:3000
@@ -53,36 +66,22 @@ cors:
   allow-credentials: true
   max-age: 3600
 
-# OpenAPI Configuration
 springdoc:
   api-docs:
     path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
     operationsSorter: method
     tagsSorter: alpha
-    tryItOutEnabled: true
-    filter: true
-    syntaxHighlight:
-      activated: true
-
-# Email Configuration
-spring.mail:
-  host: smtp.gmail.com
-  port: 587
-  username: your-email@gmail.com
-  password: your-app-specific-password
-  properties:
-    mail.smtp:
-      auth: true
-      starttls.enable: true
-
-# Frontend URL for password reset
-app:
-  frontend-url: http://localhost:3000
-  reset-password:
-    token:
-      expiration: 900000
 
 eureka:
   client:
-    service-url:
+    enabled: true
+    serviceUrl:
       defaultZone: http://localhost:8087/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    hostname: localhost
+    non-secure-port: ${server.port}

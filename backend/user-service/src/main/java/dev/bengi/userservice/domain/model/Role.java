@@ -1,43 +1,69 @@
 package dev.bengi.userservice.domain.model;
 
 import dev.bengi.userservice.domain.enums.RoleName;
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.Set;
 
 @Data
-@Entity
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "roles")
+@Table("roles")
 public class Role {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    
+    @Column("name")
+    private String name;
 
-    @Enumerated(EnumType.STRING)
-    @Column(length = 20)
-    private RoleName name;
-
-    @Column(name = "created_at", nullable = false)
+    @Column("permissions")
+    private Set<String> permissions;
+    
+    @Column("description")
+    private String description;
+    
+    @Column("created_at")
     private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
+    
+    @Column("updated_at")
     private LocalDateTime updatedAt;
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
+    
+//    public boolean hasPermission(String requiredPermission) {
+//        if (permissions == null) return false;
+//        if (permissions.contains("*")) return true;
+//
+//        String[] requiredParts = requiredPermission.split(":");
+//        if (requiredParts.length < 2) return false;
+//
+//        String resource = requiredParts[0];
+//        String action = requiredParts[1];
+//
+//        return permissions.stream().anyMatch(permission -> {
+//            String[] parts = permission.split(":");
+//            if (parts.length < 2) return false;
+//
+//            // Check for resource-level wildcard
+//            if (parts[1].equals("*") && parts[0].equals(resource)) return true;
+//
+//            // Check for exact match
+//            if (parts[0].equals(resource) && parts[1].equals(action)) {
+//                // If the required permission has an ID constraint
+//                if (requiredParts.length > 2) {
+//                    return parts.length > 2 && parts[2].equals(requiredParts[2]);
+//                }
+//                return true;
+//            }
+//
+//            return false;
+//        });
+//    }
 }

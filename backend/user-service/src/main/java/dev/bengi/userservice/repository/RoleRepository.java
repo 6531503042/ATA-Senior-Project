@@ -1,25 +1,30 @@
 package dev.bengi.userservice.repository;
 
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import org.springframework.data.r2dbc.repository.Query;
+import org.springframework.data.r2dbc.repository.R2dbcRepository;
 import org.springframework.stereotype.Repository;
 
 import dev.bengi.userservice.domain.enums.RoleName;
 import dev.bengi.userservice.domain.model.Role;
+import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 
 @Repository
-public interface RoleRepository extends JpaRepository<Role, Long> {
+public interface RoleRepository extends R2dbcRepository<Role, Long> {
 
-    @Query("SELECT r FROM Role r WHERE r.name = :name")
-    Optional<Role> findByName(@Param("name") RoleName name);
-
-    @Query("SELECT u.roles FROM User u WHERE u.id = :userId")
-    List<Role> findByUserId(@Param("userId") Long userId);
-
-    @Query("SELECT CASE WHEN COUNT(r) > 0 THEN true ELSE false END FROM Role r WHERE r.name = :name")
-    boolean existsByName(@Param("name") RoleName name);
+    // Updated query to include permissions
+    @Query("SELECT id, name, description, permissions, created_at, updated_at FROM roles WHERE name = :name")
+    Mono<Role> findByName(String name);
+    
+    // Using method name derivation instead of custom query
+    Mono<Role> findByNameEquals(String name);
+    
+    // Utility method for finding by RoleName enum
+    default Mono<Role> findByRoleName(RoleName roleName) {
+        return findByName(roleName.name());
+    }
+    
+    // Get all roles with permissions
+    @Query("SELECT id, name, description, permissions, created_at, updated_at FROM roles ORDER BY id")
+    Flux<Role> findAllRoles();
 }
