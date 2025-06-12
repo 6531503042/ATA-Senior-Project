@@ -78,13 +78,13 @@ export default function Sidebar() {
           className="flex items-center gap-2 transition-transform hover:scale-[0.98]"
         >
           <Image
-                src={Logo}
-                alt="ATA Logo" 
-                width={200}
-                height={200}
-                priority
-                unoptimized
-              />
+            src={Logo}
+            alt="ATA Logo"
+            width={200}
+            height={200}
+            priority
+            unoptimized
+          />
         </Link>
       </div>
 
@@ -99,7 +99,7 @@ export default function Sidebar() {
               "hover:bg-violet-50 group relative",
               isActive(item.href)
                 ? "bg-violet-100 text-violet-900 shadow-sm"
-                : "text-gray-600"
+                : "text-gray-600",
             )}
           >
             <div
@@ -107,7 +107,7 @@ export default function Sidebar() {
                 "p-2 rounded-lg transition-colors",
                 isActive(item.href)
                   ? "bg-violet-200"
-                  : "bg-gray-100 group-hover:bg-violet-100"
+                  : "bg-gray-100 group-hover:bg-violet-100",
               )}
             >
               <item.icon
@@ -115,7 +115,7 @@ export default function Sidebar() {
                   "w-5 h-5",
                   isActive(item.href)
                     ? "text-violet-600"
-                    : "text-gray-600 group-hover:text-violet-600"
+                    : "text-gray-600 group-hover:text-violet-600",
                 )}
               />
             </div>

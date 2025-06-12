@@ -11,14 +11,20 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { 
-  UserCircle2, 
-  Building2, 
-  Mail, 
-  Shield, 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  UserCircle2,
+  Building2,
+  Mail,
+  Shield,
   Users2,
-  Loader2
+  Loader2,
 } from "lucide-react";
 import { useUsers } from "../hooks/use-users";
 import type { User, UpdateUserRequest } from "../models/types";
@@ -29,7 +35,11 @@ interface EditUserModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function EditUserModal({ user, open, onOpenChange }: EditUserModalProps) {
+export function EditUserModal({
+  user,
+  open,
+  onOpenChange,
+}: EditUserModalProps) {
   const { updateUser, departments } = useUsers();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<UpdateUserRequest>({
@@ -78,7 +88,9 @@ export function EditUserModal({ user, open, onOpenChange }: EditUserModalProps) 
                 <UserCircle2 className="h-7 w-7 text-violet-600" />
               </motion.div>
               <div>
-                <DialogTitle className="text-2xl font-bold text-gray-800">Edit User</DialogTitle>
+                <DialogTitle className="text-2xl font-bold text-gray-800">
+                  Edit User
+                </DialogTitle>
                 <p className="text-sm text-gray-500 mt-1">
                   Update user information
                 </p>
@@ -91,10 +103,14 @@ export function EditUserModal({ user, open, onOpenChange }: EditUserModalProps) 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Basic Information */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-700">Basic Information</h3>
-              
+              <h3 className="text-lg font-semibold text-gray-700">
+                Basic Information
+              </h3>
+
               <div className="space-y-2">
-                <Label htmlFor="fullname" className="text-gray-700">Full Name</Label>
+                <Label htmlFor="fullname" className="text-gray-700">
+                  Full Name
+                </Label>
                 <div className="relative">
                   <div className="absolute left-3 top-1/2 -translate-y-1/2">
                     <Users2 className="h-5 w-5 text-gray-400" />
@@ -102,7 +118,9 @@ export function EditUserModal({ user, open, onOpenChange }: EditUserModalProps) 
                   <Input
                     id="fullname"
                     value={formData.fullname}
-                    onChange={(e) => setFormData({ ...formData, fullname: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, fullname: e.target.value })
+                    }
                     placeholder="John Doe"
                     className="pl-10 bg-gray-50 border-gray-200 focus:border-violet-300 focus:ring-2 focus:ring-violet-200"
                     required
@@ -111,7 +129,9 @@ export function EditUserModal({ user, open, onOpenChange }: EditUserModalProps) 
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-gray-700">Email Address</Label>
+                <Label htmlFor="email" className="text-gray-700">
+                  Email Address
+                </Label>
                 <div className="relative">
                   <div className="absolute left-3 top-1/2 -translate-y-1/2">
                     <Mail className="h-5 w-5 text-gray-400" />
@@ -120,7 +140,9 @@ export function EditUserModal({ user, open, onOpenChange }: EditUserModalProps) 
                     id="email"
                     type="email"
                     value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, email: e.target.value })
+                    }
                     placeholder="john@example.com"
                     className="pl-10 bg-gray-50 border-gray-200 focus:border-violet-300 focus:ring-2 focus:ring-violet-200"
                     required
@@ -129,10 +151,12 @@ export function EditUserModal({ user, open, onOpenChange }: EditUserModalProps) 
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="gender" className="text-gray-700">Gender</Label>
+                <Label htmlFor="gender" className="text-gray-700">
+                  Gender
+                </Label>
                 <Select
                   value={formData.gender}
-                  onValueChange={(value: 'MALE' | 'FEMALE' | 'OTHER') =>
+                  onValueChange={(value: "MALE" | "FEMALE" | "OTHER") =>
                     setFormData({ ...formData, gender: value })
                   }
                 >
@@ -150,16 +174,22 @@ export function EditUserModal({ user, open, onOpenChange }: EditUserModalProps) 
 
             {/* Work Information */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-700">Work Information</h3>
+              <h3 className="text-lg font-semibold text-gray-700">
+                Work Information
+              </h3>
 
               <div className="space-y-2">
-                <Label htmlFor="department" className="text-gray-700">Department</Label>
+                <Label htmlFor="department" className="text-gray-700">
+                  Department
+                </Label>
                 <Select
                   value={formData.departmentId?.toString()}
-                  onValueChange={(value) => setFormData({ 
-                    ...formData, 
-                    departmentId: value ? parseInt(value) : undefined 
-                  })}
+                  onValueChange={(value) =>
+                    setFormData({
+                      ...formData,
+                      departmentId: value ? parseInt(value) : undefined,
+                    })
+                  }
                 >
                   <SelectTrigger className="w-full bg-gray-50 border-gray-200 focus:border-violet-300 focus:ring-2 focus:ring-violet-200">
                     <SelectValue placeholder="Select a department" />
@@ -180,23 +210,29 @@ export function EditUserModal({ user, open, onOpenChange }: EditUserModalProps) 
               <div className="space-y-2">
                 <Label>Roles</Label>
                 <div className="flex flex-wrap gap-2">
-                  {(['ROLE_USER', 'ROLE_ADMIN', 'ROLE_MANAGER'] as const).map((role) => (
-                    <Button
-                      key={role}
-                      type="button"
-                      variant={formData.roles.includes(role) ? 'default' : 'outline'}
-                      size="sm"
-                      className={`gap-2 transition-all duration-300 ${
-                        formData.roles.includes(role)
-                          ? 'bg-violet-600 text-white hover:bg-violet-700'
-                          : 'text-gray-600 border-gray-300 hover:bg-violet-50 hover:border-violet-300'
-                      }`}
-                      onClick={() => setFormData({ ...formData, roles: [role] })}
-                    >
-                      <Shield className="h-4 w-4" />
-                      {role.replace('ROLE_', '').toLowerCase()}
-                    </Button>
-                  ))}
+                  {(["ROLE_USER", "ROLE_ADMIN", "ROLE_MANAGER"] as const).map(
+                    (role) => (
+                      <Button
+                        key={role}
+                        type="button"
+                        variant={
+                          formData.roles.includes(role) ? "default" : "outline"
+                        }
+                        size="sm"
+                        className={`gap-2 transition-all duration-300 ${
+                          formData.roles.includes(role)
+                            ? "bg-violet-600 text-white hover:bg-violet-700"
+                            : "text-gray-600 border-gray-300 hover:bg-violet-50 hover:border-violet-300"
+                        }`}
+                        onClick={() =>
+                          setFormData({ ...formData, roles: [role] })
+                        }
+                      >
+                        <Shield className="h-4 w-4" />
+                        {role.replace("ROLE_", "").toLowerCase()}
+                      </Button>
+                    ),
+                  )}
                 </div>
               </div>
             </div>
@@ -234,4 +270,4 @@ export function EditUserModal({ user, open, onOpenChange }: EditUserModalProps) 
       </DialogContent>
     </Dialog>
   );
-} 
+}

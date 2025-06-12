@@ -1,12 +1,17 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { useAlertDialog } from '@/components/ui/alert-dialog';
-import { FormField } from '@/components/ui/form-field';
-import { useFormValidation } from '@/hooks/use-form-validation';
-import { motion } from 'framer-motion';
+import React, { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { useAlertDialog } from "@/components/ui/alert-dialog";
+import { FormField } from "@/components/ui/form-field";
+import { useFormValidation } from "@/hooks/use-form-validation";
+import { motion } from "framer-motion";
 import {
   Building2,
   X,
@@ -15,23 +20,23 @@ import {
   Users,
   Network,
   CheckCircle2,
-} from 'lucide-react';
-import type { Department, CreateDepartmentDto } from '../models/types';
-import type { User } from '@/types/auth';
+} from "lucide-react";
+import type { Department, CreateDepartmentDto } from "../models/types";
+import type { User } from "@/types/auth";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { DepartmentService } from '@/app/admin/departments/services/department.service';
+} from "@/components/ui/select";
+import { DepartmentService } from "@/app/admin/departments/services/department.service";
 
 interface DepartmentFormModalProps {
   department?: Department;
   onClose: () => void;
   onSuccess?: () => void;
-  mode: 'create' | 'edit';
+  mode: "create" | "edit";
   departments: Department[];
   managers: User[];
 }
@@ -47,30 +52,30 @@ export function DepartmentFormModal({
   const { showAlert } = useAlertDialog();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<CreateDepartmentDto>({
-    name: department?.name || '',
-    description: department?.description || '',
+    name: department?.name || "",
+    description: department?.description || "",
     managerId: department?.managerId,
     parentDepartmentId: department?.parentDepartmentId,
-    status: department?.status || 'ACTIVE',
+    status: department?.status || "ACTIVE",
   });
 
   const validationRules = {
     name: {
       required: true,
       minLength: 3,
-      message: 'Department name must be at least 3 characters',
+      message: "Department name must be at least 3 characters",
     },
     description: {
       required: true,
       minLength: 10,
-      message: 'Description must be at least 10 characters',
+      message: "Description must be at least 10 characters",
     },
   };
 
   const { validateForm, getFieldProps } = useFormValidation(validationRules);
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -86,17 +91,17 @@ export function DepartmentFormModal({
     setIsLoading(true);
 
     try {
-      if (mode === 'create') {
+      if (mode === "create") {
         await DepartmentService.createDepartment(formData);
       } else if (department) {
         await DepartmentService.updateDepartment(department.id, formData);
       }
 
       showAlert({
-        title: 'Success',
-        description: `Department ${mode === 'create' ? 'created' : 'updated'} successfully.`,
-        variant: 'solid',
-        color: 'success',
+        title: "Success",
+        description: `Department ${mode === "create" ? "created" : "updated"} successfully.`,
+        variant: "solid",
+        color: "success",
       });
 
       onSuccess?.();
@@ -104,10 +109,10 @@ export function DepartmentFormModal({
     } catch (error) {
       console.error(`Failed to ${mode} department:`, error);
       showAlert({
-        title: 'Error',
+        title: "Error",
         description: `Failed to ${mode} department. Please try again.`,
-        variant: 'solid',
-        color: 'danger',
+        variant: "solid",
+        color: "danger",
       });
     } finally {
       setIsLoading(false);
@@ -142,7 +147,7 @@ export function DepartmentFormModal({
                     transition={{ duration: 0.3, delay: 0.1 }}
                     className="p-2 bg-violet-100 rounded-xl"
                   >
-                    {mode === 'create' ? (
+                    {mode === "create" ? (
                       <Building2 className="h-6 w-6 text-violet-600" />
                     ) : (
                       <PencilIcon className="h-6 w-6 text-violet-600" />
@@ -155,7 +160,9 @@ export function DepartmentFormModal({
                       transition={{ duration: 0.3, delay: 0.2 }}
                       className="text-xl font-semibold text-gray-900"
                     >
-                      {mode === 'create' ? 'Create Department' : 'Edit Department'}
+                      {mode === "create"
+                        ? "Create Department"
+                        : "Edit Department"}
                     </motion.h2>
                     <motion.p
                       initial={{ x: -20, opacity: 0 }}
@@ -163,9 +170,9 @@ export function DepartmentFormModal({
                       transition={{ duration: 0.3, delay: 0.3 }}
                       className="text-sm text-gray-500"
                     >
-                      {mode === 'create'
-                        ? 'Create a new department in your organization'
-                        : 'Update department details'}
+                      {mode === "create"
+                        ? "Create a new department in your organization"
+                        : "Update department details"}
                     </motion.p>
                   </div>
                 </div>
@@ -186,7 +193,7 @@ export function DepartmentFormModal({
                   <FormField
                     label="Department Name"
                     required
-                    {...getFieldProps('name')}
+                    {...getFieldProps("name")}
                     helpText="Enter a unique department name"
                   >
                     <input
@@ -202,7 +209,7 @@ export function DepartmentFormModal({
                   <FormField
                     label="Description"
                     required
-                    {...getFieldProps('description')}
+                    {...getFieldProps("description")}
                     helpText="Provide a detailed department description"
                   >
                     <textarea
@@ -256,7 +263,9 @@ export function DepartmentFormModal({
                         onValueChange={(value) =>
                           setFormData((prev) => ({
                             ...prev,
-                            parentDepartmentId: value ? parseInt(value) : undefined,
+                            parentDepartmentId: value
+                              ? parseInt(value)
+                              : undefined,
                           }))
                         }
                       >
@@ -284,7 +293,7 @@ export function DepartmentFormModal({
                   <FormField label="Status">
                     <Select
                       value={formData.status}
-                      onValueChange={(value: 'ACTIVE' | 'INACTIVE') =>
+                      onValueChange={(value: "ACTIVE" | "INACTIVE") =>
                         setFormData((prev) => ({ ...prev, status: value }))
                       }
                     >
@@ -292,11 +301,17 @@ export function DepartmentFormModal({
                         <SelectValue placeholder="Select status" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="ACTIVE" className="flex items-center gap-2">
+                        <SelectItem
+                          value="ACTIVE"
+                          className="flex items-center gap-2"
+                        >
                           <CheckCircle2 className="h-4 w-4 text-green-500" />
                           <span>Active</span>
                         </SelectItem>
-                        <SelectItem value="INACTIVE" className="flex items-center gap-2">
+                        <SelectItem
+                          value="INACTIVE"
+                          className="flex items-center gap-2"
+                        >
                           <X className="h-4 w-4 text-gray-500" />
                           <span>Inactive</span>
                         </SelectItem>
@@ -331,7 +346,9 @@ export function DepartmentFormModal({
                   <>
                     <Building2 className="h-4 w-4" />
                     <span>
-                      {mode === 'create' ? 'Create Department' : 'Update Department'}
+                      {mode === "create"
+                        ? "Create Department"
+                        : "Update Department"}
                     </span>
                   </>
                 )}
@@ -342,4 +359,4 @@ export function DepartmentFormModal({
       </div>
     </div>
   );
-} 
+}

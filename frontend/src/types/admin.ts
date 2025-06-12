@@ -2,7 +2,7 @@ export interface Project {
   id: string;
   title: string;
   description: string;
-  status: 'active' | 'completed' | 'on_hold';
+  status: "active" | "completed" | "on_hold";
   startDate: Date;
   endDate?: Date;
   manager: string;
@@ -15,9 +15,9 @@ export interface Question {
   id: string;
   title: string;
   description: string;
-  type: 'multiple_choice' | 'text' | 'code';
+  type: "multiple_choice" | "text" | "code";
   category: string;
-  difficulty: 'easy' | 'medium' | 'hard';
+  difficulty: "easy" | "medium" | "hard";
   options?: string[];
   correctAnswer?: string;
   points: number;
@@ -36,7 +36,7 @@ export interface Feedback {
   strengths: string[];
   weaknesses: string[];
   comments: string;
-  recommendation: 'hire' | 'reject' | 'consider';
+  recommendation: "hire" | "reject" | "consider";
   createdAt: Date;
   updatedAt: Date;
 }
@@ -46,7 +46,7 @@ export interface PaginationParams {
   limit: number;
   search?: string;
   sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
+  sortOrder?: "asc" | "desc";
 }
 
 export interface PaginatedResponse<T> {
@@ -65,4 +65,4 @@ export interface FilterOptions {
     start: Date;
     end: Date;
   };
-} 
+}

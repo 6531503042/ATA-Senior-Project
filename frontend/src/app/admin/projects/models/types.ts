@@ -1,7 +1,7 @@
 export enum ProjectStatus {
-  ACTIVE = 'ACTIVE',
-  COMPLETED = 'COMPLETED',
-  ON_HOLD = 'ON_HOLD'
+  ACTIVE = "ACTIVE",
+  COMPLETED = "COMPLETED",
+  ON_HOLD = "ON_HOLD",
 }
 
 export interface Project {
@@ -45,14 +45,14 @@ export interface ProjectFilters {
   page: number;
   limit: number;
   sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
+  sortOrder?: "asc" | "desc";
 }
 
 export interface ApiError {
   message: string;
   status?: number;
   response?: any;
-} 
+}
 
 export interface TeamMember {
   id: number;

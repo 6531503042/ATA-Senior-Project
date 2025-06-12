@@ -119,7 +119,7 @@ interface FeedbackMemberStats {
 const retryRequest = async <T,>(
   requestFn: () => Promise<T>,
   maxRetries = 3,
-  delay = 1000
+  delay = 1000,
 ): Promise<T> => {
   for (let i = 0; i < maxRetries; i++) {
     try {
@@ -135,7 +135,7 @@ const retryRequest = async <T,>(
 // Helper function to chunk array into smaller arrays
 const chunk = <T,>(arr: T[], size: number): T[][] => {
   return Array.from({ length: Math.ceil(arr.length / size) }, (_, i) =>
-    arr.slice(i * size, i * size + size)
+    arr.slice(i * size, i * size + size),
   );
 };
 
@@ -198,7 +198,7 @@ export default function FeedbackSubmissionsPage() {
         `http://localhost:8084/api/v1/admin/feedbacks/get-all?page=${page}&limit=${ITEMS_PER_PAGE}`,
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
 
       const validFeedbackIds = new Set(feedbacksResponse.data.map((f) => f.id));
@@ -214,7 +214,7 @@ export default function FeedbackSubmissionsPage() {
 
       // Update state based on page
       setFeedbacks((prev) =>
-        page === 1 ? initialFeedbacks : [...prev, ...initialFeedbacks]
+        page === 1 ? initialFeedbacks : [...prev, ...initialFeedbacks],
       );
       setHasMore(feedbacksResponse.data.length === ITEMS_PER_PAGE);
 
@@ -228,10 +228,10 @@ export default function FeedbackSubmissionsPage() {
                 {
                   headers: { Authorization: `Bearer ${token}` },
                   timeout: 30000, // Increased timeout to 30 seconds
-                }
+                },
               ),
             3, // Max 3 retries
-            2000 // 2 second base delay between retries
+            2000, // 2 second base delay between retries
           ).catch((error) => {
             console.error("Failed to fetch submissions:", error);
             toast({
@@ -249,7 +249,7 @@ export default function FeedbackSubmissionsPage() {
                 timeout: 30000,
               }),
             3,
-            2000
+            2000,
           ).catch((error) => {
             console.warn("Failed to fetch analysis stats:", error);
             return {
@@ -267,7 +267,7 @@ export default function FeedbackSubmissionsPage() {
                 timeout: 30000,
               }),
             3,
-            2000
+            2000,
           ).catch((error) => {
             console.warn("Failed to fetch team stats:", error);
             return { data: [] };
@@ -280,12 +280,12 @@ export default function FeedbackSubmissionsPage() {
 
       feedbacksResponse.data.forEach((feedback) => {
         const feedbackSubmissions = submissionsResponse.data.filter(
-          (s) => s.submission?.feedbackId === feedback.id
+          (s) => s.submission?.feedbackId === feedback.id,
         );
         const submittedMembers = new Set(
           feedbackSubmissions
             .map((s) => s.submission?.submittedBy)
-            .filter((id): id is string => id !== null)
+            .filter((id): id is string => id !== null),
         );
         const pendingMembers = teamMembers
           .filter((m) => !submittedMembers.has(m.id.toString()))
@@ -316,7 +316,7 @@ export default function FeedbackSubmissionsPage() {
       // Update stats
       const totalSubs = Object.values(submissionCounts).reduce(
         (a, b) => a + b,
-        0
+        0,
       );
       const analyzedSubs = analysisStatsResponse.data?.totalAnalyzed || 0;
 
@@ -331,7 +331,7 @@ export default function FeedbackSubmissionsPage() {
         prevFeedbacks.map((feedback) => ({
           ...feedback,
           submissionCount: submissionCounts[feedback.id] || 0,
-        }))
+        })),
       );
 
       // Update analysis metrics
@@ -353,7 +353,7 @@ export default function FeedbackSubmissionsPage() {
       const submittedMembersCount = new Set(
         submissionsResponse.data
           .map((s) => s.submission?.submittedBy)
-          .filter(Boolean)
+          .filter(Boolean),
       ).size;
 
       setTeamStats({
@@ -364,7 +364,7 @@ export default function FeedbackSubmissionsPage() {
 
       // Fetch analysis for feedbacks with submissions
       const feedbacksWithSubmissions = feedbacksResponse.data.filter(
-        (feedback) => submissionCounts[feedback.id] > 0
+        (feedback) => submissionCounts[feedback.id] > 0,
       );
 
       // Process analysis in smaller batches
@@ -386,10 +386,10 @@ export default function FeedbackSubmissionsPage() {
                         Authorization: `Bearer ${token}`,
                       },
                       timeout: 30000,
-                    }
+                    },
                   ),
                 3,
-                2000
+                2000,
               );
 
               setFeedbacks((prevFeedbacks) =>
@@ -401,8 +401,8 @@ export default function FeedbackSubmissionsPage() {
                         hasAnalysis: true,
                         isAnalysisLoading: false,
                       }
-                    : f
-                )
+                    : f,
+                ),
               );
 
               setAnalysisCache((prev) => ({
@@ -412,7 +412,7 @@ export default function FeedbackSubmissionsPage() {
             } catch (error) {
               console.error(
                 `Failed to fetch analysis for feedback ${feedback.id}:`,
-                error
+                error,
               );
               setFeedbacks((prevFeedbacks) =>
                 prevFeedbacks.map((f) =>
@@ -427,11 +427,11 @@ export default function FeedbackSubmissionsPage() {
                             ? error.message
                             : "Failed to load analysis",
                       }
-                    : f
-                )
+                    : f,
+                ),
               );
             }
-          })
+          }),
         );
         await new Promise((resolve) => setTimeout(resolve, 500)); // Delay between batches
       }
@@ -465,8 +465,8 @@ export default function FeedbackSubmissionsPage() {
         filter === "all"
           ? true
           : filter === "active"
-          ? feedback.active
-          : !feedback.active;
+            ? feedback.active
+            : !feedback.active;
 
       return matchesSearch && matchesFilter;
     });
@@ -511,7 +511,7 @@ export default function FeedbackSubmissionsPage() {
                 <p className="text-gray-500 text-sm">
                   {filteredFeedbacks.reduce(
                     (acc, f) => acc + (f.submissionCount || 0),
-                    0
+                    0,
                   )}{" "}
                   Total Submissions
                 </p>
@@ -651,7 +651,7 @@ export default function FeedbackSubmissionsPage() {
                       "flex items-center gap-1 text-sm px-2 py-0.5 rounded-full",
                       analysisMetrics.changePercentage >= 0
                         ? "text-emerald-700 bg-emerald-50"
-                        : "text-red-700 bg-red-50"
+                        : "text-red-700 bg-red-50",
                     )}
                   >
                     {analysisMetrics.changePercentage >= 0 ? "+" : ""}
@@ -706,7 +706,7 @@ export default function FeedbackSubmissionsPage() {
                 <Card
                   className={cn(
                     "bg-white cursor-pointer transition-all duration-200",
-                    "hover:border-violet-200 hover:shadow-lg hover:shadow-violet-100/50"
+                    "hover:border-violet-200 hover:shadow-lg hover:shadow-violet-100/50",
                   )}
                   onClick={() => handleFeedbackClick(feedback)}
                 >
@@ -725,7 +725,7 @@ export default function FeedbackSubmissionsPage() {
                               className={cn(
                                 feedback.active
                                   ? "bg-emerald-50 text-emerald-700"
-                                  : "bg-gray-50 text-gray-700"
+                                  : "bg-gray-50 text-gray-700",
                               )}
                             >
                               {feedback.active ? (

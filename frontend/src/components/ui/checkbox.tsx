@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import * as CheckboxPrimitive from "@radix-ui/react-checkbox"
-import { Check } from "lucide-react"
-import { motion } from "framer-motion"
-import { cn } from "@/lib/utils"
+import * as React from "react";
+import * as CheckboxPrimitive from "@radix-ui/react-checkbox";
+import { Check } from "lucide-react";
+import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 const Checkbox = React.forwardRef<
   React.ElementRef<typeof CheckboxPrimitive.Root>,
@@ -22,11 +22,13 @@ const Checkbox = React.forwardRef<
       "dark:border-gray-700 dark:focus-visible:ring-violet-400",
       "dark:data-[state=checked]:bg-violet-500 dark:data-[state=checked]:border-violet-500",
       "dark:data-[state=unchecked]:hover:border-violet-400",
-      className
+      className,
     )}
     {...props}
   >
-    <CheckboxPrimitive.Indicator className={cn("flex items-center justify-center text-current")}>
+    <CheckboxPrimitive.Indicator
+      className={cn("flex items-center justify-center text-current")}
+    >
       <motion.div
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
@@ -36,7 +38,7 @@ const Checkbox = React.forwardRef<
         <Check className="h-4 w-4 text-white" />
       </motion.div>
     </CheckboxPrimitive.Indicator>
-    
+
     {/* Hover effect overlay */}
     <motion.div
       className={cn(
@@ -44,10 +46,10 @@ const Checkbox = React.forwardRef<
         "bg-violet-100 opacity-0",
         "peer-hover:opacity-10 peer-data-[state=checked]:opacity-0",
         "transition-opacity duration-200",
-        "dark:bg-violet-900"
+        "dark:bg-violet-900",
       )}
     />
-    
+
     {/* Focus ring animation */}
     <motion.div
       className={cn(
@@ -55,11 +57,11 @@ const Checkbox = React.forwardRef<
         "ring-2 ring-violet-500 ring-offset-2",
         "opacity-0 scale-95",
         "peer-focus-visible:opacity-100 peer-focus-visible:scale-100",
-        "transition-all duration-200"
+        "transition-all duration-200",
       )}
     />
   </CheckboxPrimitive.Root>
-))
-Checkbox.displayName = CheckboxPrimitive.Root.displayName
+));
+Checkbox.displayName = CheckboxPrimitive.Root.displayName;
 
-export { Checkbox } 
+export { Checkbox };

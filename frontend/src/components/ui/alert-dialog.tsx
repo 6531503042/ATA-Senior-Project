@@ -1,14 +1,27 @@
 "use client";
 
 import * as React from "react";
-import { createContext, useContext, useCallback, useState, memo, useRef } from "react";
+import {
+  createContext,
+  useContext,
+  useCallback,
+  useState,
+  memo,
+  useRef,
+} from "react";
 import { motion } from "framer-motion";
 import { Loader2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Progress } from "./progress";
 
 // Define valid color types
-type AlertColor = "primary" | "success" | "warning" | "danger" | "info" | "default";
+type AlertColor =
+  | "primary"
+  | "success"
+  | "warning"
+  | "danger"
+  | "info"
+  | "default";
 type AlertVariant = "solid" | "outline";
 
 interface BaseAlertProps {
@@ -54,26 +67,32 @@ const AlertItem = memo(({ alert, onClose, colorClasses }: AlertItemProps) => {
       exit={{ opacity: 0, y: -20, scale: 0.95 }}
       transition={{
         duration: 0.2,
-        ease: "easeOut"
+        ease: "easeOut",
       }}
       className="relative"
     >
-      <div 
+      <div
         className={cn(
           "relative overflow-hidden rounded-lg shadow-lg",
           `${colorClasses.bg} border ${colorClasses.border}`,
-          "transition-all duration-200"
+          "transition-all duration-200",
         )}
       >
-        <div className={cn(
-          "px-4 py-3 bg-transparent border-0",
-          colorClasses.text,
-          "flex items-start gap-3"
-        )}>
+        <div
+          className={cn(
+            "px-4 py-3 bg-transparent border-0",
+            colorClasses.text,
+            "flex items-start gap-3",
+          )}
+        >
           <div className="flex-1 min-w-0">
-            <h5 className="text-sm font-medium mb-0.5 truncate">{alert.title}</h5>
+            <h5 className="text-sm font-medium mb-0.5 truncate">
+              {alert.title}
+            </h5>
             {alert.description && (
-              <p className="text-sm opacity-85 line-clamp-2">{alert.description}</p>
+              <p className="text-sm opacity-85 line-clamp-2">
+                {alert.description}
+              </p>
             )}
           </div>
           {alert.icon}
@@ -81,7 +100,9 @@ const AlertItem = memo(({ alert, onClose, colorClasses }: AlertItemProps) => {
 
         {alert.isLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-white/40 backdrop-blur-[1px] rounded-lg z-10">
-            <Loader2 className={cn("h-5 w-5 animate-spin", colorClasses.icon)} />
+            <Loader2
+              className={cn("h-5 w-5 animate-spin", colorClasses.icon)}
+            />
           </div>
         )}
 
@@ -90,7 +111,7 @@ const AlertItem = memo(({ alert, onClose, colorClasses }: AlertItemProps) => {
           className={cn(
             "absolute top-2 right-2 p-1 rounded-full",
             "hover:bg-black/5 active:bg-black/10",
-            "transition-colors duration-200 z-20"
+            "transition-colors duration-200 z-20",
           )}
         >
           <X className="h-4 w-4 opacity-60" />
@@ -104,31 +125,31 @@ const AlertItem = memo(({ alert, onClose, colorClasses }: AlertItemProps) => {
               alert.variant === "solid"
                 ? "bg-white/20"
                 : alert.color === "primary"
-                ? "bg-violet-200"
-                : alert.color === "success"
-                ? "bg-emerald-200"
-                : alert.color === "warning"
-                ? "bg-amber-200"
-                : alert.color === "danger"
-                ? "bg-red-200"
-                : alert.color === "info"
-                ? "bg-blue-200"
-                : "bg-gray-200"
+                  ? "bg-violet-200"
+                  : alert.color === "success"
+                    ? "bg-emerald-200"
+                    : alert.color === "warning"
+                      ? "bg-amber-200"
+                      : alert.color === "danger"
+                        ? "bg-red-200"
+                        : alert.color === "info"
+                          ? "bg-blue-200"
+                          : "bg-gray-200",
             )}
             indicatorClassName={cn(
               alert.variant === "solid"
                 ? "bg-white"
                 : alert.color === "primary"
-                ? "bg-violet-500"
-                : alert.color === "success"
-                ? "bg-emerald-500"
-                : alert.color === "warning"
-                ? "bg-amber-500"
-                : alert.color === "danger"
-                ? "bg-red-500"
-                : alert.color === "info"
-                ? "bg-blue-500"
-                : "bg-gray-500"
+                  ? "bg-violet-500"
+                  : alert.color === "success"
+                    ? "bg-emerald-500"
+                    : alert.color === "warning"
+                      ? "bg-amber-500"
+                      : alert.color === "danger"
+                        ? "bg-red-500"
+                        : alert.color === "info"
+                          ? "bg-blue-500"
+                          : "bg-gray-500",
             )}
           />
         )}
@@ -140,72 +161,78 @@ const AlertItem = memo(({ alert, onClose, colorClasses }: AlertItemProps) => {
 AlertItem.displayName = "AlertItem";
 
 // Provider component
-export function AlertDialogProvider({ children }: { children: React.ReactNode }) {
+export function AlertDialogProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [alerts, setAlerts] = useState<ExtendedAlertProps[]>([]);
-  const intervalsRef = useRef<Record<string, ReturnType<typeof setInterval>>>({});
+  const intervalsRef = useRef<Record<string, ReturnType<typeof setInterval>>>(
+    {},
+  );
   const colorClassesRef = useRef<Record<AlertColor, Record<string, string>>>({
     primary: {
       bg: "bg-violet-50/95 backdrop-blur-sm",
       border: "border-violet-200",
       progress: "bg-violet-500",
       icon: "text-violet-500",
-      text: "text-violet-800"
+      text: "text-violet-800",
     },
     success: {
       bg: "bg-emerald-50/95 backdrop-blur-sm",
       border: "border-emerald-200",
       progress: "bg-emerald-500",
       icon: "text-emerald-500",
-      text: "text-emerald-800"
+      text: "text-emerald-800",
     },
     warning: {
       bg: "bg-amber-50/95 backdrop-blur-sm",
       border: "border-amber-200",
       progress: "bg-amber-500",
       icon: "text-amber-500",
-      text: "text-amber-800"
+      text: "text-amber-800",
     },
     danger: {
       bg: "bg-red-50/95 backdrop-blur-sm",
       border: "border-red-200",
       progress: "bg-red-500",
       icon: "text-red-500",
-      text: "text-red-800"
+      text: "text-red-800",
     },
     info: {
       bg: "bg-blue-50/95 backdrop-blur-sm",
       border: "border-blue-200",
       progress: "bg-blue-500",
       icon: "text-blue-500",
-      text: "text-blue-800"
+      text: "text-blue-800",
     },
     default: {
       bg: "bg-gray-50/95 backdrop-blur-sm",
       border: "border-gray-200",
       progress: "bg-gray-500",
       icon: "text-gray-500",
-      text: "text-gray-800"
-    }
+      text: "text-gray-800",
+    },
   });
 
   const showAlert = useCallback((props: BaseAlertProps) => {
     const id = Math.random().toString(36).substring(2, 11);
-    const newAlert: ExtendedAlertProps = { 
-      ...props, 
+    const newAlert: ExtendedAlertProps = {
+      ...props,
       id,
       color: props.color || "default",
       description: props.description || "",
-      duration: props.isLoading ? undefined : (props.duration || 3000) // Shorter duration for non-loading alerts
+      duration: props.isLoading ? undefined : props.duration || 3000, // Shorter duration for non-loading alerts
     };
-    
-    setAlerts(prev => [...prev, newAlert]);
+
+    setAlerts((prev) => [...prev, newAlert]);
 
     // Only set up interval for non-loading alerts
     if (!props.isLoading) {
       const duration = props.duration || 3000;
       const startTime = Date.now();
       const endTime = startTime + duration;
-      
+
       intervalsRef.current[id] = setInterval(() => {
         const now = Date.now();
         if (now >= endTime) {
@@ -214,10 +241,10 @@ export function AlertDialogProvider({ children }: { children: React.ReactNode })
           hideAlert(id);
         } else {
           const progress = ((now - startTime) / duration) * 100;
-          setAlerts(prev => 
-            prev.map(alert => 
-              alert.id === id ? { ...alert, progress } : alert
-            )
+          setAlerts((prev) =>
+            prev.map((alert) =>
+              alert.id === id ? { ...alert, progress } : alert,
+            ),
           );
         }
       }, 10);
@@ -226,47 +253,48 @@ export function AlertDialogProvider({ children }: { children: React.ReactNode })
     return id;
   }, []);
 
-  const updateAlert = useCallback((id: string, props: Partial<BaseAlertProps>) => {
-    if (intervalsRef.current[id]) {
-      clearInterval(intervalsRef.current[id]);
-      delete intervalsRef.current[id];
-    }
-    
-    if (!props.isLoading) {
-      const duration = props.duration || 3000;
-      const startTime = Date.now();
-      const endTime = startTime + duration;
-      
-      intervalsRef.current[id] = setInterval(() => {
-        const now = Date.now();
-        if (now >= endTime) {
-          clearInterval(intervalsRef.current[id]);
-          delete intervalsRef.current[id];
-          hideAlert(id);
-        } else {
-          const progress = ((now - startTime) / duration) * 100;
-          setAlerts(prev => 
-            prev.map(alert => 
-              alert.id === id ? { ...alert, progress } : alert
-            )
-          );
-        }
-      }, 10);
-    }
-    
-    setAlerts(prev =>
-      prev.map(alert =>
-        alert.id === id ? { ...alert, ...props } : alert
-      )
-    );
-  }, []);
+  const updateAlert = useCallback(
+    (id: string, props: Partial<BaseAlertProps>) => {
+      if (intervalsRef.current[id]) {
+        clearInterval(intervalsRef.current[id]);
+        delete intervalsRef.current[id];
+      }
+
+      if (!props.isLoading) {
+        const duration = props.duration || 3000;
+        const startTime = Date.now();
+        const endTime = startTime + duration;
+
+        intervalsRef.current[id] = setInterval(() => {
+          const now = Date.now();
+          if (now >= endTime) {
+            clearInterval(intervalsRef.current[id]);
+            delete intervalsRef.current[id];
+            hideAlert(id);
+          } else {
+            const progress = ((now - startTime) / duration) * 100;
+            setAlerts((prev) =>
+              prev.map((alert) =>
+                alert.id === id ? { ...alert, progress } : alert,
+              ),
+            );
+          }
+        }, 10);
+      }
+
+      setAlerts((prev) =>
+        prev.map((alert) => (alert.id === id ? { ...alert, ...props } : alert)),
+      );
+    },
+    [],
+  );
 
   const hideAlert = useCallback((id: string) => {
     if (intervalsRef.current[id]) {
       clearInterval(intervalsRef.current[id]);
       delete intervalsRef.current[id];
     }
-    setAlerts(prev => prev.filter(alert => alert.id !== id));
+    setAlerts((prev) => prev.filter((alert) => alert.id !== id));
   }, []);
 
   // Clean up intervals on unmount
@@ -297,7 +325,9 @@ export function AlertDialogProvider({ children }: { children: React.ReactNode })
 export function useAlertDialog() {
   const context = useContext(AlertContext);
   if (!context) {
-    throw new Error("useAlertDialog must be used within an AlertDialogProvider");
+    throw new Error(
+      "useAlertDialog must be used within an AlertDialogProvider",
+    );
   }
   return context;
 }
@@ -306,42 +336,48 @@ export function useAlertDialog() {
 export function useLoadingAlert() {
   const context = useContext(AlertContext);
   if (!context) {
-    throw new Error("useLoadingAlert must be used within an AlertDialogProvider");
+    throw new Error(
+      "useLoadingAlert must be used within an AlertDialogProvider",
+    );
   }
-  
+
   const { showAlert, updateAlert, hideAlert } = context;
-  
+
   return {
-    show: (title: string, description: string = "", color: AlertColor = "primary") => {
+    show: (
+      title: string,
+      description: string = "",
+      color: AlertColor = "primary",
+    ) => {
       const id = showAlert({
         title,
         description,
         color,
-        isLoading: true
+        isLoading: true,
       });
-      
+
       return {
         updateMessage: (newTitle: string, newDescription: string = "") => {
           updateAlert(id, { title: newTitle, description: newDescription });
         },
         complete: (successTitle: string, successDescription: string = "") => {
-          updateAlert(id, { 
-            title: successTitle, 
+          updateAlert(id, {
+            title: successTitle,
             description: successDescription,
             color: "success",
-            isLoading: false
+            isLoading: false,
           });
         },
         error: (errorTitle: string, errorDescription: string = "") => {
-          updateAlert(id, { 
-            title: errorTitle, 
+          updateAlert(id, {
+            title: errorTitle,
             description: errorDescription,
             color: "danger",
-            isLoading: false
+            isLoading: false,
           });
         },
-        dismiss: () => hideAlert(id)
+        dismiss: () => hideAlert(id),
       };
-    }
+    },
   };
 }

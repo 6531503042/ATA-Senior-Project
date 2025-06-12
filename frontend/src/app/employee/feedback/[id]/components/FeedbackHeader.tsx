@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { FeedbackSubmission } from '@/types/employee';
+import { FeedbackSubmission } from "@/types/employee";
 
 interface FeedbackHeaderProps {
   feedback: FeedbackSubmission;
@@ -15,4 +15,4 @@ export function FeedbackHeader({ feedback }: FeedbackHeaderProps) {
       <p className="text-gray-500 max-w-2xl mx-auto">{feedback.description}</p>
     </div>
   );
-} 
+}

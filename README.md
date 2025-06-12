@@ -21,6 +21,7 @@ This repository contains the **Confidential Feedback System**, designed to enhan
 The **Confidential Feedback System** aims to provide a safe and effective way for employees to share feedback anonymously or publicly. The system collects, analyzes, and visualizes feedback data to help companies like **ATA IT Limited** make data-driven decisions to improve team performance and workplace satisfaction.
 
 ### Key Objectives:
+
 - Protect anonymity and ensure confidentiality of employee feedback.
 - Utilize data-driven insights to improve employee satisfaction and productivity.
 - Streamline feedback processes through automation and AI-driven analysis.
@@ -44,32 +45,33 @@ The **Confidential Feedback System** aims to provide a safe and effective way fo
 Here are mock-ups of the **Confidential Feedback System**:
 
 ![Cover 1](./assets/cover-2.png)
-*Cover 1: Dashboard Overview*
+_Cover 1: Dashboard Overview_
 
 ![Cover 2](./assets/emote.png)
-*Cover 2: Feedback Submission Form*
+_Cover 2: Feedback Submission Form_
 
 ![Cover 3](./assets/graph.png)
-*Cover 3: Sentiment Analysis*
+_Cover 3: Sentiment Analysis_
 
 These mock-ups give a visual representation of the front-end design of the system.
 
 ## Technologies Used
 
-- **Frontend**: 
+- **Frontend**:
   - React.js
   - Next.js
   - Tailwind CSS
   - NextUI
-- **Backend**: 
+- **Backend**:
   - Java Spring Boot (Microservices Architecture)
-- **Database**: 
+- **Database**:
   - MongoDB
-- **Authentication & Authorization**: 
+- **Authentication & Authorization**:
   - JWT (JSON Web Token)
   - OAuth
   - Role-Based Access Control (RBAC)
 - **Others**:
+
   - Docker (Containerization)
   - Kubernetes (Orchestration)
 
@@ -86,24 +88,28 @@ The system is built using a microservices architecture to ensure scalability and
 5. **Authentication & Authorization Service**: Manages secure access to the system with RBAC.
 
 ## Usage
+
 ### For Employees:
+
 1. Submit feedback using the feedback form.
 2. Choose to submit feedback anonymously or under your name.
 3. View the progress of feedback submissions on your dashboard.
 
-
 ### For HR/Admins:
+
 1. Log in using secure credentials.
 2. View categorized feedback and sentiment analysis.
 3. Generate reports and view insights to make data-driven decisions.
 4. Use the follow-up mechanism to respond to critical feedback.
 
 # Contributors
+
 - Nimit - Backend Developer, Frontend Developer, DevOps Developer, Project Manager
 - Kritsakorn - Frontend Developer, UX/UI
 - Kongphop - Frontend Developer, UX/UI
 
 # License
+
 This project is licensed under the MIT License. See the LICENSE file for details.
 
 Developed with ❤️ by the team at ATA IT Limited and [SEEZ's Team Dev].

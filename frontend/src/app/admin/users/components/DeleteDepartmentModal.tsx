@@ -14,7 +14,11 @@ interface DeleteDepartmentModalProps {
   onConfirm: () => void;
 }
 
-export function DeleteDepartmentModal({ open, onOpenChange, onConfirm }: DeleteDepartmentModalProps) {
+export function DeleteDepartmentModal({
+  open,
+  onOpenChange,
+  onConfirm,
+}: DeleteDepartmentModalProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -22,10 +26,17 @@ export function DeleteDepartmentModal({ open, onOpenChange, onConfirm }: DeleteD
           <DialogTitle>Delete Department</DialogTitle>
         </DialogHeader>
         <div className="py-4">
-          <p>Are you sure you want to delete this department? This action cannot be undone.</p>
+          <p>
+            Are you sure you want to delete this department? This action cannot
+            be undone.
+          </p>
         </div>
         <DialogFooter>
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+          >
             Cancel
           </Button>
           <Button type="button" variant="destructive" onClick={onConfirm}>
@@ -35,4 +46,4 @@ export function DeleteDepartmentModal({ open, onOpenChange, onConfirm }: DeleteD
       </DialogContent>
     </Dialog>
   );
-} 
+}

@@ -121,7 +121,7 @@ const UserAvatar = ({
         "font-medium text-sm shadow-sm",
         colorClass,
         "transform transition-transform duration-200 hover:scale-110",
-        "hover:z-10"
+        "hover:z-10",
       )}
       style={{
         marginLeft: index > 0 ? "-0.75rem" : "0",
@@ -160,7 +160,7 @@ const TeamSection = ({ memberIds }: { memberIds: number[] }) => {
             "w-9 h-9 rounded-full border-2 border-white",
             "bg-gray-100 text-gray-600 font-medium text-sm",
             "hover:bg-gray-200 transition-colors duration-200",
-            "shadow-sm"
+            "shadow-sm",
           )}
         >
           +{memberIds.length - 4}
@@ -242,7 +242,6 @@ export function ProjectList({
       },
       sortable: true,
     },
-
   ];
 
   if (isLoading) {

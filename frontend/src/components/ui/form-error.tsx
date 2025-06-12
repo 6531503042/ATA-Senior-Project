@@ -1,7 +1,7 @@
-import React from 'react';
-import { AlertCircle } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { cn } from '@/lib/utils';
+import React from "react";
+import { AlertCircle } from "lucide-react";
+import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 interface FormErrorProps {
   message?: string;
@@ -20,11 +20,11 @@ export function FormError({ message, className }: FormErrorProps) {
         "flex items-center gap-2 mt-1.5",
         "text-sm text-red-600",
         "bg-red-50/50 rounded-md px-2 py-1",
-        className
+        className,
       )}
     >
       <AlertCircle className="h-4 w-4 flex-shrink-0" />
       <span>{message}</span>
     </motion.div>
   );
-} 
+}

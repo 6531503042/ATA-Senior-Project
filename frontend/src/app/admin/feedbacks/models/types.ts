@@ -1,4 +1,4 @@
-import { Project } from '../../projects/models/types';
+import { Project } from "../../projects/models/types";
 
 export interface Feedback {
   id: number;
@@ -35,7 +35,7 @@ export interface FeedbackFilters {
   endDate?: Date;
   page?: number;
   limit?: number;
-} 
+}
 
 export interface SelectItem {
   key: string | number;

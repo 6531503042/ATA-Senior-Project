@@ -1,4 +1,9 @@
-import type { SubmissionResponse, FeedbackAnalysis, SatisfactionAnalysis, AIInsights } from './api/submissions';
+import type {
+  SubmissionResponse,
+  FeedbackAnalysis,
+  SatisfactionAnalysis,
+  AIInsights,
+} from "./api/submissions";
 
 interface FeedbackCache {
   submissions: SubmissionResponse[];
@@ -10,7 +15,7 @@ interface FeedbackCache {
 
 const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
 const BACKGROUND_UPDATE_THRESHOLD = 2 * 60 * 1000; // 2 minutes
-const CACHE_PREFIX = 'feedback_cache_';
+const CACHE_PREFIX = "feedback_cache_";
 
 export const cacheManager = {
   setFeedbackData(feedbackId: number, data: Partial<FeedbackCache>) {
@@ -20,11 +25,11 @@ export const cacheManager = {
       const newData = {
         ...existingData,
         ...data,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
       localStorage.setItem(cacheKey, JSON.stringify(newData));
     } catch (error) {
-      console.warn('Failed to cache feedback data:', error);
+      console.warn("Failed to cache feedback data:", error);
     }
   },
 
@@ -36,10 +41,10 @@ export const cacheManager = {
 
       const data = JSON.parse(cached) as FeedbackCache;
       const isExpired = Date.now() - data.timestamp > CACHE_EXPIRY;
-      
+
       return isExpired ? null : data;
     } catch (error) {
-      console.warn('Failed to retrieve cached feedback data:', error);
+      console.warn("Failed to retrieve cached feedback data:", error);
       return null;
     }
   },
@@ -50,11 +55,11 @@ export const cacheManager = {
         localStorage.removeItem(`${CACHE_PREFIX}${feedbackId}`);
       } else {
         Object.keys(localStorage)
-          .filter(key => key.startsWith(CACHE_PREFIX))
-          .forEach(key => localStorage.removeItem(key));
+          .filter((key) => key.startsWith(CACHE_PREFIX))
+          .forEach((key) => localStorage.removeItem(key));
       }
     } catch (error) {
-      console.warn('Failed to clear cache:', error);
+      console.warn("Failed to clear cache:", error);
     }
   },
 
@@ -69,5 +74,5 @@ export const cacheManager = {
     if (!data) return false;
     // Return true if the cache is older than BACKGROUND_UPDATE_THRESHOLD
     return Date.now() - data.timestamp > BACKGROUND_UPDATE_THRESHOLD;
-  }
-}; 
+  },
+};

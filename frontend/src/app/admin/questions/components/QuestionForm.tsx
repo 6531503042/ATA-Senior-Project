@@ -188,7 +188,7 @@ export function QuestionForm({
           choices: [],
           required: true,
           validationRules: "",
-        }
+        },
   );
 
   useEffect(() => {
@@ -205,7 +205,7 @@ export function QuestionForm({
     formData.choices?.map((choice) => ({ text: choice })) || [
       { text: "" },
       { text: "" },
-    ]
+    ],
   );
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -252,8 +252,10 @@ export function QuestionForm({
         formData.questionType === QuestionType.TEXT_BASED
           ? []
           : formData.questionType === QuestionType.SENTIMENT
-          ? ["NEGATIVE", "NEUTRAL", "POSITIVE"]
-          : options.map((opt) => opt.text.trim()).filter((text) => text !== ""),
+            ? ["NEGATIVE", "NEUTRAL", "POSITIVE"]
+            : options
+                .map((opt) => opt.text.trim())
+                .filter((text) => text !== ""),
       required: formData.required ?? true,
       validationRules: formData.validationRules || "",
     };
@@ -316,7 +318,7 @@ export function QuestionForm({
                     "w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 transition-colors",
                     errors.title
                       ? "border-red-300 focus:ring-red-500"
-                      : "border-gray-300 focus:ring-violet-500"
+                      : "border-gray-300 focus:ring-violet-500",
                   )}
                   placeholder="Enter your question"
                 />
@@ -347,7 +349,7 @@ export function QuestionForm({
                     "w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 transition-colors",
                     errors.description
                       ? "border-red-300 focus:ring-red-500"
-                      : "border-gray-300 focus:ring-violet-500"
+                      : "border-gray-300 focus:ring-violet-500",
                   )}
                   rows={3}
                   placeholder="Add additional context or instructions"
@@ -443,7 +445,7 @@ export function QuestionForm({
                               "flex-1 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 transition-colors",
                               errors.options
                                 ? "border-red-300 focus:ring-red-500"
-                                : "border-gray-300 focus:ring-violet-500"
+                                : "border-gray-300 focus:ring-violet-500",
                             )}
                             placeholder={`Option ${index + 1}`}
                           />
@@ -452,7 +454,7 @@ export function QuestionForm({
                               type="button"
                               onClick={() => {
                                 const newOptions = options.filter(
-                                  (_, i) => i !== index
+                                  (_, i) => i !== index,
                                 );
                                 setOptions(newOptions);
                               }}
@@ -489,7 +491,7 @@ export function QuestionForm({
                         key={sentiment}
                         className={cn(
                           "p-3 rounded-lg flex items-center justify-center gap-2",
-                          bg
+                          bg,
                         )}
                       >
                         <span className="text-2xl">{emoji}</span>

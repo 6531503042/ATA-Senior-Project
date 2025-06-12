@@ -215,3 +215,6 @@ frontend/bun.lockb
 frontend/bun.lockb
 frontend/bun.lockb
 frontend/bun.lockb
+backend/discovery-service/gradle/wrapper/gradle-wrapper.jar
+backend/gradle/wrapper/gradle-wrapper.jar
+backend/user-service/gradle/wrapper/gradle-wrapper.jar

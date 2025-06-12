@@ -1,24 +1,38 @@
-import type { Department, DepartmentHierarchy, DepartmentMetrics, CreateDepartmentDto, DepartmentMember } from '../models/types';
-import { userApi, type Department as ApiDepartment, type CreateDepartmentRequest } from '@/lib/api/users';
+import type {
+  Department,
+  DepartmentHierarchy,
+  DepartmentMetrics,
+  CreateDepartmentDto,
+  DepartmentMember,
+} from "../models/types";
+import {
+  userApi,
+  type Department as ApiDepartment,
+  type CreateDepartmentRequest,
+} from "@/lib/api/users";
 
 export class DepartmentService {
-  private static readonly BASE_URL = '/api/departments';
+  private static readonly BASE_URL = "/api/departments";
 
-  private static mapApiDepartmentToDepartment(apiDept: ApiDepartment): Department {
+  private static mapApiDepartmentToDepartment(
+    apiDept: ApiDepartment,
+  ): Department {
     return {
       id: parseInt(apiDept.id),
       name: apiDept.name,
       description: apiDept.description,
-      active: apiDept.status === 'active',
-      employeeCount: apiDept.employeeCount
+      active: apiDept.status === "active",
+      employeeCount: apiDept.employeeCount,
     };
   }
 
-  private static mapDepartmentToApiRequest(dept: CreateDepartmentDto): CreateDepartmentRequest {
+  private static mapDepartmentToApiRequest(
+    dept: CreateDepartmentDto,
+  ): CreateDepartmentRequest {
     return {
       name: dept.name,
       description: dept.description,
-      status: dept.active ? 'active' : 'inactive'
+      status: dept.active ? "active" : "inactive",
     };
   }
 
@@ -27,16 +41,22 @@ export class DepartmentService {
     metrics: DepartmentMetrics;
   }> {
     const departments = await userApi.getDepartments();
-    const mappedDepartments = departments.map(this.mapApiDepartmentToDepartment);
-    
+    const mappedDepartments = departments.map(
+      this.mapApiDepartmentToDepartment,
+    );
+
     return {
       departments: mappedDepartments,
       metrics: {
         totalDepartments: departments.length,
-        activeDepartments: departments.filter(d => d.status === 'active').length,
+        activeDepartments: departments.filter((d) => d.status === "active")
+          .length,
         departmentsByLevel: {}, // This would need to be calculated based on hierarchy
-        totalMembers: departments.reduce((acc, d) => acc + (d.employeeCount || 0), 0)
-      }
+        totalMembers: departments.reduce(
+          (acc, d) => acc + (d.employeeCount || 0),
+          0,
+        ),
+      },
     };
   }
 
@@ -45,7 +65,9 @@ export class DepartmentService {
     return this.mapApiDepartmentToDepartment(response);
   }
 
-  static async createDepartment(data: CreateDepartmentDto): Promise<Department> {
+  static async createDepartment(
+    data: CreateDepartmentDto,
+  ): Promise<Department> {
     const apiData = this.mapDepartmentToApiRequest(data);
     const response = await userApi.createDepartment(apiData);
     return this.mapApiDepartmentToDepartment(response);
@@ -53,7 +75,7 @@ export class DepartmentService {
 
   static async updateDepartment(
     id: number,
-    data: Partial<CreateDepartmentDto>
+    data: Partial<CreateDepartmentDto>,
   ): Promise<Department> {
     const apiData = this.mapDepartmentToApiRequest(data as CreateDepartmentDto);
     const response = await userApi.updateDepartment(id.toString(), apiData);
@@ -70,50 +92,56 @@ export class DepartmentService {
   }> {
     const department = await userApi.getDepartment(id.toString());
     return {
-      users: department.members?.map(member => ({
-        id: parseInt(member.id),
-        fullname: member.name,
-        email: member.email,
-        role: member.role
-      })) || [],
-      total: department.members?.length || 0
+      users:
+        department.members?.map((member) => ({
+          id: parseInt(member.id),
+          fullname: member.name,
+          email: member.email,
+          role: member.role,
+        })) || [],
+      total: department.members?.length || 0,
     };
   }
 
   static async addDepartmentMember(
     departmentId: number,
     userId: number,
-    role: string
+    role: string,
   ): Promise<void> {
     const department = await userApi.getDepartment(departmentId.toString());
-    const updatedMembers = [...(department.members || []), { id: userId.toString(), role }];
+    const updatedMembers = [
+      ...(department.members || []),
+      { id: userId.toString(), role },
+    ];
     await userApi.updateDepartment(departmentId.toString(), {
-      members: updatedMembers
+      members: updatedMembers,
     });
   }
 
   static async removeDepartmentMember(
     departmentId: number,
-    userId: number
+    userId: number,
   ): Promise<void> {
     const department = await userApi.getDepartment(departmentId.toString());
-    const updatedMembers = (department.members || []).filter(member => member.id !== userId.toString());
+    const updatedMembers = (department.members || []).filter(
+      (member) => member.id !== userId.toString(),
+    );
     await userApi.updateDepartment(departmentId.toString(), {
-      members: updatedMembers
+      members: updatedMembers,
     });
   }
 
   static async updateDepartmentMemberRole(
     departmentId: number,
     userId: number,
-    role: string
+    role: string,
   ): Promise<void> {
     const department = await userApi.getDepartment(departmentId.toString());
-    const updatedMembers = (department.members || []).map(member => 
-      member.id === userId.toString() ? { ...member, role } : member
+    const updatedMembers = (department.members || []).map((member) =>
+      member.id === userId.toString() ? { ...member, role } : member,
     );
     await userApi.updateDepartment(departmentId.toString(), {
-      members: updatedMembers
+      members: updatedMembers,
     });
   }
-} 
+}

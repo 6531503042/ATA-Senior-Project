@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { useRouter } from 'next/navigation';
-import { ProjectForm } from '../../components/ProjectForm';
-import { getProjectById, updateProject } from '@/lib/api/projects';
-import { useToast } from '@/hooks/use-toast';
-import type { Project, CreateProjectDto } from '../../models/types';
+import React from "react";
+import { useRouter } from "next/navigation";
+import { ProjectForm } from "../../components/ProjectForm";
+import { getProjectById, updateProject } from "@/lib/api/projects";
+import { useToast } from "@/hooks/use-toast";
+import type { Project, CreateProjectDto } from "../../models/types";
 
 interface EditProjectPageProps {
   params: {
@@ -27,13 +27,13 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
         const data = await getProjectById(parseInt(projectId, 10));
         setProject(data);
       } catch (error) {
-        console.error('Failed to fetch project:', error);
+        console.error("Failed to fetch project:", error);
         toast({
-          title: 'Error',
-          description: 'Failed to fetch project details. Please try again.',
-          variant: 'destructive',
+          title: "Error",
+          description: "Failed to fetch project details. Please try again.",
+          variant: "destructive",
         });
-        router.push('/admin/projects');
+        router.push("/admin/projects");
       } finally {
         setIsLoading(false);
       }
@@ -47,16 +47,16 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
       setIsLoading(true);
       await updateProject(parseInt(projectId, 10), data);
       toast({
-        title: 'Success',
-        description: 'Project updated successfully.',
+        title: "Success",
+        description: "Project updated successfully.",
       });
-      router.push('/admin/projects');
+      router.push("/admin/projects");
     } catch (error) {
-      console.error('Failed to update project:', error);
+      console.error("Failed to update project:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to update project. Please try again.',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to update project. Please try again.",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -76,7 +76,7 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-gray-900">Edit Project</h1>
         <button
-          onClick={() => router.push('/admin/projects')}
+          onClick={() => router.push("/admin/projects")}
           className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200"
         >
           Back to Projects
@@ -91,4 +91,4 @@ export default function EditProjectPage({ params }: EditProjectPageProps) {
       />
     </div>
   );
-} 
+}

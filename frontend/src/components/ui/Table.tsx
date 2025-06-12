@@ -1,5 +1,5 @@
-import React from 'react';
-import { Button } from './button';
+import React from "react";
+import { Button } from "./button";
 
 interface Column<T> {
   key: keyof T | string;
@@ -13,7 +13,7 @@ interface TableProps<T> {
   columns: Column<T>[];
   onSort?: (key: string) => void;
   sortKey?: string;
-  sortOrder?: 'asc' | 'desc';
+  sortOrder?: "asc" | "desc";
   isLoading?: boolean;
   pagination?: {
     currentPage: number;
@@ -53,7 +53,7 @@ function Table<T>({
       );
     }
 
-    return sortOrder === 'asc' ? (
+    return sortOrder === "asc" ? (
       <svg
         className="w-4 h-4 text-indigo-600"
         fill="none"
@@ -94,7 +94,7 @@ function Table<T>({
                 key={String(column.key)}
                 scope="col"
                 className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${
-                  column.sortable ? 'cursor-pointer' : ''
+                  column.sortable ? "cursor-pointer" : ""
                 }`}
                 onClick={() => column.sortable && onSort?.(String(column.key))}
               >
@@ -163,7 +163,7 @@ function Table<T>({
                   >
                     {column.render
                       ? column.render(item)
-                      : String(item[column.key as keyof T] ?? '')}
+                      : String(item[column.key as keyof T] ?? "")}
                   </td>
                 ))}
                 {actions && (
@@ -181,7 +181,9 @@ function Table<T>({
         <div className="flex items-center justify-between px-6 py-3 bg-white border-t">
           <div className="flex-1 flex justify-between sm:hidden">
             <Button
-              onClick={() => pagination.onPageChange(pagination.currentPage - 1)}
+              onClick={() =>
+                pagination.onPageChange(pagination.currentPage - 1)
+              }
               disabled={pagination.currentPage === 1}
               variant="secondary"
               size="sm"
@@ -189,7 +191,9 @@ function Table<T>({
               Previous
             </Button>
             <Button
-              onClick={() => pagination.onPageChange(pagination.currentPage + 1)}
+              onClick={() =>
+                pagination.onPageChange(pagination.currentPage + 1)
+              }
               disabled={pagination.currentPage === pagination.totalPages}
               variant="secondary"
               size="sm"
@@ -200,14 +204,17 @@ function Table<T>({
           <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
             <div>
               <p className="text-sm text-gray-700">
-                Page <span className="font-medium">{pagination.currentPage}</span>{' '}
-                of <span className="font-medium">{pagination.totalPages}</span>
+                Page{" "}
+                <span className="font-medium">{pagination.currentPage}</span> of{" "}
+                <span className="font-medium">{pagination.totalPages}</span>
               </p>
             </div>
             <div>
               <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
                 <Button
-                  onClick={() => pagination.onPageChange(pagination.currentPage - 1)}
+                  onClick={() =>
+                    pagination.onPageChange(pagination.currentPage - 1)
+                  }
                   disabled={pagination.currentPage === 1}
                   variant="secondary"
                   size="sm"
@@ -215,7 +222,9 @@ function Table<T>({
                   Previous
                 </Button>
                 <Button
-                  onClick={() => pagination.onPageChange(pagination.currentPage + 1)}
+                  onClick={() =>
+                    pagination.onPageChange(pagination.currentPage + 1)
+                  }
                   disabled={pagination.currentPage === pagination.totalPages}
                   variant="secondary"
                   size="sm"
@@ -231,4 +240,4 @@ function Table<T>({
   );
 }
 
-export default Table; 
+export default Table;

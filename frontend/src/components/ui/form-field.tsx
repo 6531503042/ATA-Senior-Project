@@ -1,7 +1,7 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { cn } from '@/lib/utils';
-import { FormError } from './form-error';
+import React from "react";
+import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
+import { FormError } from "./form-error";
 
 interface FormFieldProps {
   label: string;
@@ -22,29 +22,21 @@ export function FormField({
   children,
   className,
   animate,
-  helpText
+  helpText,
 }: FormFieldProps) {
   const showError = touched && error;
 
   return (
-    <motion.div 
-      animate={animate}
-      className={cn("space-y-1.5", className)}
-    >
+    <motion.div animate={animate} className={cn("space-y-1.5", className)}>
       <div className="flex items-center justify-between">
         <label className="block text-sm font-medium text-gray-700">
           {label}
           {required && <span className="text-red-500 ml-1">*</span>}
         </label>
-        {helpText && (
-          <span className="text-xs text-gray-500">{helpText}</span>
-        )}
+        {helpText && <span className="text-xs text-gray-500">{helpText}</span>}
       </div>
 
-      <div className={cn(
-        "relative",
-        showError && "animate-shake"
-      )}>
+      <div className={cn("relative", showError && "animate-shake")}>
         {children}
         <FormError message={showError ? error : undefined} />
       </div>
@@ -62,4 +54,4 @@ export function FormField({
 // }
 // animation: {
 //   shake: 'shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both',
-// } 
+// }

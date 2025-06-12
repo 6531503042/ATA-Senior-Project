@@ -3,81 +3,92 @@ import { motion } from "framer-motion";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { 
-  Building2, 
-  Search, 
-  Filter, 
-  SortAsc, 
-  SortDesc, 
-  PlusCircle 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Building2,
+  Search,
+  Filter,
+  SortAsc,
+  SortDesc,
+  PlusCircle,
 } from "lucide-react";
 import { useUsers } from "../hooks/use-users";
 import { EditDepartmentModal } from "@/app/admin/users/components/EditDepartmentModal";
 import { DeleteDepartmentModal } from "@/app/admin/users/components/DeleteDepartmentModal";
 import { CreateDepartmentModal } from "@/app/admin/users/components/CreateDepartmentModal";
-import type { Department } from '../models/types';
+import type { Department } from "../models/types";
 
 export function DepartmentTable() {
-  const { 
-    departments = [], 
-    isLoadingDepartments, 
-    deleteDepartment 
+  const {
+    departments = [],
+    isLoadingDepartments,
+    deleteDepartment,
   } = useUsers();
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [editingDepartment, setEditingDepartment] = useState<string | null>(null);
-  const [deletingDepartment, setDeletingDepartment] = useState<string | null>(null);
-  const [createDepartmentModalOpen, setCreateDepartmentModalOpen] = useState(false);
-  
+  const [editingDepartment, setEditingDepartment] = useState<string | null>(
+    null,
+  );
+  const [deletingDepartment, setDeletingDepartment] = useState<string | null>(
+    null,
+  );
+  const [createDepartmentModalOpen, setCreateDepartmentModalOpen] =
+    useState(false);
+
   // Sorting state
   const [sortColumn, setSortColumn] = useState<keyof Department | null>(null);
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
   // Sorting function
   const sortedDepartments = [...(departments || [])].sort((a, b) => {
     if (!sortColumn) return 0;
-    
+
     const valueA = a[sortColumn];
     const valueB = b[sortColumn];
 
     if (valueA == null || valueB == null) return 0;
 
-    if (typeof valueA === 'string' && typeof valueB === 'string') {
-      return sortDirection === 'asc'
+    if (typeof valueA === "string" && typeof valueB === "string") {
+      return sortDirection === "asc"
         ? valueA.localeCompare(valueB)
         : valueB.localeCompare(valueA);
     }
 
-    if (typeof valueA === 'number' && typeof valueB === 'number') {
-      return sortDirection === 'asc'
-        ? valueA - valueB
-        : valueB - valueA;
+    if (typeof valueA === "number" && typeof valueB === "number") {
+      return sortDirection === "asc" ? valueA - valueB : valueB - valueA;
     }
 
     return 0;
   });
 
   // Filtering function
-  const filteredDepartments = sortedDepartments.filter((dept) =>
-    dept.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    dept.description.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredDepartments = sortedDepartments.filter(
+    (dept) =>
+      dept.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      dept.description.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   // Handle sorting
   const handleSort = (column: keyof Department) => {
     if (sortColumn === column) {
       // Toggle direction if same column
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
       setSortColumn(column);
-      setSortDirection('asc');
+      setSortDirection("asc");
     }
   };
 
   if (isLoadingDepartments) {
     return (
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         className="flex justify-center items-center h-64"
@@ -91,7 +102,7 @@ export function DepartmentTable() {
   }
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className="space-y-4 p-4 bg-white rounded-xl shadow-sm"
@@ -109,17 +120,19 @@ export function DepartmentTable() {
               className="pl-10 bg-gray-50 border-gray-200 focus:border-violet-300 focus:ring-2 focus:ring-violet-200"
             />
           </div>
-          <Button 
-            variant="outline" 
-            size="icon" 
+          <Button
+            variant="outline"
+            size="icon"
             className="text-gray-600 hover:bg-violet-50"
-            onClick={() => {/* Future filter logic */}}
+            onClick={() => {
+              /* Future filter logic */
+            }}
           >
             <Filter className="h-5 w-5" />
           </Button>
         </div>
-        
-        <Button 
+
+        <Button
           onClick={() => setCreateDepartmentModalOpen(true)}
           className="bg-violet-600 hover:bg-violet-700 text-white gap-2"
         >
@@ -132,28 +145,29 @@ export function DepartmentTable() {
         <TableHeader>
           <TableRow>
             {[
-              { key: 'name', label: 'Name' },
-              { key: 'description', label: 'Description' },
-              { key: 'employeeCount', label: 'Employee Count' },
-              { key: 'status', label: 'Status' },
-              { key: 'actions', label: 'Actions' }
+              { key: "name", label: "Name" },
+              { key: "description", label: "Description" },
+              { key: "employeeCount", label: "Employee Count" },
+              { key: "status", label: "Status" },
+              { key: "actions", label: "Actions" },
             ].map((column) => (
-              <TableHead 
+              <TableHead
                 key={column.key}
-                className={`cursor-pointer ${column.key !== 'actions' ? 'hover:bg-gray-100' : ''}`}
-                onClick={() => 
-                  column.key !== 'actions' && handleSort(column.key as keyof Department)
+                className={`cursor-pointer ${column.key !== "actions" ? "hover:bg-gray-100" : ""}`}
+                onClick={() =>
+                  column.key !== "actions" &&
+                  handleSort(column.key as keyof Department)
                 }
               >
                 <div className="flex items-center">
                   {column.label}
                   {sortColumn === column.key && (
-                    <motion.span 
+                    <motion.span
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       className="ml-2"
                     >
-                      {sortDirection === 'asc' ? (
+                      {sortDirection === "asc" ? (
                         <SortAsc className="h-4 w-4 text-gray-500" />
                       ) : (
                         <SortDesc className="h-4 w-4 text-gray-500" />
@@ -179,8 +193,10 @@ export function DepartmentTable() {
                 <TableCell>{department.description}</TableCell>
                 <TableCell>{department.employeeCount || 0}</TableCell>
                 <TableCell>
-                  <Badge 
-                    variant={department.status === 'active' ? 'default' : 'destructive'}
+                  <Badge
+                    variant={
+                      department.status === "active" ? "default" : "destructive"
+                    }
                   >
                     {department.status}
                   </Badge>

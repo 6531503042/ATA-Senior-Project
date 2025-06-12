@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React, { Suspense } from 'react';
-import Sidebar from '@/components/layout/sidebar';
-import RoleGuard from '@/components/auth/RoleGuard';
+import React, { Suspense } from "react";
+import Sidebar from "@/components/layout/sidebar";
+import RoleGuard from "@/components/auth/RoleGuard";
 
 // Loading component for the admin section
 function AdminLoading() {
@@ -34,19 +34,17 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <RoleGuard allowedRoles={['ROLE_ADMIN']}>
+    <RoleGuard allowedRoles={["ROLE_ADMIN"]}>
       <Suspense fallback={<AdminLoading />}>
         <div className="flex min-h-screen bg-gray-50">
           <aside className="fixed inset-y-0 left-0 w-64 border-r border-gray-200 bg-white shadow-sm z-30">
             <Sidebar />
           </aside>
           <main className="flex-1 pl-64">
-            <div className="min-h-screen bg-gray-50">
-              {children}
-            </div>
+            <div className="min-h-screen bg-gray-50">{children}</div>
           </main>
         </div>
       </Suspense>
     </RoleGuard>
   );
-} 
+}

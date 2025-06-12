@@ -21,7 +21,7 @@ import api from "@/utils/api";
 import { User, TeamMember } from "../models/types";
 import { Project } from "../models/types";
 import { motion } from "framer-motion";
-import { FormField } from '@/components/ui/form-field';
+import { FormField } from "@/components/ui/form-field";
 
 interface ProjectFormModalProps {
   project?: Project;
@@ -46,7 +46,7 @@ export function ProjectFormModal({
   const [startDateError, setStartDateError] = useState<string>("");
   const [endDateError, setEndDateError] = useState<string>("");
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>(
-    project?.memberIds?.map((id) => ({ id: id.toString(), userId: id })) || []
+    project?.memberIds?.map((id) => ({ id: id.toString(), userId: id })) || [],
   );
 
   useEffect(() => {
@@ -61,7 +61,7 @@ export function ProjectFormModal({
           title: "Error",
           description: "Failed to load team members. Please try again.",
           variant: "solid",
-          color: "danger"
+          color: "danger",
         });
       } finally {
         setIsLoading(false);
@@ -72,19 +72,19 @@ export function ProjectFormModal({
   }, [showAlert]);
 
   useEffect(() => {
-      // Disable scrolling when modal is open
-      document.body.style.overflow = "hidden";
-  
-      return () => {
-        // Re-enable scrolling when modal is closed
-        document.body.style.overflow = "auto";
-      };
-    }, []);
+    // Disable scrolling when modal is open
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      // Re-enable scrolling when modal is closed
+      document.body.style.overflow = "auto";
+    };
+  }, []);
 
   const handleInputChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    >,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -108,7 +108,7 @@ export function ProjectFormModal({
             title: "Invalid Date",
             description: "End date must be after start date.",
             variant: "solid",
-            color: "warning"
+            color: "warning",
           });
           return;
         }
@@ -134,7 +134,7 @@ export function ProjectFormModal({
             title: "Invalid Date",
             description: "End date must be after start date.",
             variant: "solid",
-            color: "warning"
+            color: "warning",
           });
           return;
         }
@@ -153,7 +153,6 @@ export function ProjectFormModal({
       { id: Date.now(), userId: 0 }, // Use a number as id (e.g., Date.now())
     ]);
   };
-  
 
   const handleRemoveMember = (id: number) => {
     setTeamMembers((prev) => prev.filter((member) => member.id !== id));
@@ -161,7 +160,7 @@ export function ProjectFormModal({
 
   const handleMemberSelect = (id: number, userId: number) => {
     setTeamMembers((prev) =>
-      prev.map((member) => (member.id === id ? { ...member, userId } : member))
+      prev.map((member) => (member.id === id ? { ...member, userId } : member)),
     );
   };
 
@@ -184,13 +183,13 @@ export function ProjectFormModal({
       // Handle team members
       if (teamMembers.length > 0) {
         const validMembers = teamMembers.filter(
-          (member) => member.userId !== 0
+          (member) => member.userId !== 0,
         );
         if (validMembers.length > 0) {
           try {
             await updateProjectMembers(
               projectId,
-              validMembers.map((member) => member.userId)
+              validMembers.map((member) => member.userId),
             );
           } catch (memberError) {
             console.error("Failed to update team members:", memberError);
@@ -198,10 +197,9 @@ export function ProjectFormModal({
               title: "Warning",
               description: `Project ${mode === "create" ? "created" : "updated"} but failed to update team members.`,
               variant: "solid",
-              color: "warning"
+              color: "warning",
             });
-          }
-          finally {
+          } finally {
             setIsLoading(false);
           }
         }
@@ -211,7 +209,7 @@ export function ProjectFormModal({
         title: "Success",
         description: `Project ${mode === "create" ? "created" : "updated"} successfully.`,
         variant: "solid",
-        color: "success"
+        color: "success",
       });
       onClose();
     } catch (error) {
@@ -220,7 +218,7 @@ export function ProjectFormModal({
         title: "Error",
         description: `Failed to ${mode} project. Please try again.`,
         variant: "solid",
-        color: "danger"
+        color: "danger",
       });
     } finally {
       setIsLoading(false);
@@ -238,7 +236,7 @@ export function ProjectFormModal({
       />
 
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -249,7 +247,7 @@ export function ProjectFormModal({
             <CardHeader className="p-6 bg-gradient-to-r from-violet-50 to-purple-50">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <motion.div 
+                  <motion.div
                     initial={{ rotate: -180, opacity: 0 }}
                     animate={{ rotate: 0, opacity: 1 }}
                     transition={{ duration: 0.3, delay: 0.1 }}
@@ -262,15 +260,17 @@ export function ProjectFormModal({
                     )}
                   </motion.div>
                   <div>
-                    <motion.h2 
+                    <motion.h2
                       initial={{ x: -20, opacity: 0 }}
                       animate={{ x: 0, opacity: 1 }}
                       transition={{ duration: 0.3, delay: 0.2 }}
                       className="text-xl font-semibold text-gray-900"
                     >
-                      {mode === "create" ? "Create New Project" : "Edit Project"}
+                      {mode === "create"
+                        ? "Create New Project"
+                        : "Edit Project"}
                     </motion.h2>
-                    <motion.p 
+                    <motion.p
                       initial={{ x: -20, opacity: 0 }}
                       animate={{ x: 0, opacity: 1 }}
                       transition={{ duration: 0.3, delay: 0.3 }}
@@ -328,10 +328,7 @@ export function ProjectFormModal({
                     </FormField>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                      <FormField
-                        label="Start Date"
-                        required
-                      >
+                      <FormField label="Start Date" required>
                         <DatePicker
                           date={
                             formData.projectStartDate
@@ -345,10 +342,7 @@ export function ProjectFormModal({
                         />
                       </FormField>
 
-                      <FormField
-                        label="End Date"
-                        required
-                      >
+                      <FormField label="End Date" required>
                         <DatePicker
                           date={
                             formData.projectEndDate
@@ -370,7 +364,7 @@ export function ProjectFormModal({
 
                     <FormField
                       label="Team Members"
-                      helpText={`${teamMembers.filter(m => m.userId > 0).length} members selected`}
+                      helpText={`${teamMembers.filter((m) => m.userId > 0).length} members selected`}
                     >
                       <div className="max-h-[240px] overflow-y-auto rounded-lg border border-gray-200 bg-gray-50/50 p-4">
                         <TeamSelector
@@ -412,7 +406,9 @@ export function ProjectFormModal({
                 ) : (
                   <>
                     <Rocket className="h-4 w-4" />
-                    <span>{mode === "create" ? "Create Project" : "Update Project"}</span>
+                    <span>
+                      {mode === "create" ? "Create Project" : "Update Project"}
+                    </span>
                   </>
                 )}
               </Button>

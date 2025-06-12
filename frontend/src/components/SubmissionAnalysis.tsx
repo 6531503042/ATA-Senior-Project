@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { motion } from 'framer-motion';
-import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
+import React from "react";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { motion } from "framer-motion";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 import {
   Brain,
   Target,
@@ -17,13 +17,13 @@ import {
   Star,
   Lightbulb,
   Clock,
-} from 'lucide-react';
-import { ScrollArea } from '@/components/ui/scroll-area';
+} from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
-} from '@/components/ui/hover-card';
+} from "@/components/ui/hover-card";
 
 interface QuestionDetail {
   id: number;
@@ -110,7 +110,7 @@ interface SubmissionResponse {
     responses: Record<string, string>;
     questionDetails: QuestionDetail[];
     overallComments: string;
-    privacyLevel: 'PUBLIC' | 'ANONYMOUS';
+    privacyLevel: "PUBLIC" | "ANONYMOUS";
     submittedAt: string;
     updatedAt: string;
   };
@@ -124,68 +124,75 @@ interface SubmissionAnalysisProps {
 
 const getSentimentIcon = (sentiment: string) => {
   switch (sentiment.toLowerCase()) {
-    case 'positive':
+    case "positive":
       return <ThumbsUp className="h-5 w-5 text-emerald-500" />;
-    case 'negative':
+    case "negative":
       return <ThumbsDown className="h-5 w-5 text-red-500" />;
     default:
       return <AlertCircle className="h-5 w-5 text-amber-500" />;
   }
 };
 
-const QuestionResponseCard = ({ 
-  question, 
-  analysis 
-}: { 
-  question: QuestionDetail; 
+const QuestionResponseCard = ({
+  question,
+  analysis,
+}: {
+  question: QuestionDetail;
   analysis: QuestionAnalysis;
 }) => {
   const getScoreColor = (score: number) => {
-    if (score >= 0.9) return 'text-emerald-500';
-    if (score >= 0.7) return 'text-amber-500';
-    return 'text-red-500';
+    if (score >= 0.9) return "text-emerald-500";
+    if (score >= 0.7) return "text-amber-500";
+    return "text-red-500";
   };
 
   const getBgColor = (score: number) => {
-    if (score >= 0.9) return 'bg-emerald-50 border-emerald-100';
-    if (score >= 0.7) return 'bg-amber-50 border-amber-100';
-    return 'bg-red-50 border-red-100';
+    if (score >= 0.9) return "bg-emerald-50 border-emerald-100";
+    if (score >= 0.7) return "bg-amber-50 border-amber-100";
+    return "bg-red-50 border-red-100";
   };
 
   const getProgressColor = (score: number) => {
-    if (score >= 0.9) return 'bg-emerald-500';
-    if (score >= 0.7) return 'bg-amber-500';
-    return 'bg-red-500';
+    if (score >= 0.9) return "bg-emerald-500";
+    if (score >= 0.7) return "bg-amber-500";
+    return "bg-red-500";
   };
 
   const getResponseDisplay = () => {
-    if (question.questionType === 'MULTIPLE_CHOICE' && question.choices.length > 0) {
-      const selectedChoices = question.response.split(', ');
+    if (
+      question.questionType === "MULTIPLE_CHOICE" &&
+      question.choices.length > 0
+    ) {
+      const selectedChoices = question.response.split(", ");
       return (
         <div className="space-y-2 mt-3">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {question.choices.map((choice, idx) => (
-              <div 
+              <div
                 key={idx}
                 className={cn(
                   "flex items-center gap-3 p-3 rounded-lg transition-all duration-200",
-                  selectedChoices.includes(choice) 
+                  selectedChoices.includes(choice)
                     ? "bg-violet-50 border border-violet-200 shadow-sm"
-                    : "bg-gray-50 border border-gray-200 opacity-70"
+                    : "bg-gray-50 border border-gray-200 opacity-70",
                 )}
               >
-                <div className={cn(
-                  "w-4 h-4 rounded-full flex-shrink-0",
-                  selectedChoices.includes(choice)
-                    ? "bg-violet-500 ring-2 ring-violet-200 ring-offset-1"
-                    : "bg-gray-300"
-                )} />
-                <span className={cn(
-                  "text-sm",
-                  selectedChoices.includes(choice)
-                    ? "text-violet-700 font-medium"
-                    : "text-gray-500"
-                )}>
+                <div
+                  className={cn(
+                    "w-4 h-4 rounded-full flex-shrink-0",
+                    selectedChoices.includes(choice)
+                      ? "bg-violet-500 ring-2 ring-violet-200 ring-offset-1"
+                      : "bg-gray-300",
+                  )}
+                />
+                <span
+                  className={cn(
+                    "text-sm",
+                    selectedChoices.includes(choice)
+                      ? "text-violet-700 font-medium"
+                      : "text-gray-500",
+                  )}
+                >
                   {choice}
                 </span>
               </div>
@@ -193,12 +200,15 @@ const QuestionResponseCard = ({
           </div>
           <div className="mt-3 flex items-center gap-2 text-sm text-violet-600 bg-violet-50 p-2 rounded-lg">
             <CheckCircle2 className="h-4 w-4" />
-            <span>Selected {selectedChoices.length} out of {question.choices.length} options</span>
+            <span>
+              Selected {selectedChoices.length} out of {question.choices.length}{" "}
+              options
+            </span>
           </div>
         </div>
       );
     }
-    
+
     return (
       <div className="bg-white p-4 rounded-lg border border-gray-100 shadow-sm mt-3">
         <p className="text-gray-700 whitespace-pre-line">{question.response}</p>
@@ -234,16 +244,20 @@ const QuestionResponseCard = ({
                 )}
               </div>
               {question.description && (
-                <p className="text-sm text-gray-500 mt-2">{question.description}</p>
+                <p className="text-sm text-gray-500 mt-2">
+                  {question.description}
+                </p>
               )}
             </div>
           </div>
 
           {/* Response Section */}
-          <div className={cn(
-            "rounded-xl p-6 mb-6 border shadow-sm transition-all duration-300",
-            getBgColor(analysis.score)
-          )}>
+          <div
+            className={cn(
+              "rounded-xl p-6 mb-6 border shadow-sm transition-all duration-300",
+              getBgColor(analysis.score),
+            )}
+          >
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <div className="p-1.5 bg-white rounded-lg shadow-sm">
@@ -254,10 +268,12 @@ const QuestionResponseCard = ({
               <HoverCard>
                 <HoverCardTrigger>
                   <div className="flex items-center gap-2 cursor-help bg-white px-3 py-1.5 rounded-full shadow-sm border border-gray-100">
-                    <span className={cn(
-                      "text-lg font-bold",
-                      getScoreColor(analysis.score)
-                    )}>
+                    <span
+                      className={cn(
+                        "text-lg font-bold",
+                        getScoreColor(analysis.score),
+                      )}
+                    >
                       {(analysis.score * 100).toFixed(1)}%
                     </span>
                     {getSentimentIcon(analysis.sentiment)}
@@ -265,18 +281,23 @@ const QuestionResponseCard = ({
                 </HoverCardTrigger>
                 <HoverCardContent className="w-80">
                   <div className="space-y-2">
-                    <h4 className="font-medium text-sm">Analysis Score: {(analysis.score * 100).toFixed(1)}%</h4>
+                    <h4 className="font-medium text-sm">
+                      Analysis Score: {(analysis.score * 100).toFixed(1)}%
+                    </h4>
                     <p className="text-sm text-gray-500">
-                      This score represents the quality and relevance of the response.
+                      This score represents the quality and relevance of the
+                      response.
                     </p>
                     <div className="pt-2 border-t border-gray-100">
-                      <h4 className="font-medium text-sm">Sentiment: {analysis.sentiment}</h4>
+                      <h4 className="font-medium text-sm">
+                        Sentiment: {analysis.sentiment}
+                      </h4>
                       <p className="text-sm text-gray-500">
-                        {analysis.sentiment === 'POSITIVE' 
-                          ? 'The response expresses a positive sentiment or satisfaction.'
-                          : analysis.sentiment === 'NEGATIVE'
-                          ? 'The response expresses a negative sentiment or dissatisfaction.'
-                          : 'The response expresses a neutral sentiment.'}
+                        {analysis.sentiment === "POSITIVE"
+                          ? "The response expresses a positive sentiment or satisfaction."
+                          : analysis.sentiment === "NEGATIVE"
+                            ? "The response expresses a negative sentiment or dissatisfaction."
+                            : "The response expresses a neutral sentiment."}
                       </p>
                     </div>
                   </div>
@@ -286,13 +307,19 @@ const QuestionResponseCard = ({
             <div className="space-y-4">
               <div>
                 <div className="flex items-center justify-between">
-                  <h5 className="text-sm font-medium text-gray-700">Response</h5>
-                  <Badge className={cn(
-                    "px-2 py-1",
-                    analysis.sentiment === 'POSITIVE' ? "bg-emerald-100 text-emerald-700" :
-                    analysis.sentiment === 'NEGATIVE' ? "bg-red-100 text-red-700" :
-                    "bg-amber-100 text-amber-700"
-                  )}>
+                  <h5 className="text-sm font-medium text-gray-700">
+                    Response
+                  </h5>
+                  <Badge
+                    className={cn(
+                      "px-2 py-1",
+                      analysis.sentiment === "POSITIVE"
+                        ? "bg-emerald-100 text-emerald-700"
+                        : analysis.sentiment === "NEGATIVE"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-amber-100 text-amber-700",
+                    )}
+                  >
                     <div className="flex items-center gap-1.5">
                       {getSentimentIcon(analysis.sentiment)}
                       <span>{analysis.sentiment}</span>
@@ -303,17 +330,27 @@ const QuestionResponseCard = ({
               </div>
               <div className="mt-4">
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-xs font-medium text-gray-500">Response Score</span>
-                  <span className={cn("text-xs font-medium", getScoreColor(analysis.score))}>
+                  <span className="text-xs font-medium text-gray-500">
+                    Response Score
+                  </span>
+                  <span
+                    className={cn(
+                      "text-xs font-medium",
+                      getScoreColor(analysis.score),
+                    )}
+                  >
                     {(analysis.score * 100).toFixed(1)}%
                   </span>
                 </div>
                 <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                  <motion.div 
+                  <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${analysis.score * 100}%` }}
                     transition={{ duration: 1, ease: "easeOut" }}
-                    className={cn("h-full rounded-full", getProgressColor(analysis.score))}
+                    className={cn(
+                      "h-full rounded-full",
+                      getProgressColor(analysis.score),
+                    )}
                   />
                 </div>
               </div>
@@ -345,9 +382,14 @@ const QuestionResponseCard = ({
                       <div className="flex-1">
                         <div className="flex flex-wrap items-center gap-2 mb-1">
                           <span className="font-medium text-amber-700">
-                            {suggestion.type.split('_').map(word => 
-                              word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-                            ).join(' ')}
+                            {suggestion.type
+                              .split("_")
+                              .map(
+                                (word) =>
+                                  word.charAt(0).toUpperCase() +
+                                  word.slice(1).toLowerCase(),
+                              )
+                              .join(" ")}
                           </span>
                           {suggestion.score && (
                             <Badge className="bg-white text-amber-700">
@@ -356,16 +398,20 @@ const QuestionResponseCard = ({
                           )}
                         </div>
                         <p className="text-amber-800">{suggestion.content}</p>
-                        {suggestion.details && suggestion.details.length > 0 && (
-                          <ul className="mt-2 space-y-1 bg-white p-3 rounded-lg border border-amber-100">
-                            {suggestion.details.map((detail, idx) => (
-                              <li key={idx} className="flex items-center gap-2 text-sm text-amber-600">
-                                <CheckCircle2 className="h-4 w-4 flex-shrink-0 text-amber-500" />
-                                {detail}
-                              </li>
-                            ))}
-                          </ul>
-                        )}
+                        {suggestion.details &&
+                          suggestion.details.length > 0 && (
+                            <ul className="mt-2 space-y-1 bg-white p-3 rounded-lg border border-amber-100">
+                              {suggestion.details.map((detail, idx) => (
+                                <li
+                                  key={idx}
+                                  className="flex items-center gap-2 text-sm text-amber-600"
+                                >
+                                  <CheckCircle2 className="h-4 w-4 flex-shrink-0 text-amber-500" />
+                                  {detail}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
                       </div>
                     </div>
                   </motion.div>
@@ -375,51 +421,58 @@ const QuestionResponseCard = ({
           )}
 
           {/* Improvement Priorities */}
-          {analysis.improvement_priorities && analysis.improvement_priorities.length > 0 && (
-            <div className="mt-6 space-y-4">
-              <div className="flex items-center gap-2">
-                <div className="p-1.5 bg-blue-50 rounded-lg">
-                  <Target className="h-5 w-5 text-blue-500" />
+          {analysis.improvement_priorities &&
+            analysis.improvement_priorities.length > 0 && (
+              <div className="mt-6 space-y-4">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 bg-blue-50 rounded-lg">
+                    <Target className="h-5 w-5 text-blue-500" />
+                  </div>
+                  <h4 className="font-medium text-gray-900">
+                    Improvement Priorities
+                  </h4>
                 </div>
-                <h4 className="font-medium text-gray-900">Improvement Priorities</h4>
-              </div>
-              <div className="grid grid-cols-1 gap-3">
-                {analysis.improvement_priorities.map((priority, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100 shadow-sm"
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="p-2 bg-white rounded-lg shadow-sm">
-                        <Target className="h-4 w-4 text-blue-500" />
-                      </div>
-                      <div>
-                        <p className="text-blue-800">{priority.description}</p>
-                        <div className="flex gap-2 mt-2">
-                          <Badge className="bg-white text-blue-700">
-                            {priority.category || 'General'}
-                          </Badge>
-                          <Badge className="bg-white text-blue-700">
-                            Score: {priority.score.toFixed(1)}%
-                          </Badge>
+                <div className="grid grid-cols-1 gap-3">
+                  {analysis.improvement_priorities.map((priority, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100 shadow-sm"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="p-2 bg-white rounded-lg shadow-sm">
+                          <Target className="h-4 w-4 text-blue-500" />
+                        </div>
+                        <div>
+                          <p className="text-blue-800">
+                            {priority.description}
+                          </p>
+                          <div className="flex gap-2 mt-2">
+                            <Badge className="bg-white text-blue-700">
+                              {priority.category || "General"}
+                            </Badge>
+                            <Badge className="bg-white text-blue-700">
+                              Score: {priority.score.toFixed(1)}%
+                            </Badge>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </motion.div>
-                ))}
+                    </motion.div>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
         </div>
       </Card>
     </motion.div>
   );
 };
 
-const SubmissionAnalysis: React.FC<SubmissionAnalysisProps> = ({ submissionData }) => {
+const SubmissionAnalysis: React.FC<SubmissionAnalysisProps> = ({
+  submissionData,
+}) => {
   const { submission, analysis } = submissionData;
 
   return (
@@ -438,16 +491,22 @@ const SubmissionAnalysis: React.FC<SubmissionAnalysisProps> = ({ submissionData 
               <div className="flex flex-wrap items-center gap-4">
                 <div className="flex items-center gap-2 text-violet-100">
                   <Clock className="h-4 w-4" />
-                  <span>{format(new Date(submission.submittedAt), 'MMMM do, yyyy')}</span>
+                  <span>
+                    {format(new Date(submission.submittedAt), "MMMM do, yyyy")}
+                  </span>
                   <span className="text-violet-200">•</span>
-                  <span>{format(new Date(submission.submittedAt), 'h:mm:ss a')}</span>
+                  <span>
+                    {format(new Date(submission.submittedAt), "h:mm:ss a")}
+                  </span>
                 </div>
-                <Badge className={cn(
-                  "text-lg px-4 py-2",
-                  submission.privacyLevel === 'PUBLIC'
-                    ? "bg-emerald-400/20 text-emerald-100"
-                    : "bg-amber-400/20 text-amber-100"
-                )}>
+                <Badge
+                  className={cn(
+                    "text-lg px-4 py-2",
+                    submission.privacyLevel === "PUBLIC"
+                      ? "bg-emerald-400/20 text-emerald-100"
+                      : "bg-amber-400/20 text-amber-100",
+                  )}
+                >
                   {submission.privacyLevel}
                 </Badge>
               </div>
@@ -459,19 +518,25 @@ const SubmissionAnalysis: React.FC<SubmissionAnalysisProps> = ({ submissionData 
                         {submission.submittedBy.charAt(0).toUpperCase()}
                       </span>
                     </div>
-                    <span className="text-white">User #{submission.submittedBy}</span>
+                    <span className="text-white">
+                      User #{submission.submittedBy}
+                    </span>
                   </div>
                 ) : (
                   <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-full">
                     <div className="w-6 h-6 rounded-full bg-violet-300 flex items-center justify-center">
-                      <span className="text-xs font-medium text-violet-800">A</span>
+                      <span className="text-xs font-medium text-violet-800">
+                        A
+                      </span>
                     </div>
                     <span className="text-white">Anonymous</span>
                   </div>
                 )}
                 <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-full">
                   <MessageSquare className="h-4 w-4 text-violet-200" />
-                  <span className="text-white">{submission.questionDetails.length} Questions</span>
+                  <span className="text-white">
+                    {submission.questionDetails.length} Questions
+                  </span>
                 </div>
               </div>
             </div>
@@ -501,8 +566,8 @@ const SubmissionAnalysis: React.FC<SubmissionAnalysisProps> = ({ submissionData 
                           cx="40"
                           cy="40"
                           initial={{ strokeDasharray: "0 100" }}
-                          animate={{ 
-                            strokeDasharray: `${analysis.overall_score * 100} 100` 
+                          animate={{
+                            strokeDasharray: `${analysis.overall_score * 100} 100`,
                           }}
                           transition={{ duration: 1, ease: "easeOut" }}
                           style={{
@@ -545,7 +610,9 @@ const SubmissionAnalysis: React.FC<SubmissionAnalysisProps> = ({ submissionData 
             <div className="p-2 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg shadow-sm">
               <Star className="h-5 w-5 text-white" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900">Executive Summary</h3>
+            <h3 className="text-xl font-semibold text-gray-900">
+              Executive Summary
+            </h3>
             <Badge className="ml-auto bg-violet-100 text-violet-700">
               Overall Rating: {analysis.executive_summary.overall_rating}
             </Badge>
@@ -559,37 +626,43 @@ const SubmissionAnalysis: React.FC<SubmissionAnalysisProps> = ({ submissionData 
                   <div className="p-1.5 bg-emerald-50 rounded-lg">
                     <CheckCircle2 className="h-5 w-5 text-emerald-500" />
                   </div>
-                  <h4 className="text-lg font-medium text-gray-900">Key Strengths</h4>
+                  <h4 className="text-lg font-medium text-gray-900">
+                    Key Strengths
+                  </h4>
                 </div>
                 <div className="space-y-3">
-                  {analysis.executive_summary.strengths.map((strength, index) => (
-                    <motion.div
-                      key={index}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl p-4 border border-emerald-100 shadow-sm"
-                    >
-                      <div className="flex items-start gap-3">
-                        <div className="p-2 bg-white rounded-lg shadow-sm">
-                          <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-emerald-800">{strength.description}</p>
-                          <div className="flex flex-wrap gap-2 mt-2">
-                            {strength.category && (
+                  {analysis.executive_summary.strengths.map(
+                    (strength, index) => (
+                      <motion.div
+                        key={index}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl p-4 border border-emerald-100 shadow-sm"
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className="p-2 bg-white rounded-lg shadow-sm">
+                            <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-emerald-800">
+                              {strength.description}
+                            </p>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {strength.category && (
+                                <Badge className="bg-white text-emerald-700">
+                                  {strength.category}
+                                </Badge>
+                              )}
                               <Badge className="bg-white text-emerald-700">
-                                {strength.category}
+                                Score: {strength.score.toFixed(1)}%
                               </Badge>
-                            )}
-                            <Badge className="bg-white text-emerald-700">
-                              Score: {strength.score.toFixed(1)}%
-                            </Badge>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </motion.div>
-                  ))}
+                      </motion.div>
+                    ),
+                  )}
                 </div>
               </div>
             )}
@@ -601,87 +674,104 @@ const SubmissionAnalysis: React.FC<SubmissionAnalysisProps> = ({ submissionData 
                   <div className="p-1.5 bg-amber-50 rounded-lg">
                     <Target className="h-5 w-5 text-amber-500" />
                   </div>
-                  <h4 className="text-lg font-medium text-gray-900">Action Items</h4>
+                  <h4 className="text-lg font-medium text-gray-900">
+                    Action Items
+                  </h4>
                 </div>
                 <div className="space-y-3">
-                  {analysis.executive_summary.action_items.map((item, index) => (
-                    <motion.div
-                      key={index}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-4 border border-amber-100 shadow-sm"
-                    >
-                      <div className="flex items-start gap-3">
-                        <div className="p-2 bg-white rounded-lg shadow-sm">
-                          <Target className="h-4 w-4 text-amber-500" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-amber-800">{item.description}</p>
-                          <div className="flex flex-wrap gap-2 mt-2">
-                            <Badge className="bg-white text-amber-700">
-                              {item.category}
-                            </Badge>
-                            <Badge className="bg-white text-amber-700">
-                              {item.priority} Priority
-                            </Badge>
+                  {analysis.executive_summary.action_items.map(
+                    (item, index) => (
+                      <motion.div
+                        key={index}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-4 border border-amber-100 shadow-sm"
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className="p-2 bg-white rounded-lg shadow-sm">
+                            <Target className="h-4 w-4 text-amber-500" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-amber-800">{item.description}</p>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              <Badge className="bg-white text-amber-700">
+                                {item.category}
+                              </Badge>
+                              <Badge className="bg-white text-amber-700">
+                                {item.priority} Priority
+                              </Badge>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </motion.div>
-                  ))}
+                      </motion.div>
+                    ),
+                  )}
                 </div>
               </div>
             )}
           </div>
 
           {/* Key Insights */}
-          {analysis.executive_summary.key_insights && analysis.executive_summary.key_insights.length > 0 && (
-            <div className="mt-6 space-y-4">
-              <div className="flex items-center gap-2">
-                <div className="p-1.5 bg-blue-50 rounded-lg">
-                  <Lightbulb className="h-5 w-5 text-blue-500" />
+          {analysis.executive_summary.key_insights &&
+            analysis.executive_summary.key_insights.length > 0 && (
+              <div className="mt-6 space-y-4">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 bg-blue-50 rounded-lg">
+                    <Lightbulb className="h-5 w-5 text-blue-500" />
+                  </div>
+                  <h4 className="text-lg font-medium text-gray-900">
+                    Key Insights
+                  </h4>
                 </div>
-                <h4 className="text-lg font-medium text-gray-900">Key Insights</h4>
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100 shadow-sm">
+                  <ul className="space-y-2">
+                    {analysis.executive_summary.key_insights.map(
+                      (insight, index) => (
+                        <motion.li
+                          key={index}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: index * 0.1 }}
+                          className="flex items-start gap-3"
+                        >
+                          <div className="p-1.5 bg-white rounded-lg shadow-sm mt-0.5">
+                            <Brain className="h-4 w-4 text-blue-500" />
+                          </div>
+                          <span className="text-blue-800">{insight}</span>
+                        </motion.li>
+                      ),
+                    )}
+                  </ul>
+                </div>
               </div>
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100 shadow-sm">
-                <ul className="space-y-2">
-                  {analysis.executive_summary.key_insights.map((insight, index) => (
-                    <motion.li
-                      key={index}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="flex items-start gap-3"
-                    >
-                      <div className="p-1.5 bg-white rounded-lg shadow-sm mt-0.5">
-                        <Brain className="h-4 w-4 text-blue-500" />
-                      </div>
-                      <span className="text-blue-800">{insight}</span>
-                    </motion.li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          )}
+            )}
 
           {/* Overall Metrics */}
           <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div className="bg-violet-50 rounded-xl p-4 border border-violet-100 shadow-sm">
               <div className="text-sm text-violet-700 mb-1">Overall Score</div>
-              <div className="text-2xl font-bold text-violet-900">{(analysis.overall_score * 100).toFixed(1)}%</div>
+              <div className="text-2xl font-bold text-violet-900">
+                {(analysis.overall_score * 100).toFixed(1)}%
+              </div>
             </div>
             <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-100 shadow-sm">
               <div className="text-sm text-emerald-700 mb-1">Satisfaction</div>
-              <div className="text-2xl font-bold text-emerald-900">{(analysis.satisfaction_score * 100).toFixed(1)}%</div>
+              <div className="text-2xl font-bold text-emerald-900">
+                {(analysis.satisfaction_score * 100).toFixed(1)}%
+              </div>
             </div>
             <div className="bg-blue-50 rounded-xl p-4 border border-blue-100 shadow-sm">
               <div className="text-sm text-blue-700 mb-1">Response Quality</div>
-              <div className="text-2xl font-bold text-blue-900">{(analysis.key_metrics.response_quality * 100).toFixed(1)}%</div>
+              <div className="text-2xl font-bold text-blue-900">
+                {(analysis.key_metrics.response_quality * 100).toFixed(1)}%
+              </div>
             </div>
             <div className="bg-amber-50 rounded-xl p-4 border border-amber-100 shadow-sm">
               <div className="text-sm text-amber-700 mb-1">Sentiment Score</div>
-              <div className="text-2xl font-bold text-amber-900">{(analysis.key_metrics.sentiment_score * 100).toFixed(1)}%</div>
+              <div className="text-2xl font-bold text-amber-900">
+                {(analysis.key_metrics.sentiment_score * 100).toFixed(1)}%
+              </div>
             </div>
           </div>
         </div>
@@ -693,16 +783,18 @@ const SubmissionAnalysis: React.FC<SubmissionAnalysisProps> = ({ submissionData 
           <div className="p-2 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg shadow-sm">
             <Brain className="h-5 w-5 text-white" />
           </div>
-          <h3 className="text-xl font-semibold text-gray-900">Question Analysis</h3>
+          <h3 className="text-xl font-semibold text-gray-900">
+            Question Analysis
+          </h3>
         </div>
 
         <ScrollArea className="h-[calc(100vh-24rem)]">
           <div className="space-y-6 pr-4">
             {submission.questionDetails.map((question) => {
               const questionAnalysis = analysis.question_analyses.find(
-                qa => qa.question_id === question.id
+                (qa) => qa.question_id === question.id,
               );
-              
+
               return questionAnalysis ? (
                 <QuestionResponseCard
                   key={question.id}
@@ -718,4 +810,4 @@ const SubmissionAnalysis: React.FC<SubmissionAnalysisProps> = ({ submissionData 
   );
 };
 
-export default SubmissionAnalysis; 
+export default SubmissionAnalysis;

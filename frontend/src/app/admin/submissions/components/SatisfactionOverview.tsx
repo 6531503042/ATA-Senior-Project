@@ -58,7 +58,7 @@ const SentimentDistributionCard = ({
 }) => {
   // Ensure percentage is a valid number
   const validPercentage = isNaN(percentage) ? 0 : percentage;
-  
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -77,8 +77,8 @@ const SentimentDistributionCard = ({
           color === "positive"
             ? "text-emerald-600"
             : color === "neutral"
-            ? "text-gray-600"
-            : "text-red-600"
+              ? "text-gray-600"
+              : "text-red-600",
         )}
       >
         {validPercentage.toFixed(1)}%
@@ -94,10 +94,12 @@ export function SatisfactionOverview({ analysis }: SatisfactionOverviewProps) {
   // Ensure satisfaction rate is between 0 and 100
   const normalizedSatisfactionRate = Math.min(
     Math.max(
-      isNaN(satisfactionOverview.satisfactionRate) ? 0 : satisfactionOverview.satisfactionRate, 
-      0
+      isNaN(satisfactionOverview.satisfactionRate)
+        ? 0
+        : satisfactionOverview.satisfactionRate,
+      0,
     ),
-    100
+    100,
   );
 
   return (
@@ -165,8 +167,15 @@ export function SatisfactionOverview({ analysis }: SatisfactionOverviewProps) {
             <SatisfactionMeter
               percentage={normalizedSatisfactionRate}
               previousYear={
-                satisfactionOverview.previousPeriod?.satisfactionRate 
-                  ? Math.min(Math.max(satisfactionOverview.previousPeriod.satisfactionRate * 100, 0), 100)
+                satisfactionOverview.previousPeriod?.satisfactionRate
+                  ? Math.min(
+                      Math.max(
+                        satisfactionOverview.previousPeriod.satisfactionRate *
+                          100,
+                        0,
+                      ),
+                      100,
+                    )
                   : 0
               }
             />
@@ -181,19 +190,31 @@ export function SatisfactionOverview({ analysis }: SatisfactionOverviewProps) {
               <div className="flex gap-4 flex-row h-max w-full">
                 <SentimentDistributionCard
                   emoji="😃"
-                  percentage={isNaN(sentimentDistribution.positive.percentage) ? 0 : sentimentDistribution.positive.percentage}
+                  percentage={
+                    isNaN(sentimentDistribution.positive.percentage)
+                      ? 0
+                      : sentimentDistribution.positive.percentage
+                  }
                   label="Positive"
                   color="positive"
                 />
                 <SentimentDistributionCard
                   emoji="😐"
-                  percentage={isNaN(sentimentDistribution.neutral.percentage) ? 0 : sentimentDistribution.neutral.percentage}
+                  percentage={
+                    isNaN(sentimentDistribution.neutral.percentage)
+                      ? 0
+                      : sentimentDistribution.neutral.percentage
+                  }
                   label="Neutral"
                   color="neutral"
                 />
                 <SentimentDistributionCard
                   emoji="😞"
-                  percentage={isNaN(sentimentDistribution.negative.percentage) ? 0 : sentimentDistribution.negative.percentage}
+                  percentage={
+                    isNaN(sentimentDistribution.negative.percentage)
+                      ? 0
+                      : sentimentDistribution.negative.percentage
+                  }
                   label="Negative"
                   color="negative"
                 />

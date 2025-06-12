@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { Button } from '@/components/ui/Button';
-import { ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { Button } from "@/components/ui/Button";
+import { ChevronLeft, ChevronRight, CheckCircle2 } from "lucide-react";
 
 interface FeedbackNavigationProps {
   currentStep: number;
@@ -58,10 +58,10 @@ export function FeedbackNavigation({
           disabled={!canProceed}
           className="gap-2 bg-violet-600 hover:bg-violet-700"
         >
-          {currentStep === totalSteps - 1 ? 'Final Step' : 'Next Question'}
+          {currentStep === totalSteps - 1 ? "Final Step" : "Next Question"}
           <ChevronRight className="h-4 w-4" />
         </Button>
       )}
     </div>
   );
-} 
+}

@@ -11,14 +11,14 @@ import { useState } from "react";
 
 export default function UsersPage() {
   const [isCreateUserModalOpen, setIsCreateUserModalOpen] = useState(false);
-  const [isCreateDepartmentModalOpen, setIsCreateDepartmentModalOpen] = useState(false);
+  const [isCreateDepartmentModalOpen, setIsCreateDepartmentModalOpen] =
+    useState(false);
 
   return (
     <div className="container mx-auto py-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">User Management</h1>
-        <div className="space-x-4">
-        </div>
+        <div className="space-x-4"></div>
       </div>
 
       <Tabs defaultValue="users" className="space-y-4">
@@ -47,4 +47,4 @@ export default function UsersPage() {
       />
     </div>
   );
-} 
+}

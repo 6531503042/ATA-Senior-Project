@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface PageHeaderProps {
   title: string;
@@ -20,4 +20,4 @@ export function PageHeader({ title, description, actions }: PageHeaderProps) {
       </div>
     </div>
   );
-} 
+}

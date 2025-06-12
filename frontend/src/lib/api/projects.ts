@@ -1,41 +1,46 @@
-import axios, { AxiosError } from 'axios';
-import { getCookie } from 'cookies-next';
-import type { ProjectStats, CreateProjectDto, ProjectMembersDto, ApiError } from '@/app/admin/projects/models/types';
+import axios, { AxiosError } from "axios";
+import { getCookie } from "cookies-next";
+import type {
+  ProjectStats,
+  CreateProjectDto,
+  ProjectMembersDto,
+  ApiError,
+} from "@/app/admin/projects/models/types";
 
 // Create axios instance for feedback service
 const feedbackApi = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_FEEDBACK_API_URL || 'http://localhost:8084',
+  baseURL: process.env.NEXT_PUBLIC_FEEDBACK_API_URL || "http://localhost:8084",
   headers: {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json'
+    "Content-Type": "application/json",
+    Accept: "application/json",
   },
-  withCredentials: true
+  withCredentials: true,
 });
 
 // Add request interceptor
 feedbackApi.interceptors.request.use(
   (config) => {
-    const token = getCookie('accessToken');
+    const token = getCookie("accessToken");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
 
     // Log request details
-    console.log('Feedback API Request:', {
+    console.log("Feedback API Request:", {
       url: `${config.baseURL}${config.url}`,
       method: config.method,
       headers: {
         ...config.headers,
-        Authorization: config.headers.Authorization ? 'Bearer ****' : 'None'
-      }
+        Authorization: config.headers.Authorization ? "Bearer ****" : "None",
+      },
     });
 
     return config;
   },
   (error) => {
-    console.error('Request configuration error:', error.message);
+    console.error("Request configuration error:", error.message);
     return Promise.reject(error);
-  }
+  },
 );
 
 interface ProjectFilters {
@@ -49,10 +54,12 @@ interface ProjectFilters {
 
 export async function getProjectMetrics(): Promise<ProjectStats> {
   try {
-    const response = await feedbackApi.get('/api/v1/dashboard/projects/metrics');
+    const response = await feedbackApi.get(
+      "/api/v1/dashboard/projects/metrics",
+    );
     return response.data;
   } catch (error) {
-    console.error('Failed to fetch project metrics:', error);
+    console.error("Failed to fetch project metrics:", error);
     throw error;
   }
 }
@@ -63,10 +70,12 @@ export async function getProjectStats(): Promise<ProjectStats> {
 
 export async function getProjects(filters: Partial<ProjectFilters> = {}) {
   try {
-    const response = await feedbackApi.get('/api/v1/admin/projects/all', { params: filters });
+    const response = await feedbackApi.get("/api/v1/admin/projects/all", {
+      params: filters,
+    });
     return response.data;
   } catch (error) {
-    console.error('Failed to fetch projects:', error);
+    console.error("Failed to fetch projects:", error);
     throw error;
   }
 }
@@ -84,55 +93,76 @@ export async function getProjectById(id: number) {
 export async function createProject(data: CreateProjectDto) {
   try {
     // Validate required fields
-    if (!data.name || !data.description || !data.projectStartDate || !data.projectEndDate) {
-      throw new Error('Missing required fields');
+    if (
+      !data.name ||
+      !data.description ||
+      !data.projectStartDate ||
+      !data.projectEndDate
+    ) {
+      throw new Error("Missing required fields");
     }
 
     // Ensure dates are in the correct format
     const projectData = {
       ...data,
       projectStartDate: new Date(data.projectStartDate).toISOString(),
-      projectEndDate: new Date(data.projectEndDate).toISOString()
+      projectEndDate: new Date(data.projectEndDate).toISOString(),
     };
 
     // Log request data for debugging
-    console.log('Creating project with data:', {
+    console.log("Creating project with data:", {
       ...projectData,
       projectStartDate: new Date(projectData.projectStartDate).toLocaleString(),
-      projectEndDate: new Date(projectData.projectEndDate).toLocaleString()
+      projectEndDate: new Date(projectData.projectEndDate).toLocaleString(),
     });
 
-    const response = await feedbackApi.post('/api/v1/admin/projects/create', projectData);
-    
+    const response = await feedbackApi.post(
+      "/api/v1/admin/projects/create",
+      projectData,
+    );
+
     // Log successful response
-    console.log('Project creation response:', response.data);
-    
+    console.log("Project creation response:", response.data);
+
     return response.data;
   } catch (error) {
     const axiosError = error as AxiosError;
     const apiError: ApiError = {
-      message: axiosError.response?.data?.message || axiosError.message || 'Failed to create project',
+      message:
+        axiosError.response?.data?.message ||
+        axiosError.message ||
+        "Failed to create project",
       status: axiosError.response?.status,
-      response: axiosError.response?.data
+      response: axiosError.response?.data,
     };
-    
+
     // Enhanced error logging
-    console.error('Failed to create project:', apiError);
-    
+    console.error("Failed to create project:", apiError);
+
     throw apiError;
   }
 }
 
-export async function updateProject(id: number, data: Partial<CreateProjectDto>) {
+export async function updateProject(
+  id: number,
+  data: Partial<CreateProjectDto>,
+) {
   try {
     // Format dates if they are provided
     const projectData = {
       ...data,
-      ...(data.projectStartDate && { projectStartDate: new Date(data.projectStartDate).toISOString() }),
-      ...(data.projectEndDate && { projectEndDate: new Date(data.projectEndDate).toISOString() })
+      ...(data.projectStartDate && {
+        projectStartDate: new Date(data.projectStartDate).toISOString(),
+      }),
+      ...(data.projectEndDate && {
+        projectEndDate: new Date(data.projectEndDate).toISOString(),
+      }),
     };
 
-    const response = await feedbackApi.put(`/api/v1/admin/projects/${id}`, projectData);
+    const response = await feedbackApi.put(
+      `/api/v1/admin/projects/${id}`,
+      projectData,
+    );
     return response.data;
   } catch (error) {
     console.error(`Failed to update project ${id}:`, error);
@@ -152,7 +182,9 @@ export async function deleteProject(id: number) {
 
 export async function getProjectMembers(id: number) {
   try {
-    const response = await feedbackApi.get(`/api/v1/admin/projects/${id}/members`);
+    const response = await feedbackApi.get(
+      `/api/v1/admin/projects/${id}/members`,
+    );
     return response.data;
   } catch (error) {
     console.error(`Failed to fetch project members for project ${id}:`, error);
@@ -160,10 +192,16 @@ export async function getProjectMembers(id: number) {
   }
 }
 
-export async function addProjectMembers(projectId: number, memberIds: number[]) {
+export async function addProjectMembers(
+  projectId: number,
+  memberIds: number[],
+) {
   try {
     const data: ProjectMembersDto = { memberIds };
-    const response = await feedbackApi.post(`/api/v1/admin/projects/${projectId}/members`, data);
+    const response = await feedbackApi.post(
+      `/api/v1/admin/projects/${projectId}/members`,
+      data,
+    );
     return response.data;
   } catch (error) {
     console.error(`Failed to add members to project ${projectId}:`, error);
@@ -171,10 +209,16 @@ export async function addProjectMembers(projectId: number, memberIds: number[]) 
   }
 }
 
-export async function updateProjectMembers(projectId: number, memberIds: number[]) {
+export async function updateProjectMembers(
+  projectId: number,
+  memberIds: number[],
+) {
   try {
     const data: ProjectMembersDto = { memberIds };
-    const response = await feedbackApi.post(`/api/v1/admin/projects/${projectId}/members`, data);
+    const response = await feedbackApi.post(
+      `/api/v1/admin/projects/${projectId}/members`,
+      data,
+    );
     return response.data;
   } catch (error) {
     console.error(`Failed to update project ${projectId} members:`, error);
@@ -184,9 +228,14 @@ export async function updateProjectMembers(projectId: number, memberIds: number[
 
 export async function removeProjectMember(projectId: number, memberId: number) {
   try {
-    await feedbackApi.delete(`/api/v1/admin/projects/${projectId}/members/${memberId}`);
+    await feedbackApi.delete(
+      `/api/v1/admin/projects/${projectId}/members/${memberId}`,
+    );
   } catch (error) {
-    console.error(`Failed to remove member ${memberId} from project ${projectId}:`, error);
+    console.error(
+      `Failed to remove member ${memberId} from project ${projectId}:`,
+      error,
+    );
     throw error;
   }
-} 
+}

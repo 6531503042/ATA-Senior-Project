@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/hooks/use-auth';
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/use-auth";
 
 interface RoleGuardProps {
   children: React.ReactNode;
@@ -11,7 +11,7 @@ interface RoleGuardProps {
 export default function RoleGuard({
   children,
   allowedRoles,
-  redirectTo = '/auth/login',
+  redirectTo = "/auth/login",
 }: RoleGuardProps) {
   const { user, isLoading } = useAuth();
   const router = useRouter();
@@ -22,10 +22,14 @@ export default function RoleGuard({
       return;
     }
 
-    if (!isLoading && user && !allowedRoles.some(role => user.roles.includes(role))) {
-      const redirectPath = user.roles.includes('ROLE_ADMIN') 
-        ? '/admin/dashboard' 
-        : '/employee';
+    if (
+      !isLoading &&
+      user &&
+      !allowedRoles.some((role) => user.roles.includes(role))
+    ) {
+      const redirectPath = user.roles.includes("ROLE_ADMIN")
+        ? "/admin/dashboard"
+        : "/employee";
       router.push(redirectPath);
     }
   }, [user, isLoading, allowedRoles, redirectTo, router]);
@@ -38,9 +42,9 @@ export default function RoleGuard({
     );
   }
 
-  if (!user || !allowedRoles.some(role => user.roles.includes(role))) {
+  if (!user || !allowedRoles.some((role) => user.roles.includes(role))) {
     return null;
   }
 
   return <>{children}</>;
-} 
+}

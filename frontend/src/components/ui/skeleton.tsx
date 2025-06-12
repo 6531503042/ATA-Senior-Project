@@ -5,7 +5,11 @@ interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: "card" | "text" | "avatar" | "badge";
 }
 
-export function Skeleton({ className, variant = "text", ...props }: SkeletonProps) {
+export function Skeleton({
+  className,
+  variant = "text",
+  ...props
+}: SkeletonProps) {
   return (
     <div
       className={cn(
@@ -16,7 +20,7 @@ export function Skeleton({ className, variant = "text", ...props }: SkeletonProp
           "h-6 w-20 rounded-full": variant === "badge",
           "w-full h-[180px]": variant === "card",
         },
-        className
+        className,
       )}
       {...props}
     />
@@ -134,4 +138,4 @@ export function SubmissionDetailsSkeleton() {
       ))}
     </div>
   );
-} 
+}

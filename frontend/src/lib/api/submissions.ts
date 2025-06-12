@@ -1,33 +1,35 @@
-import axios, { AxiosError } from 'axios';
-import { getCookie } from 'cookies-next';
-import { cacheManager } from '@/lib/cache';
+import axios, { AxiosError } from "axios";
+import { getCookie } from "cookies-next";
+import { cacheManager } from "@/lib/cache";
 
 // Service base URLs
-const BASE_API_URL = process.env.NEXT_PUBLIC_PROJECT_API_URL || 'http://localhost:8084';
-const AI_SERVICE_URL = process.env.NEXT_PUBLIC_ANALYSIS_API_URL || 'http://localhost:8085';
+const BASE_API_URL =
+  process.env.NEXT_PUBLIC_PROJECT_API_URL || "http://localhost:8084";
+const AI_SERVICE_URL =
+  process.env.NEXT_PUBLIC_ANALYSIS_API_URL || "http://localhost:8085";
 
 // Create axios instances
 const api = axios.create({
   baseURL: BASE_API_URL,
   headers: {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json'
-  }
+    "Content-Type": "application/json",
+    Accept: "application/json",
+  },
 });
 
 export const aiApi = axios.create({
   baseURL: AI_SERVICE_URL,
   headers: {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json'
+    "Content-Type": "application/json",
+    Accept: "application/json",
   },
-  timeout: 30000 // Increased timeout to 30 seconds
+  timeout: 30000, // Increased timeout to 30 seconds
 });
 
 // Add request interceptor for auth to main API only
 api.interceptors.request.use(
   (config) => {
-    const token = getCookie('accessToken');
+    const token = getCookie("accessToken");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -36,25 +38,25 @@ api.interceptors.request.use(
       method: config.method,
       headers: {
         ...config.headers,
-        Authorization: config.headers.Authorization ? 'Bearer ****' : 'None'
-      }
+        Authorization: config.headers.Authorization ? "Bearer ****" : "None",
+      },
     });
     return config;
   },
   (error) => {
-    console.error('Request interceptor error:', error);
+    console.error("Request interceptor error:", error);
     return Promise.reject(error);
-  }
+  },
 );
 
 // Add response interceptors for both APIs
-[api, aiApi].forEach(instance => {
+[api, aiApi].forEach((instance) => {
   instance.interceptors.response.use(
     (response) => {
       console.log(`${response.config.baseURL} Response:`, {
         status: response.status,
         url: response.config.url,
-        data: response.data
+        data: response.data,
       });
       return response;
     },
@@ -63,10 +65,10 @@ api.interceptors.request.use(
         message: error.message,
         status: error.response?.status,
         data: error.response?.data,
-        url: error.config?.url
+        url: error.config?.url,
       });
       return Promise.reject(error);
-    }
+    },
   );
 });
 
@@ -75,7 +77,7 @@ aiApi.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
     const config = error.config;
-    
+
     if (!config || !config.url) {
       return Promise.reject(error);
     }
@@ -92,14 +94,14 @@ aiApi.interceptors.response.use(
     config.__retryCount += 1;
 
     // Exponential backoff
-    const backoff = new Promise(resolve => {
+    const backoff = new Promise((resolve) => {
       // @ts-ignore
-      setTimeout(() => resolve(null), 1000 * (config.__retryCount ** 2));
+      setTimeout(() => resolve(null), 1000 * config.__retryCount ** 2);
     });
 
     await backoff;
     return aiApi(config);
-  }
+  },
 );
 
 export interface FeedbackDetails {
@@ -132,15 +134,15 @@ export interface SubmissionData {
   responses: Record<string, string>;
   questionDetails: QuestionDetail[];
   overallComments: string;
-  privacyLevel: 'ANONYMOUS' | 'PUBLIC';
+  privacyLevel: "ANONYMOUS" | "PUBLIC";
   submittedAt: string;
   updatedAt: string;
-  status?: 'analyzed' | 'pending' | 'error';
+  status?: "analyzed" | "pending" | "error";
   feedback?: {
     projectName: string;
     title: string;
   };
-  overallSentiment?: 'positive' | 'neutral' | 'negative';
+  overallSentiment?: "positive" | "neutral" | "negative";
   error?: string;
 }
 
@@ -425,46 +427,49 @@ export interface AIInsightsResponse {
 }
 
 // Error handler helper
-export const handleApiError = (error: AxiosError<ApiErrorData>): ApiErrorResponse => {
-  if (error.code === 'ECONNABORTED') {
+export const handleApiError = (
+  error: AxiosError<ApiErrorData>,
+): ApiErrorResponse => {
+  if (error.code === "ECONNABORTED") {
     return {
-      error: 'Request timed out. Please try again.',
-      status: 408
+      error: "Request timed out. Please try again.",
+      status: 408,
     };
   }
 
   if (!error.response) {
     return {
-      error: 'Network error. Please check your connection.',
-      status: 0
+      error: "Network error. Please check your connection.",
+      status: 0,
     };
   }
 
-  const errorMessage = error.response.data?.message || 
-                      error.response.data?.error || 
-                      error.response.data?.details ||
-                      'An unexpected error occurred';
+  const errorMessage =
+    error.response.data?.message ||
+    error.response.data?.error ||
+    error.response.data?.details ||
+    "An unexpected error occurred";
 
   return {
     error: errorMessage,
-    status: error.response.status
+    status: error.response.status,
   };
 };
 
 export async function getAllFeedbacks(): Promise<FeedbackDetails[]> {
   try {
-    console.log('Fetching all feedbacks...');
-    const response = await api.get('/api/v1/admin/feedbacks/get-all');
+    console.log("Fetching all feedbacks...");
+    const response = await api.get("/api/v1/admin/feedbacks/get-all");
     return response.data;
   } catch (error) {
     if (error instanceof AxiosError) {
-      console.error('Failed to fetch feedbacks:', {
+      console.error("Failed to fetch feedbacks:", {
         status: error.response?.status,
         data: error.response?.data,
-        message: error.message
+        message: error.message,
       });
     } else {
-      console.error('Unexpected error fetching feedbacks:', error);
+      console.error("Unexpected error fetching feedbacks:", error);
     }
     throw error;
   }
@@ -472,18 +477,22 @@ export async function getAllFeedbacks(): Promise<FeedbackDetails[]> {
 
 export const getAllSubmissions = async (): Promise<SubmissionResponse[]> => {
   try {
-    const response = await aiApi.get('/api/submissions/all');
+    const response = await aiApi.get("/api/submissions/all");
     return response.data;
   } catch (error) {
     if (error instanceof AxiosError) {
       const { error: errorMessage, status } = handleApiError(error);
-      throw new Error(`Failed to fetch submissions: ${errorMessage} (${status})`);
+      throw new Error(
+        `Failed to fetch submissions: ${errorMessage} (${status})`,
+      );
     }
     throw error;
   }
 };
 
-export const getSubmissionAnalysis = async (feedbackId: number): Promise<AnalysisResponse> => {
+export const getSubmissionAnalysis = async (
+  feedbackId: number,
+): Promise<AnalysisResponse> => {
   try {
     const response = await aiApi.get(`/api/analysis/feedback/${feedbackId}`);
     return response.data;
@@ -496,27 +505,37 @@ export const getSubmissionAnalysis = async (feedbackId: number): Promise<Analysi
   }
 };
 
-export const getSatisfactionAnalysis = async (feedbackId: number): Promise<SatisfactionAnalysisResponse> => {
+export const getSatisfactionAnalysis = async (
+  feedbackId: number,
+): Promise<SatisfactionAnalysisResponse> => {
   try {
-    const response = await aiApi.get(`/api/analysis/satisfaction/${feedbackId}`);
+    const response = await aiApi.get(
+      `/api/analysis/satisfaction/${feedbackId}`,
+    );
     return response.data;
   } catch (error) {
     if (error instanceof AxiosError) {
       const { error: errorMessage, status } = handleApiError(error);
-      throw new Error(`Failed to fetch satisfaction analysis: ${errorMessage} (${status})`);
+      throw new Error(
+        `Failed to fetch satisfaction analysis: ${errorMessage} (${status})`,
+      );
     }
     throw error;
   }
 };
 
-export const getAIInsights = async (feedbackId: number): Promise<AIInsightsResponse> => {
+export const getAIInsights = async (
+  feedbackId: number,
+): Promise<AIInsightsResponse> => {
   try {
     const response = await aiApi.get(`/api/analysis/insights/${feedbackId}`);
     return response.data;
   } catch (error) {
     if (error instanceof AxiosError) {
       const { error: errorMessage, status } = handleApiError(error);
-      throw new Error(`Failed to fetch AI insights: ${errorMessage} (${status})`);
+      throw new Error(
+        `Failed to fetch AI insights: ${errorMessage} (${status})`,
+      );
     }
     throw error;
   }
@@ -525,20 +544,20 @@ export const getAIInsights = async (feedbackId: number): Promise<AIInsightsRespo
 // Additional API functions for metrics and statistics
 export async function getFeedbackStatistics() {
   try {
-    const response = await api.get('/api/v1/admin/feedbacks/statistics');
+    const response = await api.get("/api/v1/admin/feedbacks/statistics");
     return response.data;
   } catch (error) {
-    console.error('Failed to fetch feedback statistics:', error);
+    console.error("Failed to fetch feedback statistics:", error);
     throw error;
   }
 }
 
 export async function getFeedbackMetrics() {
   try {
-    const response = await api.get('/api/v1/dashboard/feedback/metrics');
+    const response = await api.get("/api/v1/dashboard/feedback/metrics");
     return response.data;
   } catch (error) {
-    console.error('Failed to fetch feedback metrics:', error);
+    console.error("Failed to fetch feedback metrics:", error);
     throw error;
   }
 }
@@ -552,22 +571,24 @@ export const getFeedbackData = async (feedbackId: number) => {
   }
 
   // Fetch all data in parallel
-  const [submissions, analysis, satisfaction, insights] = await Promise.allSettled([
-    getAllSubmissions(),
-    getSubmissionAnalysis(feedbackId),
-    getSatisfactionAnalysis(feedbackId),
-    getAIInsights(feedbackId)
-  ]);
+  const [submissions, analysis, satisfaction, insights] =
+    await Promise.allSettled([
+      getAllSubmissions(),
+      getSubmissionAnalysis(feedbackId),
+      getSatisfactionAnalysis(feedbackId),
+      getAIInsights(feedbackId),
+    ]);
 
   const data = {
-    submissions: submissions.status === 'fulfilled' ? submissions.value : [],
-    analysis: analysis.status === 'fulfilled' ? analysis.value : null,
-    satisfaction: satisfaction.status === 'fulfilled' ? satisfaction.value : null,
-    insights: insights.status === 'fulfilled' ? insights.value : null
+    submissions: submissions.status === "fulfilled" ? submissions.value : [],
+    analysis: analysis.status === "fulfilled" ? analysis.value : null,
+    satisfaction:
+      satisfaction.status === "fulfilled" ? satisfaction.value : null,
+    insights: insights.status === "fulfilled" ? insights.value : null,
   };
 
   // Cache the successful responses
   cacheManager.setFeedbackData(feedbackId, data);
 
   return data;
-}; 
+};

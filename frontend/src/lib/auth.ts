@@ -1,6 +1,6 @@
 export function getToken(): string | null {
   // Try to get the token from localStorage
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token");
   if (!token) {
     return null;
   }
@@ -8,13 +8,13 @@ export function getToken(): string | null {
 }
 
 export function setToken(token: string): void {
-  localStorage.setItem('token', token);
+  localStorage.setItem("token", token);
 }
 
 export function removeToken(): void {
-  localStorage.removeItem('token');
+  localStorage.removeItem("token");
 }
 
 export function isAuthenticated(): boolean {
   return !!getToken();
-} 
+}

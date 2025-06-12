@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/hooks/use-auth';
-import { useAlertDialog } from '@/components/ui/alert-dialog';
+import React from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/use-auth";
+import { useAlertDialog } from "@/components/ui/alert-dialog";
 
 export default function HomePage() {
   const router = useRouter();
@@ -14,19 +14,20 @@ export default function HomePage() {
     if (!isLoading) {
       if (isAuthenticated && user) {
         // Redirect based on user role
-        if (user.roles.includes('ROLE_ADMIN')) {
-          router.push('/admin/dashboard');
-        } else if (user.roles.includes('ROLE_USER')) {
-          router.push('/employee');
+        if (user.roles.includes("ROLE_ADMIN")) {
+          router.push("/admin/dashboard");
+        } else if (user.roles.includes("ROLE_USER")) {
+          router.push("/employee");
         } else {
           // If no valid role, show alert and redirect to login
           showAlert({
             title: "Access Denied",
-            description: "You don't have the required permissions to access the system.",
+            description:
+              "You don't have the required permissions to access the system.",
             variant: "solid",
-            color: "danger"
+            color: "danger",
           });
-          router.push('/auth/login');
+          router.push("/auth/login");
         }
       } else {
         // Not authenticated, show alert and redirect to login
@@ -34,9 +35,9 @@ export default function HomePage() {
           title: "Authentication Required",
           description: "Please log in to access the system.",
           variant: "solid",
-          color: "warning"
+          color: "warning",
         });
-        router.push('/auth/login');
+        router.push("/auth/login");
       }
     }
   }, [isLoading, isAuthenticated, user, router, showAlert]);
@@ -63,9 +64,7 @@ export default function HomePage() {
         <h2 className="text-2xl font-semibold text-gray-900">
           Welcome to HR Management System
         </h2>
-        <p className="text-gray-600">
-          Redirecting you to your dashboard...
-        </p>
+        <p className="text-gray-600">Redirecting you to your dashboard...</p>
         <div className="animate-pulse mt-4">
           <div className="h-2 w-24 bg-violet-200 rounded-full mx-auto"></div>
         </div>

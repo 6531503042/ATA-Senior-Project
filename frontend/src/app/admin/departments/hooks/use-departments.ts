@@ -2,7 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { userService } from "@/app/admin/users/services/user.service";
-import type { Department, CreateDepartmentRequest } from "@/app/admin/users/models/types";
+import type {
+  Department,
+  CreateDepartmentRequest,
+} from "@/app/admin/users/models/types";
 
 export function useDepartments() {
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -14,7 +17,9 @@ export function useDepartments() {
       const response = await userService.getDepartments();
       setDepartments(response);
     } catch (err) {
-      setError(err instanceof Error ? err : new Error("Failed to fetch departments"));
+      setError(
+        err instanceof Error ? err : new Error("Failed to fetch departments"),
+      );
     } finally {
       setIsLoading(false);
     }
@@ -26,20 +31,27 @@ export function useDepartments() {
       setDepartments((prev) => [...prev, response]);
       return response;
     } catch (err) {
-      setError(err instanceof Error ? err : new Error("Failed to create department"));
+      setError(
+        err instanceof Error ? err : new Error("Failed to create department"),
+      );
       throw err;
     }
   };
 
-  const updateDepartment = async (id: number, data: Partial<CreateDepartmentRequest>) => {
+  const updateDepartment = async (
+    id: number,
+    data: Partial<CreateDepartmentRequest>,
+  ) => {
     try {
       const response = await userService.updateDepartment(id, data);
       setDepartments((prev) =>
-        prev.map((dept) => (dept.id === id ? response : dept))
+        prev.map((dept) => (dept.id === id ? response : dept)),
       );
       return response;
     } catch (err) {
-      setError(err instanceof Error ? err : new Error("Failed to update department"));
+      setError(
+        err instanceof Error ? err : new Error("Failed to update department"),
+      );
       throw err;
     }
   };
@@ -49,7 +61,9 @@ export function useDepartments() {
       await userService.deleteDepartment(id);
       setDepartments((prev) => prev.filter((dept) => dept.id !== id));
     } catch (err) {
-      setError(err instanceof Error ? err : new Error("Failed to delete department"));
+      setError(
+        err instanceof Error ? err : new Error("Failed to delete department"),
+      );
       throw err;
     }
   };
@@ -67,4 +81,4 @@ export function useDepartments() {
     deleteDepartment,
     refetch: fetchDepartments,
   };
-} 
+}

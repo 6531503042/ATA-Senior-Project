@@ -1,7 +1,7 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { cn } from '@/lib/utils';
-import { CheckCircle2, Circle } from 'lucide-react';
+import React from "react";
+import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
+import { CheckCircle2, Circle } from "lucide-react";
 
 interface Step {
   title: string;
@@ -39,26 +39,30 @@ const FeedbackStepper: React.FC<FeedbackStepperProps> = ({
                     isCompleted
                       ? "bg-violet-600 border-violet-600"
                       : isCurrent
-                      ? "border-violet-600 bg-violet-50"
-                      : "border-gray-300 bg-white",
-                    isClickable && "cursor-pointer hover:shadow-md"
+                        ? "border-violet-600 bg-violet-50"
+                        : "border-gray-300 bg-white",
+                    isClickable && "cursor-pointer hover:shadow-md",
                   )}
                 >
                   {isCompleted ? (
                     <CheckCircle2 className="w-6 h-6 text-white" />
                   ) : (
-                    <Circle className={cn(
-                      "w-6 h-6",
-                      isCurrent ? "text-violet-600" : "text-gray-400"
-                    )} />
+                    <Circle
+                      className={cn(
+                        "w-6 h-6",
+                        isCurrent ? "text-violet-600" : "text-gray-400",
+                      )}
+                    />
                   )}
-                  
+
                   {/* Step label */}
                   <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 whitespace-nowrap">
-                    <p className={cn(
-                      "text-sm font-medium",
-                      isCurrent ? "text-violet-600" : "text-gray-500"
-                    )}>
+                    <p
+                      className={cn(
+                        "text-sm font-medium",
+                        isCurrent ? "text-violet-600" : "text-gray-500",
+                      )}
+                    >
                       {step.title}
                     </p>
                   </div>
@@ -85,4 +89,4 @@ const FeedbackStepper: React.FC<FeedbackStepperProps> = ({
   );
 };
 
-export default FeedbackStepper; 
+export default FeedbackStepper;

@@ -2,11 +2,11 @@
 
 import { Inter } from "next/font/google";
 import "@/styles/globals.css";
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth } from "@/hooks/use-auth";
 import { AlertDialogProvider } from "@/components/ui/alert-dialog";
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Toaster } from '@/components/ui/toaster';
-import SessionExpired from '@/utils/SessionExpired';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Toaster } from "@/components/ui/toaster";
+import SessionExpired from "@/utils/SessionExpired";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -26,7 +26,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const { logout } = useAuth();
-  
+
   return (
     <html lang="en">
       <body className={inter.className}>

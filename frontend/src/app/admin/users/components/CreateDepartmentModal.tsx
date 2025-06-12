@@ -19,7 +19,10 @@ interface CreateDepartmentModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function CreateDepartmentModal({ open, onOpenChange }: CreateDepartmentModalProps) {
+export function CreateDepartmentModal({
+  open,
+  onOpenChange,
+}: CreateDepartmentModalProps) {
   const { createDepartment } = useUsers();
   const [formData, setFormData] = useState<CreateDepartmentRequest>({
     name: "",

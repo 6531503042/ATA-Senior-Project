@@ -365,7 +365,7 @@ export default function QuestionsPage() {
                           .split("_")
                           .map(
                             (word) =>
-                              word.charAt(0) + word.slice(1).toLowerCase()
+                              word.charAt(0) + word.slice(1).toLowerCase(),
                           )
                           .join(" ")}
                       </SelectItem>
@@ -437,14 +437,14 @@ export default function QuestionsPage() {
                                       .map(
                                         (word) =>
                                           word.charAt(0) +
-                                          word.slice(1).toLowerCase()
+                                          word.slice(1).toLowerCase(),
                                       )
                                       .join(" ")}
                                   </span>
                                 </Badge>
                                 <Badge
                                   className={getCategoryColor(
-                                    question.category
+                                    question.category,
                                   )}
                                 >
                                   {getCategoryIcon(question.category)}
@@ -454,7 +454,7 @@ export default function QuestionsPage() {
                                       .map(
                                         (word) =>
                                           word.charAt(0) +
-                                          word.slice(1).toLowerCase()
+                                          word.slice(1).toLowerCase(),
                                       )
                                       .join(" ")}
                                   </span>
@@ -489,7 +489,7 @@ export default function QuestionsPage() {
                                           {sentiment}
                                         </span>
                                       </div>
-                                    )
+                                    ),
                                   )}
                                 </div>
                               ) : question.questionType ===

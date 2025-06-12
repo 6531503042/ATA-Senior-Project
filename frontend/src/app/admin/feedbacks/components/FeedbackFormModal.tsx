@@ -53,7 +53,7 @@ export function FeedbackFormModal({
   const [projects, setProjects] = useState<Project[]>([]);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [selectedQuestions, setSelectedQuestions] = useState<number[]>(
-    feedback?.questionIds || []
+    feedback?.questionIds || [],
   );
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [searchQuery, setSearchQuery] = useState("");
@@ -166,7 +166,8 @@ export function FeedbackFormModal({
         errors.questions = "Please select at least one question";
         showAlert({
           title: "No Questions Selected",
-          description: "Please select at least one question for the feedback form.",
+          description:
+            "Please select at least one question for the feedback form.",
           variant: "solid",
           color: "warning",
         });
@@ -211,7 +212,7 @@ export function FeedbackFormModal({
 
   const handleDateChange = (
     field: "startDate" | "endDate",
-    date: Date | undefined
+    date: Date | undefined,
   ) => {
     if (date) {
       const today = new Date();
@@ -248,7 +249,7 @@ export function FeedbackFormModal({
   const filteredQuestions = questions.filter(
     (question) =>
       question.text.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      question.category.toLowerCase().includes(searchQuery.toLowerCase())
+      question.category.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const isViewOnly = mode === "view";
@@ -273,15 +274,15 @@ export function FeedbackFormModal({
                 {mode === "create"
                   ? "Create New Feedback"
                   : mode === "edit"
-                  ? "Edit Feedback"
-                  : "View Feedback"}
+                    ? "Edit Feedback"
+                    : "View Feedback"}
               </h2>
               <p className="text-sm text-gray-500">
                 {mode === "create"
                   ? "Design a feedback form to gather valuable insights"
                   : mode === "edit"
-                  ? "Modify feedback form details"
-                  : "Review feedback form details"}
+                    ? "Modify feedback form details"
+                    : "Review feedback form details"}
               </p>
             </div>
           </div>
@@ -318,7 +319,7 @@ export function FeedbackFormModal({
                     "w-full px-3 py-2 bg-white border rounded-md text-sm",
                     "focus:ring-2 focus:ring-violet-500 focus:border-violet-500",
                     "transition-colors duration-200",
-                    formErrors.title ? "border-red-300" : "border-gray-300"
+                    formErrors.title ? "border-red-300" : "border-gray-300",
                   )}
                   placeholder="e.g., Product Satisfaction Survey"
                   required
@@ -355,7 +356,7 @@ export function FeedbackFormModal({
                     "transition-colors duration-200",
                     formErrors.description
                       ? "border-red-300"
-                      : "border-gray-300"
+                      : "border-gray-300",
                   )}
                   placeholder="Describe the feedback form's purpose and goals"
                   required
@@ -378,7 +379,7 @@ export function FeedbackFormModal({
                     Project
                   </label>
                 </div>
-                
+
                 {/* Custom Project Select Component */}
                 <CustomProjectSelect
                   projects={projects}
@@ -390,7 +391,7 @@ export function FeedbackFormModal({
                   isDisabled={isViewOnly}
                   hasError={!!formErrors.projectId}
                 />
-                
+
                 {formErrors.projectId && (
                   <div className="flex items-center gap-1.5 mt-1.5">
                     <AlertCircle className="h-4 w-4 text-red-500" />
@@ -420,7 +421,7 @@ export function FeedbackFormModal({
                           className={cn(
                             "w-full justify-start text-left font-normal",
                             !formData.startDate && "text-gray-500",
-                            formErrors.startDate && "border-red-300"
+                            formErrors.startDate && "border-red-300",
                           )}
                           disabled={isViewOnly}
                         >
@@ -461,7 +462,7 @@ export function FeedbackFormModal({
                           className={cn(
                             "w-full justify-start text-left font-normal",
                             !formData.endDate && "text-gray-500",
-                            formErrors.endDate && "border-red-300"
+                            formErrors.endDate && "border-red-300",
                           )}
                           disabled={isViewOnly}
                         >
@@ -552,7 +553,7 @@ export function FeedbackFormModal({
                         setSelectedQuestions((prev) =>
                           prev.includes(question.id)
                             ? prev.filter((id) => id !== question.id)
-                            : [...prev, question.id]
+                            : [...prev, question.id],
                         );
                       }
                     }}
@@ -561,7 +562,7 @@ export function FeedbackFormModal({
                       !isViewOnly && "cursor-pointer",
                       selectedQuestions.includes(question.id)
                         ? "bg-violet-50 border-violet-200 shadow-sm"
-                        : !isViewOnly && "hover:bg-gray-50 border-gray-200"
+                        : !isViewOnly && "hover:bg-gray-50 border-gray-200",
                     )}
                   >
                     <div className="flex items-start gap-3">
@@ -574,7 +575,7 @@ export function FeedbackFormModal({
                                 setSelectedQuestions((prev) =>
                                   prev.includes(question.id)
                                     ? prev.filter((id) => id !== question.id)
-                                    : [...prev, question.id]
+                                    : [...prev, question.id],
                                 );
                               }
                             }}

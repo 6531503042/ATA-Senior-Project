@@ -17,7 +17,11 @@ interface DeleteUserModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function DeleteUserModal({ user, open, onOpenChange }: DeleteUserModalProps) {
+export function DeleteUserModal({
+  user,
+  open,
+  onOpenChange,
+}: DeleteUserModalProps) {
   const { deleteUser } = useUsers();
 
   const handleDelete = async () => {
@@ -37,11 +41,16 @@ export function DeleteUserModal({ user, open, onOpenChange }: DeleteUserModalPro
         </DialogHeader>
         <div className="py-4">
           <p>
-            Are you sure you want to delete the user &quot;{user.name}&quot;? This action cannot be undone.
+            Are you sure you want to delete the user &quot;{user.name}&quot;?
+            This action cannot be undone.
           </p>
         </div>
         <DialogFooter>
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+          >
             Cancel
           </Button>
           <Button type="button" variant="destructive" onClick={handleDelete}>
@@ -51,4 +60,4 @@ export function DeleteUserModal({ user, open, onOpenChange }: DeleteUserModalPro
       </DialogContent>
     </Dialog>
   );
-} 
+}

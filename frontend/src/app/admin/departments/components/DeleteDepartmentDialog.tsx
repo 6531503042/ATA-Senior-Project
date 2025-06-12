@@ -62,10 +62,11 @@ export function DeleteDepartmentDialog({
 
         <div className="py-6">
           <p className="text-gray-600">
-            Are you sure you want to delete the department &quot;{department.name}&quot;? 
+            Are you sure you want to delete the department &quot;
+            {department.name}&quot;?
             {department.users.length > 0 && (
               <span className="text-red-600 font-medium">
-                {` This department has ${department.users.length} member${department.users.length === 1 ? '' : 's'}.`}
+                {` This department has ${department.users.length} member${department.users.length === 1 ? "" : "s"}.`}
               </span>
             )}
           </p>
@@ -99,4 +100,4 @@ export function DeleteDepartmentDialog({
       </DialogContent>
     </Dialog>
   );
-} 
+}

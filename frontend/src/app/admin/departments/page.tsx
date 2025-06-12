@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import {
   Building2,
   Plus,
@@ -9,15 +9,19 @@ import {
   Loader2,
   Network,
   CheckCircle2,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useAlertDialog } from '@/components/ui/alert-dialog';
-import { DepartmentList } from './components/DepartmentList';
-import { DepartmentFormModal } from './components/DepartmentFormModal';
-import type { Department, DepartmentHierarchy, DepartmentMetrics } from './models/types';
-import type { User } from '@/types/auth';
-import { DepartmentService } from './services/department.service';
-import { UserService } from '@/app/admin/users/services/user.service';
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useAlertDialog } from "@/components/ui/alert-dialog";
+import { DepartmentList } from "./components/DepartmentList";
+import { DepartmentFormModal } from "./components/DepartmentFormModal";
+import type {
+  Department,
+  DepartmentHierarchy,
+  DepartmentMetrics,
+} from "./models/types";
+import type { User } from "@/types/auth";
+import { DepartmentService } from "./services/department.service";
+import { UserService } from "@/app/admin/users/services/user.service";
 
 export default function DepartmentsPage() {
   const [departments, setDepartments] = useState<DepartmentHierarchy[]>([]);
@@ -29,8 +33,10 @@ export default function DepartmentsPage() {
   });
   const [managers, setManagers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedDepartment, setSelectedDepartment] = useState<Department | undefined>(undefined);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedDepartment, setSelectedDepartment] = useState<
+    Department | undefined
+  >(undefined);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { showAlert } = useAlertDialog();
 
@@ -45,12 +51,12 @@ export default function DepartmentsPage() {
       setDepartments(data.departments);
       setMetrics(data.metrics);
     } catch (error) {
-      console.error('Failed to fetch departments:', error);
+      console.error("Failed to fetch departments:", error);
       showAlert({
-        title: 'Error',
-        description: 'Failed to fetch departments. Please try again.',
-        variant: 'solid',
-        color: 'danger',
+        title: "Error",
+        description: "Failed to fetch departments. Please try again.",
+        variant: "solid",
+        color: "danger",
       });
     } finally {
       setIsLoading(false);
@@ -62,12 +68,12 @@ export default function DepartmentsPage() {
       const data = await UserService.getManagers();
       setManagers(data.users);
     } catch (error) {
-      console.error('Failed to fetch managers:', error);
+      console.error("Failed to fetch managers:", error);
       showAlert({
-        title: 'Error',
-        description: 'Failed to fetch managers. Please try again.',
-        variant: 'solid',
-        color: 'danger',
+        title: "Error",
+        description: "Failed to fetch managers. Please try again.",
+        variant: "solid",
+        color: "danger",
       });
     }
   };
@@ -88,20 +94,20 @@ export default function DepartmentsPage() {
       await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulated API call
 
       showAlert({
-        title: 'Success',
+        title: "Success",
         description: `Department "${department.name}" has been deleted.`,
-        variant: 'solid',
-        color: 'success',
+        variant: "solid",
+        color: "success",
       });
 
       fetchDepartments(); // Refresh the list
     } catch (error) {
-      console.error('Failed to delete department:', error);
+      console.error("Failed to delete department:", error);
       showAlert({
-        title: 'Error',
-        description: 'Failed to delete department. Please try again.',
-        variant: 'solid',
-        color: 'danger',
+        title: "Error",
+        description: "Failed to delete department. Please try again.",
+        variant: "solid",
+        color: "danger",
       });
     }
   };
@@ -117,7 +123,7 @@ export default function DepartmentsPage() {
   };
 
   const filteredDepartments = departments.filter((dept) =>
-    dept.name.toLowerCase().includes(searchQuery.toLowerCase())
+    dept.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   return (
@@ -131,7 +137,9 @@ export default function DepartmentsPage() {
           className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
         >
           <div>
-            <h1 className="text-2xl font-semibold text-gray-900">Departments</h1>
+            <h1 className="text-2xl font-semibold text-gray-900">
+              Departments
+            </h1>
             <p className="mt-1 text-sm text-gray-500">
               Manage your organization&apos;s departments and hierarchies
             </p>
@@ -158,7 +166,9 @@ export default function DepartmentsPage() {
                 <Building2 className="h-5 w-5 text-violet-600" />
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-500">Total Departments</p>
+                <p className="text-sm font-medium text-gray-500">
+                  Total Departments
+                </p>
                 <p className="text-2xl font-semibold text-gray-900">
                   {metrics.totalDepartments}
                 </p>
@@ -172,7 +182,9 @@ export default function DepartmentsPage() {
                 <CheckCircle2 className="h-5 w-5 text-emerald-600" />
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-500">Active Departments</p>
+                <p className="text-sm font-medium text-gray-500">
+                  Active Departments
+                </p>
                 <p className="text-2xl font-semibold text-gray-900">
                   {metrics.activeDepartments}
                 </p>
@@ -186,7 +198,9 @@ export default function DepartmentsPage() {
                 <Network className="h-5 w-5 text-blue-600" />
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-500">Hierarchy Levels</p>
+                <p className="text-sm font-medium text-gray-500">
+                  Hierarchy Levels
+                </p>
                 <p className="text-2xl font-semibold text-gray-900">
                   {Object.keys(metrics.departmentsByLevel).length}
                 </p>
@@ -233,10 +247,12 @@ export default function DepartmentsPage() {
           className="text-center py-12"
         >
           <Building2 className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">No departments found</h3>
+          <h3 className="mt-2 text-sm font-medium text-gray-900">
+            No departments found
+          </h3>
           <p className="mt-1 text-sm text-gray-500">
             {searchQuery
-              ? 'No departments match your search criteria'
+              ? "No departments match your search criteria"
               : "Get started by creating a new department"}
           </p>
           {!searchQuery && (
@@ -259,11 +275,11 @@ export default function DepartmentsPage() {
           department={selectedDepartment}
           departments={departments}
           managers={managers}
-          mode={selectedDepartment ? 'edit' : 'create'}
+          mode={selectedDepartment ? "edit" : "create"}
           onClose={handleModalClose}
           onSuccess={handleModalSuccess}
         />
       )}
     </div>
   );
-} 
+}

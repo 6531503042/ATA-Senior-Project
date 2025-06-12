@@ -1,9 +1,9 @@
 {
-    "nuxt.isNuxtApp": false,
-    "java.compile.nullAnalysis.mode": "automatic",
-    "python.analysis.extraPaths": [
-        "./backend/feedback-scoring-service/src/main/python",
-        "./backend/feedback-scoring-service/src/main/python",
-        "./backend/feedback-scoring-service/src/main/python"
-    ]
+  "nuxt.isNuxtApp": false,
+  "java.compile.nullAnalysis.mode": "automatic",
+  "python.analysis.extraPaths": [
+    "./backend/feedback-scoring-service/src/main/python",
+    "./backend/feedback-scoring-service/src/main/python",
+    "./backend/feedback-scoring-service/src/main/python"
+  ]
 }

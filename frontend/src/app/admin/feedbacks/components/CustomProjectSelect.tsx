@@ -22,12 +22,15 @@ export function CustomProjectSelect({
 }: CustomProjectSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const selectRef = useRef<HTMLDivElement>(null);
-  const selectedProject = projects.find(p => p.id === selectedProjectId);
+  const selectedProject = projects.find((p) => p.id === selectedProjectId);
 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (selectRef.current && !selectRef.current.contains(event.target as Node)) {
+      if (
+        selectRef.current &&
+        !selectRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
@@ -46,12 +49,12 @@ export function CustomProjectSelect({
         className={cn(
           "w-full flex items-center justify-between px-3 py-2 text-sm rounded-md",
           "border transition-all duration-200",
-          isDisabled 
-            ? "bg-gray-50 text-gray-500 cursor-not-allowed" 
+          isDisabled
+            ? "bg-gray-50 text-gray-500 cursor-not-allowed"
             : "bg-white hover:bg-gray-50 cursor-pointer",
-          hasError 
-            ? "border-red-300 focus:ring-1 focus:ring-red-500 focus:border-red-500" 
-            : "border-gray-300 focus:ring-1 focus:ring-violet-500 focus:border-violet-500"
+          hasError
+            ? "border-red-300 focus:ring-1 focus:ring-red-500 focus:border-red-500"
+            : "border-gray-300 focus:ring-1 focus:ring-violet-500 focus:border-violet-500",
         )}
         disabled={isDisabled}
         aria-haspopup="listbox"
@@ -69,7 +72,7 @@ export function CustomProjectSelect({
       </button>
 
       {isOpen && (
-        <div 
+        <div
           className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-sm ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none"
           role="listbox"
         >
@@ -77,15 +80,17 @@ export function CustomProjectSelect({
             <div className="px-3 py-2 text-gray-500">No projects available</div>
           ) : (
             <>
-              <div className="px-3 py-2 text-gray-500 border-b border-b-black/30 text-xs uppercase font-normal">Select Project</div>
+              <div className="px-3 py-2 text-gray-500 border-b border-b-black/30 text-xs uppercase font-normal">
+                Select Project
+              </div>
               {projects.map((project) => (
                 <div
                   key={project.id}
                   className={cn(
                     "px-3 py-2 flex items-center cursor-pointer",
-                    project.id === selectedProjectId 
-                      ? "bg-violet-50 text-violet-900" 
-                      : "hover:bg-gray-50"
+                    project.id === selectedProjectId
+                      ? "bg-violet-50 text-violet-900"
+                      : "hover:bg-gray-50",
                   )}
                   onClick={() => {
                     onChange(project.id);
@@ -96,7 +101,9 @@ export function CustomProjectSelect({
                 >
                   <div className="flex-grow flex items-center">
                     <div className="h-5 w-5 mr-2 flex items-center justify-center rounded bg-violet-100">
-                      <span className="text-xs font-medium text-violet-700">P</span>
+                      <span className="text-xs font-medium text-violet-700">
+                        P
+                      </span>
                     </div>
                     {project.name}
                   </div>

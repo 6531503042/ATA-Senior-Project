@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { useParams } from 'next/navigation';
-import { SatisfactionDashboard } from '@/components/feedback';
-import { PageHeader } from '@/components/layout';
+import React from "react";
+import { useParams } from "next/navigation";
+import { SatisfactionDashboard } from "@/components/feedback";
+import { PageHeader } from "@/components/layout";
 
 export default function SatisfactionPage() {
   const params = useParams();
@@ -15,8 +15,8 @@ export default function SatisfactionPage() {
         title="Feedback Satisfaction Analysis"
         description="Detailed satisfaction analysis and sentiment distribution for this feedback"
       />
-      
+
       <SatisfactionDashboard feedbackId={feedbackId} />
     </div>
   );
-} 
+}

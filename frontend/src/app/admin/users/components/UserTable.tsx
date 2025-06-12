@@ -7,14 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import Table from "@/components/ui/Table";
-import { 
-  AlertCircle, 
-  Search, 
-  Plus, 
-  Mail, 
-  UserCircle2, 
+import {
+  AlertCircle,
+  Search,
+  Plus,
+  Mail,
+  UserCircle2,
   Building2,
-  Loader2
+  Loader2,
 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/Alert";
 import { EditUserModal } from "./EditUserModal";
@@ -66,15 +66,15 @@ export function UserTable() {
   };
 
   const columns = [
-    { 
-      key: 'user', 
-      header: 'User Information',
+    {
+      key: "user",
+      header: "User Information",
       render: (user: User) => (
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-full overflow-hidden bg-violet-100">
             {user.avatar ? (
-              <img 
-                src={user.avatar} 
+              <img
+                src={user.avatar}
                 alt={user.fullname}
                 className="h-full w-full object-cover"
               />
@@ -87,16 +87,14 @@ export function UserTable() {
           <div>
             <div className="font-medium">{user.fullname}</div>
             <div className="text-sm text-gray-500">@{user.username}</div>
-            <div className="text-xs text-gray-400 mt-1">
-              {user.gender}
-            </div>
+            <div className="text-xs text-gray-400 mt-1">{user.gender}</div>
           </div>
         </div>
-      )
+      ),
     },
-    { 
-      key: 'contact', 
-      header: 'Contact & Department',
+    {
+      key: "contact",
+      header: "Contact & Department",
       render: (user: User) => (
         <div className="space-y-2">
           <div className="flex items-center gap-2">
@@ -105,40 +103,44 @@ export function UserTable() {
           </div>
           <div className="flex items-center gap-2">
             <Building2 className="h-4 w-4 text-violet-600" />
-            <span className="text-sm text-gray-600">{user.department?.name || 'Unassigned'}</span>
+            <span className="text-sm text-gray-600">
+              {user.department?.name || "Unassigned"}
+            </span>
             {user.department?.description && (
-              <span className="text-xs text-gray-400">({user.department.description})</span>
+              <span className="text-xs text-gray-400">
+                ({user.department.description})
+              </span>
             )}
           </div>
         </div>
-      )
+      ),
     },
     {
-      key: 'roles',
-      header: 'Roles',
+      key: "roles",
+      header: "Roles",
       render: (user: User) => (
         <div className="flex flex-wrap gap-1">
           {user.roles.map((role) => (
             <Badge
               key={role}
-              variant={role === 'ROLE_ADMIN' ? 'default' : 'secondary'}
+              variant={role === "ROLE_ADMIN" ? "default" : "secondary"}
               className={`capitalize ${
-                role === 'ROLE_ADMIN' 
-                  ? 'bg-violet-100 text-violet-800' 
-                  : role === 'ROLE_MANAGER'
-                  ? 'bg-blue-100 text-blue-800'
-                  : 'bg-gray-100 text-gray-800'
+                role === "ROLE_ADMIN"
+                  ? "bg-violet-100 text-violet-800"
+                  : role === "ROLE_MANAGER"
+                    ? "bg-blue-100 text-blue-800"
+                    : "bg-gray-100 text-gray-800"
               }`}
             >
-              {role.replace('ROLE_', '').toLowerCase()}
+              {role.replace("ROLE_", "").toLowerCase()}
             </Badge>
           ))}
         </div>
-      )
+      ),
     },
     {
-      key: 'actions',
-      header: 'Actions',
+      key: "actions",
+      header: "Actions",
       render: (user: User) => (
         <div className="flex justify-end gap-2">
           <Button
@@ -158,8 +160,8 @@ export function UserTable() {
             Delete
           </Button>
         </div>
-      )
-    }
+      ),
+    },
   ];
 
   if (error) {
@@ -168,10 +170,12 @@ export function UserTable() {
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Error</AlertTitle>
-          <AlertDescription>Failed to load users. Please try again later.</AlertDescription>
+          <AlertDescription>
+            Failed to load users. Please try again later.
+          </AlertDescription>
         </Alert>
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           onClick={() => refetchUsers()}
           className="gap-2"
         >
@@ -195,7 +199,7 @@ export function UserTable() {
               Manage your organization&apos;s users and their roles
             </p>
           </div>
-          <Button 
+          <Button
             className="bg-violet-600 hover:bg-violet-700 text-white gap-2"
             onClick={() => setIsCreateModalOpen(true)}
           >
@@ -262,4 +266,4 @@ export function UserTable() {
       />
     </div>
   );
-} 
+}

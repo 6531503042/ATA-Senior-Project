@@ -1,12 +1,12 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { cn } from '@/lib/utils';
-import SentimentIndicator from './SentimentIndicator';
-import { QuestionCardProps } from '@/types/employee';
+import React from "react";
+import { motion } from "framer-motion";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { cn } from "@/lib/utils";
+import SentimentIndicator from "./SentimentIndicator";
+import { QuestionCardProps } from "@/types/employee";
 
 const MAX_TEXT_LENGTH = 255;
 
@@ -16,7 +16,9 @@ export default function QuestionCard({
   onAnswerChange,
 }: QuestionCardProps) {
   // Helper function to convert sentiment value to the correct type
-  const getSentimentType = (value: string): "positive" | "neutral" | "negative" => {
+  const getSentimentType = (
+    value: string,
+  ): "positive" | "neutral" | "negative" => {
     const lowercaseValue = value.toLowerCase();
     switch (lowercaseValue) {
       case "positive":
@@ -49,7 +51,7 @@ export default function QuestionCard({
 
       {/* Question Content */}
       <div className="mt-8">
-        {question.type === 'SINGLE_CHOICE' && (
+        {question.type === "SINGLE_CHOICE" && (
           <RadioGroup
             value={currentAnswer as string}
             onValueChange={onAnswerChange}
@@ -68,7 +70,7 @@ export default function QuestionCard({
                     "hover:bg-violet-50/50 hover:border-violet-200 hover:shadow-md",
                     currentAnswer === answer.value
                       ? "border-violet-500 bg-violet-50/50 shadow-md"
-                      : "border-gray-200"
+                      : "border-gray-200",
                   )}
                 >
                   <RadioGroupItem
@@ -88,7 +90,7 @@ export default function QuestionCard({
           </RadioGroup>
         )}
 
-        {question.type === 'MULTIPLE_CHOICE' && (
+        {question.type === "MULTIPLE_CHOICE" && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {question.answers?.map((answer, index) => (
               <motion.div
@@ -103,18 +105,22 @@ export default function QuestionCard({
                     "hover:bg-violet-50/50 hover:border-violet-200 hover:shadow-md",
                     (currentAnswer as string[])?.includes(answer.value)
                       ? "border-violet-500 bg-violet-50/50 shadow-md"
-                      : "border-gray-200"
+                      : "border-gray-200",
                   )}
                 >
                   <Checkbox
                     id={`checkbox-${answer.value}`}
-                    checked={(currentAnswer as string[])?.includes(answer.value)}
+                    checked={(currentAnswer as string[])?.includes(
+                      answer.value,
+                    )}
                     onCheckedChange={(checked) => {
                       const currentAnswers = (currentAnswer as string[]) || [];
                       if (checked) {
                         onAnswerChange([...currentAnswers, answer.value]);
                       } else {
-                        onAnswerChange(currentAnswers.filter((a) => a !== answer.value));
+                        onAnswerChange(
+                          currentAnswers.filter((a) => a !== answer.value),
+                        );
                       }
                     }}
                     className="h-5 w-5 text-violet-600 border-2 border-gray-300 focus:ring-violet-500"
@@ -131,7 +137,7 @@ export default function QuestionCard({
           </div>
         )}
 
-        {question.type === 'TEXT_BASED' && (
+        {question.type === "TEXT_BASED" && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -150,19 +156,22 @@ export default function QuestionCard({
               maxLength={MAX_TEXT_LENGTH}
             />
             <div className="flex justify-end">
-              <span className={cn(
-                "text-sm",
-                (currentAnswer as string)?.length >= MAX_TEXT_LENGTH * 0.9
-                  ? "text-red-500 font-medium"
-                  : "text-gray-500"
-              )}>
-                {(currentAnswer as string)?.length || 0}/{MAX_TEXT_LENGTH} characters
+              <span
+                className={cn(
+                  "text-sm",
+                  (currentAnswer as string)?.length >= MAX_TEXT_LENGTH * 0.9
+                    ? "text-red-500 font-medium"
+                    : "text-gray-500",
+                )}
+              >
+                {(currentAnswer as string)?.length || 0}/{MAX_TEXT_LENGTH}{" "}
+                characters
               </span>
             </div>
           </motion.div>
         )}
 
-        {question.type === 'SENTIMENT' && (
+        {question.type === "SENTIMENT" && (
           <div className="flex flex-col sm:flex-row justify-center items-center gap-6 py-6">
             {question.answers?.map((answer) => (
               <motion.button
@@ -176,7 +185,7 @@ export default function QuestionCard({
                   "hover:shadow-lg",
                   currentAnswer === answer.value
                     ? "bg-violet-50 ring-2 ring-violet-500 shadow-md"
-                    : "bg-gray-50 hover:bg-violet-50/50"
+                    : "bg-gray-50 hover:bg-violet-50/50",
                 )}
               >
                 <div className="p-4 bg-white rounded-full shadow-sm">
@@ -196,4 +205,4 @@ export default function QuestionCard({
       </div>
     </motion.div>
   );
-} 
+}

@@ -1,8 +1,8 @@
-import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
-import { getCookie, setCookie, deleteCookie } from 'cookies-next';
+import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
+import { getCookie, setCookie, deleteCookie } from "cookies-next";
 
 // Use environment variables with fallbacks
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8081/api";
 
 // interface QueueItem {
 //   resolve: (value: string | null) => void;
@@ -13,8 +13,8 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081/api';
 const api = axios.create({
   baseURL: API_URL,
   headers: {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
+    "Content-Type": "application/json",
+    Accept: "application/json",
   },
   withCredentials: true,
   timeout: 30000,
@@ -23,46 +23,45 @@ const api = axios.create({
 // let isRefreshing = false;
 // let failedQueue: QueueItem[] = [];
 
-
 // Add request interceptor
 api.interceptors.request.use(
   (config) => {
-    const token = getCookie('accessToken');
+    const token = getCookie("accessToken");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
 
     // Log request details
-    console.log('API Request:', {
+    console.log("API Request:", {
       url: `${config.baseURL}${config.url}`,
       method: config.method,
       headers: {
         ...config.headers,
-        Authorization: config.headers.Authorization ? 'Bearer ****' : 'None'
-      }
+        Authorization: config.headers.Authorization ? "Bearer ****" : "None",
+      },
     });
 
     return config;
   },
   (error) => {
-    console.error('Request configuration error:', error.message);
+    console.error("Request configuration error:", error.message);
     return Promise.reject(error);
-  }
+  },
 );
 
 // Response interceptor
 api.interceptors.response.use(
   (response) => {
     // Handle successful responses
-    const authHeader = response.headers['authorization'];
-    const refreshToken = response.headers['refresh-token'];
+    const authHeader = response.headers["authorization"];
+    const refreshToken = response.headers["refresh-token"];
 
     if (authHeader) {
-      const token = authHeader.replace('Bearer ', '');
-      setCookie('accessToken', token);
+      const token = authHeader.replace("Bearer ", "");
+      setCookie("accessToken", token);
     }
     if (refreshToken) {
-      setCookie('refreshToken', refreshToken);
+      setCookie("refreshToken", refreshToken);
     }
     return response;
   },
@@ -74,46 +73,53 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const refreshToken = await getCookie('refreshToken');
+        const refreshToken = await getCookie("refreshToken");
         if (!refreshToken) {
-          throw new Error('No refresh token available');
+          throw new Error("No refresh token available");
         }
 
         // Call refresh token endpoint
-        const response = await api.post('/auth/refresh-token', {}, {
-          headers: {
-            'Refresh-Token': refreshToken
-          }
-        });
+        const response = await api.post(
+          "/auth/refresh-token",
+          {},
+          {
+            headers: {
+              "Refresh-Token": refreshToken,
+            },
+          },
+        );
 
         if (response.data) {
-          const newAccessToken = response.headers['authorization']?.replace('Bearer ', '');
-          const newRefreshToken = response.headers['refresh-token'];
+          const newAccessToken = response.headers["authorization"]?.replace(
+            "Bearer ",
+            "",
+          );
+          const newRefreshToken = response.headers["refresh-token"];
 
           if (newAccessToken) {
-            setCookie('accessToken', newAccessToken);
+            setCookie("accessToken", newAccessToken);
             originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
           }
           if (newRefreshToken) {
-            setCookie('refreshToken', newRefreshToken);
+            setCookie("refreshToken", newRefreshToken);
           }
 
           return api(originalRequest);
         }
       } catch (refreshError) {
-        console.error('Token refresh failed:', refreshError);
+        console.error("Token refresh failed:", refreshError);
         // Clear auth data and redirect to login
-        deleteCookie('accessToken');
-        deleteCookie('refreshToken');
-        deleteCookie('user_role');
-        localStorage.removeItem('user');
-        window.location.href = '/auth/login?error=session_expired';
+        deleteCookie("accessToken");
+        deleteCookie("refreshToken");
+        deleteCookie("user_role");
+        localStorage.removeItem("user");
+        window.location.href = "/auth/login?error=session_expired";
         return Promise.reject(refreshError);
       }
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 // Add request interceptor for CORS preflight
@@ -121,28 +127,30 @@ api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     try {
       // Add CORS headers for preflight
-      if (config.method === 'options') {
-        config.headers['Access-Control-Request-Method'] = config.method.toUpperCase();
-        config.headers['Access-Control-Request-Headers'] = 'content-type,authorization';
+      if (config.method === "options") {
+        config.headers["Access-Control-Request-Method"] =
+          config.method.toUpperCase();
+        config.headers["Access-Control-Request-Headers"] =
+          "content-type,authorization";
       }
-      
-      console.log('API Request:', {
+
+      console.log("API Request:", {
         url: `${config.baseURL}${config.url}`,
         method: config.method,
         params: config.params,
         headers: config.headers,
       });
-      
+
       return config;
     } catch (error) {
-      console.error('Request interceptor error:', error);
+      console.error("Request interceptor error:", error);
       return config;
     }
   },
   (error: AxiosError) => {
-    console.error('Request configuration error:', error.message);
+    console.error("Request configuration error:", error.message);
     return Promise.reject(error);
-  }
+  },
 );
 
 export interface ApiError {
@@ -152,18 +160,18 @@ export interface ApiError {
 }
 
 export const handleApiError = (error: AxiosError<ApiError>): string => {
-  console.error('Handling API error:', {
+  console.error("Handling API error:", {
     message: error.message,
     response: error.response?.data,
-    status: error.response?.status
+    status: error.response?.status,
   });
 
-  if (error.code === 'ECONNABORTED') {
-    return 'Request timeout. Please try again.';
+  if (error.code === "ECONNABORTED") {
+    return "Request timeout. Please try again.";
   }
-  
+
   if (!error.response) {
-    return 'Cannot connect to the server. Please check if the server is running.';
+    return "Cannot connect to the server. Please check if the server is running.";
   }
 
   if (error.response?.data?.message) {
@@ -172,18 +180,18 @@ export const handleApiError = (error: AxiosError<ApiError>): string => {
 
   switch (error.response?.status) {
     case 400:
-      return 'Invalid request. Please check your input.';
+      return "Invalid request. Please check your input.";
     case 401:
-      return 'Unauthorized. Please login again.';
+      return "Unauthorized. Please login again.";
     case 403:
-      return 'Access denied. You do not have permission.';
+      return "Access denied. You do not have permission.";
     case 404:
-      return 'Resource not found.';
+      return "Resource not found.";
     case 500:
-      return 'Server error. Please try again later.';
+      return "Server error. Please try again later.";
     default:
-      return `An unexpected error occurred (${error.response?.status || 'unknown'}).`;
+      return `An unexpected error occurred (${error.response?.status || "unknown"}).`;
   }
 };
 
-export default api; 
+export default api;

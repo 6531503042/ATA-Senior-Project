@@ -8,47 +8,20 @@
       "questions": [],
       "name": "Project Gamma",
       "description": "Project to improve workplace environment",
-      "memberIds": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10
-      ],
+      "memberIds": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
       "projectStartDate": "2025-01-01T00:00:00Z",
       "projectEndDate": "2025-12-31T23:59:59Z",
       "createdAt": "2025-01-01T00:00:00Z",
       "updatedAt": "2025-01-01T00:00:00Z"
     },
-    "questionIds": [
-      1,
-      2,
-      3,
-      4
-    ],
+    "questionIds": [1, 2, 3, 4],
     "startDate": "2025-01-01T00:00:00",
     "endDate": "2025-12-31T23:59:59",
     "createdBy": "admin",
     "active": true,
     "createdAt": "2025-01-01T00:00:00",
     "updatedAt": "2025-01-01T00:00:00",
-    "allowedUserIds": [
-      1,
-      2,
-      3,
-      4,
-      5,
-      6,
-      7,
-      8,
-      9,
-      10
-    ]
+    "allowedUserIds": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
   },
   "questions": [
     {
@@ -113,11 +86,7 @@
       "description": "Express your sentiment about the project management methodology",
       "questionType": "SENTIMENT",
       "category": "PROJECT_MANAGEMENT",
-      "choices": [
-        "POSITIVE",
-        "NEUTRAL",
-        "NEGATIVE"
-      ],
+      "choices": ["POSITIVE", "NEUTRAL", "NEGATIVE"],
       "required": true,
       "validationRules": null,
       "createdAt": "2025-01-01T00:00:00",

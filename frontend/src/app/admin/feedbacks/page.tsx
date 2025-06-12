@@ -22,10 +22,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAlertDialog } from "@/components/ui/alert-dialog";
-import {
-  getFeedbacks,
-  deleteFeedback,
-} from "@/lib/api/feedbacks";
+import { getFeedbacks, deleteFeedback } from "@/lib/api/feedbacks";
 import type { Feedback, FeedbackFilters } from "./models/types";
 import { FeedbackFormModal } from "./components/FeedbackFormModal";
 import { useRouter } from "next/navigation";
@@ -51,7 +48,7 @@ export default function FeedbacksPage() {
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"create" | "edit" | "view">(
-    "create"
+    "create",
   );
   const [selectedFeedback, setSelectedFeedback] = useState<
     Feedback | undefined
@@ -220,7 +217,7 @@ export default function FeedbacksPage() {
                     <h3 className="text-2xl font-bold text-gray-900">
                       {feedbacks.reduce(
                         (acc, curr) => acc + curr.allowedUserIds.length,
-                        0
+                        0,
                       )}
                     </h3>
                   </div>
@@ -377,7 +374,7 @@ export default function FeedbacksPage() {
                                 Start:{" "}
                                 {format(
                                   new Date(feedback.startDate),
-                                  "MMM d, yyyy"
+                                  "MMM d, yyyy",
                                 )}
                               </span>
                             </div>
@@ -387,7 +384,7 @@ export default function FeedbacksPage() {
                                 End:{" "}
                                 {format(
                                   new Date(feedback.endDate),
-                                  "MMM d, yyyy"
+                                  "MMM d, yyyy",
                                 )}
                               </span>
                             </div>
@@ -402,7 +399,7 @@ export default function FeedbacksPage() {
                           size="sm"
                           onClick={() =>
                             router.push(
-                              `/admin/feedbacks/${feedback.id}/satisfaction`
+                              `/admin/feedbacks/${feedback.id}/satisfaction`,
                             )
                           }
                           icon={<BarChart2 className="w-4 h-4" />}

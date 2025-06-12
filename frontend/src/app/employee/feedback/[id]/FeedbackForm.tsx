@@ -1,21 +1,31 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { AnimatePresence } from 'framer-motion';
-import { useAlertDialog } from '@/components/ui/alert-dialog';
-import { getCookie } from 'cookies-next';
-import { useRouter } from 'next/navigation';
-import { AlertCircle, CheckCircle2, MessageSquare, ChevronLeft, ChevronRight, ClipboardList, Clock, User2, BarChart } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import QuestionCard from '@/components/feedback/QuestionCard';
-import { FeedbackOverallComments } from './components/FeedbackOverallComments';
+import React, { useState, useEffect } from "react";
+import { AnimatePresence } from "framer-motion";
+import { useAlertDialog } from "@/components/ui/alert-dialog";
+import { getCookie } from "cookies-next";
+import { useRouter } from "next/navigation";
+import {
+  AlertCircle,
+  CheckCircle2,
+  MessageSquare,
+  ChevronLeft,
+  ChevronRight,
+  ClipboardList,
+  Clock,
+  User2,
+  BarChart,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import QuestionCard from "@/components/feedback/QuestionCard";
+import { FeedbackOverallComments } from "./components/FeedbackOverallComments";
 import {
   FeedbackFormProps,
   FeedbackFormState,
   FeedbackSubmission,
-} from '@/types/employee';
-import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
+} from "@/types/employee";
+import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 const MAX_TEXT_LENGTH = 255; // Maximum character length for text responses
 
@@ -24,8 +34,8 @@ export default function FeedbackForm({ id }: FeedbackFormProps) {
     feedback: null,
     currentStep: 0,
     answers: {},
-    overallComments: '',
-    privacyLevel: 'PUBLIC',
+    overallComments: "",
+    privacyLevel: "PUBLIC",
     loading: true,
     submitting: false,
   });
@@ -39,8 +49,8 @@ export default function FeedbackForm({ id }: FeedbackFormProps) {
       feedback: null,
       currentStep: 0,
       answers: {},
-      overallComments: '',
-      privacyLevel: 'PUBLIC',
+      overallComments: "",
+      privacyLevel: "PUBLIC",
       loading: true,
       submitting: false,
     });
@@ -49,7 +59,7 @@ export default function FeedbackForm({ id }: FeedbackFormProps) {
 
   const fetchFeedback = async () => {
     try {
-      const token = getCookie('accessToken');
+      const token = getCookie("accessToken");
       if (!token) {
         showAlert({
           title: "Authentication Error",
@@ -58,36 +68,41 @@ export default function FeedbackForm({ id }: FeedbackFormProps) {
           color: "danger",
           duration: 5000,
         });
-        router.push('/auth/login');
+        router.push("/auth/login");
         return;
       }
 
-      const response = await fetch('http://localhost:8084/api/v1/feedback-submissions/available', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        "http://localhost:8084/api/v1/feedback-submissions/available",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
         },
-        credentials: 'include'
-      });
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
-      const currentFeedback = data.find((f: FeedbackSubmission) => f.id === parseInt(id));
-      
+      const currentFeedback = data.find(
+        (f: FeedbackSubmission) => f.id === parseInt(id),
+      );
+
       if (currentFeedback) {
-        setState(prev => ({ 
-          ...prev, 
+        setState((prev) => ({
+          ...prev,
           feedback: currentFeedback,
-          loading: false 
+          loading: false,
         }));
       } else {
-        throw new Error('Feedback not found');
+        throw new Error("Feedback not found");
       }
     } catch (error) {
-      console.error('Error fetching feedback:', error);
+      console.error("Error fetching feedback:", error);
       showAlert({
         title: "Error",
         description: "Failed to load feedback questions. Please try again.",
@@ -95,7 +110,7 @@ export default function FeedbackForm({ id }: FeedbackFormProps) {
         color: "danger",
         duration: 5000,
       });
-      setState(prev => ({ ...prev, loading: false }));
+      setState((prev) => ({ ...prev, loading: false }));
     }
   };
 
@@ -103,17 +118,23 @@ export default function FeedbackForm({ id }: FeedbackFormProps) {
     if (!state.feedback) return;
 
     // Validate text length for all responses
-    const textLengthValidation = Object.entries(state.answers).find(([questionId, answer]) => {
-      const question = state.feedback!.questions.find(q => q.id === parseInt(questionId));
-      if (question?.type === 'TEXT_BASED' && typeof answer === 'string') {
-        return answer.length > MAX_TEXT_LENGTH;
-      }
-      return false;
-    });
+    const textLengthValidation = Object.entries(state.answers).find(
+      ([questionId, answer]) => {
+        const question = state.feedback!.questions.find(
+          (q) => q.id === parseInt(questionId),
+        );
+        if (question?.type === "TEXT_BASED" && typeof answer === "string") {
+          return answer.length > MAX_TEXT_LENGTH;
+        }
+        return false;
+      },
+    );
 
     if (textLengthValidation) {
       const [questionId] = textLengthValidation;
-      const question = state.feedback.questions.find(q => q.id === parseInt(questionId));
+      const question = state.feedback.questions.find(
+        (q) => q.id === parseInt(questionId),
+      );
       showAlert({
         title: "Text Too Long",
         description: `The response for "${question?.text}" exceeds the maximum length of ${MAX_TEXT_LENGTH} characters. Please shorten your response.`,
@@ -137,8 +158,11 @@ export default function FeedbackForm({ id }: FeedbackFormProps) {
     }
 
     const unansweredRequired = state.feedback.questions.some(
-      q => q.required && (!state.answers[q.id] || 
-        (Array.isArray(state.answers[q.id]) && (state.answers[q.id] as string[]).length === 0))
+      (q) =>
+        q.required &&
+        (!state.answers[q.id] ||
+          (Array.isArray(state.answers[q.id]) &&
+            (state.answers[q.id] as string[]).length === 0)),
     );
 
     if (unansweredRequired) {
@@ -163,10 +187,10 @@ export default function FeedbackForm({ id }: FeedbackFormProps) {
       return;
     }
 
-    setState(prev => ({ ...prev, submitting: true }));
+    setState((prev) => ({ ...prev, submitting: true }));
 
     try {
-      const token = getCookie('accessToken');
+      const token = getCookie("accessToken");
       if (!token) {
         showAlert({
           title: "Session Expired",
@@ -175,59 +199,67 @@ export default function FeedbackForm({ id }: FeedbackFormProps) {
           color: "danger",
           duration: 5000,
         });
-        router.push('/auth/login');
+        router.push("/auth/login");
         return;
       }
 
       // Format responses according to the API requirements
-      const formattedResponses = Object.entries(state.answers).reduce((acc, [questionId, answer]) => {
-        const question = state.feedback!.questions.find(q => q.id === parseInt(questionId));
-        if (!question) return acc;
+      const formattedResponses = Object.entries(state.answers).reduce(
+        (acc, [questionId, answer]) => {
+          const question = state.feedback!.questions.find(
+            (q) => q.id === parseInt(questionId),
+          );
+          if (!question) return acc;
 
-        let formattedAnswer = '';
-        if (Array.isArray(answer)) {
-          // For multiple choice questions, join with commas
-          formattedAnswer = answer.join(', ');
-        } else if (typeof answer === 'string') {
-          if (question.type === 'TEXT_BASED') {
-            // For text-based questions, trim and limit length
-            formattedAnswer = answer.trim().slice(0, MAX_TEXT_LENGTH);
-          } else {
-            // For single choice and sentiment questions
-            formattedAnswer = answer;
+          let formattedAnswer = "";
+          if (Array.isArray(answer)) {
+            // For multiple choice questions, join with commas
+            formattedAnswer = answer.join(", ");
+          } else if (typeof answer === "string") {
+            if (question.type === "TEXT_BASED") {
+              // For text-based questions, trim and limit length
+              formattedAnswer = answer.trim().slice(0, MAX_TEXT_LENGTH);
+            } else {
+              // For single choice and sentiment questions
+              formattedAnswer = answer;
+            }
           }
-        }
 
-        if (formattedAnswer) {
-          acc[questionId] = formattedAnswer;
-        }
-        return acc;
-      }, {} as Record<string, string>);
+          if (formattedAnswer) {
+            acc[questionId] = formattedAnswer;
+          }
+          return acc;
+        },
+        {} as Record<string, string>,
+      );
 
       const submissionData = {
         feedbackId: parseInt(id),
         responses: formattedResponses,
         overallComments: state.overallComments.trim().slice(0, MAX_TEXT_LENGTH),
-        privacyLevel: state.privacyLevel
+        privacyLevel: state.privacyLevel,
       };
 
-      console.log('Submitting feedback:', submissionData);
+      console.log("Submitting feedback:", submissionData);
 
-      const response = await fetch('http://localhost:8084/api/v1/feedback-submissions/submit', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        "http://localhost:8084/api/v1/feedback-submissions/submit",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify(submissionData),
         },
-        credentials: 'include',
-        body: JSON.stringify(submissionData),
-      });
+      );
 
       const responseData = await response.json();
 
       if (!response.ok) {
-        console.error('Submission error response:', responseData);
-        throw new Error(responseData.message || 'Failed to submit feedback');
+        console.error("Submission error response:", responseData);
+        throw new Error(responseData.message || "Failed to submit feedback");
       }
 
       showAlert({
@@ -237,18 +269,21 @@ export default function FeedbackForm({ id }: FeedbackFormProps) {
         color: "success",
         duration: 5000,
       });
-      router.push('/employee');
+      router.push("/employee");
     } catch (error) {
-      console.error('Submission error:', error);
+      console.error("Submission error:", error);
       showAlert({
         title: "Submission Failed",
-        description: error instanceof Error ? error.message : "Unable to submit your feedback. Please try again.",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Unable to submit your feedback. Please try again.",
         variant: "solid",
         color: "danger",
         duration: 5000,
       });
     } finally {
-      setState(prev => ({ ...prev, submitting: false }));
+      setState((prev) => ({ ...prev, submitting: false }));
     }
   };
 
@@ -268,20 +303,34 @@ export default function FeedbackForm({ id }: FeedbackFormProps) {
       <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
         <AlertCircle className="h-12 w-12 text-red-500" />
         <h2 className="text-xl font-semibold">Feedback Not Found</h2>
-        <p className="text-gray-500">This feedback form doesn&apos;t exist or has expired.</p>
-        <Button onClick={() => router.push('/employee')}>
+        <p className="text-gray-500">
+          This feedback form doesn&apos;t exist or has expired.
+        </p>
+        <Button onClick={() => router.push("/employee")}>
           Return to Dashboard
         </Button>
       </div>
     );
   }
 
-  const canProceed = state.currentStep === state.feedback?.questions.length ? 
-    state.overallComments.trim().length > 0 :
-    Boolean(state.feedback && !state.feedback.questions[state.currentStep].required) || 
-    Boolean(state.answers[state.feedback!.questions[state.currentStep].id] && 
-    (!Array.isArray(state.answers[state.feedback!.questions[state.currentStep].id]) || 
-    (state.answers[state.feedback!.questions[state.currentStep].id] as string[]).length > 0));
+  const canProceed =
+    state.currentStep === state.feedback?.questions.length
+      ? state.overallComments.trim().length > 0
+      : Boolean(
+          state.feedback &&
+            !state.feedback.questions[state.currentStep].required,
+        ) ||
+        Boolean(
+          state.answers[state.feedback!.questions[state.currentStep].id] &&
+            (!Array.isArray(
+              state.answers[state.feedback!.questions[state.currentStep].id],
+            ) ||
+              (
+                state.answers[
+                  state.feedback!.questions[state.currentStep].id
+                ] as string[]
+              ).length > 0),
+        );
 
   return (
     <div className="min-h-screen bg-gray-50/50 overflow-hidden">
@@ -295,8 +344,12 @@ export default function FeedbackForm({ id }: FeedbackFormProps) {
                 <ClipboardList className="h-5 w-5 text-violet-600" />
               </div>
               <div>
-                <h1 className="text-lg font-semibold text-gray-900">{state.feedback.title}</h1>
-                <p className="text-sm text-gray-500 line-clamp-1">{state.feedback.description}</p>
+                <h1 className="text-lg font-semibold text-gray-900">
+                  {state.feedback.title}
+                </h1>
+                <p className="text-sm text-gray-500 line-clamp-1">
+                  {state.feedback.description}
+                </p>
               </div>
             </div>
 
@@ -307,14 +360,18 @@ export default function FeedbackForm({ id }: FeedbackFormProps) {
                   <Clock className="h-4 w-4" />
                   <span>Duration</span>
                 </div>
-                <p className="font-medium text-gray-900">~{state.feedback.questions.length * 2} mins</p>
+                <p className="font-medium text-gray-900">
+                  ~{state.feedback.questions.length * 2} mins
+                </p>
               </div>
               <div className="p-3 bg-gray-50 rounded-lg">
                 <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
                   <BarChart className="h-4 w-4" />
                   <span>Questions</span>
                 </div>
-                <p className="font-medium text-gray-900">{state.feedback.questions.length} total</p>
+                <p className="font-medium text-gray-900">
+                  {state.feedback.questions.length} total
+                </p>
               </div>
             </div>
 
@@ -323,15 +380,20 @@ export default function FeedbackForm({ id }: FeedbackFormProps) {
               <div className="flex items-center justify-between text-sm">
                 <span className="font-medium text-gray-700">Your Progress</span>
                 <span className="font-medium text-violet-600">
-                  {Math.round(((state.currentStep + 1) / (state.feedback.questions.length + 1)) * 100)}%
+                  {Math.round(
+                    ((state.currentStep + 1) /
+                      (state.feedback.questions.length + 1)) *
+                      100,
+                  )}
+                  %
                 </span>
               </div>
               <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                <motion.div 
+                <motion.div
                   className="h-full bg-gradient-to-r from-violet-500 to-violet-600 rounded-full"
                   initial={{ width: 0 }}
-                  animate={{ 
-                    width: `${((state.currentStep + 1) / (state.feedback.questions.length + 1)) * 100}%` 
+                  animate={{
+                    width: `${((state.currentStep + 1) / (state.feedback.questions.length + 1)) * 100}%`,
                   }}
                   transition={{ duration: 0.5, ease: "easeInOut" }}
                 />
@@ -344,33 +406,35 @@ export default function FeedbackForm({ id }: FeedbackFormProps) {
             {state.feedback.questions.map((question, index) => {
               const isCompleted = state.answers[question.id];
               const isCurrent = state.currentStep === index;
-              
+
               return (
                 <motion.button
                   key={question.id}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.05 }}
-                  onClick={() => setState(prev => ({ ...prev, currentStep: index }))}
+                  onClick={() =>
+                    setState((prev) => ({ ...prev, currentStep: index }))
+                  }
                   className={cn(
                     "w-full flex items-center gap-3 p-4 rounded-xl text-left transition-all",
                     "hover:bg-violet-50 hover:shadow-md",
-                    isCurrent 
-                      ? "bg-violet-50 text-violet-700 shadow-md border border-violet-200" 
+                    isCurrent
+                      ? "bg-violet-50 text-violet-700 shadow-md border border-violet-200"
                       : "bg-white border border-gray-100 shadow-sm",
-                    isCompleted 
-                      ? "text-gray-900" 
-                      : "text-gray-500"
+                    isCompleted ? "text-gray-900" : "text-gray-500",
                   )}
                 >
-                  <div className={cn(
-                    "w-8 h-8 rounded-full flex items-center justify-center text-sm transition-colors shrink-0",
-                    isCurrent 
-                      ? "bg-violet-100 text-violet-700" 
-                      : isCompleted
-                        ? "bg-emerald-100 text-emerald-700"
-                        : "bg-gray-100 text-gray-500"
-                  )}>
+                  <div
+                    className={cn(
+                      "w-8 h-8 rounded-full flex items-center justify-center text-sm transition-colors shrink-0",
+                      isCurrent
+                        ? "bg-violet-100 text-violet-700"
+                        : isCompleted
+                          ? "bg-emerald-100 text-emerald-700"
+                          : "bg-gray-100 text-gray-500",
+                    )}
+                  >
                     {isCompleted ? (
                       <CheckCircle2 className="w-5 h-5" />
                     ) : (
@@ -383,26 +447,30 @@ export default function FeedbackForm({ id }: FeedbackFormProps) {
                         Question {index + 1}
                       </span>
                       {question.required && (
-                        <span className="shrink-0 text-xs px-2 py-0.5 rounded-full bg-red-50 text-red-500 font-medium">Required</span>
+                        <span className="shrink-0 text-xs px-2 py-0.5 rounded-full bg-red-50 text-red-500 font-medium">
+                          Required
+                        </span>
                       )}
                     </div>
                     <p className="text-xs text-gray-500 truncate mt-1">
-                      {question.description || 'No description'}
+                      {question.description || "No description"}
                     </p>
                   </div>
                 </motion.button>
               );
             })}
-            
+
             {/* Overall Comments Step */}
             <motion.button
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: state.feedback.questions.length * 0.05 }}
-              onClick={() => setState(prev => ({ 
-                ...prev, 
-                currentStep: state.feedback!.questions.length 
-              }))}
+              onClick={() =>
+                setState((prev) => ({
+                  ...prev,
+                  currentStep: state.feedback!.questions.length,
+                }))
+              }
               className={cn(
                 "w-full flex items-center gap-3 p-4 rounded-xl text-left transition-all",
                 "hover:bg-violet-50 hover:shadow-md",
@@ -411,22 +479,26 @@ export default function FeedbackForm({ id }: FeedbackFormProps) {
                   : "bg-white border border-gray-100 shadow-sm",
                 state.overallComments.trim().length > 0
                   ? "text-gray-900"
-                  : "text-gray-500"
+                  : "text-gray-500",
               )}
             >
-              <div className={cn(
-                "w-8 h-8 rounded-full flex items-center justify-center transition-colors shrink-0",
-                state.currentStep === state.feedback.questions.length
-                  ? "bg-violet-100 text-violet-700"
-                  : state.overallComments.trim().length > 0
-                    ? "bg-emerald-100 text-emerald-700"
-                    : "bg-gray-100 text-gray-500"
-              )}>
+              <div
+                className={cn(
+                  "w-8 h-8 rounded-full flex items-center justify-center transition-colors shrink-0",
+                  state.currentStep === state.feedback.questions.length
+                    ? "bg-violet-100 text-violet-700"
+                    : state.overallComments.trim().length > 0
+                      ? "bg-emerald-100 text-emerald-700"
+                      : "bg-gray-100 text-gray-500",
+                )}
+              >
                 <MessageSquare className="w-5 h-5" />
               </div>
               <div className="flex-1 min-w-0">
                 <span className="text-sm font-medium">Overall Comments</span>
-                <p className="text-xs text-gray-500 mt-1">Final thoughts and suggestions</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Final thoughts and suggestions
+                </p>
               </div>
             </motion.button>
           </div>
@@ -451,7 +523,8 @@ export default function FeedbackForm({ id }: FeedbackFormProps) {
                   </div>
                   <div>
                     <h2 className="text-sm font-medium text-gray-500">
-                      Question {state.currentStep + 1} of {state.feedback.questions.length}
+                      Question {state.currentStep + 1} of{" "}
+                      {state.feedback.questions.length}
                     </h2>
                     {state.feedback.questions[state.currentStep]?.required && (
                       <div className="flex items-center gap-1 text-red-500 text-sm">
@@ -467,11 +540,21 @@ export default function FeedbackForm({ id }: FeedbackFormProps) {
                     <QuestionCard
                       key={state.currentStep}
                       question={state.feedback.questions[state.currentStep]}
-                      currentAnswer={state.answers[state.feedback.questions[state.currentStep].id] || ''}
-                      onAnswerChange={(value) => setState(prev => ({
-                        ...prev,
-                        answers: { ...prev.answers, [state.feedback!.questions[state.currentStep].id]: value }
-                      }))}
+                      currentAnswer={
+                        state.answers[
+                          state.feedback.questions[state.currentStep].id
+                        ] || ""
+                      }
+                      onAnswerChange={(value) =>
+                        setState((prev) => ({
+                          ...prev,
+                          answers: {
+                            ...prev.answers,
+                            [state.feedback!.questions[state.currentStep].id]:
+                              value,
+                          },
+                        }))
+                      }
                       questionNumber={state.currentStep + 1}
                       totalQuestions={state.feedback.questions.length}
                     />
@@ -479,8 +562,15 @@ export default function FeedbackForm({ id }: FeedbackFormProps) {
                     <FeedbackOverallComments
                       overallComments={state.overallComments}
                       privacyLevel={state.privacyLevel}
-                      onCommentsChange={(comments) => setState(prev => ({ ...prev, overallComments: comments }))}
-                      onPrivacyChange={(privacy) => setState(prev => ({ ...prev, privacyLevel: privacy }))}
+                      onCommentsChange={(comments) =>
+                        setState((prev) => ({
+                          ...prev,
+                          overallComments: comments,
+                        }))
+                      }
+                      onPrivacyChange={(privacy) =>
+                        setState((prev) => ({ ...prev, privacyLevel: privacy }))
+                      }
                     />
                   )}
                 </AnimatePresence>
@@ -490,7 +580,12 @@ export default function FeedbackForm({ id }: FeedbackFormProps) {
               <div className="flex items-center justify-between pt-6 border-t">
                 <Button
                   variant="outline"
-                  onClick={() => setState(prev => ({ ...prev, currentStep: prev.currentStep - 1 }))}
+                  onClick={() =>
+                    setState((prev) => ({
+                      ...prev,
+                      currentStep: prev.currentStep - 1,
+                    }))
+                  }
                   disabled={state.currentStep === 0}
                   className="gap-2 hover:bg-gray-50"
                 >
@@ -518,12 +613,19 @@ export default function FeedbackForm({ id }: FeedbackFormProps) {
                   </Button>
                 ) : (
                   <Button
-                    onClick={() => setState(prev => ({ ...prev, currentStep: prev.currentStep + 1 }))}
+                    onClick={() =>
+                      setState((prev) => ({
+                        ...prev,
+                        currentStep: prev.currentStep + 1,
+                      }))
+                    }
                     disabled={!canProceed}
                     className="gap-2 bg-gradient-to-r from-violet-600 to-violet-700 hover:from-violet-700 hover:to-violet-800 text-white shadow-sm"
                   >
                     <span>
-                      {state.currentStep === state.feedback.questions.length - 1 ? 'Final Step' : 'Next Question'}
+                      {state.currentStep === state.feedback.questions.length - 1
+                        ? "Final Step"
+                        : "Next Question"}
                     </span>
                     <ChevronRight className="h-4 w-4" />
                   </Button>
@@ -535,4 +637,4 @@ export default function FeedbackForm({ id }: FeedbackFormProps) {
       </div>
     </div>
   );
-} 
+}

@@ -1,4 +1,4 @@
-import axiosInstance from './axios';
+import axiosInstance from "./axios";
 
 export interface User {
   id: string;
@@ -6,7 +6,7 @@ export interface User {
   email: string;
   department: string;
   role: string;
-  status: 'active' | 'inactive';
+  status: "active" | "inactive";
 }
 
 export interface Department {
@@ -14,7 +14,7 @@ export interface Department {
   name: string;
   description: string;
   employeeCount: number;
-  status: 'active' | 'inactive';
+  status: "active" | "inactive";
   members?: Array<{
     id: string;
     name: string;
@@ -34,7 +34,7 @@ export interface CreateUserRequest {
 export interface CreateDepartmentRequest {
   name: string;
   description: string;
-  status?: 'active' | 'inactive';
+  status?: "active" | "inactive";
   members?: Array<{
     id: string;
     role: string;
@@ -44,7 +44,7 @@ export interface CreateDepartmentRequest {
 export const userApi = {
   // User operations
   getUsers: async (): Promise<User[]> => {
-    const response = await axiosInstance.get('/api/users');
+    const response = await axiosInstance.get("/api/users");
     return response.data;
   },
 
@@ -54,11 +54,14 @@ export const userApi = {
   },
 
   createUser: async (data: CreateUserRequest): Promise<User> => {
-    const response = await axiosInstance.post('/api/users', data);
+    const response = await axiosInstance.post("/api/users", data);
     return response.data;
   },
 
-  updateUser: async (id: string, data: Partial<CreateUserRequest>): Promise<User> => {
+  updateUser: async (
+    id: string,
+    data: Partial<CreateUserRequest>,
+  ): Promise<User> => {
     const response = await axiosInstance.put(`/api/users/${id}`, data);
     return response.data;
   },
@@ -69,7 +72,7 @@ export const userApi = {
 
   // Department operations
   getDepartments: async (): Promise<Department[]> => {
-    const response = await axiosInstance.get('/api/departments');
+    const response = await axiosInstance.get("/api/departments");
     return response.data;
   },
 
@@ -78,12 +81,17 @@ export const userApi = {
     return response.data;
   },
 
-  createDepartment: async (data: CreateDepartmentRequest): Promise<Department> => {
-    const response = await axiosInstance.post('/api/departments', data);
+  createDepartment: async (
+    data: CreateDepartmentRequest,
+  ): Promise<Department> => {
+    const response = await axiosInstance.post("/api/departments", data);
     return response.data;
   },
 
-  updateDepartment: async (id: string, data: Partial<CreateDepartmentRequest>): Promise<Department> => {
+  updateDepartment: async (
+    id: string,
+    data: Partial<CreateDepartmentRequest>,
+  ): Promise<Department> => {
     const response = await axiosInstance.put(`/api/departments/${id}`, data);
     return response.data;
   },
@@ -91,4 +99,4 @@ export const userApi = {
   deleteDepartment: async (id: string): Promise<void> => {
     await axiosInstance.delete(`/api/departments/${id}`);
   },
-}; 
+};

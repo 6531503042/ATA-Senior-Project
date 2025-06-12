@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { DatePicker } from '@/components/shared/date-picker';
-import { ProjectStatus } from '../models/types';
-import '../styles/ProjectFilters.css';
+import React from "react";
+import { DatePicker } from "@/components/shared/date-picker";
+import { ProjectStatus } from "../models/types";
+import "../styles/ProjectFilters.css";
 
 interface ProjectFiltersProps {
   filters: {
@@ -15,7 +15,10 @@ interface ProjectFiltersProps {
   onFilterChange: (name: string, value: unknown) => void;
 }
 
-export function ProjectFilters({ filters, onFilterChange }: ProjectFiltersProps) {
+export function ProjectFilters({
+  filters,
+  onFilterChange,
+}: ProjectFiltersProps) {
   const statusOptions = Object.values(ProjectStatus);
 
   return (
@@ -25,7 +28,7 @@ export function ProjectFilters({ filters, onFilterChange }: ProjectFiltersProps)
           type="text"
           placeholder="Search projects..."
           value={filters.search}
-          onChange={(e) => onFilterChange('search', e.target.value)}
+          onChange={(e) => onFilterChange("search", e.target.value)}
           className="search-input"
         />
       </div>
@@ -42,7 +45,7 @@ export function ProjectFilters({ filters, onFilterChange }: ProjectFiltersProps)
                   const newStatus = e.target.checked
                     ? [...filters.status, status]
                     : filters.status.filter((s) => s !== status);
-                  onFilterChange('status', newStatus);
+                  onFilterChange("status", newStatus);
                 }}
               />
               <span>{status}</span>
@@ -55,15 +58,15 @@ export function ProjectFilters({ filters, onFilterChange }: ProjectFiltersProps)
         <DatePicker
           label="Start Date"
           date={filters.startDate}
-          setDate={(date) => onFilterChange('startDate', date)}
+          setDate={(date) => onFilterChange("startDate", date)}
         />
         <DatePicker
           label="End Date"
           date={filters.endDate}
-          setDate={(date) => onFilterChange('endDate', date)}
+          setDate={(date) => onFilterChange("endDate", date)}
           minDate={filters.startDate}
         />
       </div>
     </div>
   );
-} 
+}

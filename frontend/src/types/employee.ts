@@ -16,7 +16,7 @@ export interface Question {
   text: string;
   content: string;
   required: boolean;
-  type: 'MULTIPLE_CHOICE' | 'SINGLE_CHOICE' | 'SENTIMENT' | 'TEXT_BASED';
+  type: "MULTIPLE_CHOICE" | "SINGLE_CHOICE" | "SENTIMENT" | "TEXT_BASED";
   category: string;
   answerType: string;
   answers: Answer[];
@@ -66,7 +66,7 @@ export interface FeedbackSubmissionPayload {
   feedbackId: number;
   responses: FeedbackResponse;
   overallComments: string;
-  privacyLevel: 'PUBLIC' | 'PRIVATE';
+  privacyLevel: "PUBLIC" | "PRIVATE";
 }
 
 // State Types
@@ -75,7 +75,7 @@ export interface FeedbackFormState {
   currentStep: number;
   answers: Record<number, string | string[]>;
   overallComments: string;
-  privacyLevel: 'PUBLIC' | 'PRIVATE';
+  privacyLevel: "PUBLIC" | "PRIVATE";
   loading: boolean;
   submitting: boolean;
 }

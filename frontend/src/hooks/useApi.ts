@@ -1,6 +1,6 @@
-import { useState, useCallback } from 'react';
-import api from '@/utils/api';
-import { AxiosError, AxiosRequestConfig } from 'axios';
+import { useState, useCallback } from "react";
+import api from "@/utils/api";
+import { AxiosError, AxiosRequestConfig } from "axios";
 
 interface UseApiResponse<T> {
   data: T | null;
@@ -12,7 +12,7 @@ interface UseApiResponse<T> {
 
 export function useApi<T>(
   endpoint: string,
-  defaultConfig: AxiosRequestConfig = {}
+  defaultConfig: AxiosRequestConfig = {},
 ): UseApiResponse<T> {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -45,14 +45,14 @@ export function useApi<T>(
       } catch (err) {
         const error = err as AxiosError<{ message: string }>;
         const errorMessage =
-          error.response?.data?.message || 'An unexpected error occurred';
+          error.response?.data?.message || "An unexpected error occurred";
         setError(errorMessage);
         throw error;
       } finally {
         setLoading(false);
       }
     },
-    [endpoint, defaultConfig]
+    [endpoint, defaultConfig],
   );
 
   return {

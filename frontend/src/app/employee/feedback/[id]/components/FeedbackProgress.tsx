@@ -1,13 +1,16 @@
-'use client';
+"use client";
 
-import { Progress } from '@/components/ui/progress';
+import { Progress } from "@/components/ui/progress";
 
 interface FeedbackProgressProps {
   currentStep: number;
   totalSteps: number;
 }
 
-export function FeedbackProgress({ currentStep, totalSteps }: FeedbackProgressProps) {
+export function FeedbackProgress({
+  currentStep,
+  totalSteps,
+}: FeedbackProgressProps) {
   const progress = ((currentStep + 1) / totalSteps) * 100;
 
   return (
@@ -19,4 +22,4 @@ export function FeedbackProgress({ currentStep, totalSteps }: FeedbackProgressPr
       <Progress value={progress} className="h-2" />
     </div>
   );
-} 
+}

@@ -49,7 +49,7 @@ export default function LoginPage() {
         title: "Login Failed",
         description: "Invalid username or password. Please try again.",
         variant: "solid",
-        color: "danger"
+        color: "danger",
       });
 
       setTimeout(() => {

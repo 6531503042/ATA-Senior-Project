@@ -30,18 +30,23 @@ const TableSkeleton = () => (
 export function DepartmentTable() {
   const { departments, isLoading, error } = useDepartments();
   const [searchQuery, setSearchQuery] = useState("");
-  const [editingDepartment, setEditingDepartment] = useState<Department | null>(null);
-  const [deletingDepartment, setDeletingDepartment] = useState<Department | null>(null);
+  const [editingDepartment, setEditingDepartment] = useState<Department | null>(
+    null,
+  );
+  const [deletingDepartment, setDeletingDepartment] =
+    useState<Department | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  const filteredDepartments = departments?.filter((dept) =>
-    dept.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    dept.description.toLowerCase().includes(searchQuery.toLowerCase())
-  ) || [];
+  const filteredDepartments =
+    departments?.filter(
+      (dept) =>
+        dept.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        dept.description.toLowerCase().includes(searchQuery.toLowerCase()),
+    ) || [];
 
   const columns = [
-    { 
-      key: "name", 
+    {
+      key: "name",
       header: "Name",
       render: (department: Department) => (
         <div className="flex items-center gap-3">
@@ -50,13 +55,15 @@ export function DepartmentTable() {
           </div>
           <div>
             <div className="font-medium">{department.name}</div>
-            <div className="text-sm text-gray-500">{department.description}</div>
+            <div className="text-sm text-gray-500">
+              {department.description}
+            </div>
           </div>
         </div>
-      )
+      ),
     },
-    { 
-      key: "memberCount", 
+    {
+      key: "memberCount",
       header: "Members",
       render: (department: Department) => (
         <div className="flex items-center gap-2">
@@ -65,7 +72,7 @@ export function DepartmentTable() {
           </div>
           <span>{department.users.length} members</span>
         </div>
-      )
+      ),
     },
     {
       key: "status",
@@ -75,14 +82,14 @@ export function DepartmentTable() {
           variant={department.active ? "default" : "destructive"}
           className={`capitalize ${
             department.active
-              ? 'bg-emerald-100 text-emerald-800'
-              : 'bg-red-100 text-red-800'
+              ? "bg-emerald-100 text-emerald-800"
+              : "bg-red-100 text-red-800"
           }`}
         >
           {department.active ? "Active" : "Inactive"}
         </Badge>
-      )
-    }
+      ),
+    },
   ];
 
   const actions = (department: Department) => (
@@ -119,7 +126,7 @@ export function DepartmentTable() {
               Manage your organization&apos;s departments and hierarchies
             </p>
           </div>
-          <Button 
+          <Button
             className="bg-violet-600 hover:bg-violet-700 text-white gap-2"
             onClick={() => setIsCreateModalOpen(true)}
           >
@@ -200,4 +207,4 @@ export function DepartmentTable() {
       />
     </div>
   );
-} 
+}

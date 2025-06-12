@@ -1,15 +1,15 @@
-import axios from 'axios';
+import axios from "axios";
 
 // Create axios instance for AI service
 export const aiService = axios.create({
-  baseURL: 'http://localhost:8085',
+  baseURL: "http://localhost:8085",
   timeout: 10000,
 });
 
 // Add response interceptor for logging
 aiService.interceptors.response.use(
   (response) => {
-    console.log('AI Service Response:', {
+    console.log("AI Service Response:", {
       status: response.status,
       url: response.config.url,
       data: response.data,
@@ -17,14 +17,14 @@ aiService.interceptors.response.use(
     return response;
   },
   (error) => {
-    console.error('AI Service Error:', {
+    console.error("AI Service Error:", {
       status: error.response?.status,
       url: error.config?.url,
       data: error.response?.data,
       message: error.message,
     });
     return Promise.reject(error);
-  }
+  },
 );
 
 // Types
@@ -45,15 +45,15 @@ export interface SubmissionData {
   responses: Record<string, string>;
   questionDetails: QuestionDetail[];
   overallComments: string;
-  privacyLevel: 'ANONYMOUS' | 'PUBLIC';
+  privacyLevel: "ANONYMOUS" | "PUBLIC";
   submittedAt: string;
   updatedAt: string;
-  status?: 'analyzed' | 'pending' | 'error';
+  status?: "analyzed" | "pending" | "error";
   feedback?: {
     projectName: string;
     title: string;
   };
-  overallSentiment?: 'positive' | 'neutral' | 'negative';
+  overallSentiment?: "positive" | "neutral" | "negative";
   error?: string;
 }
 
@@ -76,20 +76,24 @@ export interface Analysis {
 // API Functions
 export const getAllSubmissions = async (): Promise<SubmissionResponse[]> => {
   try {
-    const response = await aiService.get('/api/submissions/all');
+    const response = await aiService.get("/api/submissions/all");
     return response.data;
   } catch (error) {
-    console.error('Error fetching all submissions:', error);
+    console.error("Error fetching all submissions:", error);
     throw error;
   }
 };
 
-export const getSubmissionAnalysis = async (submissionId: number): Promise<Analysis> => {
+export const getSubmissionAnalysis = async (
+  submissionId: number,
+): Promise<Analysis> => {
   try {
-    const response = await aiService.get(`/api/submissions/${submissionId}/analysis`);
+    const response = await aiService.get(
+      `/api/submissions/${submissionId}/analysis`,
+    );
     return response.data;
   } catch (error) {
-    console.error('Error fetching submission analysis:', error);
+    console.error("Error fetching submission analysis:", error);
     throw error;
   }
-}; 
+};

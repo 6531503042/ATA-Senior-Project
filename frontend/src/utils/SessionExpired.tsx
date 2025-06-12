@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 
 interface SessionExpiredProps {
   onRedirect?: () => void;
@@ -7,40 +7,43 @@ interface SessionExpiredProps {
 const SessionExpired: React.FC<SessionExpiredProps> = ({ onRedirect }) => {
   const [showModal, setShowModal] = useState(false);
   const [countdown, setCountdown] = useState(5);
-  const [countdownInterval, setCountdownIntervalState] = useState<NodeJS.Timeout | null>(null);
+  const [countdownInterval, setCountdownIntervalState] =
+    useState<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     // Check if we're already handling a session expired event
-    const sessionExpiredHandled = sessionStorage.getItem('sessionExpiredHandled');
-    
+    const sessionExpiredHandled = sessionStorage.getItem(
+      "sessionExpiredHandled",
+    );
+
     // Clear any existing intervals first
     if (countdownInterval) {
       clearInterval(countdownInterval);
       setCountdownIntervalState(null);
     }
-    
+
     // Listen for session expired events
     const handleSessionExpired = () => {
       // Prevent duplicate handling
-      if (sessionStorage.getItem('sessionExpiredHandled') === 'true') {
+      if (sessionStorage.getItem("sessionExpiredHandled") === "true") {
         // If already handled in this session, don't show again
         if (showModal) {
           setShowModal(false);
         }
         return;
       }
-      
-      console.log('Session expired event received in modal component');
-      
+
+      console.log("Session expired event received in modal component");
+
       // Mark as handled to prevent multiple modals
-      sessionStorage.setItem('sessionExpiredHandled', 'true');
-      
+      sessionStorage.setItem("sessionExpiredHandled", "true");
+
       setShowModal(true);
       setCountdown(5); // Reset countdown to 5
-      
+
       // Start countdown - using 1000ms (1 second) for the interval
       const interval = setInterval(() => {
-        setCountdown(prevCount => {
+        setCountdown((prevCount) => {
           const newCount = prevCount - 1;
           if (newCount <= 0) {
             clearInterval(interval);
@@ -49,20 +52,20 @@ const SessionExpired: React.FC<SessionExpiredProps> = ({ onRedirect }) => {
           return newCount;
         });
       }, 1000); // 1 second interval
-      
+
       setCountdownIntervalState(interval as unknown as NodeJS.Timeout);
     };
 
-    window.addEventListener('auth:session-expired', handleSessionExpired);
-    
+    window.addEventListener("auth:session-expired", handleSessionExpired);
+
     // Check if we were redirected here due to session expiration
-    if (sessionExpiredHandled === 'true' && !showModal) {
+    if (sessionExpiredHandled === "true" && !showModal) {
       // Show the modal right away
       handleSessionExpired();
     }
-    
+
     return () => {
-      window.removeEventListener('auth:session-expired', handleSessionExpired);
+      window.removeEventListener("auth:session-expired", handleSessionExpired);
       if (countdownInterval) {
         clearInterval(countdownInterval);
       }
@@ -75,28 +78,28 @@ const SessionExpired: React.FC<SessionExpiredProps> = ({ onRedirect }) => {
       clearInterval(countdownInterval);
     }
     setShowModal(false);
-    
+
     // Clear the handled flag so we can show the modal again if needed
-    sessionStorage.removeItem('sessionExpiredHandled');
-    
+    sessionStorage.removeItem("sessionExpiredHandled");
+
     if (onRedirect) {
       onRedirect();
     } else {
       // Use a flag to prevent redirect loops
-      localStorage.setItem('loginRedirect', 'true');
-      window.location.href = '/auth/login?expired=true';
+      localStorage.setItem("loginRedirect", "true");
+      window.location.href = "/auth/login?expired=true";
     }
   };
-  
+
   const stayOnPage = () => {
     // Clean up
     if (countdownInterval) {
       clearInterval(countdownInterval);
     }
     setShowModal(false);
-    
+
     // Allow future session expired events
-    sessionStorage.removeItem('sessionExpiredHandled');
+    sessionStorage.removeItem("sessionExpiredHandled");
   };
 
   if (!showModal) {
@@ -108,8 +111,10 @@ const SessionExpired: React.FC<SessionExpiredProps> = ({ onRedirect }) => {
       <div className="bg-white p-6 rounded-lg shadow-lg max-w-md">
         <h2 className="text-xl font-bold mb-4">Session Expired</h2>
         <p className="mb-4">
-          Your session has expired due to inactivity. 
-          {countdown > 0 ? ` You will be redirected to the login page in ${countdown} seconds.` : ''}
+          Your session has expired due to inactivity.
+          {countdown > 0
+            ? ` You will be redirected to the login page in ${countdown} seconds.`
+            : ""}
         </p>
         <div className="flex justify-end space-x-2">
           <button

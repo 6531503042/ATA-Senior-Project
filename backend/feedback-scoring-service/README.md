@@ -32,26 +32,33 @@ The service follows a clean, modular architecture:
 ## Setup and Installation
 
 1. Create a Python virtual environment:
+
 ```bash
 python3.11 -m venv venv
 ```
 
 2. Activate the virtual environment:
+
 - On macOS/Linux:
+
 ```bash
 source venv/bin/activate
 ```
+
 - On Windows:
+
 ```bash
 .\venv\Scripts\activate
 ```
 
 3. Install dependencies:
+
 ```bash
 pip install -r requirements.txt
 ```
 
 4. Install spaCy and download the English language model:
+
 ```bash
 # Install spaCy and its dependencies
 pip install -U spacy
@@ -95,11 +102,13 @@ MAX_WORKERS=4
 ## Running the Service
 
 1. Navigate to the Python source directory:
+
 ```bash
 cd src/main/python
 ```
 
 2. Run the service using Python:
+
 ```bash
 python main.py
 ```
@@ -109,11 +118,13 @@ The service will be available at `http://localhost:8085`
 ## Docker Deployment
 
 1. Build the Docker image:
+
 ```bash
 docker build -t feedback-scoring-service .
 ```
 
 2. Run the container:
+
 ```bash
 docker run -p 8085:8085 --env-file .env feedback-scoring-service
 ```
@@ -169,6 +180,7 @@ src/main/python/
 ### Testing
 
 To run the tests:
+
 ```bash
 python -m pytest tests/
 ```
@@ -176,17 +188,21 @@ python -m pytest tests/
 ## Troubleshooting
 
 If you encounter spaCy-related errors:
+
 1. Ensure spaCy is properly installed:
+
 ```bash
 pip install -U spacy
 ```
 
 2. Verify the English model is installed:
+
 ```bash
 python -m spacy download en_core_web_sm
 ```
 
 3. Test spaCy installation:
+
 ```bash
 python -c "import spacy; nlp = spacy.load('en_core_web_sm'); print('spaCy is working!')"
 ```
@@ -194,6 +210,7 @@ python -c "import spacy; nlp = spacy.load('en_core_web_sm'); print('spaCy is wor
 ## Performance Optimization
 
 The service includes several performance optimizations:
+
 - Model caching to reduce initialization time
 - Batch processing for analyzing multiple submissions
 - Parallel processing for heavy NLP tasks
@@ -201,4 +218,4 @@ The service includes several performance optimizations:
 
 ## License
 
-[MIT License](LICENSE) 
+[MIT License](LICENSE)

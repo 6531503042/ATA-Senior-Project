@@ -1,18 +1,18 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { Card } from '@/components/ui/card';
-import { 
-  BarChart2, 
-  Download, 
+import React, { useState, useEffect } from "react";
+import { Card } from "@/components/ui/card";
+import {
+  BarChart2,
+  Download,
   Users,
   ThumbsUp,
   ThumbsDown,
-  Meh
-} from 'lucide-react';
-import { motion } from 'framer-motion';
-import { getSatisfactionAnalysis } from '@/lib/api/submissions';
-import type { SatisfactionAnalysisResponse } from '@/lib/api/submissions';
+  Meh,
+} from "lucide-react";
+import { motion } from "framer-motion";
+import { getSatisfactionAnalysis } from "@/lib/api/submissions";
+import type { SatisfactionAnalysisResponse } from "@/lib/api/submissions";
 
 interface SatisfactionDashboardProps {
   feedbackId: number;
@@ -31,7 +31,7 @@ const SatisfactionDashboard = ({ feedbackId }: SatisfactionDashboardProps) => {
         setData(response);
         setError(null);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch data');
+        setError(err instanceof Error ? err.message : "Failed to fetch data");
       } finally {
         setLoading(false);
       }
@@ -40,27 +40,30 @@ const SatisfactionDashboard = ({ feedbackId }: SatisfactionDashboardProps) => {
     fetchData();
   }, [feedbackId]);
 
-  if (loading) return (
-    <Card className="p-8 flex justify-center items-center">
-      <div className="animate-pulse">Loading satisfaction data...</div>
-    </Card>
-  );
-  
-  if (error) return (
-    <Card className="p-8 bg-red-50 border-red-200">
-      <div className="text-red-600">Error: {error}</div>
-    </Card>
-  );
-  
-  if (!data) return (
-    <Card className="p-8">
-      <div>No satisfaction data available</div>
-    </Card>
-  );
+  if (loading)
+    return (
+      <Card className="p-8 flex justify-center items-center">
+        <div className="animate-pulse">Loading satisfaction data...</div>
+      </Card>
+    );
+
+  if (error)
+    return (
+      <Card className="p-8 bg-red-50 border-red-200">
+        <div className="text-red-600">Error: {error}</div>
+      </Card>
+    );
+
+  if (!data)
+    return (
+      <Card className="p-8">
+        <div>No satisfaction data available</div>
+      </Card>
+    );
 
   // Ensure satisfaction rate is a valid number
-  const satisfactionRate = isNaN(data.satisfactionOverview.satisfactionRate) 
-    ? 0 
+  const satisfactionRate = isNaN(data.satisfactionOverview.satisfactionRate)
+    ? 0
     : data.satisfactionOverview.satisfactionRate;
 
   return (
@@ -95,7 +98,9 @@ const SatisfactionDashboard = ({ feedbackId }: SatisfactionDashboardProps) => {
 
         {/* Satisfaction Overview */}
         <div className="p-4 rounded-xl bg-violet-50 border border-violet-100">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Satisfaction Overview</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Satisfaction Overview
+          </h3>
           <div className="flex items-center gap-3">
             <div className="p-2 bg-violet-100 rounded-lg">
               <Users className="h-4 w-4 text-violet-600" />
@@ -105,7 +110,8 @@ const SatisfactionDashboard = ({ feedbackId }: SatisfactionDashboardProps) => {
                 {satisfactionRate.toFixed(1)}%
               </p>
               <p className="text-sm text-violet-600">
-                Based on {data.satisfactionOverview.totalSubmissions} submissions
+                Based on {data.satisfactionOverview.totalSubmissions}{" "}
+                submissions
               </p>
             </div>
           </div>
@@ -113,25 +119,39 @@ const SatisfactionDashboard = ({ feedbackId }: SatisfactionDashboardProps) => {
 
         {/* Sentiment Distribution */}
         <div className="p-4 rounded-xl bg-white border shadow-sm">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Sentiment Distribution</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Sentiment Distribution
+          </h3>
           <div className="space-y-4">
-            <SentimentBar 
-              label="Positive" 
-              percentage={isNaN(data.sentimentDistribution.positive.percentage) ? 0 : data.sentimentDistribution.positive.percentage} 
+            <SentimentBar
+              label="Positive"
+              percentage={
+                isNaN(data.sentimentDistribution.positive.percentage)
+                  ? 0
+                  : data.sentimentDistribution.positive.percentage
+              }
               emoji={data.sentimentDistribution.positive.emoji}
               icon={ThumbsUp}
               color="bg-green-500"
             />
-            <SentimentBar 
-              label="Neutral" 
-              percentage={isNaN(data.sentimentDistribution.neutral.percentage) ? 0 : data.sentimentDistribution.neutral.percentage} 
+            <SentimentBar
+              label="Neutral"
+              percentage={
+                isNaN(data.sentimentDistribution.neutral.percentage)
+                  ? 0
+                  : data.sentimentDistribution.neutral.percentage
+              }
               emoji={data.sentimentDistribution.neutral.emoji}
               icon={Meh}
               color="bg-gray-500"
             />
-            <SentimentBar 
-              label="Negative" 
-              percentage={isNaN(data.sentimentDistribution.negative.percentage) ? 0 : data.sentimentDistribution.negative.percentage} 
+            <SentimentBar
+              label="Negative"
+              percentage={
+                isNaN(data.sentimentDistribution.negative.percentage)
+                  ? 0
+                  : data.sentimentDistribution.negative.percentage
+              }
               emoji={data.sentimentDistribution.negative.emoji}
               icon={ThumbsDown}
               color="bg-red-500"
@@ -141,7 +161,9 @@ const SatisfactionDashboard = ({ feedbackId }: SatisfactionDashboardProps) => {
 
         {/* Suggestions */}
         <div className="p-4 rounded-xl bg-amber-50 border border-amber-100">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Suggested Improvements</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Suggested Improvements
+          </h3>
           <ul className="space-y-2">
             {data.suggestions.map((suggestion, index) => (
               <li key={index} className="flex items-start gap-2">
@@ -164,10 +186,16 @@ interface SentimentBarProps {
   color: string;
 }
 
-const SentimentBar = ({ label, percentage, emoji, icon: Icon, color }: SentimentBarProps) => {
+const SentimentBar = ({
+  label,
+  percentage,
+  emoji,
+  icon: Icon,
+  color,
+}: SentimentBarProps) => {
   // Ensure percentage is a valid number
   const validPercentage = isNaN(percentage) ? 0 : percentage;
-  
+
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
@@ -179,8 +207,8 @@ const SentimentBar = ({ label, percentage, emoji, icon: Icon, color }: Sentiment
         <span className="text-sm font-bold">{validPercentage.toFixed(1)}%</span>
       </div>
       <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-        <div 
-          className={`h-full ${color} rounded-full`} 
+        <div
+          className={`h-full ${color} rounded-full`}
           style={{ width: `${validPercentage}%` }}
         />
       </div>
@@ -188,4 +216,4 @@ const SentimentBar = ({ label, percentage, emoji, icon: Icon, color }: Sentiment
   );
 };
 
-export default SatisfactionDashboard; 
+export default SatisfactionDashboard;

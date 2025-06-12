@@ -71,7 +71,9 @@ export function EditDepartmentModal({
                 <Building2 className="h-7 w-7 text-violet-600" />
               </motion.div>
               <div>
-                <DialogTitle className="text-2xl font-bold text-gray-800">Edit Department</DialogTitle>
+                <DialogTitle className="text-2xl font-bold text-gray-800">
+                  Edit Department
+                </DialogTitle>
                 <p className="text-sm text-gray-500 mt-1">
                   Update department information
                 </p>
@@ -83,7 +85,9 @@ export function EditDepartmentModal({
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name" className="text-gray-700">Department Name</Label>
+              <Label htmlFor="name" className="text-gray-700">
+                Department Name
+              </Label>
               <div className="relative">
                 <div className="absolute left-3 top-1/2 -translate-y-1/2">
                   <Building2 className="h-5 w-5 text-gray-400" />
@@ -91,7 +95,9 @@ export function EditDepartmentModal({
                 <Input
                   id="name"
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
                   placeholder="Enter department name"
                   className="pl-10 bg-gray-50 border-gray-200 focus:border-violet-300 focus:ring-2 focus:ring-violet-200"
                   required
@@ -100,11 +106,15 @@ export function EditDepartmentModal({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description" className="text-gray-700">Department Description</Label>
+              <Label htmlFor="description" className="text-gray-700">
+                Department Description
+              </Label>
               <Textarea
                 id="description"
                 value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
                 placeholder="Provide a brief description"
                 className="min-h-[100px] bg-gray-50 border-gray-200 focus:border-violet-300 focus:ring-2 focus:ring-violet-200"
                 required
@@ -116,11 +126,11 @@ export function EditDepartmentModal({
               <div className="flex gap-4">
                 <Button
                   type="button"
-                  variant={formData.active ? 'default' : 'outline'}
+                  variant={formData.active ? "default" : "outline"}
                   className={`flex-1 ${
                     formData.active
-                      ? 'bg-violet-600 text-white hover:bg-violet-700'
-                      : 'text-gray-600 border-gray-300 hover:bg-violet-50 hover:border-violet-300'
+                      ? "bg-violet-600 text-white hover:bg-violet-700"
+                      : "text-gray-600 border-gray-300 hover:bg-violet-50 hover:border-violet-300"
                   }`}
                   onClick={() => setFormData({ ...formData, active: true })}
                 >
@@ -128,11 +138,11 @@ export function EditDepartmentModal({
                 </Button>
                 <Button
                   type="button"
-                  variant={!formData.active ? 'default' : 'outline'}
+                  variant={!formData.active ? "default" : "outline"}
                   className={`flex-1 ${
                     !formData.active
-                      ? 'bg-red-600 text-white hover:bg-red-700'
-                      : 'text-gray-600 border-gray-300 hover:bg-red-50 hover:border-red-300'
+                      ? "bg-red-600 text-white hover:bg-red-700"
+                      : "text-gray-600 border-gray-300 hover:bg-red-50 hover:border-red-300"
                   }`}
                   onClick={() => setFormData({ ...formData, active: false })}
                 >
@@ -174,4 +184,4 @@ export function EditDepartmentModal({
       </DialogContent>
     </Dialog>
   );
-} 
+}

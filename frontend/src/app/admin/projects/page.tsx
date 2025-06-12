@@ -173,7 +173,7 @@ export default function ProjectsPage() {
         // Ask for confirmation to delete with cascade
         if (
           confirm(
-            "This project has associated feedbacks. Would you like to delete the project and all its feedbacks?"
+            "This project has associated feedbacks. Would you like to delete the project and all its feedbacks?",
           )
         ) {
           try {
@@ -189,7 +189,7 @@ export default function ProjectsPage() {
           } catch (cascadeError: any) {
             console.error(
               "Failed to delete project with cascade:",
-              cascadeError
+              cascadeError,
             );
             showAlert({
               title: "Error",

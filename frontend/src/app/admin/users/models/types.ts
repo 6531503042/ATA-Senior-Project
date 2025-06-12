@@ -4,7 +4,7 @@ export interface User {
   fullname: string;
   email: string;
   avatar: string | null;
-  gender: 'MALE' | 'FEMALE' | 'OTHER';
+  gender: "MALE" | "FEMALE" | "OTHER";
   department: Department | null;
   roles: Role[];
 }
@@ -14,7 +14,7 @@ export interface CreateUserRequest {
   fullname: string;
   email: string;
   password: string;
-  gender: 'MALE' | 'FEMALE' | 'OTHER';
+  gender: "MALE" | "FEMALE" | "OTHER";
   departmentId?: number;
   roles: Role[];
 }
@@ -22,7 +22,7 @@ export interface CreateUserRequest {
 export interface UpdateUserRequest {
   fullname?: string;
   email?: string;
-  gender?: 'MALE' | 'FEMALE' | 'OTHER';
+  gender?: "MALE" | "FEMALE" | "OTHER";
   departmentId?: number;
   roles: Role[];
 }
@@ -46,4 +46,4 @@ export interface UpdateDepartmentRequest {
   active?: boolean;
 }
 
-export type Role = 'ROLE_ADMIN' | 'ROLE_USER' | 'ROLE_MANAGER';
+export type Role = "ROLE_ADMIN" | "ROLE_USER" | "ROLE_MANAGER";

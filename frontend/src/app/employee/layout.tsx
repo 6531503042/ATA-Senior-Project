@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import EmployeeLayout from '@/components/layout/EmployeeLayout';
-import RoleGuard from '@/components/auth/RoleGuard';
+import EmployeeLayout from "@/components/layout/EmployeeLayout";
+import RoleGuard from "@/components/auth/RoleGuard";
 
 export default function RootLayout({
   children,
@@ -9,8 +9,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <RoleGuard allowedRoles={['ROLE_USER']}>
+    <RoleGuard allowedRoles={["ROLE_USER"]}>
       <EmployeeLayout>{children}</EmployeeLayout>
     </RoleGuard>
   );
-} 
+}

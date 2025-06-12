@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface FormFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string;
@@ -11,15 +11,12 @@ export const FormField: React.FC<FormFieldProps> = ({
   error,
   helper,
   id,
-  className = '',
+  className = "",
   ...props
 }) => {
   return (
     <div className="space-y-1">
-      <label
-        htmlFor={id}
-        className="block text-sm font-medium text-gray-700"
-      >
+      <label htmlFor={id} className="block text-sm font-medium text-gray-700">
         {label}
       </label>
       <input
@@ -27,9 +24,10 @@ export const FormField: React.FC<FormFieldProps> = ({
         className={`
           block w-full px-3 py-2 border rounded-lg shadow-sm
           focus:outline-none focus:ring-2 focus:ring-offset-0
-          ${error
-            ? 'border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500'
-            : 'border-gray-300 focus:ring-indigo-500 focus:border-indigo-500'
+          ${
+            error
+              ? "border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500"
+              : "border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
           }
           ${className}
         `}
@@ -37,9 +35,7 @@ export const FormField: React.FC<FormFieldProps> = ({
       />
       {(error || helper) && (
         <p
-          className={`mt-1 text-sm ${
-            error ? 'text-red-600' : 'text-gray-500'
-          }`}
+          className={`mt-1 text-sm ${error ? "text-red-600" : "text-gray-500"}`}
         >
           {error || helper}
         </p>
@@ -60,15 +56,12 @@ export const TextAreaField: React.FC<TextAreaFieldProps> = ({
   error,
   helper,
   id,
-  className = '',
+  className = "",
   ...props
 }) => {
   return (
     <div className="space-y-1">
-      <label
-        htmlFor={id}
-        className="block text-sm font-medium text-gray-700"
-      >
+      <label htmlFor={id} className="block text-sm font-medium text-gray-700">
         {label}
       </label>
       <textarea
@@ -76,9 +69,10 @@ export const TextAreaField: React.FC<TextAreaFieldProps> = ({
         className={`
           block w-full px-3 py-2 border rounded-lg shadow-sm
           focus:outline-none focus:ring-2 focus:ring-offset-0
-          ${error
-            ? 'border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500'
-            : 'border-gray-300 focus:ring-indigo-500 focus:border-indigo-500'
+          ${
+            error
+              ? "border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500"
+              : "border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
           }
           ${className}
         `}
@@ -86,9 +80,7 @@ export const TextAreaField: React.FC<TextAreaFieldProps> = ({
       />
       {(error || helper) && (
         <p
-          className={`mt-1 text-sm ${
-            error ? 'text-red-600' : 'text-gray-500'
-          }`}
+          className={`mt-1 text-sm ${error ? "text-red-600" : "text-gray-500"}`}
         >
           {error || helper}
         </p>
@@ -97,7 +89,8 @@ export const TextAreaField: React.FC<TextAreaFieldProps> = ({
   );
 };
 
-interface SelectFieldProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
+interface SelectFieldProps
+  extends React.SelectHTMLAttributes<HTMLSelectElement> {
   label: string;
   error?: string;
   helper?: string;
@@ -110,15 +103,12 @@ export const SelectField: React.FC<SelectFieldProps> = ({
   helper,
   options,
   id,
-  className = '',
+  className = "",
   ...props
 }) => {
   return (
     <div className="space-y-1">
-      <label
-        htmlFor={id}
-        className="block text-sm font-medium text-gray-700"
-      >
+      <label htmlFor={id} className="block text-sm font-medium text-gray-700">
         {label}
       </label>
       <select
@@ -126,9 +116,10 @@ export const SelectField: React.FC<SelectFieldProps> = ({
         className={`
           block w-full px-3 py-2 border rounded-lg shadow-sm
           focus:outline-none focus:ring-2 focus:ring-offset-0
-          ${error
-            ? 'border-red-300 text-red-900 focus:ring-red-500 focus:border-red-500'
-            : 'border-gray-300 focus:ring-indigo-500 focus:border-indigo-500'
+          ${
+            error
+              ? "border-red-300 text-red-900 focus:ring-red-500 focus:border-red-500"
+              : "border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
           }
           ${className}
         `}
@@ -142,9 +133,7 @@ export const SelectField: React.FC<SelectFieldProps> = ({
       </select>
       {(error || helper) && (
         <p
-          className={`mt-1 text-sm ${
-            error ? 'text-red-600' : 'text-gray-500'
-          }`}
+          className={`mt-1 text-sm ${error ? "text-red-600" : "text-gray-500"}`}
         >
           {error || helper}
         </p>
@@ -154,7 +143,7 @@ export const SelectField: React.FC<SelectFieldProps> = ({
 };
 
 interface CheckboxFieldProps
-  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type'> {
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type"> {
   label: string;
   error?: string;
   helper?: string;
@@ -165,7 +154,7 @@ export const CheckboxField: React.FC<CheckboxFieldProps> = ({
   error,
   helper,
   id,
-  className = '',
+  className = "",
   ...props
 }) => {
   return (
@@ -177,7 +166,7 @@ export const CheckboxField: React.FC<CheckboxFieldProps> = ({
           className={`
             h-4 w-4 rounded border-gray-300 text-indigo-600
             focus:ring-indigo-500
-            ${error ? 'border-red-300' : 'border-gray-300'}
+            ${error ? "border-red-300" : "border-gray-300"}
             ${className}
           `}
           {...props}
@@ -186,18 +175,12 @@ export const CheckboxField: React.FC<CheckboxFieldProps> = ({
       <div className="ml-3 text-sm">
         <label
           htmlFor={id}
-          className={`font-medium ${
-            error ? 'text-red-900' : 'text-gray-700'
-          }`}
+          className={`font-medium ${error ? "text-red-900" : "text-gray-700"}`}
         >
           {label}
         </label>
         {(error || helper) && (
-          <p
-            className={`mt-1 ${
-              error ? 'text-red-600' : 'text-gray-500'
-            }`}
-          >
+          <p className={`mt-1 ${error ? "text-red-600" : "text-gray-500"}`}>
             {error || helper}
           </p>
         )}
@@ -227,9 +210,7 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
 }) => {
   return (
     <div className="space-y-2">
-      <label className="block text-sm font-medium text-gray-700">
-        {label}
-      </label>
+      <label className="block text-sm font-medium text-gray-700">{label}</label>
       <div className="space-y-2">
         {options.map((option) => (
           <div key={option.value} className="flex items-center">
@@ -253,9 +234,7 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
       </div>
       {(error || helper) && (
         <p
-          className={`mt-1 text-sm ${
-            error ? 'text-red-600' : 'text-gray-500'
-          }`}
+          className={`mt-1 text-sm ${error ? "text-red-600" : "text-gray-500"}`}
         >
           {error || helper}
         </p>
@@ -273,15 +252,11 @@ export const Form: React.FC<FormProps> = ({
   children,
   onSubmit,
   error,
-  className = '',
+  className = "",
   ...props
 }) => {
   return (
-    <form
-      onSubmit={onSubmit}
-      className={`space-y-6 ${className}`}
-      {...props}
-    >
+    <form onSubmit={onSubmit} className={`space-y-6 ${className}`} {...props}>
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
           <p className="text-sm text-red-600">{error}</p>

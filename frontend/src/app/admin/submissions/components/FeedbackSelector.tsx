@@ -73,7 +73,7 @@ export function FeedbackSelector({
             headers: {
               Authorization: `Bearer ${token}`,
             },
-          }
+          },
         );
 
         if (!response.data || !Array.isArray(response.data)) {
@@ -100,7 +100,7 @@ export function FeedbackSelector({
                     Authorization: `Bearer ${token}`,
                   },
                   timeout: 5000, // Add timeout to prevent hanging
-                }
+                },
               );
 
               // If we have analysis data, we know it's been analyzed
@@ -111,11 +111,11 @@ export function FeedbackSelector({
             } catch (error) {
               console.error(
                 `Failed to fetch analysis for feedback ${feedback.id}:`,
-                error
+                error,
               );
               return { id: feedback.id, count: 0 };
             }
-          }
+          },
         );
 
         // Update counts as they come in
@@ -123,8 +123,8 @@ export function FeedbackSelector({
           const result = await countPromise;
           setFeedbacks((prevFeedbacks) =>
             prevFeedbacks.map((f) =>
-              f.id === result.id ? { ...f, submissionCount: result.count } : f
-            )
+              f.id === result.id ? { ...f, submissionCount: result.count } : f,
+            ),
           );
         }
       } catch (error) {
@@ -154,8 +154,8 @@ export function FeedbackSelector({
       filter === "all"
         ? true
         : filter === "active"
-        ? feedback.active
-        : !feedback.active;
+          ? feedback.active
+          : !feedback.active;
 
     return matchesSearch && matchesFilter;
   });
@@ -235,7 +235,7 @@ export function FeedbackSelector({
                 "cursor-pointer transition-all duration-200",
                 selectedFeedbackId === feedback.id
                   ? "border-violet-200 shadow-lg shadow-violet-100/50 bg-violet-50/30"
-                  : "hover:border-violet-200 hover:shadow-md"
+                  : "hover:border-violet-200 hover:shadow-md",
               )}
               onClick={() => onFeedbackSelect(feedback.id)}
             >
@@ -253,7 +253,7 @@ export function FeedbackSelector({
                         className={cn(
                           feedback.active
                             ? "bg-emerald-50 text-emerald-700"
-                            : "bg-gray-50 text-gray-700"
+                            : "bg-gray-50 text-gray-700",
                         )}
                       >
                         {feedback.active ? (
@@ -292,7 +292,7 @@ export function FeedbackSelector({
                   <ChevronRight
                     className={cn(
                       "h-5 w-5 transition-transform",
-                      selectedFeedbackId === feedback.id ? "rotate-90" : ""
+                      selectedFeedbackId === feedback.id ? "rotate-90" : "",
                     )}
                   />
                 </div>
