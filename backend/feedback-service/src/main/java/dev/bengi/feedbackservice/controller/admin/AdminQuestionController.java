@@ -20,16 +20,17 @@ import dev.bengi.feedbackservice.service.QuestionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Mono;
 
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/admin/questions")
 @RequiredArgsConstructor
-public class QuestionController {
+public class AdminQuestionController {
     private final QuestionService questionService;
 
     @PostMapping("/create")
-    public ResponseEntity<Question> createQuestion(@Valid @RequestBody CreateQuestionRequest request) {
+    public Mono<ResponseEntity<Question>> createQuestion(@Valid @RequestBody CreateQuestionRequest request) {
         log.debug("Creating new question with title: {}", request.getTitle());
         Question question = Question.builder()
                 .text(request.getTitle())
@@ -40,11 +41,12 @@ public class QuestionController {
                 .required(request.isRequired())
                 .validationRules(request.getValidationRules())
                 .build();
-        return ResponseEntity.ok(questionService.createQuestion(question));
+        return questionService.createQuestion(question)
+                .map(ResponseEntity::ok);
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<Question> updateQuestion(@PathVariable Long id, @Valid @RequestBody CreateQuestionRequest request) {
+    public Mono<ResponseEntity<Question>> updateQuestion(@PathVariable Long id, @Valid @RequestBody CreateQuestionRequest request) {
         log.debug("Updating question with ID: {}", id);
         Question question = Question.builder()
                 .text(request.getTitle())
@@ -55,44 +57,53 @@ public class QuestionController {
                 .required(request.isRequired())
                 .validationRules(request.getValidationRules())
                 .build();
-        return ResponseEntity.ok(questionService.updateQuestion(id, question));
+        return questionService.updateQuestion(id, question)
+                .map(ResponseEntity::ok);
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Void> deleteQuestion(@PathVariable Long id) {
+    public Mono<ResponseEntity<Void>> deleteQuestion(@PathVariable Long id) {
         log.debug("Deleting question with ID: {}", id);
-        questionService.deleteQuestion(id);
-        return ResponseEntity.ok().build();
+        return questionService.deleteQuestion(id)
+                .then(Mono.just(ResponseEntity.ok().<Void>build()));
     }
 
     @GetMapping("/get/{id}")
-    public ResponseEntity<Question> getQuestion(@PathVariable Long id) {
+    public Mono<ResponseEntity<Question>> getQuestion(@PathVariable Long id) {
         log.debug("Fetching question with ID: {}", id);
-        return ResponseEntity.ok(questionService.getQuestion(id));
+        return questionService.getQuestion(id)
+                .map(ResponseEntity::ok);
     }
 
     @GetMapping("/get-all")
-    public ResponseEntity<List<Question>> getAllQuestions() {
+    public Mono<ResponseEntity<List<Question>>> getAllQuestions() {
         log.debug("Fetching all questions");
-        return ResponseEntity.ok(questionService.getAllQuestions());
+        return questionService.getAllQuestions()
+                .collectList()
+                .map(ResponseEntity::ok);
     }
 
     @GetMapping("/category/{category}")
-    public ResponseEntity<List<Question>> getQuestionsByCategory(@PathVariable QuestionCategory category) {
+    public Mono<ResponseEntity<List<Question>>> getQuestionsByCategory(@PathVariable QuestionCategory category) {
         log.debug("Fetching questions for category: {}", category);
-        return ResponseEntity.ok(questionService.getQuestionsByCategory(category));
+        return questionService.getQuestionsByCategory(category)
+                .collectList()
+                .map(ResponseEntity::ok);
     }
 
     // Dashboard endpoints
     @GetMapping("/category-count")
-    public ResponseEntity<Map<QuestionCategory, Long>> getQuestionCountByCategory() {
+    public Mono<ResponseEntity<Map<QuestionCategory, Long>>> getQuestionCountByCategory() {
         log.debug("Fetching question count by category");
-        return ResponseEntity.ok(questionService.getQuestionCountByCategory());
+        return questionService.getQuestionCountByCategory()
+                .map(ResponseEntity::ok);
     }
 
     @GetMapping("/recent")
-    public ResponseEntity<List<Question>> getRecentQuestions() {
+    public Mono<ResponseEntity<List<Question>>> getRecentQuestions() {
         log.debug("Fetching recent questions");
-        return ResponseEntity.ok(questionService.getRecentQuestions());
+        return questionService.getRecentQuestions()
+                .collectList()
+                .map(ResponseEntity::ok);
     }
 }

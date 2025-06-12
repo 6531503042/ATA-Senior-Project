@@ -2,7 +2,12 @@ package dev.bengi.feedbackservice.domain.model;
 
 import dev.bengi.feedbackservice.domain.enums.QuestionCategory;
 import dev.bengi.feedbackservice.domain.enums.QuestionType;
-import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,58 +18,43 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Data
-@Entity
-@Builder
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "questions")
+@Table("questions")
 public class Question {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column("text")
     private String text;  // This will store the title/question text
 
-    @Column(length = 1000)
+    @Column("description")
     private String description;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "question_type", nullable = false)
-    private QuestionType questionType;
+    @Column("question_type")
+    private QuestionType questionType; // Changed from type to questionType to match service calls
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "category", nullable = false)
+    @Column("category")
     private QuestionCategory category;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "question_choices", 
-            joinColumns = @JoinColumn(name = "question_id"))
-    @Column(name = "choice")
+    // Using @Transient since R2DBC doesn't support @ElementCollection
+    @Transient
     @Builder.Default
     private List<String> choices = new ArrayList<>();
 
-    @Column(nullable = false)
+    @Column("required")
     @Builder.Default
     private boolean required = true;
 
-    @Column(name = "validation_rules")
+    @Column("validation_rules")
     private String validationRules;
 
-    @Column(name = "created_at", nullable = false)
+    @Column("created_at")
+    @CreatedDate
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
+    @Column("updated_at")
+    @LastModifiedDate
     private LocalDateTime updatedAt;
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
 }

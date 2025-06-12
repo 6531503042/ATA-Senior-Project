@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -19,15 +20,15 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("api/v1/admin/projects")
 @PreAuthorize("hasRole('ADMIN')")
-public class ProjectController {
+public class AdminProjectController {
     private final ProjectService projectService;
 
     @PostMapping("/create")
-    public ResponseEntity<ProjectResponse> createProject(@Valid @RequestBody CreateProjectRequest request) {
+    public Mono<ResponseEntity<ProjectResponse>> createProject(@Valid @RequestBody CreateProjectRequest request) {
         try {
             log.info("Creating new project with name: {}", request.getName());
-            ProjectResponse response = projectService.createProject(request);
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            return projectService.createProject(request)
+                .map(response -> ResponseEntity.status(HttpStatus.CREATED).body(response));
         } catch (Exception e) {
             log.error("Error creating project: {}", e.getMessage(), e);
             throw e;
@@ -35,13 +36,13 @@ public class ProjectController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ProjectResponse> updateProject(
+    public Mono<ResponseEntity<ProjectResponse>> updateProject(
             @PathVariable Long id,
             @Valid @RequestBody CreateProjectRequest request) {
         try {
             log.info("Updating project with ID: {}", id);
-            ProjectResponse response = projectService.updateProject(id, request);
-            return ResponseEntity.ok(response);
+            return projectService.updateProject(id, request)
+                .map(ResponseEntity::ok);
         } catch (Exception e) {
             log.error("Error updating project: {}", e.getMessage(), e);
             throw e;
@@ -49,11 +50,11 @@ public class ProjectController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteProject(@PathVariable Long id) {
+    public Mono<ResponseEntity<Void>> deleteProject(@PathVariable Long id) {
         try {
             log.info("Deleting project with ID: {}", id);
-            projectService.deleteProject(id);
-            return ResponseEntity.noContent().build();
+            return projectService.deleteProject(id)
+                .then(Mono.just(ResponseEntity.noContent().<Void>build()));
         } catch (Exception e) {
             log.error("Error deleting project: {}", e.getMessage(), e);
             throw e;
@@ -61,11 +62,11 @@ public class ProjectController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<ProjectResponse>> getAllProjects() {
+    public Mono<ResponseEntity<List<ProjectResponse>>> getAllProjects() {
         try {
             log.info("Fetching all projects");
-            List<ProjectResponse> responses = projectService.getAllProjects();
-            return ResponseEntity.ok(responses);
+            return projectService.getAllProjects()
+                .map(ResponseEntity::ok);
         } catch (Exception e) {
             log.error("Error fetching projects: {}", e.getMessage(), e);
             throw e;
@@ -73,11 +74,11 @@ public class ProjectController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ProjectResponse> getProjectById(@PathVariable Long id) {
+    public Mono<ResponseEntity<ProjectResponse>> getProjectById(@PathVariable Long id) {
         try {
             log.info("Fetching project with ID: {}", id);
-            ProjectResponse response = projectService.getProjectById(id);
-            return ResponseEntity.ok(response);
+            return projectService.getProjectById(id)
+                .map(ResponseEntity::ok);
         } catch (Exception e) {
             log.error("Error fetching project: {}", e.getMessage(), e);
             throw e;
@@ -85,13 +86,13 @@ public class ProjectController {
     }
 
     @PostMapping("/{projectId}/members")
-    public ResponseEntity<ProjectResponse> addProjectMembers(
+    public Mono<ResponseEntity<ProjectResponse>> addProjectMembers(
             @PathVariable Long projectId,
             @Valid @RequestBody AddProjectMemberRequest request) {
         try {
             log.info("Adding members to project ID: {}", projectId);
-            ProjectResponse response = projectService.addProjectMembers(projectId, request);
-            return ResponseEntity.ok(response);
+            return projectService.addProjectMembers(projectId, request)
+                .map(ResponseEntity::ok);
         } catch (Exception e) {
             log.error("Error adding members to project: {}", e.getMessage(), e);
             throw e;
@@ -99,13 +100,13 @@ public class ProjectController {
     }
 
     @DeleteMapping("/{projectId}/members")
-    public ResponseEntity<ProjectResponse> removeProjectMembers(
+    public Mono<ResponseEntity<ProjectResponse>> removeProjectMembers(
             @PathVariable Long projectId,
             @RequestBody List<Long> memberIds) {
         try {
             log.info("Removing members from project ID: {}", projectId);
-            ProjectResponse response = projectService.removeProjectMembers(projectId, memberIds);
-            return ResponseEntity.ok(response);
+            return projectService.removeProjectMembers(projectId, memberIds)
+                .map(ResponseEntity::ok);
         } catch (Exception e) {
             log.error("Error removing members from project: {}", e.getMessage(), e);
             throw e;
@@ -113,11 +114,11 @@ public class ProjectController {
     }
 
     @GetMapping("/member/{memberId}")
-    public ResponseEntity<List<ProjectResponse>> getProjectsByMemberId(@PathVariable Long memberId) {
+    public Mono<ResponseEntity<List<ProjectResponse>>> getProjectsByMemberId(@PathVariable Long memberId) {
         try {
             log.info("Fetching projects for member ID: {}", memberId);
-            List<ProjectResponse> responses = projectService.getProjectsByMemberId(memberId);
-            return ResponseEntity.ok(responses);
+            return projectService.getProjectsByMemberId(memberId)
+                .map(ResponseEntity::ok);
         } catch (Exception e) {
             log.error("Error fetching projects for member: {}", e.getMessage(), e);
             throw e;

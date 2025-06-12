@@ -6,7 +6,13 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.ArrayList;
 
-import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,96 +20,77 @@ import lombok.NoArgsConstructor;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Data
-@Entity
-@Builder
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "feedbacks")
+@Table("feedbacks")
 public class Feedback {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column("title")
     private String title;
 
-    @Column(nullable = false, length = 1000)
+    @Column("description")
     private String description;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "project_id", nullable = false)
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "questions"})
+    @Column("project_id")
+    private Long projectId;
+    
+    @Transient
     private Project project;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "feedback_questions",
-            joinColumns = @JoinColumn(name = "feedback_id"))
-    @Column(name = "question_id")
+    // Using @Transient since R2DBC doesn't support @ElementCollection
+    @Transient
     @Builder.Default
     private List<Long> questionIds = new ArrayList<>();
 
-    @Column(name = "start_date", nullable = false)
+    @Column("start_date")
     private LocalDateTime startDate;
 
-    @Column(name = "end_date", nullable = false)
+    @Column("end_date")
     private LocalDateTime endDate;
 
-    @Column(name = "created_by", nullable = false)
+    @Column("created_by")
     private String createdBy;
 
-    @Column(nullable = false)
+    @Column("active")
     @Builder.Default
     private boolean active = true;
 
-    @Column(name = "created_at", nullable = false)
+    @Column("created_at")
+    @CreatedDate
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
+    @Column("updated_at")
+    @LastModifiedDate
     private LocalDateTime updatedAt;
 
-    @Column(name = "allow_anonymous")
+    @Column("allow_anonymous")
     @Builder.Default
     private boolean allowAnonymous = true;
 
-    @Column(name = "department_id")
+    @Column("department_id")
     private String departmentId;
 
-    @Column(name = "status")
+    @Column("status")
     private String status;
 
-    @Column(name = "is_anonymous")
+    @Column("is_anonymous")
     private boolean isAnonymous;
 
-    @Column(name = "is_department_wide")
+    @Column("is_department_wide")
     private boolean isDepartmentWide;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "feedback_target_users",
-            joinColumns = @JoinColumn(name = "feedback_id"))
-    @Column(name = "user_id")
+    // Using @Transient since R2DBC doesn't support @ElementCollection
+    @Transient
     @Builder.Default
     private Set<String> targetUserIds = new HashSet<>();
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "feedback_target_departments",
-            joinColumns = @JoinColumn(name = "feedback_id"))
-    @Column(name = "department_id")
+    // Using @Transient since R2DBC doesn't support @ElementCollection
+    @Transient
     @Builder.Default
     private Set<String> targetDepartmentIds = new HashSet<>();
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-        if (questionIds == null) questionIds = new ArrayList<>();
-        if (targetUserIds == null) targetUserIds = new HashSet<>();
-        if (targetDepartmentIds == null) targetDepartmentIds = new HashSet<>();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
 
     @Transient
     public Set<Long> getAllowedUserIds() {

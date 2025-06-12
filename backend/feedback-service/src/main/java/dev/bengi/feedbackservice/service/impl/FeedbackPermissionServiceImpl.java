@@ -9,6 +9,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import dev.bengi.feedbackservice.util.ReactiveHelper;
+import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,8 +29,8 @@ public class FeedbackPermissionServiceImpl implements FeedbackPermissionService 
     public boolean hasPermissionToSubmitFeedback(String userId, Long feedbackId) {
         log.debug("Checking permission for user {} to submit feedback {}", userId, feedbackId);
         
-        Feedback feedback = feedbackRepository.findById(feedbackId)
-                .orElseThrow(() -> new IllegalArgumentException("Feedback not found with ID: " + feedbackId));
+        Feedback feedback = ReactiveHelper.safeBlock(feedbackRepository.findById(feedbackId)
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("Feedback not found with ID: " + feedbackId))));
         
         // Check if feedback is active and within time window
         if (!feedback.isActive() || !isFeedbackActive(feedbackId)) {
@@ -51,7 +53,7 @@ public class FeedbackPermissionServiceImpl implements FeedbackPermissionService 
         log.debug("Getting permitted feedback IDs for user {}", userId);
         
         Long userIdLong = Long.parseLong(userId);
-        List<Long> permittedIds = feedbackRepository.findAll().stream()
+        List<Long> permittedIds = ReactiveHelper.safeBlockList(feedbackRepository.findAll()).stream()
                 .filter(feedback -> {
                     Set<Long> projectMembers = feedback.getProject().getMemberIds();
                     boolean isMember = projectMembers != null && projectMembers.contains(userIdLong);
@@ -70,8 +72,8 @@ public class FeedbackPermissionServiceImpl implements FeedbackPermissionService 
     public boolean isFeedbackActive(Long feedbackId) {
         log.debug("Checking if feedback {} is active", feedbackId);
         
-        Feedback feedback = feedbackRepository.findById(feedbackId)
-                .orElseThrow(() -> new IllegalArgumentException("Feedback not found with ID: " + feedbackId));
+        Feedback feedback = ReactiveHelper.safeBlock(feedbackRepository.findById(feedbackId)
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("Feedback not found with ID: " + feedbackId))));
 
         LocalDateTime now = LocalDateTime.now();
         boolean isActive = feedback.isActive() &&
@@ -97,8 +99,8 @@ public class FeedbackPermissionServiceImpl implements FeedbackPermissionService 
         }
         
         // Check if user is the feedback creator
-        Feedback feedback = feedbackRepository.findById(feedbackId)
-                .orElseThrow(() -> new IllegalArgumentException("Feedback not found with ID: " + feedbackId));
+        Feedback feedback = ReactiveHelper.safeBlock(feedbackRepository.findById(feedbackId)
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("Feedback not found with ID: " + feedbackId))));
         
         boolean isCreator = feedback.getCreatedBy().equals(userId);
         log.debug("User {} {} the creator of feedback {}", 

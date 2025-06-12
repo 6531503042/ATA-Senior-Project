@@ -2,8 +2,6 @@ package dev.bengi.feedbackservice.domain.payload.request;
 
 import dev.bengi.feedbackservice.domain.enums.QuestionCategory;
 import dev.bengi.feedbackservice.domain.enums.QuestionType;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,22 +13,12 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateQuestionRequest {
-    @NotBlank(message = "Title is required")
-    private String title;
-
+public class UpdateQuestionRequest {
+    private String text;
     private String description;
-
-    @NotNull(message = "Question type is required")
     private QuestionType questionType;
-
-    @NotNull(message = "Category is required")
     private QuestionCategory category;
-
     private List<String> choices;
-
-    @Builder.Default
-    private boolean required = true;
-
+    private Boolean required;
     private String validationRules;
-}
+} 
