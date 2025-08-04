@@ -1,13 +1,13 @@
 import "@/styles/globals.css";
 import { Metadata, Viewport } from "next";
-import { Link } from "@heroui/link";
 import clsx from "clsx";
+import { Noto_Sans_Thai } from "next/font/google";
 
 import { Providers } from "./providers";
 
 import { siteConfig } from "@/config/site";
 import { fontSans } from "@/config/fonts";
-import { Navbar } from "@/components/navbar";
+import Head from "next/head";
 
 export const metadata: Metadata = {
   title: {
@@ -27,37 +27,36 @@ export const viewport: Viewport = {
   ],
 };
 
+const notosans_thai = Noto_Sans_Thai({
+  subsets: ["thai", "latin"],
+  variable: "--font-noto-sans-thai",
+})
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <html suppressHydrationWarning lang="en">
-      <head />
+    <html suppressHydrationWarning className={`${notosans_thai.className}`} lang="en">
+      <Head>
+        <title>HLLC 2025</title>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" type="image/png" href="/logo-sdad.png" />
+        <link rel="apple-touch-icon" type="image/png" href="/logo-sdad.png" />
+      </Head>
       <body
         className={clsx(
-          "min-h-screen text-foreground bg-background font-sans antialiased",
+          "bg-background font-sans antialiased",
           fontSans.variable,
         )}
       >
-        <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
-          <div className="relative flex flex-col h-screen">
-            <Navbar />
-            <main className="container mx-auto max-w-7xl pt-16 px-6 flex-grow">
+        <Providers themeProps={{ attribute: "class", defaultTheme: "light" }}>
+          <div className="flex flex-col h-dvh max-h-dvh justify-center">
+            <main className="grow">
               {children}
             </main>
-            <footer className="w-full flex items-center justify-center py-3">
-              <Link
-                isExternal
-                className="flex items-center gap-1 text-current"
-                href="https://heroui.com?utm_source=next-app-template"
-                title="heroui.com homepage"
-              >
-                <span className="text-default-600">Powered by</span>
-                <p className="text-primary">HeroUI</p>
-              </Link>
-            </footer>
           </div>
         </Providers>
       </body>
