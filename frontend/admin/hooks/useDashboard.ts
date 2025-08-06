@@ -1,9 +1,9 @@
 import { useState, useCallback } from "react";
-import { mockDashboardData } from "@/config/dashboard-data";
+import { getDashboardData } from "@/services/dataService";
 import type { DashboardStats, Project, Feedback } from "@/types/dashboard";
 
 export function useDashboard() {
-  const [dashboardData, setDashboardData] = useState<DashboardStats>(mockDashboardData);
+  const [dashboardData, setDashboardData] = useState<DashboardStats>(getDashboardData());
 
   const addProject = useCallback((project: Project) => {
     setDashboardData(prev => ({

@@ -8,49 +8,41 @@ import {
   CheckCircleIcon 
 } from "lucide-react";
 import type { DashboardOverview } from "@/types/dashboard";
+import { getOverviewStatsConfig } from "@/services/dataService";
 
 interface DashboardOverviewProps {
   data: DashboardOverview;
 }
 
+// Icon mapping
+const iconMap = {
+  FolderIcon,
+  FileTextIcon,
+  UsersIcon,
+  CheckCircleIcon
+};
+
 export function DashboardOverview({ data }: DashboardOverviewProps) {
-  const stats = [
-    {
-      title: "Total Projects",
-      value: data.totalProjects,
-      growth: data.projectsGrowth,
-      icon: FolderIcon,
-      color: "bg-pink-500",
-      textColor: "text-pink-600"
-    },
-    {
-      title: "Total Submit",
-      value: data.totalSubmissions,
-      growth: data.submissionsGrowth,
-      icon: FileTextIcon,
-      color: "bg-yellow-500",
-      textColor: "text-yellow-600"
-    },
-    {
-      title: "Total Members",
-      value: data.totalMembers,
-      growth: data.membersGrowth,
-      icon: UsersIcon,
-      color: "bg-green-500",
-      textColor: "text-green-600"
-    },
-    {
-      title: "Complete Rate",
-      value: `${data.completionRate}%`,
-      growth: data.completionGrowth,
-      icon: CheckCircleIcon,
-      color: "bg-purple-500",
-      textColor: "text-purple-600"
-    }
-  ];
+  const statsConfig = getOverviewStatsConfig();
+  
+  const stats = statsConfig.map(config => {
+    const IconComponent = iconMap[config.icon as keyof typeof iconMap];
+    const rawValue = data[config.key as keyof DashboardOverview] as number;
+    const value = config.isPercentage ? `${rawValue}%` : rawValue;
+    const growth = data[config.growthKey as keyof DashboardOverview] as string;
+    
+    return {
+      title: config.title,
+      value,
+      growth,
+      icon: IconComponent,
+      color: config.color,
+      textColor: config.textColor
+    };
+  });
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 pt-3">
       {stats.map((stat, index) => (
         <Card key={index} className="border-none shadow-lg">
           <CardBody className="p-6">

@@ -1,7 +1,7 @@
 "use client";
 
-import { Card, CardBody, CardHeader, Button, Avatar, Chip } from "@heroui/react";
-import { EyeIcon, MoreVerticalIcon } from "lucide-react";
+import { Card, CardBody, CardHeader, Button, Avatar, Chip, Progress } from "@heroui/react";
+import { EyeIcon, MoreVerticalIcon, FolderIcon, UsersIcon, CalendarIcon } from "lucide-react";
 import type { Project } from "@/types/dashboard";
 
 interface DashboardProjectsProps {
@@ -22,67 +22,105 @@ export function DashboardProjects({ projects }: DashboardProjectsProps) {
     }
   };
 
+  const getInitials = (title: string) => {
+    const words = title.split(' ');
+    if (words.length >= 2) {
+      return words[0].charAt(0) + words[1].charAt(0);
+    }
+    return title.substring(0, 2).toUpperCase();
+  };
+
   return (
-    <Card className="border-none shadow-lg">
-      <CardHeader className="flex justify-between items-center pb-4">
-        <div>
-          <h3 className="text-xl font-bold text-default-900">
-            Recently Projects
-          </h3>
-          <p className="text-sm text-default-500">
-            latest feedback's projects
-          </p>
+    <Card className="w-full">
+      <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg">
+            <FolderIcon className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="text-xl font-bold text-default-900">
+              Recent Projects
+            </h3>
+            <p className="text-sm text-default-500">
+              Latest project activities and updates
+            </p>
+          </div>
         </div>
         <Button
-          variant="light"
+          variant="bordered"
           color="primary"
+          size="sm"
           startContent={<EyeIcon className="w-4 h-4" />}
+          className="w-full sm:w-auto"
         >
           View All
         </Button>
       </CardHeader>
-      <CardBody className="space-y-4">
+      <CardBody className="space-y-4 p-4">
         {projects.map((project) => (
           <div
             key={project.id}
-            className="flex items-center gap-4 p-4 rounded-lg border border-default-200 hover:bg-default-50 transition-colors"
+            className="group relative flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 rounded-xl border border-default-200 hover:border-blue-300 hover:bg-blue-50/50 dark:hover:bg-blue-950/20 transition-all duration-300 cursor-pointer"
           >
             <Avatar
-              src={project.avatar}
-              className="w-12 h-12"
+              className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-semibold shadow-md"
               showFallback
-              name={project.title.charAt(0)}
-            />
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <h4 className="font-semibold text-default-900 truncate">
+              name={getInitials(project.title)}
+            >
+              {getInitials(project.title)}
+            </Avatar>
+            
+            <div className="flex-1 min-w-0 space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                <h4 className="font-semibold text-default-900 truncate text-base">
                   {project.title}
                 </h4>
-                <Chip
-                  size="sm"
-                  color={getStatusColor(project.status)}
-                  variant="flat"
-                >
-                  {project.status}
-                </Chip>
+                <div className="flex items-center gap-2">
+                  <Chip
+                    size="sm"
+                    color={getStatusColor(project.status)}
+                    variant="flat"
+                    className="text-xs font-medium"
+                  >
+                    {project.status}
+                  </Chip>
+                  <div className="flex items-center gap-1 text-xs text-default-500">
+                    <UsersIcon className="w-3 h-3" />
+                    <span>{project.participants}</span>
+                  </div>
+                </div>
               </div>
-              <p className="text-sm text-default-600 mb-2 line-clamp-2">
+              
+              <p className="text-sm text-default-600 line-clamp-2 leading-relaxed">
                 {project.description}
               </p>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-default-500">
-                  {project.participants} Participants
-                </span>
-                <span className="text-xs text-default-400">
-                  {project.createdAt}
-                </span>
+              
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <div className="flex items-center gap-4 text-xs text-default-500">
+                  <div className="flex items-center gap-1">
+                    <CalendarIcon className="w-3 h-3" />
+                    <span>{project.createdAt}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span>Progress: {project.progress}%</span>
+                  </div>
+                </div>
+                
+                <div className="w-full sm:w-32">
+                  <Progress
+                    value={project.progress}
+                    className="h-2"
+                    color={project.progress >= 80 ? "success" : project.progress >= 60 ? "warning" : "danger"}
+                  />
+                </div>
               </div>
             </div>
+            
             <Button
               isIconOnly
               variant="light"
               size="sm"
-              className="text-default-400"
+              className="text-default-400 hover:text-default-600 transition-colors flex-shrink-0 opacity-0 group-hover:opacity-100"
             >
               <MoreVerticalIcon className="w-4 h-4" />
             </Button>
