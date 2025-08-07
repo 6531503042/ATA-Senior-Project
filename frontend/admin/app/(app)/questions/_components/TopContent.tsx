@@ -53,7 +53,6 @@ export default function TopContent({
           value={filterValue}
           onClear={onClear}
           onValueChange={onSearchChange}
-          variant="bordered"
         />
 
         <Select
@@ -66,7 +65,6 @@ export default function TopContent({
           }}
           selectionMode="multiple"
           className="w-full sm:max-w-[200px]"
-          variant="bordered"
         >
           {typeOptions.map((type) => (
             <SelectItem key={type.key}>
@@ -85,7 +83,6 @@ export default function TopContent({
           }}
           selectionMode="multiple"
           className="w-full sm:max-w-[200px]"
-          variant="bordered"
         >
           {categoryOptions.map((category) => (
             <SelectItem key={category.key}>
