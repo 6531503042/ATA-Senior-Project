@@ -31,7 +31,7 @@ export function DashboardProjects({ projects }: DashboardProjectsProps) {
   };
 
   return (
-    <Card className="w-full">
+    <Card className="w-full min-h-[500px]">
       <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4">
         <div className="flex items-center gap-3">
           <div className="p-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg">
@@ -60,7 +60,7 @@ export function DashboardProjects({ projects }: DashboardProjectsProps) {
         {projects.map((project) => (
           <div
             key={project.id}
-            className="group relative flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 rounded-xl border border-default-200 hover:border-blue-300 hover:bg-blue-50/50 dark:hover:bg-blue-950/20 transition-all duration-300 cursor-pointer"
+            className="group relative flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 rounded-xl border border-default-200 hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all duration-300 cursor-pointer bg-white dark:bg-default-50"
           >
             <Avatar
               className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-semibold shadow-md"

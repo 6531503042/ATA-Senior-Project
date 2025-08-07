@@ -57,7 +57,7 @@ export function DashboardFeedbacks({ feedbacks }: DashboardFeedbacksProps) {
   };
 
   return (
-    <Card className="w-full">
+    <Card className="w-full min-h-[500px]">
       <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4">
         <div className="flex items-center gap-3">
           <div className="p-2.5 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg">
@@ -86,7 +86,7 @@ export function DashboardFeedbacks({ feedbacks }: DashboardFeedbacksProps) {
         {feedbacks.map((feedback) => (
           <div
             key={feedback.id}
-            className="group relative flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 rounded-xl border border-default-200 hover:border-green-300 hover:bg-green-50/50 dark:hover:bg-green-950/20 transition-all duration-300 cursor-pointer"
+            className="group relative flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 rounded-xl border border-default-200 hover:border-green-400 hover:bg-green-50 dark:hover:bg-green-900/30 transition-all duration-300 cursor-pointer bg-white dark:bg-default-50"
           >
             <Avatar
               className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 text-white font-semibold shadow-md"

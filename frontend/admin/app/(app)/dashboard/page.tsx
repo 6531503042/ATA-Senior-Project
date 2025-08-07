@@ -62,15 +62,21 @@ export default function Dashboard() {
 
       <DashboardOverview data={dashboardData.overview} />
 
-      <h1 className="text-2xl font-semibold my-6">Analytics</h1>
-      <div className="w-full h-96 p-4 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 bg-muted flex items-center justify-center">
-        <DashboardChart data={dashboardData.chartData} />
-      </div>
+      <div className="space-y-10">
+        <div>
+          <h2 className="text-3xl font-bold text-default-900 mb-6">Analytics</h2>
+          <div className="w-full min-h-[600px] rounded-3xl shadow-xl overflow-hidden">
+            <DashboardChart data={dashboardData.chartData} />
+          </div>
+        </div>
 
-      <h1 className="text-2xl font-semibold my-6">Recent Activity</h1>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <DashboardProjects projects={dashboardData.recentProjects} />
-        <DashboardFeedbacks feedbacks={dashboardData.recentFeedbacks} />
+        <div>
+          <h2 className="text-3xl font-bold text-default-900 mb-6">Recent Activity</h2>
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+            <DashboardProjects projects={dashboardData.recentProjects} />
+            <DashboardFeedbacks feedbacks={dashboardData.recentFeedbacks} />
+          </div>
+        </div>
       </div>
 
       <ProjectModal
