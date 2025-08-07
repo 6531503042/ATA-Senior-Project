@@ -1,38 +1,37 @@
-import { Question, QuestionType, QuestionCategory } from "@/types/question";
+import { User, UserRole, UserStatus } from "@/types/user";
 import { SortDescriptor, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@heroui/react";
 import { Key, useCallback, useMemo, useState } from "react";
-import QuestionCellRenderer from "./QuestionCellRenderer";
+import UserCellRenderer from "./UserCellRenderer";
 import TopContent from "./TopContent";
 import BottomContent from "./BottomContent";
-import { MessageSquareIcon } from "lucide-react";
 
 const COLUMNS = [
-  { name: "QUESTION", uid: "question", allowsSorting: false },
-  { name: "TYPE", uid: "type", allowsSorting: true },
-  { name: "CATEGORY", uid: "category", allowsSorting: true },
-  { name: "REQUIRED", uid: "required", allowsSorting: true },
+  { name: "USER", uid: "user", allowsSorting: false },
+  { name: "ROLE", uid: "role", allowsSorting: true },
   { name: "STATUS", uid: "status", allowsSorting: true },
+  { name: "DEPARTMENT", uid: "department", allowsSorting: true },
+  { name: "LAST LOGIN", uid: "lastLogin", allowsSorting: true },
   { name: "ACTIONS", uid: "actions", allowsSorting: false },
 ];
 
-type QuestionTableProps = {
-  questions: Question[];
-  onEdit?: (question: Question) => void;
-  onDelete?: (questionId: string) => void;
+type UserTableProps = {
+  users: User[];
+  onEdit?: (user: User) => void;
+  onDelete?: (userId: string) => void;
   onRefresh?: () => void;
 };
 
-export default function QuestionTable({ 
-  questions, 
+export default function UserTable({ 
+  users, 
   onEdit, 
   onDelete, 
   onRefresh 
-}: QuestionTableProps) {
+}: UserTableProps) {
   const [filterValue, setFilterValue] = useState("");
-  const [selectedType, setSelectedType] = useState<QuestionType[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<QuestionCategory[]>([]);
+  const [selectedRole, setSelectedRole] = useState<UserRole[]>([]);
+  const [selectedStatus, setSelectedStatus] = useState<UserStatus[]>([]);
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
-    column: "question",
+    column: "user",
     direction: "ascending"
   });
   const [page, setPage] = useState(1);
@@ -48,67 +47,73 @@ export default function QuestionTable({
     setPage(1);
   };
 
-  const handleTypeChange = (type: QuestionType[]) => {
-    setSelectedType(type);
+  const handleRoleChange = (role: UserRole[]) => {
+    setSelectedRole(role);
     setPage(1);
   };
 
-  const handleCategoryChange = (category: QuestionCategory[]) => {
-    setSelectedCategory(category);
+  const handleStatusChange = (status: UserStatus[]) => {
+    setSelectedStatus(status);
     setPage(1);
   };
 
   const filteredItems = useMemo(() => {
-    let filteredQuestions = [...(questions ?? [])];
+    let filteredUsers = [...(users ?? [])];
     const query = filterValue.toLowerCase();
 
     if (!!filterValue) {
-      filteredQuestions = questions.filter(
-        (question) =>
-          question.title.toLowerCase().includes(query) ||
-          question.description?.toLowerCase().includes(query) ||
-          question.category.toLowerCase().includes(query)
+      filteredUsers = users.filter(
+        (user) =>
+          user.username.toLowerCase().includes(query) ||
+          user.firstName.toLowerCase().includes(query) ||
+          user.lastName.toLowerCase().includes(query) ||
+          user.email.toLowerCase().includes(query) ||
+          user.department?.toLowerCase().includes(query)
       );
     }
 
-    // Filter by type
-    if (selectedType.length > 0) {
-      filteredQuestions = filteredQuestions.filter(question =>
-        selectedType.includes(question.type)
+    // Filter by role
+    if (selectedRole.length > 0) {
+      filteredUsers = filteredUsers.filter(user =>
+        selectedRole.includes(user.role)
       );
     }
 
-    // Filter by category
-    if (selectedCategory.length > 0) {
-      filteredQuestions = filteredQuestions.filter(question =>
-        selectedCategory.includes(question.category)
+    // Filter by status
+    if (selectedStatus.length > 0) {
+      filteredUsers = filteredUsers.filter(user =>
+        selectedStatus.includes(user.status)
       );
     }
 
-    return filteredQuestions;
-  }, [questions, filterValue, selectedType, selectedCategory]);
+    return filteredUsers;
+  }, [users, filterValue, selectedRole, selectedStatus]);
 
-  const questionItems = useMemo(() => {
+  const userItems = useMemo(() => {
     const sortedItems = [...filteredItems];
 
     if (sortDescriptor.column && sortDescriptor.direction) {
       sortedItems.sort((a, b) => {
         const direction = sortDescriptor.direction === "ascending" ? 1 : -1;
 
-        if (sortDescriptor.column === "type") {
-          return a.type.localeCompare(b.type) * direction;
-        }
-
-        if (sortDescriptor.column === "category") {
-          return a.category.localeCompare(b.category) * direction;
-        }
-
-        if (sortDescriptor.column === "required") {
-          return (a.required === b.required ? 0 : a.required ? 1 : -1) * direction;
+        if (sortDescriptor.column === "role") {
+          return a.role.localeCompare(b.role) * direction;
         }
 
         if (sortDescriptor.column === "status") {
-          return (a.isActive === b.isActive ? 0 : a.isActive ? 1 : -1) * direction;
+          return a.status.localeCompare(b.status) * direction;
+        }
+
+        if (sortDescriptor.column === "department") {
+          const aDept = a.department || '';
+          const bDept = b.department || '';
+          return aDept.localeCompare(bDept) * direction;
+        }
+
+        if (sortDescriptor.column === "lastLogin") {
+          const aDate = a.lastLogin ? new Date(a.lastLogin).getTime() : 0;
+          const bDate = b.lastLogin ? new Date(b.lastLogin).getTime() : 0;
+          return (aDate - bDate) * direction;
         }
 
         return 0;
@@ -123,10 +128,10 @@ export default function QuestionTable({
   const pages = Math.ceil(filteredItems.length / rowsPerPage) || 1;
 
   const renderCell = useCallback(
-    (question: Question, columnKey: Key) => {
+    (user: User, columnKey: Key) => {
       return (
-        <QuestionCellRenderer
-          question={question}
+        <UserCellRenderer
+          user={user}
           columnKey={columnKey}
           onEdit={onEdit}
           onDelete={onDelete}
@@ -139,7 +144,7 @@ export default function QuestionTable({
   return (
     <Table
       isHeaderSticky
-      aria-label="Questions Table"
+      aria-label="Users Table"
       sortDescriptor={sortDescriptor}
       onSortChange={setSortDescriptor}
       topContentPlacement="outside"
@@ -148,10 +153,10 @@ export default function QuestionTable({
           filterValue={filterValue}
           onClear={handleClear}
           onSearchChange={handleSearch}
-          selectedType={selectedType}
-          onTypeChange={handleTypeChange}
-          selectedCategory={selectedCategory}
-          onCategoryChange={handleCategoryChange}
+          selectedRole={selectedRole}
+          onRoleChange={handleRoleChange}
+          selectedStatus={selectedStatus}
+          onStatusChange={handleStatusChange}
           onRefresh={onRefresh || (() => {})}
         />
       }
@@ -161,7 +166,7 @@ export default function QuestionTable({
           page={page}
           pages={pages}
           setPage={setPage}
-          totalQuestions={filteredItems.length}
+          totalUsers={filteredItems.length}
           currentPage={page}
         />
       }
@@ -180,19 +185,19 @@ export default function QuestionTable({
       <TableBody
         emptyContent={
           <div className="flex flex-col items-center justify-center py-8">
-            <span className="text-default-400">No questions found</span>
+            <span className="text-default-400">No users found</span>
           </div>
         }
-        items={[...questionItems]}
+        items={[...userItems]}
       >
-        {(question: Question) => (
+        {(user: User) => (
           <TableRow
-            key={question.id}
+            key={user.id}
             className="hover:bg-default-50 transition-colors"
           >
             {(columnKey) => (
               <TableCell className={`${columnKey.toString()} py-4`}>
-                {renderCell(question, columnKey)}
+                {renderCell(user, columnKey)}
               </TableCell>
             )}
           </TableRow>

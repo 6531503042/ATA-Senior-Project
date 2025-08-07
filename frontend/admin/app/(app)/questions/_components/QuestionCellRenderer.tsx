@@ -147,7 +147,7 @@ export default function QuestionCellRenderer({
             isIconOnly
             size="sm"
             variant="light"
-            className="text-default-400 hover:text-blue-600 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200 shadow-sm hover:shadow-md"
+            className="text-default-400 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 shadow-sm hover:shadow-md"
             onPress={() => onEdit?.(question)}
           >
             <EditIcon className="w-4 h-4" />
@@ -156,7 +156,7 @@ export default function QuestionCellRenderer({
             isIconOnly
             size="sm"
             variant="light"
-            className="text-default-400 hover:text-red-600 hover:bg-gradient-to-r hover:from-red-50 hover:to-pink-50 transition-all duration-200 shadow-sm hover:shadow-md"
+            className="text-default-400 hover:text-red-600 hover:bg-red-50 transition-all duration-200 shadow-sm hover:shadow-md"
             onPress={() => onDelete?.(question.id)}
           >
             <TrashIcon className="w-4 h-4" />

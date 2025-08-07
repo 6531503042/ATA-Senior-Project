@@ -4,7 +4,7 @@ export type BottomContentProps = {
   page: number;
   pages: number;
   setPage: (page: number) => void;
-  totalQuestions: number;
+  totalUsers: number;
   currentPage: number;
 };
 
@@ -12,13 +12,13 @@ export default function BottomContent({
   page,
   pages,
   setPage,
-  totalQuestions,
+  totalUsers,
   currentPage,
 }: BottomContentProps) {
   return (
     <div className="py-2 px-2 flex justify-between items-center">
       <div className="text-sm text-default-500">
-        Showing {((currentPage - 1) * 10) + 1} to {Math.min(currentPage * 10, totalQuestions)} of {totalQuestions} questions
+        Showing {((currentPage - 1) * 10) + 1} to {Math.min(currentPage * 10, totalUsers)} of {totalUsers} users
       </div>
       <Pagination
         isCompact
