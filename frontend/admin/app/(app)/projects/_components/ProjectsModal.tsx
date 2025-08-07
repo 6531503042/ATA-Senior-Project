@@ -11,26 +11,17 @@ import {
   Textarea,
   Select,
   SelectItem,
-  DatePicker,
   Chip
 } from "@heroui/react";
 import { useState, useEffect } from "react";
-import { CalendarIcon, UsersIcon, PlusIcon } from "lucide-react";
-
-interface ProjectData {
-  name: string;
-  description: string;
-  startDate: string;
-  endDate: string;
-  teamMembers: string[];
-  status: "pending" | "active" | "completed";
-}
+import { CalendarIcon, UsersIcon, PlusIcon, TagIcon, MapPinIcon } from "lucide-react";
+import type { Project, CreateProjectRequest, UpdateProjectRequest, ProjectStatus } from "@/types/project";
 
 interface ProjectsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (project: Partial<ProjectData>) => void;
-  project?: Partial<ProjectData>;
+  onSubmit: (project: CreateProjectRequest | UpdateProjectRequest) => void;
+  project?: Project;
   mode: "create" | "edit";
 }
 
@@ -41,14 +32,45 @@ export function ProjectsModal({
   project, 
   mode 
 }: ProjectsModalProps) {
-  const [formData, setFormData] = useState<ProjectData>({
+  const [formData, setFormData] = useState<CreateProjectRequest>({
     name: project?.name || "",
     description: project?.description || "",
-    startDate: project?.startDate || "",
-    endDate: project?.endDate || "",
-    teamMembers: project?.teamMembers || [],
-    status: project?.status || "pending"
+    startDate: project?.timeline.startDate || "",
+    endDate: project?.timeline.endDate || "",
+    teamMembers: project?.team.map(member => member.id) || [],
+    status: project?.status || "pending",
+    category: project?.category,
+    tags: project?.tags,
+    client: project?.client,
+    location: project?.location
   });
+
+  // Reset form when modal opens/closes or project changes
+  useEffect(() => {
+    if (isOpen && project) {
+      setFormData({
+        name: project.name,
+        description: project.description,
+        startDate: project.timeline.startDate,
+        endDate: project.timeline.endDate,
+        teamMembers: project.team.map(member => member.id),
+        status: project.status,
+        category: project.category,
+        tags: project.tags,
+        client: project.client,
+        location: project.location
+      });
+    } else if (isOpen && mode === 'create') {
+      setFormData({
+        name: "",
+        description: "",
+        startDate: "",
+        endDate: "",
+        teamMembers: [],
+        status: "pending"
+      });
+    }
+  }, [isOpen, project, mode]);
 
   // Prevent body scroll and layout shift when modal is open
   useEffect(() => {
@@ -68,17 +90,15 @@ export function ProjectsModal({
   }, [isOpen]);
 
   const handleSubmit = () => {
-    onSubmit(formData);
+    if (mode === 'create') {
+      onSubmit(formData);
+    } else if (project) {
+      onSubmit({
+        id: project.id,
+        ...formData
+      });
+    }
     onClose();
-    // Reset form
-    setFormData({
-      name: "",
-      description: "",
-      startDate: "",
-      endDate: "",
-      teamMembers: [],
-      status: "pending"
-    });
   };
 
   const addTeamMember = () => {
@@ -86,7 +106,7 @@ export function ProjectsModal({
     // For now, we'll just add a placeholder
     setFormData(prev => ({
       ...prev,
-      teamMembers: [...prev.teamMembers, `Member ${prev.teamMembers.length + 1}`]
+      teamMembers: [...prev.teamMembers, `member-${prev.teamMembers.length + 1}`]
     }));
   };
 
@@ -94,6 +114,22 @@ export function ProjectsModal({
     setFormData(prev => ({
       ...prev,
       teamMembers: prev.teamMembers.filter((_, i) => i !== index)
+    }));
+  };
+
+  const addTag = (tag: string) => {
+    if (tag && !formData.tags?.includes(tag)) {
+      setFormData(prev => ({
+        ...prev,
+        tags: [...(prev.tags || []), tag]
+      }));
+    }
+  };
+
+  const removeTag = (tagToRemove: string) => {
+    setFormData(prev => ({
+      ...prev,
+      tags: prev.tags?.filter(tag => tag !== tagToRemove) || []
     }));
   };
 
@@ -222,6 +258,125 @@ export function ProjectsModal({
               />
             </div>
           </div>
+
+          {/* Status */}
+          <div>
+            <label className="block text-sm font-medium text-default-700 mb-2">
+              Status <span className="text-red-500">*</span>
+            </label>
+            <Select
+              placeholder="Select status"
+              selectedKeys={[formData.status]}
+              onChange={(e) => setFormData({ ...formData, status: e.target.value as ProjectStatus })}
+              isRequired
+              variant="bordered"
+              className="w-full"
+            >
+              <SelectItem key="pending">Pending</SelectItem>
+              <SelectItem key="active">Active</SelectItem>
+              <SelectItem key="completed">Completed</SelectItem>
+              <SelectItem key="cancelled">Cancelled</SelectItem>
+            </Select>
+          </div>
+
+          {/* Category & Client */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-default-700 mb-2">
+                Category
+              </label>
+              <Input
+                placeholder="Enter project category"
+                value={formData.category || ""}
+                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                variant="bordered"
+                className="w-full"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-default-700 mb-2">
+                Client
+              </label>
+              <Input
+                placeholder="Enter client name"
+                value={formData.client || ""}
+                onChange={(e) => setFormData({ ...formData, client: e.target.value })}
+                variant="bordered"
+                className="w-full"
+              />
+            </div>
+          </div>
+
+          {/* Location */}
+          <div>
+            <label className="block text-sm font-medium text-default-700 mb-2">
+              Location
+            </label>
+            <Input
+              placeholder="Enter project location"
+              value={formData.location || ""}
+              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+              variant="bordered"
+              className="w-full"
+              startContent={<MapPinIcon className="w-4 h-4 text-default-400" />}
+            />
+          </div>
+
+          {/* Tags */}
+          <div>
+            <label className="block text-sm font-medium text-default-700 mb-2">
+              Tags
+            </label>
+            <div className="space-y-3">
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Add a tag"
+                  variant="bordered"
+                  className="flex-1"
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      const input = e.target as HTMLInputElement;
+                      if (input.value.trim()) {
+                        addTag(input.value.trim());
+                        input.value = '';
+                      }
+                    }
+                  }}
+                />
+                <Button
+                  variant="bordered"
+                  startContent={<TagIcon className="w-4 h-4" />}
+                  onPress={() => {
+                    const input = document.querySelector('input[placeholder="Add a tag"]') as HTMLInputElement;
+                    if (input?.value.trim()) {
+                      addTag(input.value.trim());
+                      input.value = '';
+                    }
+                  }}
+                >
+                  Add
+                </Button>
+              </div>
+              
+              {formData.tags && formData.tags.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {formData.tags.map((tag, index) => (
+                    <Chip
+                      key={index}
+                      onClose={() => removeTag(tag)}
+                      color="primary"
+                      variant="flat"
+                      size="sm"
+                    >
+                      {tag}
+                    </Chip>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
           
           {/* Team Members */}
           <div>
@@ -274,7 +429,7 @@ export function ProjectsModal({
           <Button 
             color="primary" 
             onPress={handleSubmit}
-            isDisabled={!formData.name || !formData.description}
+            isDisabled={!formData.name || !formData.description || !formData.startDate || !formData.endDate}
             className="font-semibold bg-gradient-to-r from-blue-600 to-indigo-600"
             startContent={<PlusIcon className="w-4 h-4" />}
           >
