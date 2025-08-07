@@ -31,7 +31,7 @@ export function PageHeader({ title, right, icon, description }: PageHeaderProps)
                 </div>
                 {right && <div className="mt-2 md:mt-0">{right}</div>}
             </div>
-            <div className="border py-3 px-4 rounded-lg bg-default-50 mb-4 mt-4">
+            <div className="py-3 px-4 rounded-lg bg-default-50 mb-4 mt-4">
                 <Breadcrumbs className="w-full">
                     <BreadcrumbItem href={`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/`}>
                         Home

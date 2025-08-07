@@ -18,7 +18,8 @@ import {
   BadgeCent,
   Footprints,
   FolderIcon,
-  FileTextIcon
+  FileTextIcon,
+  MessageCircleIcon
 } from "lucide-react";
 
 import type { NavSection } from "@/types/nav";
@@ -48,7 +49,8 @@ export const siteConfig: {
       section: "Projects & Feedbacks",
       items: [
         { label: "Projects", href: "/projects", icon: FolderIcon, permission: "projects:read" },
-        { label: "Feedbacks", href: "/feedbacks", icon: FileTextIcon, permission: "feedbacks:read" }
+        { label: "Feedbacks", href: "/feedbacks", icon: FileTextIcon, permission: "feedbacks:read" },
+        { label: "Questions", href: "/questions", icon: MessageCircleIcon, permission: "questions:read" }
       ],
     },
     {
