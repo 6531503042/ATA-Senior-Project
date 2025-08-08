@@ -18,6 +18,7 @@ type UserTableProps = {
   users: User[];
   onEdit?: (user: User) => void;
   onDelete?: (userId: string) => void;
+  onView?: (user: User) => void;
   onRefresh?: () => void;
 };
 
@@ -25,6 +26,7 @@ export default function UserTable({
   users, 
   onEdit, 
   onDelete, 
+  onView,
   onRefresh 
 }: UserTableProps) {
   const [filterValue, setFilterValue] = useState("");
@@ -72,18 +74,12 @@ export default function UserTable({
       );
     }
 
-    // Filter by role
     if (selectedRole.length > 0) {
-      filteredUsers = filteredUsers.filter(user =>
-        selectedRole.includes(user.role)
-      );
+      filteredUsers = filteredUsers.filter(user => selectedRole.includes(user.role));
     }
 
-    // Filter by status
     if (selectedStatus.length > 0) {
-      filteredUsers = filteredUsers.filter(user =>
-        selectedStatus.includes(user.status)
-      );
+      filteredUsers = filteredUsers.filter(user => selectedStatus.includes(user.status));
     }
 
     return filteredUsers;
@@ -96,26 +92,17 @@ export default function UserTable({
       sortedItems.sort((a, b) => {
         const direction = sortDescriptor.direction === "ascending" ? 1 : -1;
 
-        if (sortDescriptor.column === "role") {
-          return a.role.localeCompare(b.role) * direction;
-        }
-
-        if (sortDescriptor.column === "status") {
-          return a.status.localeCompare(b.status) * direction;
-        }
-
+        if (sortDescriptor.column === "role") return a.role.localeCompare(b.role) * direction;
+        if (sortDescriptor.column === "status") return a.status.localeCompare(b.status) * direction;
         if (sortDescriptor.column === "department") {
-          const aDept = a.department || '';
-          const bDept = b.department || '';
+          const aDept = a.department || ''; const bDept = b.department || '';
           return aDept.localeCompare(bDept) * direction;
         }
-
         if (sortDescriptor.column === "lastLogin") {
           const aDate = a.lastLogin ? new Date(a.lastLogin).getTime() : 0;
           const bDate = b.lastLogin ? new Date(b.lastLogin).getTime() : 0;
           return (aDate - bDate) * direction;
         }
-
         return 0;
       });
     }
@@ -128,26 +115,21 @@ export default function UserTable({
   const pages = Math.ceil(filteredItems.length / rowsPerPage) || 1;
 
   const renderCell = useCallback(
-    (user: User, columnKey: Key) => {
-      return (
-        <UserCellRenderer
-          user={user}
-          columnKey={columnKey}
-          onEdit={onEdit}
-          onDelete={onDelete}
-        />
-      );
-    },
-    [onEdit, onDelete]
+    (user: User, columnKey: Key) => (
+      <UserCellRenderer
+        user={user}
+        columnKey={columnKey}
+        onEdit={onEdit}
+        onDelete={onDelete}
+        onView={onView}
+      />
+    ),
+    [onEdit, onDelete, onView]
   );
 
   return (
     <Table
-      isHeaderSticky
       aria-label="Users Table"
-      sortDescriptor={sortDescriptor}
-      onSortChange={setSortDescriptor}
-      topContentPlacement="outside"
       topContent={
         <TopContent
           filterValue={filterValue}
@@ -160,45 +142,20 @@ export default function UserTable({
           onRefresh={onRefresh || (() => {})}
         />
       }
-      bottomContentPlacement="outside"
-      bottomContent={
-        <BottomContent
-          page={page}
-          pages={pages}
-          setPage={setPage}
-          totalUsers={filteredItems.length}
-          currentPage={page}
-        />
-      }
+      topContentPlacement="outside"
     >
       <TableHeader columns={COLUMNS}>
         {(column) => (
-          <TableColumn
-            key={column.uid}
-            align={column.uid === "actions" ? "center" : "start"}
-            allowsSorting={column.allowsSorting}
-          >
+          <TableColumn key={column.uid} align={column.uid === "actions" ? "center" : "start"} allowsSorting={column.allowsSorting}>
             {column.name}
           </TableColumn>
         )}
       </TableHeader>
-      <TableBody
-        emptyContent={
-          <div className="flex flex-col items-center justify-center py-8">
-            <span className="text-default-400">No users found</span>
-          </div>
-        }
-        items={[...userItems]}
-      >
+      <TableBody emptyContent={<span className="text-default-400">No users found</span>} items={[...userItems]}>
         {(user: User) => (
-          <TableRow
-            key={user.id}
-            className="hover:bg-default-50 transition-colors"
-          >
+          <TableRow key={user.id}>
             {(columnKey) => (
-              <TableCell className={`${columnKey.toString()} py-4`}>
-                {renderCell(user, columnKey)}
-              </TableCell>
+              <TableCell>{renderCell(user, columnKey)}</TableCell>
             )}
           </TableRow>
         )}

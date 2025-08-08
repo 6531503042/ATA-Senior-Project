@@ -1,13 +1,12 @@
 import { User } from "@/types/user";
 import { Key } from "react";
-import { Avatar, Chip, Button } from "@heroui/react";
-import { EditIcon, TrashIcon, UserIcon, ShieldIcon, ClockIcon, BuildingIcon } from "lucide-react";
+import { Chip, Button, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@heroui/react";
+import { EditIcon, TrashIcon, UserIcon, ShieldIcon, ClockIcon, BuildingIcon, EyeIcon, EllipsisVertical } from "lucide-react";
 import { 
   formatUserRole, 
   formatUserStatus, 
   getUserRoleColor, 
   getUserStatusColor, 
-  getUserInitials, 
   formatDate 
 } from "@/services/userService";
 
@@ -24,6 +23,7 @@ type UserCellRendererProps = {
   columnKey: Key;
   onEdit?: (user: User) => void;
   onDelete?: (userId: string) => void;
+  onView?: (user: User) => void;
 };
 
 export default function UserCellRenderer({
@@ -31,15 +31,14 @@ export default function UserCellRenderer({
   columnKey,
   onEdit,
   onDelete,
+  onView,
 }: UserCellRendererProps) {
   const getRoleIcon = (role: User['role']) => {
     switch (role) {
       case 'admin':
         return <ShieldIcon className="w-4 h-4" />;
       case 'manager':
-        return <UserIcon className="w-4 h-4" />;
       case 'user':
-        return <UserIcon className="w-4 h-4" />;
       case 'guest':
         return <UserIcon className="w-4 h-4" />;
       default:
@@ -50,48 +49,31 @@ export default function UserCellRenderer({
   switch (columnKey) {
     case "user":
       return (
-        <div className="flex items-start gap-3 group">
-          <Avatar
-            src={user.avatar}
-            name={`${user.firstName} ${user.lastName}`}
-            className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-semibold shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105"
-            showFallback
-          >
-            {getUserInitials(user.firstName, user.lastName)}
-          </Avatar>
-          <div className="min-w-0 flex-1">
-            <h3 className="font-semibold text-default-900 text-sm mb-1 line-clamp-1 group-hover:text-blue-600 transition-colors">
-              {user.firstName} {user.lastName}
-            </h3>
-            <p className="text-xs text-default-500 mb-1">
-              @{user.username}
-            </p>
-            <p className="text-xs text-default-400 line-clamp-1">
-              {user.email}
-            </p>
-            {user.position && (
-              <div className="mt-2">
-                <span className="text-xs text-default-500 bg-default-100 px-2 py-1 rounded-md">
-                  {user.position}
-                </span>
-              </div>
-            )}
-          </div>
+        <div className="min-w-0 flex flex-col">
+          <h3 className="font-medium text-default-900 text-sm mb-0.5 line-clamp-1">
+            {user.firstName} {user.lastName}
+          </h3>
+          <p className="text-xs text-default-500 line-clamp-1">
+            @{user.username}
+          </p>
+          <p className="text-xs text-default-400 line-clamp-1">
+            {user.email}
+          </p>
+          {user.position && (
+            <span className="mt-1.5 w-fit text-[11px] text-default-600 bg-default-100 px-2 py-1 rounded-md">
+              {user.position}
+            </span>
+          )}
         </div>
       );
 
     case "role":
       return (
         <div className="flex items-center gap-2">
-          <div className="p-2 rounded-lg shadow-sm">
+          <div className="p-2 rounded-lg bg-default-100 text-default-600">
             {getRoleIcon(user.role)}
           </div>
-          <Chip
-            size="sm"
-            color={getUserRoleColor(user.role) as any}
-            variant="flat"
-            className="font-medium capitalize shadow-sm"
-          >
+          <Chip size="sm" color={getUserRoleColor(user.role) as any} variant="flat" className="font-medium capitalize">
             {formatUserRole(user.role)}
           </Chip>
         </div>
@@ -99,12 +81,7 @@ export default function UserCellRenderer({
 
     case "status":
       return (
-        <Chip
-          size="sm"
-          color={getUserStatusColor(user.status) as any}
-          variant="flat"
-          className="font-medium capitalize shadow-sm"
-        >
+        <Chip size="sm" color={getUserStatusColor(user.status) as any} variant="flat" className="font-medium capitalize">
           {formatUserStatus(user.status)}
         </Chip>
       );
@@ -112,8 +89,8 @@ export default function UserCellRenderer({
     case "department":
       return (
         <div className="flex items-center gap-2">
-          <div className="p-2 rounded-lg shadow-sm">
-            <BuildingIcon className="w-4 h-4 text-blue-500" />
+          <div className="p-2 rounded-lg bg-default-100 text-default-600">
+            <BuildingIcon className="w-4 h-4" />
           </div>
           <span className="text-sm font-medium text-default-700">
             {user.department || 'N/A'}
@@ -124,37 +101,35 @@ export default function UserCellRenderer({
     case "lastLogin":
       return (
         <div className="flex items-center gap-2">
-          <div className="p-2 rounded-lg shadow-sm">
-            <ClockIcon className="w-4 h-4 text-green-500" />
+          <div className="p-2 rounded-lg bg-default-100 text-default-600">
+            <ClockIcon className="w-4 h-4" />
           </div>
           <span className="text-sm text-default-600">
-            {formatDate(user.lastLogin)}
+            {formatDate(user.lastLogin || null)}
           </span>
         </div>
       );
 
     case "actions":
       return (
-        <div className="flex items-center gap-2">
-          <Button
-            isIconOnly
-            size="sm"
-            variant="light"
-            className="text-default-400 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 shadow-sm hover:shadow-md"
-            onPress={() => onEdit?.(user)}
-          >
-            <EditIcon className="w-4 h-4" />
-          </Button>
-          <Button
-            isIconOnly
-            size="sm"
-            variant="light"
-            className="text-default-400 hover:text-red-600 hover:bg-red-50 transition-all duration-200 shadow-sm hover:shadow-md"
-            onPress={() => onDelete?.(user.id)}
-          >
-            <TrashIcon className="w-4 h-4" />
-          </Button>
-        </div>
+        <Dropdown>
+          <DropdownTrigger>
+            <Button isIconOnly size="sm" variant="light">
+              <EllipsisVertical className="text-default-400" />
+            </Button>
+          </DropdownTrigger>
+          <DropdownMenu>
+            <DropdownItem key="view" startContent={<EyeIcon size={16} />} onPress={() => onView?.(user)}>
+              View Details
+            </DropdownItem>
+            <DropdownItem key="edit" startContent={<EditIcon size={16} />} onPress={() => onEdit?.(user)}>
+              Edit
+            </DropdownItem>
+            <DropdownItem key="delete" className="text-danger" color="danger" startContent={<TrashIcon size={16} />} onPress={() => onDelete?.(user.id)}>
+              Delete
+            </DropdownItem>
+          </DropdownMenu>
+        </Dropdown>
       );
 
     default:

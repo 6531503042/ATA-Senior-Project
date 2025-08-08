@@ -165,6 +165,14 @@ export default function QuestionTable({
           currentPage={page}
         />
       }
+      classNames={{
+        wrapper: "shadow-none",
+        table: "min-h-[400px]",
+        thead: "bg-white sticky top-0 z-10 shadow-sm",
+        th: "text-default-700 font-semibold text-xs uppercase tracking-wide",
+        tr: "hover:bg-default-50 transition-colors",
+        td: "py-4",
+      }}
     >
       <TableHeader columns={COLUMNS}>
         {(column) => (

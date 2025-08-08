@@ -1,5 +1,5 @@
-import { Input, Select, SelectItem, Button } from "@heroui/react";
-import { SearchIcon, RefreshCwIcon } from "lucide-react";
+import { Input, Select, SelectItem, Button, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@heroui/react";
+import { SearchIcon, RefreshCwIcon, EllipsisVertical } from "lucide-react";
 import { UserRole, UserStatus } from "@/types/user";
 
 type TopContentProps = {
@@ -11,6 +11,9 @@ type TopContentProps = {
   selectedStatus?: UserStatus[];
   onStatusChange: (status: UserStatus[]) => void;
   onRefresh: () => void;
+  onAdd?: () => void;
+  onEditSelected?: () => void;
+  onDeleteSelected?: () => void;
 };
 
 export default function TopContent({
@@ -22,6 +25,9 @@ export default function TopContent({
   selectedStatus,
   onStatusChange,
   onRefresh,
+  onAdd,
+  onEditSelected,
+  onDeleteSelected,
 }: TopContentProps) {
   const roleOptions = [
     { key: "admin", label: "Admin" },
@@ -39,61 +45,85 @@ export default function TopContent({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-col sm:flex-row gap-3 items-end">
-        <Input
-          isClearable
-          className="w-full sm:max-w-[44%]"
-          placeholder="Search users..."
-          startContent={<SearchIcon className="w-4 h-4 text-default-400" />}
-          value={filterValue}
-          onClear={onClear}
-          onValueChange={onSearchChange}
-        />
+      <div className="flex w-full items-center justify-between gap-3 flex-wrap">
+        {/* Stretch search to fill available space */}
+        <div className="flex-1 min-w-[260px]">
+          <Input
+            isClearable
+            className="w-full"
+            placeholder="Search users..."
+            startContent={<SearchIcon className="w-4 h-4 text-default-400" />}
+            value={filterValue}
+            onClear={onClear}
+            onValueChange={onSearchChange}
+            variant="bordered"
+          />
+        </div>
 
-        <Select
-          label="Role"
-          placeholder="Filter by role"
-          selectedKeys={selectedRole ? new Set(selectedRole) : new Set()}
-          onSelectionChange={(keys) => {
-            const selected = Array.from(keys) as UserRole[];
-            onRoleChange(selected);
-          }}
-          selectionMode="multiple"
-          className="w-full sm:max-w-[200px]"
-        >
-          {roleOptions.map((role) => (
-            <SelectItem key={role.key}>
-              {role.label}
-            </SelectItem>
-          ))}
-        </Select>
+        {/* Group: filters + refresh + more (and optional add) */}
+        <div className="flex items-end gap-3">
+          <Select
+            label="Role"
+            placeholder="All roles"
+            selectedKeys={selectedRole ? new Set(selectedRole) : new Set()}
+            onSelectionChange={(keys) => {
+              const selected = Array.from(keys) as UserRole[];
+              onRoleChange(selected);
+            }}
+            selectionMode="multiple"
+            className="w-[180px]"
+          >
+            {roleOptions.map((role) => (
+              <SelectItem key={role.key}>{role.label}</SelectItem>
+            ))}
+          </Select>
 
-        <Select
-          label="Status"
-          placeholder="Filter by status"
-          selectedKeys={selectedStatus ? new Set(selectedStatus) : new Set()}
-          onSelectionChange={(keys) => {
-            const selected = Array.from(keys) as UserStatus[];
-            onStatusChange(selected);
-          }}
-          selectionMode="multiple"
-          className="w-full sm:max-w-[200px]"
-        >
-          {statusOptions.map((status) => (
-            <SelectItem key={status.key}>
-              {status.label}
-            </SelectItem>
-          ))}
-        </Select>
+          <Select
+            label="Status"
+            placeholder="All status"
+            selectedKeys={selectedStatus ? new Set(selectedStatus) : new Set()}
+            onSelectionChange={(keys) => {
+              const selected = Array.from(keys) as UserStatus[];
+              onStatusChange(selected);
+            }}
+            selectionMode="multiple"
+            className="w-[180px]"
+          >
+            {statusOptions.map((status) => (
+              <SelectItem key={status.key}>{status.label}</SelectItem>
+            ))}
+          </Select>
 
-        <Button
-          variant="bordered"
-          startContent={<RefreshCwIcon className="w-4 h-4" />}
-          onPress={onRefresh}
-          className="w-full sm:w-auto"
-        >
-          Refresh
-        </Button>
+          <Button variant="bordered" startContent={<RefreshCwIcon className="w-4 h-4" />} onPress={onRefresh}>
+            Refresh
+          </Button>
+
+          <Dropdown>
+            <DropdownTrigger>
+              <Button isIconOnly size="sm" variant="light">
+                <EllipsisVertical className="text-default-400" />
+              </Button>
+            </DropdownTrigger>
+            <DropdownMenu>
+              {onEditSelected ? (
+                <DropdownItem key="edit" onPress={onEditSelected}>
+                  Edit Selected
+                </DropdownItem>
+              ) : null}
+              {onDeleteSelected ? (
+                <DropdownItem key="delete" className="text-danger" color="danger" onPress={onDeleteSelected}>
+                  Delete Selected
+                </DropdownItem>
+              ) : null}
+            </DropdownMenu>
+          </Dropdown>
+
+          {onAdd ? (
+            <Button color="primary" onPress={onAdd}>
+              Add User
+            </Button>
+          ) : null}
+        </div>
       </div>
     </div>
   );

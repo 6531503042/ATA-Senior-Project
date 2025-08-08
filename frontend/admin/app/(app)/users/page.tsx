@@ -166,8 +166,8 @@ export default function UsersPage() {
         </div>
 
         {/* Users Table */}
-        <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50 overflow-hidden">
-          <CardHeader className="pb-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100">
+        <Card className="border-0 shadow-xl overflow-hidden">
+          <CardHeader className="pb-6">
             <div className="w-full">
               <h3 className="text-xl font-bold text-default-900">User List</h3>
               <p className="text-sm text-default-600">View and manage all system users</p>
@@ -193,6 +193,7 @@ export default function UsersPage() {
                   }
                 }}
                 onRefresh={refreshUsers}
+                onView={() => setIsModalOpen(true)}
               />
             )}
           </CardBody>
