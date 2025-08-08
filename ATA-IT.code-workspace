@@ -1,0 +1,39 @@
+{
+    "folders": [
+        {
+            "name": "root",
+            "path": "."
+        },
+        {
+            "name": "frontend",
+            "path": "frontend"
+        },
+        {
+            "name": "admin",
+            "path": "frontend/admin"
+        },
+        // {
+        //     "name": "backend",
+        //     "path": "backend"
+        // },
+        // {
+        //     "name": "backend-main",
+        //     "path": "backend/"
+        // }
+    ],
+    "settings": {
+        "jest.runMode": {
+            "deferred": true,
+            "runAllTestsOnStartup": false,
+            "type": "on-demand"
+        },
+        "github.copilot.chat.commitMessageGeneration.instructions": [
+            {
+                "text": "Write a concise conventional commit message with a short title and a bulleted list of changes. Each bullet should briefly summarize what was added, changed, or fixed."
+            },
+            {
+                "file": "COMMIT_GUIDE.md"
+            }
+        ]
+    }
+}

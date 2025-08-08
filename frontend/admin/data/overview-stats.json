@@ -1,0 +1,35 @@
+[
+  {
+    "title": "Total Projects",
+    "key": "totalProjects",
+    "growthKey": "projectsGrowth",
+    "icon": "FolderIcon",
+    "color": "bg-pink-500",
+    "textColor": "text-pink-600"
+  },
+  {
+    "title": "Total Submit",
+    "key": "totalSubmissions",
+    "growthKey": "submissionsGrowth",
+    "icon": "FileTextIcon",
+    "color": "bg-yellow-500",
+    "textColor": "text-yellow-600"
+  },
+  {
+    "title": "Total Members",
+    "key": "totalMembers",
+    "growthKey": "membersGrowth",
+    "icon": "UsersIcon",
+    "color": "bg-green-500",
+    "textColor": "text-green-600"
+  },
+  {
+    "title": "Complete Rate",
+    "key": "completionRate",
+    "growthKey": "completionGrowth",
+    "icon": "CheckCircleIcon",
+    "color": "bg-purple-500",
+    "textColor": "text-purple-600",
+    "isPercentage": true
+  }
+]
