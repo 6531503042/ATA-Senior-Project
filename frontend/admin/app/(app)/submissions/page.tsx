@@ -25,7 +25,6 @@ export default function SubmissionsPage() {
     allItems,
     stats,
     loading,
-    error,
     filters,
     pagination,
     setPagination,
