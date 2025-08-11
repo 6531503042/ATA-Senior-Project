@@ -1,0 +1,20 @@
+{
+  "name": "ata-it",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A CLI tool for ATA 2025",
+  "type": "module",
+  "scripts": {
+    "build": "./build.sh"
+  },
+  "bin": {
+    "ata": "./scripts/ata.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.5.0"
+  },
+  "devDependencies": {
+    "cross-spawn": "^7.0.6",
+    "inquirer": "^12.6.1"
+  }
+}

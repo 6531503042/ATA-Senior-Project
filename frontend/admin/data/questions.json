@@ -1,0 +1,157 @@
+{
+  "questions": [
+    {
+      "id": "1",
+      "title": "How satisfied are you with the project's progress?",
+      "description": "Rate your satisfaction with the overall project progress and milestones achieved",
+      "type": "single_choice",
+      "category": "project_satisfaction",
+      "options": [
+        { "id": "1", "text": "Strongly Agree", "value": 5 },
+        { "id": "2", "text": "Agree", "value": 4 },
+        { "id": "3", "text": "Neutral", "value": 3 },
+        { "id": "4", "text": "Disagree", "value": 2 },
+        { "id": "5", "text": "Strongly Disagree", "value": 1 }
+      ],
+      "required": true,
+      "order": 1,
+      "isActive": true,
+      "createdAt": "2025-01-15T10:30:00Z",
+      "updatedAt": "2025-02-20T14:45:00Z"
+    },
+    {
+      "id": "2",
+      "title": "What aspects of the project are you most satisfied with and what areas need improvement?",
+      "description": "Please provide detailed feedback about what's working well and what could be enhanced",
+      "type": "text_based",
+      "category": "project_satisfaction",
+      "required": true,
+      "order": 2,
+      "isActive": true,
+      "createdAt": "2025-01-15T10:30:00Z",
+      "updatedAt": "2025-02-20T14:45:00Z"
+    },
+    {
+      "id": "3",
+      "title": "Describe your technical growth in the project and areas where you'd like to improve",
+      "description": "Share your experience with technical skills development and learning opportunities",
+      "type": "text_based",
+      "category": "technical_skills",
+      "required": true,
+      "order": 3,
+      "isActive": true,
+      "createdAt": "2025-01-15T10:30:00Z",
+      "updatedAt": "2025-02-20T14:45:00Z"
+    },
+    {
+      "id": "4",
+      "title": "How effective is communication within the team?",
+      "description": "Rate the effectiveness of team communication and information sharing",
+      "type": "single_choice",
+      "category": "communication",
+      "options": [
+        { "id": "1", "text": "Very Effective", "value": 5 },
+        { "id": "2", "text": "Effective", "value": 4 },
+        { "id": "3", "text": "Moderate", "value": 3 },
+        { "id": "4", "text": "Ineffective", "value": 2 },
+        { "id": "5", "text": "Very Ineffective", "value": 1 }
+      ],
+      "required": true,
+      "order": 4,
+      "isActive": true,
+      "createdAt": "2025-01-15T10:30:00Z",
+      "updatedAt": "2025-02-20T14:45:00Z"
+    },
+    {
+      "id": "5",
+      "title": "Share your experience with team communication and suggest improvements",
+      "description": "Provide specific examples and recommendations for better communication",
+      "type": "text_based",
+      "category": "communication",
+      "required": true,
+      "order": 5,
+      "isActive": true,
+      "createdAt": "2025-01-15T10:30:00Z",
+      "updatedAt": "2025-02-20T14:45:00Z"
+    },
+    {
+      "id": "6",
+      "title": "How would you rate the leadership in your project?",
+      "description": "Evaluate the effectiveness of project leadership and management",
+      "type": "rating",
+      "category": "leadership",
+      "options": [
+        { "id": "1", "text": "1", "value": 1 },
+        { "id": "2", "text": "2", "value": 2 },
+        { "id": "3", "text": "3", "value": 3 },
+        { "id": "4", "text": "4", "value": 4 },
+        { "id": "5", "text": "5", "value": 5 }
+      ],
+      "required": true,
+      "order": 6,
+      "isActive": true,
+      "createdAt": "2025-01-15T10:30:00Z",
+      "updatedAt": "2025-02-20T14:45:00Z"
+    },
+    {
+      "id": "7",
+      "title": "Describe your ideal work environment and what aspects of the current environment could be improved",
+      "description": "Share your thoughts on the work environment and suggestions for improvement",
+      "type": "text_based",
+      "category": "work_environment",
+      "required": true,
+      "order": 7,
+      "isActive": true,
+      "createdAt": "2025-01-15T10:30:00Z",
+      "updatedAt": "2025-02-20T14:45:00Z"
+    },
+    {
+      "id": "8",
+      "title": "Share your experience with work-life balance and suggest ways to improve it",
+      "description": "Provide feedback on work-life balance and recommendations for better balance",
+      "type": "text_based",
+      "category": "work_life_balance",
+      "required": true,
+      "order": 8,
+      "isActive": true,
+      "createdAt": "2025-01-15T10:30:00Z",
+      "updatedAt": "2025-02-20T14:45:00Z"
+    },
+    {
+      "id": "9",
+      "title": "Do you feel supported by your team members?",
+      "description": "Rate your level of support from team members",
+      "type": "boolean",
+      "category": "team_collaboration",
+      "required": true,
+      "order": 9,
+      "isActive": true,
+      "createdAt": "2025-01-15T10:30:00Z",
+      "updatedAt": "2025-02-20T14:45:00Z"
+    },
+    {
+      "id": "10",
+      "title": "What additional resources or support would help you perform better?",
+      "description": "Identify any resources or support that could enhance your performance",
+      "type": "text_based",
+      "category": "general",
+      "required": false,
+      "order": 10,
+      "isActive": true,
+      "createdAt": "2025-01-15T10:30:00Z",
+      "updatedAt": "2025-02-20T14:45:00Z"
+    }
+  ],
+  "stats": {
+    "totalQuestions": 10,
+    "activeQuestions": 10,
+    "inactiveQuestions": 0,
+    "totalCategories": 8
+  },
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 10,
+    "totalPages": 1
+  }
+}
