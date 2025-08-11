@@ -161,38 +161,38 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/index.js [app-client] (ecmascript)");
 ;
 var _s = __turbopack_context__.k.signature();
-"use client";
+'use client';
 ;
 ;
 function UsersModal({ isOpen, onClose, onSubmit, user, mode }) {
     _s();
     const [formData, setFormData] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])({
-        username: user?.username || "",
-        email: user?.email || "",
-        firstName: user?.firstName || "",
-        lastName: user?.lastName || "",
-        role: user?.role || "user",
-        status: user?.status || "active",
-        password: "",
-        phone: user?.phone || "",
-        department: user?.department || "",
-        position: user?.position || ""
+        username: user?.username || '',
+        email: user?.email || '',
+        firstName: user?.firstName || '',
+        lastName: user?.lastName || '',
+        role: user?.role || 'user',
+        status: user?.status || 'active',
+        password: '',
+        phone: user?.phone || '',
+        department: user?.department || '',
+        position: user?.position || ''
     });
     // Reset form when modal opens/closes or user changes
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "UsersModal.useEffect": ()=>{
             if (isOpen) {
                 setFormData({
-                    username: user?.username || "",
-                    email: user?.email || "",
-                    firstName: user?.firstName || "",
-                    lastName: user?.lastName || "",
-                    role: user?.role || "user",
-                    status: user?.status || "active",
-                    password: "",
-                    phone: user?.phone || "",
-                    department: user?.department || "",
-                    position: user?.position || ""
+                    username: user?.username || '',
+                    email: user?.email || '',
+                    firstName: user?.firstName || '',
+                    lastName: user?.lastName || '',
+                    role: user?.role || 'user',
+                    status: user?.status || 'active',
+                    password: '',
+                    phone: user?.phone || '',
+                    department: user?.department || '',
+                    position: user?.position || ''
                 });
             }
         }
@@ -221,7 +221,7 @@ function UsersModal({ isOpen, onClose, onSubmit, user, mode }) {
         isOpen
     ]);
     const handleSubmit = ()=>{
-        if (mode === "create") {
+        if (mode === 'create') {
             const createData = {
                 username: formData.username,
                 email: formData.email,
@@ -251,7 +251,7 @@ function UsersModal({ isOpen, onClose, onSubmit, user, mode }) {
         }
     };
     const isFormValid = ()=>{
-        if (mode === "create") {
+        if (mode === 'create') {
             return formData.username && formData.email && formData.firstName && formData.lastName && formData.password;
         }
         return formData.username && formData.email && formData.firstName && formData.lastName;
@@ -274,7 +274,7 @@ function UsersModal({ isOpen, onClose, onSubmit, user, mode }) {
                     opacity: 1,
                     transition: {
                         duration: 0.3,
-                        ease: "easeOut"
+                        ease: 'easeOut'
                     }
                 },
                 exit: {
@@ -282,15 +282,15 @@ function UsersModal({ isOpen, onClose, onSubmit, user, mode }) {
                     opacity: 0,
                     transition: {
                         duration: 0.2,
-                        ease: "easeIn"
+                        ease: 'easeIn'
                     }
                 }
             }
         },
         classNames: {
-            backdrop: "bg-black/50 backdrop-blur-sm",
-            wrapper: "overflow-hidden",
-            base: "overflow-hidden"
+            backdrop: 'bg-black/50 backdrop-blur-sm',
+            wrapper: 'overflow-hidden',
+            base: 'overflow-hidden'
         },
         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$modal$2f$dist$2f$chunk$2d$NWAOTABO$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__modal_content_default__as__ModalContent$3e$__["ModalContent"], {
             className: "max-h-[90vh] overflow-hidden",
@@ -300,24 +300,24 @@ function UsersModal({ isOpen, onClose, onSubmit, user, mode }) {
                     children: [
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
                             className: "text-xl font-bold text-default-900",
-                            children: mode === "create" ? "Create New User" : "Edit User"
+                            children: mode === 'create' ? 'Create New User' : 'Edit User'
                         }, void 0, false, {
                             fileName: "[project]/app/(app)/users/_components/UsersModal.tsx",
-                            lineNumber: 153,
+                            lineNumber: 180,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                             className: "text-sm text-default-600",
-                            children: mode === "create" ? "Add a new user to the system" : "Update user information"
+                            children: mode === 'create' ? 'Add a new user to the system' : 'Update user information'
                         }, void 0, false, {
                             fileName: "[project]/app/(app)/users/_components/UsersModal.tsx",
-                            lineNumber: 156,
+                            lineNumber: 183,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/(app)/users/_components/UsersModal.tsx",
-                    lineNumber: 152,
+                    lineNumber: 179,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$modal$2f$dist$2f$chunk$2d$FOPEYBSC$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__modal_body_default__as__ModalBody$3e$__["ModalBody"], {
@@ -340,7 +340,7 @@ function UsersModal({ isOpen, onClose, onSubmit, user, mode }) {
                                     className: "w-full"
                                 }, void 0, false, {
                                     fileName: "[project]/app/(app)/users/_components/UsersModal.tsx",
-                                    lineNumber: 162,
+                                    lineNumber: 191,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$input$2f$dist$2f$chunk$2d$SSA7SXE4$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__input_default__as__Input$3e$__["Input"], {
@@ -358,13 +358,13 @@ function UsersModal({ isOpen, onClose, onSubmit, user, mode }) {
                                     className: "w-full"
                                 }, void 0, false, {
                                     fileName: "[project]/app/(app)/users/_components/UsersModal.tsx",
-                                    lineNumber: 173,
+                                    lineNumber: 204,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/(app)/users/_components/UsersModal.tsx",
-                            lineNumber: 161,
+                            lineNumber: 190,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -384,7 +384,7 @@ function UsersModal({ isOpen, onClose, onSubmit, user, mode }) {
                                     className: "w-full"
                                 }, void 0, false, {
                                     fileName: "[project]/app/(app)/users/_components/UsersModal.tsx",
-                                    lineNumber: 187,
+                                    lineNumber: 220,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$input$2f$dist$2f$chunk$2d$SSA7SXE4$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__input_default__as__Input$3e$__["Input"], {
@@ -401,16 +401,16 @@ function UsersModal({ isOpen, onClose, onSubmit, user, mode }) {
                                     className: "w-full"
                                 }, void 0, false, {
                                     fileName: "[project]/app/(app)/users/_components/UsersModal.tsx",
-                                    lineNumber: 198,
+                                    lineNumber: 233,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/(app)/users/_components/UsersModal.tsx",
-                            lineNumber: 186,
+                            lineNumber: 219,
                             columnNumber: 11
                         }, this),
-                        mode === "create" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$input$2f$dist$2f$chunk$2d$SSA7SXE4$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__input_default__as__Input$3e$__["Input"], {
+                        mode === 'create' && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$input$2f$dist$2f$chunk$2d$SSA7SXE4$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__input_default__as__Input$3e$__["Input"], {
                             label: "Password",
                             placeholder: "Enter password",
                             type: "password",
@@ -425,7 +425,7 @@ function UsersModal({ isOpen, onClose, onSubmit, user, mode }) {
                             className: "w-full"
                         }, void 0, false, {
                             fileName: "[project]/app/(app)/users/_components/UsersModal.tsx",
-                            lineNumber: 211,
+                            lineNumber: 248,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -449,37 +449,37 @@ function UsersModal({ isOpen, onClose, onSubmit, user, mode }) {
                                             children: "Admin"
                                         }, "admin", false, {
                                             fileName: "[project]/app/(app)/users/_components/UsersModal.tsx",
-                                            lineNumber: 234,
+                                            lineNumber: 275,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$listbox$2f$dist$2f$chunk$2d$BJFJ4DRR$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__listbox_item_base_default__as__SelectItem$3e$__["SelectItem"], {
                                             children: "Manager"
                                         }, "manager", false, {
                                             fileName: "[project]/app/(app)/users/_components/UsersModal.tsx",
-                                            lineNumber: 235,
+                                            lineNumber: 276,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$listbox$2f$dist$2f$chunk$2d$BJFJ4DRR$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__listbox_item_base_default__as__SelectItem$3e$__["SelectItem"], {
                                             children: "User"
                                         }, "user", false, {
                                             fileName: "[project]/app/(app)/users/_components/UsersModal.tsx",
-                                            lineNumber: 236,
+                                            lineNumber: 277,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$listbox$2f$dist$2f$chunk$2d$BJFJ4DRR$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__listbox_item_base_default__as__SelectItem$3e$__["SelectItem"], {
                                             children: "Guest"
                                         }, "guest", false, {
                                             fileName: "[project]/app/(app)/users/_components/UsersModal.tsx",
-                                            lineNumber: 237,
+                                            lineNumber: 278,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/(app)/users/_components/UsersModal.tsx",
-                                    lineNumber: 225,
+                                    lineNumber: 264,
                                     columnNumber: 13
                                 }, this),
-                                mode === "edit" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$select$2f$dist$2f$chunk$2d$Y2AYO5NJ$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__select_default__as__Select$3e$__["Select"], {
+                                mode === 'edit' && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$select$2f$dist$2f$chunk$2d$Y2AYO5NJ$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__select_default__as__Select$3e$__["Select"], {
                                     label: "Status",
                                     placeholder: "Select status",
                                     selectedKeys: [
@@ -497,81 +497,111 @@ function UsersModal({ isOpen, onClose, onSubmit, user, mode }) {
                                             children: "Active"
                                         }, "active", false, {
                                             fileName: "[project]/app/(app)/users/_components/UsersModal.tsx",
-                                            lineNumber: 250,
+                                            lineNumber: 296,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$listbox$2f$dist$2f$chunk$2d$BJFJ4DRR$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__listbox_item_base_default__as__SelectItem$3e$__["SelectItem"], {
                                             children: "Inactive"
                                         }, "inactive", false, {
                                             fileName: "[project]/app/(app)/users/_components/UsersModal.tsx",
-                                            lineNumber: 251,
+                                            lineNumber: 297,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$listbox$2f$dist$2f$chunk$2d$BJFJ4DRR$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__listbox_item_base_default__as__SelectItem$3e$__["SelectItem"], {
                                             children: "Pending"
                                         }, "pending", false, {
                                             fileName: "[project]/app/(app)/users/_components/UsersModal.tsx",
-                                            lineNumber: 252,
+                                            lineNumber: 298,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$listbox$2f$dist$2f$chunk$2d$BJFJ4DRR$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__listbox_item_base_default__as__SelectItem$3e$__["SelectItem"], {
                                             children: "Suspended"
                                         }, "suspended", false, {
                                             fileName: "[project]/app/(app)/users/_components/UsersModal.tsx",
-                                            lineNumber: 253,
+                                            lineNumber: 299,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/(app)/users/_components/UsersModal.tsx",
-                                    lineNumber: 241,
+                                    lineNumber: 282,
                                     columnNumber: 15
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$select$2f$dist$2f$chunk$2d$Y2AYO5NJ$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__select_default__as__Select$3e$__["Select"], {
+                                    label: "Department",
+                                    placeholder: "Select department",
+                                    selectedKeys: [
+                                        formData.status
+                                    ],
+                                    onChange: (e)=>setFormData({
+                                            ...formData,
+                                            status: e.target.value
+                                        }),
+                                    isRequired: true,
+                                    variant: "bordered",
+                                    className: "w-full",
+                                    children: [
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$listbox$2f$dist$2f$chunk$2d$BJFJ4DRR$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__listbox_item_base_default__as__SelectItem$3e$__["SelectItem"], {
+                                            children: "Active"
+                                        }, "active", false, {
+                                            fileName: "[project]/app/(app)/users/_components/UsersModal.tsx",
+                                            lineNumber: 316,
+                                            columnNumber: 15
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$listbox$2f$dist$2f$chunk$2d$BJFJ4DRR$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__listbox_item_base_default__as__SelectItem$3e$__["SelectItem"], {
+                                            children: "Inactive"
+                                        }, "inactive", false, {
+                                            fileName: "[project]/app/(app)/users/_components/UsersModal.tsx",
+                                            lineNumber: 317,
+                                            columnNumber: 15
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$listbox$2f$dist$2f$chunk$2d$BJFJ4DRR$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__listbox_item_base_default__as__SelectItem$3e$__["SelectItem"], {
+                                            children: "Pending"
+                                        }, "pending", false, {
+                                            fileName: "[project]/app/(app)/users/_components/UsersModal.tsx",
+                                            lineNumber: 318,
+                                            columnNumber: 15
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$listbox$2f$dist$2f$chunk$2d$BJFJ4DRR$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__listbox_item_base_default__as__SelectItem$3e$__["SelectItem"], {
+                                            children: "Suspended"
+                                        }, "suspended", false, {
+                                            fileName: "[project]/app/(app)/users/_components/UsersModal.tsx",
+                                            lineNumber: 319,
+                                            columnNumber: 15
+                                        }, this)
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "[project]/app/(app)/users/_components/UsersModal.tsx",
+                                    lineNumber: 302,
+                                    columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/(app)/users/_components/UsersModal.tsx",
-                            lineNumber: 224,
+                            lineNumber: 263,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "grid grid-cols-1 sm:grid-cols-2 gap-6",
-                            children: [
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$input$2f$dist$2f$chunk$2d$SSA7SXE4$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__input_default__as__Input$3e$__["Input"], {
-                                    label: "Phone",
-                                    placeholder: "Enter phone number",
-                                    value: formData.phone,
-                                    onChange: (e)=>setFormData({
-                                            ...formData,
-                                            phone: e.target.value
-                                        }),
-                                    variant: "bordered",
-                                    size: "lg",
-                                    className: "w-full"
-                                }, void 0, false, {
-                                    fileName: "[project]/app/(app)/users/_components/UsersModal.tsx",
-                                    lineNumber: 259,
-                                    columnNumber: 13
-                                }, this),
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$input$2f$dist$2f$chunk$2d$SSA7SXE4$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__input_default__as__Input$3e$__["Input"], {
-                                    label: "Department",
-                                    placeholder: "Enter department",
-                                    value: formData.department,
-                                    onChange: (e)=>setFormData({
-                                            ...formData,
-                                            department: e.target.value
-                                        }),
-                                    variant: "bordered",
-                                    size: "lg",
-                                    className: "w-full"
-                                }, void 0, false, {
-                                    fileName: "[project]/app/(app)/users/_components/UsersModal.tsx",
-                                    lineNumber: 269,
-                                    columnNumber: 13
-                                }, this)
-                            ]
-                        }, void 0, true, {
+                            className: "",
+                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$input$2f$dist$2f$chunk$2d$SSA7SXE4$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__input_default__as__Input$3e$__["Input"], {
+                                label: "Phone",
+                                placeholder: "Enter phone number",
+                                value: formData.phone,
+                                onChange: (e)=>setFormData({
+                                        ...formData,
+                                        phone: e.target.value
+                                    }),
+                                variant: "bordered",
+                                size: "lg",
+                                className: "w-full"
+                            }, void 0, false, {
+                                fileName: "[project]/app/(app)/users/_components/UsersModal.tsx",
+                                lineNumber: 324,
+                                columnNumber: 13
+                            }, this)
+                        }, void 0, false, {
                             fileName: "[project]/app/(app)/users/_components/UsersModal.tsx",
-                            lineNumber: 258,
+                            lineNumber: 323,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$input$2f$dist$2f$chunk$2d$SSA7SXE4$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__input_default__as__Input$3e$__["Input"], {
@@ -587,13 +617,13 @@ function UsersModal({ isOpen, onClose, onSubmit, user, mode }) {
                             className: "w-full"
                         }, void 0, false, {
                             fileName: "[project]/app/(app)/users/_components/UsersModal.tsx",
-                            lineNumber: 280,
+                            lineNumber: 336,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/(app)/users/_components/UsersModal.tsx",
-                    lineNumber: 160,
+                    lineNumber: 189,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$modal$2f$dist$2f$chunk$2d$O5MCAK4F$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__modal_footer_default__as__ModalFooter$3e$__["ModalFooter"], {
@@ -606,7 +636,7 @@ function UsersModal({ isOpen, onClose, onSubmit, user, mode }) {
                             children: "Cancel"
                         }, void 0, false, {
                             fileName: "[project]/app/(app)/users/_components/UsersModal.tsx",
-                            lineNumber: 291,
+                            lineNumber: 349,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$button$2f$dist$2f$chunk$2d$WBUKVQRU$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__button_default__as__Button$3e$__["Button"], {
@@ -614,31 +644,31 @@ function UsersModal({ isOpen, onClose, onSubmit, user, mode }) {
                             onPress: handleSubmit,
                             isDisabled: !isFormValid(),
                             className: "font-semibold bg-gradient-to-r from-blue-600 to-indigo-600",
-                            children: mode === "create" ? "Create User" : "Update User"
+                            children: mode === 'create' ? 'Create User' : 'Update User'
                         }, void 0, false, {
                             fileName: "[project]/app/(app)/users/_components/UsersModal.tsx",
-                            lineNumber: 298,
+                            lineNumber: 352,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/(app)/users/_components/UsersModal.tsx",
-                    lineNumber: 290,
+                    lineNumber: 348,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/app/(app)/users/_components/UsersModal.tsx",
-            lineNumber: 151,
+            lineNumber: 178,
             columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "[project]/app/(app)/users/_components/UsersModal.tsx",
-        lineNumber: 114,
+        lineNumber: 141,
         columnNumber: 5
     }, this);
 }
-_s(UsersModal, "U77HIMUzvpske6o0mnNp+d2f2II=");
+_s(UsersModal, "gOTh8rwQex4UsCs8OE9mXi45dSk=");
 _c = UsersModal;
 var _c;
 __turbopack_context__.k.register(_c, "UsersModal");
