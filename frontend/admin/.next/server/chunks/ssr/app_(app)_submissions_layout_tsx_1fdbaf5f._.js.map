@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 7, "column": 0}, "map": {"version":3,"sources":["file:///Users/parking/Documents/GitHub/ATA-Senior-Project/frontend/admin/app/%28app%29/submissions/layout.tsx"],"sourcesContent":["\"use client\";\n\nexport default function SubmissionsLayout({ children }: { children: React.ReactNode }) {\n  return <div className=\"flex flex-col gap-6\">{children}</div>;\n}\n\n\n"],"names":[],"mappings":";;;;AAAA;;AAEe,SAAS,kBAAkB,EAAE,QAAQ,EAAiC;IACnF,qBAAO,8OAAC;QAAI,WAAU;kBAAuB;;;;;;AAC/C","debugId":null}}]
+}

@@ -4,6 +4,8 @@
   "/(app)/page": "app/(app)/page.js",
   "/(app)/projects/page": "app/(app)/projects/page.js",
   "/(app)/questions/page": "app/(app)/questions/page.js",
+  "/(app)/submissions/[feedbackId]/page": "app/(app)/submissions/[feedbackId]/page.js",
+  "/(app)/submissions/page": "app/(app)/submissions/page.js",
   "/(app)/users/page": "app/(app)/users/page.js",
   "/_not-found/page": "app/_not-found/page.js"
 }
