@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 7, "column": 0}, "map": {"version":3,"sources":["file:///Users/parking/Documents/GitHub/ATA-Senior-Project/frontend/admin/app/loading.tsx"],"sourcesContent":["\"use client\";\nimport { Spinner } from \"@heroui/react\";\n\nexport default function Loading() {\n    return (\n        <div className=\"flex items-center justify-center h-screen\">\n            <Spinner classNames={{ label: \"text-foreground mt-4\" }} variant=\"simple\" size=\"lg\" />\n        </div>\n    );\n}"],"names":[],"mappings":";;;;AACA;AADA;;;AAGe,SAAS;IACpB,qBACI,6LAAC;QAAI,WAAU;kBACX,cAAA,6LAAC,kNAAA,CAAA,UAAO;YAAC,YAAY;gBAAE,OAAO;YAAuB;YAAG,SAAQ;YAAS,MAAK;;;;;;;;;;;AAG1F;KANwB","debugId":null}}]
+}

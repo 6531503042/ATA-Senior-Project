@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 7, "column": 0}, "map": {"version":3,"sources":["file:///Users/parking/Documents/GitHub/ATA-Senior-Project/frontend/admin/app/%28app%29/feedbacks/page.tsx"],"sourcesContent":["'use client';\n\nexport default function FeedbackPage() {\n\n\n  return (\n    <>\n      \n    </>\n  );\n}\n"],"names":[],"mappings":";;;;AAAA;;AAEe,SAAS;IAGtB,qBACE;AAIJ;KARwB","debugId":null}}]
+}
