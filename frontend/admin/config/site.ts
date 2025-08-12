@@ -43,6 +43,7 @@ export const siteConfig: {
       section: "User Management",
       items: [
         { label: "Users Management", href: "/users", icon: UserIcon, permission: "users:read" }, // ไม่มีขื่อแบบทางการ
+        { label: "Departments", href: "/departments", icon: SchoolIcon, permission: "departments:read" },
       ],
     },
     {
