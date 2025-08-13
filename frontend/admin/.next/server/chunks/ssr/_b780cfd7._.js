@@ -1355,7 +1355,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$re
 ;
 ;
 ;
-function FeedbackCreateModal({ isOpen, onClose, onSubmit, projectOptions = [] }) {
+function FeedbackCreateModal({ isOpen, onClose, onSubmit, projectOptions = [], questionsByProject = {} }) {
     const [subject, setSubject] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])('');
     const [message, setMessage] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])('');
     const [projectName, setProjectName] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])('');
@@ -1363,7 +1363,21 @@ function FeedbackCreateModal({ isOpen, onClose, onSubmit, projectOptions = [] })
     const [anonymous, setAnonymous] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(true);
     const [reporterName, setReporterName] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])('');
     const [reporterEmail, setReporterEmail] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])('');
-    // Reset on open/close
+    // Store selected question ids
+    const [selectedQuestions, setSelectedQuestions] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(new Set());
+    // Answers by questionId
+    const [answers, setAnswers] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])({});
+    // Helpers to safely read Selection
+    const selectionToKeys = (sel, allIds = [])=>{
+        if (sel === 'all') return new Set(allIds);
+        return new Set(sel);
+    };
+    const singleFromSelection = (sel)=>{
+        if (sel === 'all') return '';
+        const arr = Array.from(sel);
+        return arr.length ? arr[0] : '';
+    };
+    // Reset on open
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
         if (isOpen) {
             setSubject('');
@@ -1373,13 +1387,107 @@ function FeedbackCreateModal({ isOpen, onClose, onSubmit, projectOptions = [] })
             setAnonymous(true);
             setReporterName('');
             setReporterEmail('');
+            setSelectedQuestions(new Set());
+            setAnswers({});
         }
     }, [
         isOpen
     ]);
-    const canSubmit = subject.trim().length > 0 && message.trim().length > 0 && projectName.trim().length > 0 && (anonymous || reporterEmail.trim().length > 0);
+    // Clear Q&A when project changes
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
+        setSelectedQuestions(new Set());
+        setAnswers({});
+    }, [
+        projectName
+    ]);
+    const availableQuestions = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useMemo"])(()=>{
+        const list = projectName ? questionsByProject[projectName] || [] : [];
+        // Only active, sorted by order
+        const filtered = [];
+        for(let i = 0; i < list.length; i++){
+            if (list[i].isActive) filtered.push(list[i]);
+        }
+        filtered.sort((a, b)=>(a.order || 0) - (b.order || 0));
+        return filtered;
+    }, [
+        questionsByProject,
+        projectName
+    ]);
+    // Helpers for options
+    const getOptionById = (opts, id)=>{
+        if (!opts || !id) return undefined;
+        for(let i = 0; i < opts.length; i++)if (opts[i].id === id) return opts[i];
+        return undefined;
+    };
+    const getTextsByIds = (opts, ids)=>{
+        if (!opts) return ids.slice();
+        const out = [];
+        for(let i = 0; i < ids.length; i++){
+            const id = ids[i];
+            const opt = getOptionById(opts, id);
+            out.push(opt ? String(opt.text) : id);
+        }
+        return out;
+    };
+    // Validation for required questions
+    const requiredQuestionsOk = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useMemo"])(()=>{
+        const ids = Array.from(selectedQuestions);
+        for(let i = 0; i < ids.length; i++){
+            const qid = ids[i];
+            const q = availableQuestions.find((x)=>x.id === qid);
+            if (!q) continue;
+            const v = answers[qid];
+            if (q.required) {
+                switch(q.type){
+                    case 'text_based':
+                        if (typeof v !== 'string' || v.trim().length === 0) return false;
+                        break;
+                    case 'single_choice':
+                        if (typeof v !== 'string' || !v) return false;
+                        break;
+                    case 'multiple_choice':
+                        if (!Array.isArray(v) || v.length === 0) return false;
+                        break;
+                    case 'rating':
+                        {
+                            const n = typeof v === 'number' ? v : Number(v);
+                            if (!isFinite(n)) return false;
+                            break;
+                        }
+                    case 'boolean':
+                        if (typeof v !== 'boolean') return false;
+                        break;
+                }
+            }
+        }
+        return true;
+    }, [
+        answers,
+        availableQuestions,
+        selectedQuestions
+    ]);
+    const canSubmit = Boolean(subject.trim()) && Boolean(message.trim()) && Boolean(projectName.trim()) && (anonymous || Boolean(reporterEmail.trim())) && selectedQuestions.size > 0 && requiredQuestionsOk;
     const handleSubmit = ()=>{
         const visibility = anonymous ? 'anonymous' : 'identified';
+        const ids = Array.from(selectedQuestions);
+        const normalizedAnswers = ids.map((qid)=>{
+            const q = availableQuestions.find((x)=>x.id === qid);
+            let value = answers[qid];
+            if (q.type === 'single_choice' && typeof value === 'string' && q.options && q.options.length) {
+                const opt = getOptionById(q.options, value);
+                value = opt ? opt.text : value;
+            } else if (q.type === 'multiple_choice' && Array.isArray(value) && q.options && q.options.length) {
+                value = getTextsByIds(q.options, value);
+            } else if (q.type === 'rating') {
+                value = typeof value === 'number' ? value : Number(value);
+            }
+            return {
+                questionId: q.id,
+                type: q.type,
+                title: q.title,
+                value
+            };
+        });
         const payload = {
             subject: subject.trim(),
             message: message.trim(),
@@ -1389,7 +1497,8 @@ function FeedbackCreateModal({ isOpen, onClose, onSubmit, projectOptions = [] })
             reporter: anonymous ? null : {
                 name: reporterName.trim() || null,
                 email: reporterEmail.trim() || null
-            }
+            },
+            answers: normalizedAnswers
         };
         onSubmit(payload);
     };
@@ -1439,12 +1548,12 @@ function FeedbackCreateModal({ isOpen, onClose, onSubmit, projectOptions = [] })
                                     className: "w-5 h-5"
                                 }, void 0, false, {
                                     fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                    lineNumber: 105,
+                                    lineNumber: 213,
                                     columnNumber: 15
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                lineNumber: 104,
+                                lineNumber: 212,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1454,32 +1563,32 @@ function FeedbackCreateModal({ isOpen, onClose, onSubmit, projectOptions = [] })
                                         children: "Create Feedback"
                                     }, void 0, false, {
                                         fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                        lineNumber: 108,
+                                        lineNumber: 216,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                         className: "text-sm text-default-600",
-                                        children: "Add a new confidential feedback entry"
+                                        children: "Choose project, select questions, and add answers"
                                     }, void 0, false, {
                                         fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                        lineNumber: 109,
+                                        lineNumber: 217,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                lineNumber: 107,
+                                lineNumber: 215,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                        lineNumber: 103,
+                        lineNumber: 211,
                         columnNumber: 11
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                    lineNumber: 102,
+                    lineNumber: 210,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$modal$2f$dist$2f$chunk$2d$FOPEYBSC$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__modal_body_default__as__ModalBody$3e$__["ModalBody"], {
@@ -1496,13 +1605,13 @@ function FeedbackCreateModal({ isOpen, onClose, onSubmit, projectOptions = [] })
                                             children: "*"
                                         }, void 0, false, {
                                             fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                            lineNumber: 118,
+                                            lineNumber: 226,
                                             columnNumber: 23
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                    lineNumber: 117,
+                                    lineNumber: 225,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$input$2f$dist$2f$chunk$2d$SSA7SXE4$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__input_default__as__Input$3e$__["Input"], {
@@ -1514,13 +1623,13 @@ function FeedbackCreateModal({ isOpen, onClose, onSubmit, projectOptions = [] })
                                     size: "lg"
                                 }, void 0, false, {
                                     fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                    lineNumber: 120,
+                                    lineNumber: 228,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                            lineNumber: 116,
+                            lineNumber: 224,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1534,13 +1643,13 @@ function FeedbackCreateModal({ isOpen, onClose, onSubmit, projectOptions = [] })
                                             children: "*"
                                         }, void 0, false, {
                                             fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                            lineNumber: 133,
+                                            lineNumber: 241,
                                             columnNumber: 23
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                    lineNumber: 132,
+                                    lineNumber: 240,
                                     columnNumber: 13
                                 }, this),
                                 projectOptions.length > 0 ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$select$2f$dist$2f$chunk$2d$Y2AYO5NJ$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__select_default__as__Select$3e$__["Select"], {
@@ -1548,19 +1657,19 @@ function FeedbackCreateModal({ isOpen, onClose, onSubmit, projectOptions = [] })
                                     selectedKeys: projectName ? [
                                         projectName
                                     ] : [],
-                                    onChange: (e)=>setProjectName(e.target.value),
+                                    onSelectionChange: (keys)=>setProjectName(singleFromSelection(keys)),
                                     isRequired: true,
                                     variant: "bordered",
                                     children: projectOptions.map((p)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$listbox$2f$dist$2f$chunk$2d$BJFJ4DRR$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__listbox_item_base_default__as__SelectItem$3e$__["SelectItem"], {
                                             children: p
                                         }, p, false, {
                                             fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                            lineNumber: 144,
+                                            lineNumber: 252,
                                             columnNumber: 19
                                         }, this))
                                 }, void 0, false, {
                                     fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                    lineNumber: 136,
+                                    lineNumber: 244,
                                     columnNumber: 15
                                 }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$input$2f$dist$2f$chunk$2d$SSA7SXE4$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__input_default__as__Input$3e$__["Input"], {
                                     placeholder: "Enter project name",
@@ -1570,13 +1679,13 @@ function FeedbackCreateModal({ isOpen, onClose, onSubmit, projectOptions = [] })
                                     variant: "bordered"
                                 }, void 0, false, {
                                     fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                    lineNumber: 148,
+                                    lineNumber: 256,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                            lineNumber: 131,
+                            lineNumber: 239,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1586,7 +1695,7 @@ function FeedbackCreateModal({ isOpen, onClose, onSubmit, projectOptions = [] })
                                     children: "Category"
                                 }, void 0, false, {
                                     fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                    lineNumber: 160,
+                                    lineNumber: 268,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$input$2f$dist$2f$chunk$2d$SSA7SXE4$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__input_default__as__Input$3e$__["Input"], {
@@ -1598,18 +1707,18 @@ function FeedbackCreateModal({ isOpen, onClose, onSubmit, projectOptions = [] })
                                         className: "w-4 h-4 text-default-400"
                                     }, void 0, false, {
                                         fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                        lineNumber: 166,
+                                        lineNumber: 274,
                                         columnNumber: 29
                                     }, void 0)
                                 }, void 0, false, {
                                     fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                    lineNumber: 161,
+                                    lineNumber: 269,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                            lineNumber: 159,
+                            lineNumber: 267,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1623,13 +1732,13 @@ function FeedbackCreateModal({ isOpen, onClose, onSubmit, projectOptions = [] })
                                             children: "*"
                                         }, void 0, false, {
                                             fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                            lineNumber: 173,
+                                            lineNumber: 281,
                                             columnNumber: 23
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                    lineNumber: 172,
+                                    lineNumber: 280,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$input$2f$dist$2f$chunk$2d$QESP63UR$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__textarea_default__as__Textarea$3e$__["Textarea"], {
@@ -1642,13 +1751,13 @@ function FeedbackCreateModal({ isOpen, onClose, onSubmit, projectOptions = [] })
                                     variant: "bordered"
                                 }, void 0, false, {
                                     fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                    lineNumber: 175,
+                                    lineNumber: 283,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                            lineNumber: 171,
+                            lineNumber: 279,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1662,7 +1771,7 @@ function FeedbackCreateModal({ isOpen, onClose, onSubmit, projectOptions = [] })
                                             children: "Submit as anonymous"
                                         }, void 0, false, {
                                             fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                            lineNumber: 189,
+                                            lineNumber: 297,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1670,13 +1779,13 @@ function FeedbackCreateModal({ isOpen, onClose, onSubmit, projectOptions = [] })
                                             children: "When enabled, reporter identity will be hidden."
                                         }, void 0, false, {
                                             fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                            lineNumber: 190,
+                                            lineNumber: 298,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                    lineNumber: 188,
+                                    lineNumber: 296,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$switch$2f$dist$2f$chunk$2d$TQNYOUFX$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__switch_default__as__Switch$3e$__["Switch"], {
@@ -1684,13 +1793,13 @@ function FeedbackCreateModal({ isOpen, onClose, onSubmit, projectOptions = [] })
                                     onValueChange: setAnonymous
                                 }, void 0, false, {
                                     fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                    lineNumber: 194,
+                                    lineNumber: 300,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                            lineNumber: 187,
+                            lineNumber: 295,
                             columnNumber: 11
                         }, this),
                         !anonymous && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1703,7 +1812,7 @@ function FeedbackCreateModal({ isOpen, onClose, onSubmit, projectOptions = [] })
                                             children: "Reporter Name"
                                         }, void 0, false, {
                                             fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                            lineNumber: 200,
+                                            lineNumber: 306,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$input$2f$dist$2f$chunk$2d$SSA7SXE4$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__input_default__as__Input$3e$__["Input"], {
@@ -1713,13 +1822,13 @@ function FeedbackCreateModal({ isOpen, onClose, onSubmit, projectOptions = [] })
                                             variant: "bordered"
                                         }, void 0, false, {
                                             fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                            lineNumber: 203,
+                                            lineNumber: 307,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                    lineNumber: 199,
+                                    lineNumber: 305,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1733,13 +1842,13 @@ function FeedbackCreateModal({ isOpen, onClose, onSubmit, projectOptions = [] })
                                                     children: "*"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                                    lineNumber: 212,
+                                                    lineNumber: 316,
                                                     columnNumber: 34
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                            lineNumber: 211,
+                                            lineNumber: 315,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$input$2f$dist$2f$chunk$2d$SSA7SXE4$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__input_default__as__Input$3e$__["Input"], {
@@ -1751,25 +1860,360 @@ function FeedbackCreateModal({ isOpen, onClose, onSubmit, projectOptions = [] })
                                             isRequired: true
                                         }, void 0, false, {
                                             fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                            lineNumber: 214,
+                                            lineNumber: 318,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                    lineNumber: 210,
+                                    lineNumber: 314,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                            lineNumber: 198,
+                            lineNumber: 304,
                             columnNumber: 13
+                        }, this),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "space-y-3",
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "flex items-center justify-between",
+                                    children: [
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                            className: "block text-sm font-medium text-default-700",
+                                            children: [
+                                                "Questions ",
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                    className: "text-red-500",
+                                                    children: "*"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
+                                                    lineNumber: 334,
+                                                    columnNumber: 27
+                                                }, this)
+                                            ]
+                                        }, void 0, true, {
+                                            fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
+                                            lineNumber: 333,
+                                            columnNumber: 15
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                            className: "text-xs text-default-500",
+                                            children: [
+                                                selectedQuestions.size,
+                                                " selected"
+                                            ]
+                                        }, void 0, true, {
+                                            fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
+                                            lineNumber: 336,
+                                            columnNumber: 15
+                                        }, this)
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
+                                    lineNumber: 332,
+                                    columnNumber: 13
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$select$2f$dist$2f$chunk$2d$Y2AYO5NJ$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__select_default__as__Select$3e$__["Select"], {
+                                    selectionMode: "multiple",
+                                    placeholder: projectName ? 'Select questions for this project' : 'Choose a project first',
+                                    selectedKeys: Array.from(selectedQuestions),
+                                    onSelectionChange: (keys)=>{
+                                        const allIds = availableQuestions.map((q)=>q.id);
+                                        const set = selectionToKeys(keys, allIds);
+                                        const next = {};
+                                        const ids = Array.from(set);
+                                        for(let i = 0; i < ids.length; i++){
+                                            const id = ids[i];
+                                            const q = availableQuestions.find((qq)=>qq.id === id);
+                                            next[id] = answers[id] !== undefined ? answers[id] : q ? q.type === 'multiple_choice' ? [] : q.type === 'boolean' ? false : '' : '';
+                                        }
+                                        setSelectedQuestions(set);
+                                        setAnswers(next);
+                                    },
+                                    isDisabled: !projectName,
+                                    variant: "bordered",
+                                    className: "w-full",
+                                    items: availableQuestions,
+                                    "aria-label": "Select questions for the feedback form",
+                                    children: (q)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$listbox$2f$dist$2f$chunk$2d$BJFJ4DRR$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__listbox_item_base_default__as__SelectItem$3e$__["SelectItem"], {
+                                            description: q.description,
+                                            children: q.title
+                                        }, q.id, false, {
+                                            fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
+                                            lineNumber: 373,
+                                            columnNumber: 17
+                                        }, this)
+                                }, void 0, false, {
+                                    fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
+                                    lineNumber: 339,
+                                    columnNumber: 13
+                                }, this),
+                                Array.from(selectedQuestions).map((id)=>{
+                                    const q = availableQuestions.find((x)=>x.id === id);
+                                    if (!q) return null;
+                                    switch(q.type){
+                                        case 'text_based':
+                                            return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                className: "space-y-2 rounded-xl border border-default-200 p-3",
+                                                children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                        className: "text-sm font-medium text-default-700",
+                                                        children: [
+                                                            q.title,
+                                                            q.required ? ' *' : ''
+                                                        ]
+                                                    }, void 0, true, {
+                                                        fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
+                                                        lineNumber: 388,
+                                                        columnNumber: 23
+                                                    }, this),
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$input$2f$dist$2f$chunk$2d$QESP63UR$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__textarea_default__as__Textarea$3e$__["Textarea"], {
+                                                        placeholder: q.description || 'Type your answer...',
+                                                        value: answers[id] || '',
+                                                        onChange: (e)=>setAnswers((prev)=>({
+                                                                    ...prev,
+                                                                    [id]: e.target.value
+                                                                })),
+                                                        minRows: 3,
+                                                        variant: "bordered"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
+                                                        lineNumber: 392,
+                                                        columnNumber: 23
+                                                    }, this)
+                                                ]
+                                            }, id, true, {
+                                                fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
+                                                lineNumber: 387,
+                                                columnNumber: 21
+                                            }, this);
+                                        case 'single_choice':
+                                            {
+                                                const current = typeof answers[id] === 'string' ? answers[id] : '';
+                                                const selected = current ? [
+                                                    current
+                                                ] : [];
+                                                return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    className: "space-y-2 rounded-xl border border-default-200 p-3",
+                                                    children: [
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                            className: "text-sm font-medium text-default-700",
+                                                            children: [
+                                                                q.title,
+                                                                q.required ? ' *' : ''
+                                                            ]
+                                                        }, void 0, true, {
+                                                            fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
+                                                            lineNumber: 412,
+                                                            columnNumber: 23
+                                                        }, this),
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$select$2f$dist$2f$chunk$2d$Y2AYO5NJ$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__select_default__as__Select$3e$__["Select"], {
+                                                            selectedKeys: selected,
+                                                            onSelectionChange: (keys)=>{
+                                                                const key = singleFromSelection(keys);
+                                                                setAnswers((prev)=>({
+                                                                        ...prev,
+                                                                        [id]: key
+                                                                    }));
+                                                            },
+                                                            variant: "bordered",
+                                                            placeholder: q.description || 'Select one option',
+                                                            items: q.options || [],
+                                                            children: (opt)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$listbox$2f$dist$2f$chunk$2d$BJFJ4DRR$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__listbox_item_base_default__as__SelectItem$3e$__["SelectItem"], {
+                                                                    children: opt.text
+                                                                }, opt.id, false, {
+                                                                    fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
+                                                                    lineNumber: 426,
+                                                                    columnNumber: 49
+                                                                }, this)
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
+                                                            lineNumber: 416,
+                                                            columnNumber: 23
+                                                        }, this)
+                                                    ]
+                                                }, id, true, {
+                                                    fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
+                                                    lineNumber: 411,
+                                                    columnNumber: 21
+                                                }, this);
+                                            }
+                                        case 'multiple_choice':
+                                            {
+                                                const selected = Array.isArray(answers[id]) ? answers[id] : [];
+                                                return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    className: "space-y-2 rounded-xl border border-default-200 p-3",
+                                                    children: [
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                            className: "text-sm font-medium text-default-700",
+                                                            children: [
+                                                                q.title,
+                                                                q.required ? ' *' : ''
+                                                            ]
+                                                        }, void 0, true, {
+                                                            fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
+                                                            lineNumber: 436,
+                                                            columnNumber: 23
+                                                        }, this),
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$select$2f$dist$2f$chunk$2d$Y2AYO5NJ$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__select_default__as__Select$3e$__["Select"], {
+                                                            selectionMode: "multiple",
+                                                            selectedKeys: selected,
+                                                            onSelectionChange: (keys)=>{
+                                                                setAnswers((prev)=>({
+                                                                        ...prev,
+                                                                        [id]: Array.from(selectionToKeys(keys))
+                                                                    }));
+                                                            },
+                                                            variant: "bordered",
+                                                            placeholder: q.description || 'Select one or more options',
+                                                            items: q.options || [],
+                                                            children: (opt)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$listbox$2f$dist$2f$chunk$2d$BJFJ4DRR$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__listbox_item_base_default__as__SelectItem$3e$__["SelectItem"], {
+                                                                    children: opt.text
+                                                                }, opt.id, false, {
+                                                                    fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
+                                                                    lineNumber: 450,
+                                                                    columnNumber: 49
+                                                                }, this)
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
+                                                            lineNumber: 440,
+                                                            columnNumber: 23
+                                                        }, this)
+                                                    ]
+                                                }, id, true, {
+                                                    fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
+                                                    lineNumber: 435,
+                                                    columnNumber: 21
+                                                }, this);
+                                            }
+                                        case 'rating':
+                                            {
+                                                const ratingOpts = q.options && q.options.length ? q.options : Array.from({
+                                                    length: 5
+                                                }, (_, i)=>({
+                                                        id: String(i + 1),
+                                                        text: String(i + 1),
+                                                        value: i + 1
+                                                    }));
+                                                const current = answers[id];
+                                                const selectedKey = typeof current === 'number' ? String(current) : current || '';
+                                                const selected = selectedKey ? [
+                                                    selectedKey
+                                                ] : [];
+                                                return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    className: "space-y-2 rounded-xl border border-default-200 p-3",
+                                                    children: [
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                            className: "text-sm font-medium text-default-700",
+                                                            children: [
+                                                                q.title,
+                                                                q.required ? ' *' : ''
+                                                            ]
+                                                        }, void 0, true, {
+                                                            fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
+                                                            lineNumber: 467,
+                                                            columnNumber: 23
+                                                        }, this),
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$select$2f$dist$2f$chunk$2d$Y2AYO5NJ$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__select_default__as__Select$3e$__["Select"], {
+                                                            selectedKeys: selected,
+                                                            onSelectionChange: (keys)=>{
+                                                                const key = singleFromSelection(keys);
+                                                                const opt = ratingOpts.find((o)=>o.id === key);
+                                                                const val = typeof opt?.value === 'number' ? opt.value : Number(key);
+                                                                setAnswers((prev)=>({
+                                                                        ...prev,
+                                                                        [id]: val
+                                                                    }));
+                                                            },
+                                                            variant: "bordered",
+                                                            placeholder: q.description || 'Select a rating',
+                                                            items: ratingOpts,
+                                                            children: (opt)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$listbox$2f$dist$2f$chunk$2d$BJFJ4DRR$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__listbox_item_base_default__as__SelectItem$3e$__["SelectItem"], {
+                                                                    children: opt.text
+                                                                }, opt.id, false, {
+                                                                    fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
+                                                                    lineNumber: 483,
+                                                                    columnNumber: 49
+                                                                }, this)
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
+                                                            lineNumber: 471,
+                                                            columnNumber: 23
+                                                        }, this)
+                                                    ]
+                                                }, id, true, {
+                                                    fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
+                                                    lineNumber: 466,
+                                                    columnNumber: 21
+                                                }, this);
+                                            }
+                                        case 'boolean':
+                                            {
+                                                const val = typeof answers[id] === 'boolean' ? answers[id] : false;
+                                                return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    className: "space-y-2 rounded-xl border border-default-200 p-3",
+                                                    children: [
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                            className: "flex items-center justify-between",
+                                                            children: [
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                    className: "text-sm font-medium text-default-700",
+                                                                    children: [
+                                                                        q.title,
+                                                                        q.required ? ' *' : ''
+                                                                    ]
+                                                                }, void 0, true, {
+                                                                    fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
+                                                                    lineNumber: 494,
+                                                                    columnNumber: 25
+                                                                }, this),
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$switch$2f$dist$2f$chunk$2d$TQNYOUFX$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__switch_default__as__Switch$3e$__["Switch"], {
+                                                                    isSelected: val,
+                                                                    onValueChange: (v)=>setAnswers((prev)=>({
+                                                                                ...prev,
+                                                                                [id]: v
+                                                                            }))
+                                                                }, void 0, false, {
+                                                                    fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
+                                                                    lineNumber: 498,
+                                                                    columnNumber: 25
+                                                                }, this)
+                                                            ]
+                                                        }, void 0, true, {
+                                                            fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
+                                                            lineNumber: 493,
+                                                            columnNumber: 23
+                                                        }, this),
+                                                        q.description ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                            className: "text-xs text-default-500",
+                                                            children: q.description
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
+                                                            lineNumber: 503,
+                                                            columnNumber: 40
+                                                        }, this) : null
+                                                    ]
+                                                }, id, true, {
+                                                    fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
+                                                    lineNumber: 492,
+                                                    columnNumber: 21
+                                                }, this);
+                                            }
+                                    }
+                                })
+                            ]
+                        }, void 0, true, {
+                            fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
+                            lineNumber: 331,
+                            columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                    lineNumber: 114,
+                    lineNumber: 222,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$modal$2f$dist$2f$chunk$2d$O5MCAK4F$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__modal_footer_default__as__ModalFooter$3e$__["ModalFooter"], {
@@ -1782,7 +2226,7 @@ function FeedbackCreateModal({ isOpen, onClose, onSubmit, projectOptions = [] })
                             children: "Cancel"
                         }, void 0, false, {
                             fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                            lineNumber: 228,
+                            lineNumber: 513,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$button$2f$dist$2f$chunk$2d$WBUKVQRU$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__button_default__as__Button$3e$__["Button"], {
@@ -1794,30 +2238,30 @@ function FeedbackCreateModal({ isOpen, onClose, onSubmit, projectOptions = [] })
                                 className: "w-4 h-4"
                             }, void 0, false, {
                                 fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                lineNumber: 236,
+                                lineNumber: 521,
                                 columnNumber: 27
                             }, void 0),
                             children: "Create Feedback"
                         }, void 0, false, {
                             fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                            lineNumber: 231,
+                            lineNumber: 516,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                    lineNumber: 227,
+                    lineNumber: 512,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-            lineNumber: 101,
+            lineNumber: 209,
             columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-        lineNumber: 80,
+        lineNumber: 197,
         columnNumber: 5
     }, this);
 }

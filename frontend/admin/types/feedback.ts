@@ -1,5 +1,14 @@
+import type { QuestionType } from '@/types/questions';
+
 export type FeedbackStatus = 'unread' | 'in_review' | 'resolved';
 export type FeedbackVisibility = 'anonymous' | 'identified';
+
+export interface FeedbackAnswer {
+  questionId: string;
+  type: QuestionType;
+  title: string;                    // snapshot of the question title used
+  value: string | string[] | number | boolean; // normalized answer
+}
 
 export interface Feedback {
   id: string;
@@ -8,21 +17,30 @@ export interface Feedback {
   projectName: string;
   category?: string;
   status: FeedbackStatus;
-  visibility: FeedbackVisibility; // 'anonymous' means hide reporter info
-  createdAt: string; // ISO
-  reporter?: {
-    name?: string | null;
-    email?: string | null;
-  } | null;
+  visibility: FeedbackVisibility;
+  createdAt: string;
+  reporter?: { name?: string | null; email?: string | null } | null;
+  answers?: FeedbackAnswer[];       // NEW
+}
+
+export interface CreateFeedbackRequest {
+  subject: string;
+  message: string;
+  projectName: string;
+  category?: string;
+  visibility: FeedbackVisibility;
+  reporter?: { name?: string | null; email?: string | null } | null;
+  answers: FeedbackAnswer[];        // NEW
+}
+
+export interface UpdateFeedbackRequest extends Partial<CreateFeedbackRequest> {
+  id: string;
+  status?: FeedbackStatus;
 }
 
 export const formatDate = (iso: string) =>
   new Date(iso).toLocaleString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
+    year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit',
   });
 
 export const statusMeta: Record<FeedbackStatus, { label: string; color: 'default' | 'warning' | 'success' }> = {
@@ -30,20 +48,3 @@ export const statusMeta: Record<FeedbackStatus, { label: string; color: 'default
   in_review: { label: 'In Review', color: 'default' },
   resolved: { label: 'Resolved', color: 'success' },
 };
-
-export interface CreateFeedbackRequest {
-  subject: string;
-  message: string;
-  projectName: string;
-  category?: string;
-  visibility: FeedbackVisibility; // 'anonymous' | 'identified'
-  reporter?: {
-    name?: string | null;
-    email?: string | null;
-  } | null;
-}
-
-export interface UpdateFeedbackRequest extends Partial<CreateFeedbackRequest> {
-  id: string;
-  status?: FeedbackStatus;
-}
