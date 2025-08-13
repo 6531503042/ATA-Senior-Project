@@ -1,0 +1,204 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import {
+  Card,
+  CardBody,
+  CardHeader,
+  Button,
+} from "@heroui/react";
+import { PlusIcon, BuildingIcon } from "lucide-react";
+import DepartmentModal from "./_components/DepartmentModal";
+import DepartmentTable from "./_components/DepartmentsTable";
+import { PageHeader } from "@/components/ui/page-header";
+import type { Department } from "@/types/department";
+import departmentData from "@/data/department.json";
+
+export default function DepartmentsPage() {
+  const [loading, setLoading] = useState(false);
+  const [modalMode, setModalMode] = useState<"create" | "edit">("create");
+  const [selectedDepartment, setSelectedDepartment] = useState<any | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  
+  const [departments, setDepartments] = useState(departmentData.departments);
+  const [stats, setStats] = useState(departmentData.stats);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  useEffect(() => {
+    const totalDepartments = departments.length;
+    const activeDepartments = departments.filter(d => d.status.toLowerCase() === "active").length;
+    const inactiveDepartments = departments.filter(d => d.status.toLowerCase() === "inactive").length;
+    const totalEmployees = departments.reduce((sum, d) => sum + d.employeeCount, 0);
+
+    setStats({ totalDepartments, activeDepartments, inactiveDepartments, totalEmployees });
+  }, [departments]);
+
+  const statsCards = [
+    {
+      title: "Total Departments",
+      value: stats.totalDepartments.toString(),
+      description: "All active and inactive departments",
+      gradient: "from-blue-400 to-indigo-500",
+      bgColor: "from-blue-600 to-indigo-700",
+      icon: BuildingIcon,
+    },
+    {
+      title: "Active Departments",
+      value: stats.activeDepartments.toString(),
+      description: "Currently active departments",
+      gradient: "from-green-400 to-teal-500",
+      bgColor: "from-green-600 to-teal-700",
+      icon: BuildingIcon,
+    },
+    {
+      title: "Inactive Departments",
+      value: stats.inactiveDepartments.toString(),
+      description: "Departments currently inactive",
+      gradient: "from-red-400 to-rose-500",
+      bgColor: "from-red-600 to-rose-700",
+      icon: BuildingIcon,
+    },
+    {
+      title: "Employees Total",
+      value: stats.totalEmployees.toString(),
+      description: "All employees in all departments",
+      gradient: "from-yellow-400 to-amber-500",
+      bgColor: "from-yellow-600 to-amber-700",
+      icon: BuildingIcon,
+    },
+  ];
+
+  const handleAddDepartment = () => {
+    setSelectedDepartment(null);
+    setModalMode("create");
+    setIsModalOpen(true);
+  };
+
+  const handleEditDepartment = (dept: any) => {
+    setSelectedDepartment(dept);
+    setModalMode("edit");
+    setIsModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setSelectedDepartment(null);
+  };
+
+  const handleSubmit = (data: any) => {
+    if (modalMode === "create") {
+      const newDept = {
+        ...data,
+        id: (departments.length + 1).toString(),
+        createdAt: new Date().toISOString().slice(0, 10),
+      };
+      setDepartments(prev => [...prev, newDept]);
+    } else if (modalMode === "edit" && selectedDepartment) {
+      setDepartments(prev =>
+        prev.map(d => (d.id === selectedDepartment.id ? { ...d, ...data } : d))
+      );
+    }
+    handleModalClose();
+  };
+
+  const handleDeleteDepartment = (id: string) => {
+    setDepartments(prev => prev.filter(d => String(d.id) !== id));
+  };
+
+  return (
+    <>
+      <PageHeader
+        description="Manage departments, managers, and employees"
+        icon={<BuildingIcon />}
+      />
+
+      <div className="space-y-8">
+        {/* Header Section */}
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 p-6 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-2xl border border-blue-100">
+          <div>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              Department Management
+            </h1>
+            <p className="text-default-600 mt-1">Manage departments, managers, and employees</p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button
+              color="primary"
+              variant="shadow"
+              startContent={<PlusIcon className="w-4 h-4" />}
+              onPress={handleAddDepartment}
+              className="w-full sm:w-auto font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-300"
+            >
+              Add Department
+            </Button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+          {statsCards.map((stat, i) => (
+            <Card
+              key={i}
+              className="border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] bg-gradient-to-br from-white to-gray-50 overflow-hidden group"
+            >
+              <CardBody className="p-6 relative">
+                <div
+                  className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300`}
+                ></div>
+                <div className="flex items-center justify-between relative z-10">
+                  <div>
+                    <p className="text-sm font-medium text-default-500 mb-1">{stat.title}</p>
+                    <p className="text-3xl font-bold text-default-900">{stat.value}</p>
+                    <p className="text-xs text-default-400 mt-1">{stat.description}</p>
+                  </div>
+                  <div
+                    className={`p-4 rounded-2xl bg-gradient-to-br ${stat.bgColor} text-white shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110`}
+                  >
+                    <stat.icon className="w-6 h-6" />
+                  </div>
+                </div>
+              </CardBody>
+            </Card>
+          ))}
+        </div>
+
+        <Card className="border-0 shadow-xl overflow-hidden">
+          <CardHeader className="pb-6">
+            <div className="w-full">
+              <h3 className="text-xl font-bold text-default-900">Department List</h3>
+              <p className="text-sm text-default-600">View and manage all departments</p>
+            </div>
+          </CardHeader>
+          <CardBody className="pt-0">
+            {loading ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="text-default-400">Loading departments...</div>
+              </div>
+            ) : error ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="text-red-500">Error: {error}</div>
+              </div>
+            ) : (
+              <DepartmentTable
+                departments={departments}
+                onEdit={handleEditDepartment}
+                onDelete={handleDeleteDepartment}
+                onRefresh={() => {
+                  console.log("Refresh departments");
+                }}
+              />
+            )}
+          </CardBody>
+        </Card>
+      </div>
+
+      <DepartmentModal
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+        onSubmit={handleSubmit}
+        department={selectedDepartment || undefined}
+        mode={selectedDepartment ? "edit" : "create"}
+      />
+    </>
+  );
+}
