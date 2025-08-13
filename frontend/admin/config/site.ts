@@ -19,10 +19,13 @@ import {
   Footprints,
   FolderIcon,
   FileTextIcon,
-  MessageCircleIcon
+  MessageCircleIcon,
+  UserRoundSearch,
+  UserRoundSearchIcon
 } from "lucide-react";
 
 import type { NavSection } from "@/types/nav";
+import { user } from "@heroui/theme";
 
 export const siteConfig: {
   name: string;
@@ -50,6 +53,7 @@ export const siteConfig: {
       items: [
         { label: "Projects", href: "/projects", icon: FolderIcon, permission: "projects:read" },
         { label: "Feedbacks", href: "/feedbacks", icon: FileTextIcon, permission: "feedbacks:read" },
+        { label: "Submissions", href: "/submissions", icon: UserRoundSearchIcon, permission: "submissions:read" },
         { label: "Questions", href: "/questions", icon: MessageCircleIcon, permission: "questions:read" }
       ],
     },

@@ -28,6 +28,12 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-r2dbc'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
+	implementation 'org.mapstruct:mapstruct:1.4.2.Final'
+	implementation("jakarta.validation:jakarta.validation-api:3.1.1")
+	annotationProcessor 'org.mapstruct:mapstruct-processor:1.4.2.Final'
+
+
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	annotationProcessor 'org.projectlombok:lombok'

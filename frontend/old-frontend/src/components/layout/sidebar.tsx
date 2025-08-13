@@ -14,8 +14,6 @@ import {
   Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import Logo from "@assets/ata-logo.png";
-import Image from "next/image";
 
 interface MenuItem {
   name: string;
