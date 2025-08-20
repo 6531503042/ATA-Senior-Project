@@ -1,8 +1,26 @@
-"use client";
+'use client';
 
-import { Card, CardBody, CardHeader, Button, Avatar, Chip, Progress } from "@heroui/react";
-import { EyeIcon, MoreVerticalIcon, TrendingUpIcon, TrendingDownIcon, MinusIcon, MessageSquareIcon, UsersIcon, CalendarIcon } from "lucide-react";
-import type { Feedback } from "@/types/dashboard";
+import type { Feedback } from '@/types/dashboard';
+
+import {
+  Card,
+  CardBody,
+  CardHeader,
+  Button,
+  Avatar,
+  Chip,
+  Progress,
+} from '@heroui/react';
+import {
+  EyeIcon,
+  MoreVerticalIcon,
+  TrendingUpIcon,
+  TrendingDownIcon,
+  MinusIcon,
+  MessageSquareIcon,
+  UsersIcon,
+  CalendarIcon,
+} from 'lucide-react';
 
 interface DashboardFeedbacksProps {
   feedbacks: Feedback[];
@@ -50,9 +68,11 @@ export function DashboardFeedbacks({ feedbacks }: DashboardFeedbacksProps) {
 
   const getInitials = (title: string) => {
     const words = title.split(' ');
+
     if (words.length >= 2) {
       return words[0].charAt(0) + words[1].charAt(0);
     }
+
     return title.substring(0, 2).toUpperCase();
   };
 
@@ -73,29 +93,29 @@ export function DashboardFeedbacks({ feedbacks }: DashboardFeedbacksProps) {
           </div>
         </div>
         <Button
-          variant="bordered"
+          className="w-full sm:w-auto"
           color="success"
           size="sm"
           startContent={<EyeIcon className="w-4 h-4" />}
-          className="w-full sm:w-auto"
+          variant="bordered"
         >
           View All
         </Button>
       </CardHeader>
       <CardBody className="space-y-4 p-4">
-        {feedbacks.map((feedback) => (
+        {feedbacks.map(feedback => (
           <div
             key={feedback.id}
             className="group relative flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 rounded-xl border border-default-200 hover:border-green-400 hover:bg-green-50 dark:hover:bg-green-900/30 transition-all duration-300 cursor-pointer bg-white dark:bg-default-50"
           >
             <Avatar
-              className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 text-white font-semibold shadow-md"
               showFallback
+              className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 text-white font-semibold shadow-md"
               name={getInitials(feedback.projectTitle)}
             >
               {getInitials(feedback.projectTitle)}
             </Avatar>
-            
+
             <div className="flex-1 min-w-0 space-y-3">
               <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                 <h4 className="font-semibold text-default-900 truncate text-base">
@@ -103,29 +123,29 @@ export function DashboardFeedbacks({ feedbacks }: DashboardFeedbacksProps) {
                 </h4>
                 <div className="flex items-center gap-2">
                   <Chip
-                    size="sm"
-                    color={getStatusColor(feedback.status)}
-                    variant="flat"
                     className="text-xs font-medium"
+                    color={getStatusColor(feedback.status)}
+                    size="sm"
+                    variant="flat"
                   >
                     {feedback.status}
                   </Chip>
                   <Chip
-                    size="sm"
-                    color={getSentimentColor(feedback.sentiment)}
-                    variant="flat"
-                    startContent={getSentimentIcon(feedback.sentiment)}
                     className="text-xs font-medium"
+                    color={getSentimentColor(feedback.sentiment)}
+                    size="sm"
+                    startContent={getSentimentIcon(feedback.sentiment)}
+                    variant="flat"
                   >
                     {feedback.sentiment}
                   </Chip>
                 </div>
               </div>
-              
+
               <p className="text-sm text-default-600 line-clamp-2 leading-relaxed">
                 {feedback.description}
               </p>
-              
+
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                 <div className="flex items-center gap-4 text-xs text-default-500">
                   <div className="flex items-center gap-1">
@@ -137,27 +157,33 @@ export function DashboardFeedbacks({ feedbacks }: DashboardFeedbacksProps) {
                     <span>{feedback.createdAt}</span>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center gap-3">
                   <span className="text-sm font-medium text-default-700">
                     Score: {feedback.score}/10
                   </span>
                   <div className="w-24">
                     <Progress
-                      value={feedback.score * 10}
                       className="h-2"
-                      color={feedback.score >= 7 ? "success" : feedback.score >= 5 ? "warning" : "danger"}
+                      color={
+                        feedback.score >= 7
+                          ? 'success'
+                          : feedback.score >= 5
+                            ? 'warning'
+                            : 'danger'
+                      }
+                      value={feedback.score * 10}
                     />
                   </div>
                 </div>
               </div>
             </div>
-            
+
             <Button
               isIconOnly
-              variant="light"
-              size="sm"
               className="text-default-400 hover:text-default-600 transition-colors flex-shrink-0 opacity-0 group-hover:opacity-100"
+              size="sm"
+              variant="light"
             >
               <MoreVerticalIcon className="w-4 h-4" />
             </Button>
@@ -166,4 +192,4 @@ export function DashboardFeedbacks({ feedbacks }: DashboardFeedbacksProps) {
       </CardBody>
     </Card>
   );
-} 
+}

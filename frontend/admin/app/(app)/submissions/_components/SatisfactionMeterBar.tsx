@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 type Props = {
   value: number; // 0-100
@@ -6,6 +6,7 @@ type Props = {
 
 export default function SatisfactionMeterBar({ value }: Props) {
   const clamped = Math.max(0, Math.min(100, value));
+
   return (
     <div className="w-full">
       <div className="flex items-center justify-between mb-2 text-xs text-default-500">
@@ -21,5 +22,3 @@ export default function SatisfactionMeterBar({ value }: Props) {
     </div>
   );
 }
-
-

@@ -1,22 +1,39 @@
-import { User } from "@/types/user";
-import { Key } from "react";
-import { Chip, Button, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@heroui/react";
-import { EditIcon, TrashIcon, UserIcon, ShieldIcon, ClockIcon, BuildingIcon, EyeIcon, EllipsisVertical } from "lucide-react";
-import { 
-  formatUserRole, 
-  formatUserStatus, 
-  getUserRoleColor, 
-  getUserStatusColor, 
-  formatDate 
-} from "@/services/userService";
+import { Key } from 'react';
+import {
+  Chip,
+  Button,
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+} from '@heroui/react';
+import {
+  EditIcon,
+  TrashIcon,
+  UserIcon,
+  ShieldIcon,
+  ClockIcon,
+  BuildingIcon,
+  EyeIcon,
+  EllipsisVertical,
+} from 'lucide-react';
+
+import { User } from '@/types/user';
+import {
+  formatUserRole,
+  formatUserStatus,
+  getUserRoleColor,
+  getUserStatusColor,
+  formatDate,
+} from '@/services/userService';
 
 export type UserColumnKey =
-  | "user"
-  | "role"
-  | "status"
-  | "department"
-  | "lastLogin"
-  | "actions";
+  | 'user'
+  | 'role'
+  | 'status'
+  | 'department'
+  | 'lastLogin'
+  | 'actions';
 
 type UserCellRendererProps = {
   user: User;
@@ -47,7 +64,7 @@ export default function UserCellRenderer({
   };
 
   switch (columnKey) {
-    case "user":
+    case 'user':
       return (
         <div className="min-w-0 flex flex-col">
           <h3 className="font-medium text-default-900 text-sm mb-0.5 line-clamp-1">
@@ -56,9 +73,7 @@ export default function UserCellRenderer({
           <p className="text-xs text-default-500 line-clamp-1">
             @{user.username}
           </p>
-          <p className="text-xs text-default-400 line-clamp-1">
-            {user.email}
-          </p>
+          <p className="text-xs text-default-400 line-clamp-1">{user.email}</p>
           {user.position && (
             <span className="mt-1.5 w-fit text-[11px] text-default-600 bg-default-100 px-2 py-1 rounded-md">
               {user.position}
@@ -67,26 +82,36 @@ export default function UserCellRenderer({
         </div>
       );
 
-    case "role":
+    case 'role':
       return (
         <div className="flex items-center gap-2">
           <div className="p-2 rounded-lg bg-default-100 text-default-600">
             {getRoleIcon(user.role)}
           </div>
-          <Chip size="sm" color={getUserRoleColor(user.role) as any} variant="flat" className="font-medium capitalize">
+          <Chip
+            className="font-medium capitalize"
+            color={getUserRoleColor(user.role) as any}
+            size="sm"
+            variant="flat"
+          >
             {formatUserRole(user.role)}
           </Chip>
         </div>
       );
 
-    case "status":
+    case 'status':
       return (
-        <Chip size="sm" color={getUserStatusColor(user.status) as any} variant="flat" className="font-medium capitalize">
+        <Chip
+          className="font-medium capitalize"
+          color={getUserStatusColor(user.status) as any}
+          size="sm"
+          variant="flat"
+        >
           {formatUserStatus(user.status)}
         </Chip>
       );
 
-    case "department":
+    case 'department':
       return (
         <div className="flex items-center gap-2">
           <div className="p-2 rounded-lg bg-default-100 text-default-600">
@@ -98,7 +123,7 @@ export default function UserCellRenderer({
         </div>
       );
 
-    case "lastLogin":
+    case 'lastLogin':
       return (
         <div className="flex items-center gap-2">
           <div className="p-2 rounded-lg bg-default-100 text-default-600">
@@ -110,7 +135,7 @@ export default function UserCellRenderer({
         </div>
       );
 
-    case "actions":
+    case 'actions':
       return (
         <Dropdown>
           <DropdownTrigger>
@@ -119,13 +144,27 @@ export default function UserCellRenderer({
             </Button>
           </DropdownTrigger>
           <DropdownMenu>
-            <DropdownItem key="view" startContent={<EyeIcon size={16} />} onPress={() => onView?.(user)}>
+            <DropdownItem
+              key="view"
+              startContent={<EyeIcon size={16} />}
+              onPress={() => onView?.(user)}
+            >
               View Details
             </DropdownItem>
-            <DropdownItem key="edit" startContent={<EditIcon size={16} />} onPress={() => onEdit?.(user)}>
+            <DropdownItem
+              key="edit"
+              startContent={<EditIcon size={16} />}
+              onPress={() => onEdit?.(user)}
+            >
               Edit
             </DropdownItem>
-            <DropdownItem key="delete" className="text-danger" color="danger" startContent={<TrashIcon size={16} />} onPress={() => onDelete?.(user.id)}>
+            <DropdownItem
+              key="delete"
+              className="text-danger"
+              color="danger"
+              startContent={<TrashIcon size={16} />}
+              onPress={() => onDelete?.(user.id)}
+            >
               Delete
             </DropdownItem>
           </DropdownMenu>

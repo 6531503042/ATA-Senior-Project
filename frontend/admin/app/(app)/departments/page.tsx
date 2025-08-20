@@ -1,83 +1,83 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
-import {
-  Card,
-  CardBody,
-  CardHeader,
-  Button,
-} from "@heroui/react";
-import { PlusIcon, BuildingIcon } from "lucide-react";
-import DepartmentModal from "./_components/DepartmentModal";
-import DepartmentTable from "./_components/DepartmentsTable";
-import { PageHeader } from "@/components/ui/page-header";
-import type { Department } from "@/types/department";
-import departmentData from "@/data/department.json";
+import type {
+  Department,
+  CreateDepartmentRequest,
+  UpdateDepartmentRequest,
+} from '@/types/department';
+
+import React, { useState } from 'react';
+import { Card, CardBody, CardHeader, Button } from '@heroui/react';
+import { PlusIcon, BuildingIcon } from 'lucide-react';
+
+import DepartmentModal from './_components/DepartmentModal';
+import DepartmentTable from './_components/DepartmentsTable';
+
+import { PageHeader } from '@/components/ui/page-header';
+import { useDepartments } from '@/hooks/useDepartment';
 
 export default function DepartmentsPage() {
-  const [loading, setLoading] = useState(false);
-  const [modalMode, setModalMode] = useState<"create" | "edit">("create");
-  const [selectedDepartment, setSelectedDepartment] = useState<any | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  
-  const [departments, setDepartments] = useState(departmentData.departments);
-  const [stats, setStats] = useState(departmentData.stats);
+  const {
+    departments,
+    stats,
+    loading,
+    error,
+    addDepartment,
+    editDepartment,
+    removeDepartment,
+    refreshDepartments,
+  } = useDepartments();
+  const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
+  const [selectedDepartment, setSelectedDepartment] = useState<any | null>(
+    null,
+  );
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  useEffect(() => {
-    const totalDepartments = departments.length;
-    const activeDepartments = departments.filter(d => d.status.toLowerCase() === "active").length;
-    const inactiveDepartments = departments.filter(d => d.status.toLowerCase() === "inactive").length;
-    const totalEmployees = departments.reduce((sum, d) => sum + d.employeeCount, 0);
-
-    setStats({ totalDepartments, activeDepartments, inactiveDepartments, totalEmployees });
-  }, [departments]);
-
   const statsCards = [
     {
-      title: "Total Departments",
+      title: 'Total Departments',
       value: stats.totalDepartments.toString(),
-      description: "All active and inactive departments",
-      gradient: "from-blue-400 to-indigo-500",
-      bgColor: "from-blue-600 to-indigo-700",
+      description: 'All active and inactive departments',
+      gradient: 'from-blue-400 to-indigo-500',
+      bgColor: 'from-blue-600 to-indigo-700',
       icon: BuildingIcon,
     },
     {
-      title: "Active Departments",
+      title: 'Active Departments',
       value: stats.activeDepartments.toString(),
-      description: "Currently active departments",
-      gradient: "from-green-400 to-teal-500",
-      bgColor: "from-green-600 to-teal-700",
+      description: 'Currently active departments',
+      gradient: 'from-green-400 to-teal-500',
+      bgColor: 'from-green-600 to-teal-700',
       icon: BuildingIcon,
     },
     {
-      title: "Inactive Departments",
+      title: 'Inactive Departments',
       value: stats.inactiveDepartments.toString(),
-      description: "Departments currently inactive",
-      gradient: "from-red-400 to-rose-500",
-      bgColor: "from-red-600 to-rose-700",
+      description: 'Departments currently inactive',
+      gradient: 'from-red-400 to-rose-500',
+      bgColor: 'from-red-600 to-rose-700',
       icon: BuildingIcon,
     },
     {
-      title: "Employees Total",
+      title: 'Employees Total',
       value: stats.totalEmployees.toString(),
-      description: "All employees in all departments",
-      gradient: "from-yellow-400 to-amber-500",
-      bgColor: "from-yellow-600 to-amber-700",
+      description: 'All employees in all departments',
+      gradient: 'from-yellow-400 to-amber-500',
+      bgColor: 'from-yellow-600 to-amber-700',
       icon: BuildingIcon,
     },
   ];
 
   const handleAddDepartment = () => {
     setSelectedDepartment(null);
-    setModalMode("create");
+    setModalMode('create');
     setIsModalOpen(true);
   };
 
   const handleEditDepartment = (dept: any) => {
     setSelectedDepartment(dept);
-    setModalMode("edit");
+    setModalMode('edit');
     setIsModalOpen(true);
   };
 
@@ -86,24 +86,34 @@ export default function DepartmentsPage() {
     setSelectedDepartment(null);
   };
 
-  const handleSubmit = (data: any) => {
-    if (modalMode === "create") {
-      const newDept = {
-        ...data,
-        id: (departments.length + 1).toString(),
-        createdAt: new Date().toISOString().slice(0, 10),
+  const handleSubmit = async (data: Department) => {
+    if (modalMode === 'create') {
+      const payload: CreateDepartmentRequest = {
+        name: data.name,
+        description: data.description || '',
+        manager: data.manager,
+        employeeCount: 0,
+        status: data.status,
       };
-      setDepartments(prev => [...prev, newDept]);
-    } else if (modalMode === "edit" && selectedDepartment) {
-      setDepartments(prev =>
-        prev.map(d => (d.id === selectedDepartment.id ? { ...d, ...data } : d))
-      );
+
+      await addDepartment(payload);
+    } else if (modalMode === 'edit' && selectedDepartment) {
+      const payload: UpdateDepartmentRequest = {
+        id: selectedDepartment.id,
+        name: data.name,
+        description: data.description,
+        manager: data.manager,
+        employeeCount: 0,
+        status: data.status,
+      };
+
+      await editDepartment(payload);
     }
     handleModalClose();
   };
 
-  const handleDeleteDepartment = (id: string) => {
-    setDepartments(prev => prev.filter(d => String(d.id) !== id));
+  const handleDeleteDepartment = async (id: string) => {
+    await removeDepartment(id);
   };
 
   return (
@@ -120,15 +130,17 @@ export default function DepartmentsPage() {
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               Department Management
             </h1>
-            <p className="text-default-600 mt-1">Manage departments, managers, and employees</p>
+            <p className="text-default-600 mt-1">
+              Manage departments, managers, and employees
+            </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
             <Button
-              color="primary"
-              variant="shadow"
-              startContent={<PlusIcon className="w-4 h-4" />}
-              onPress={handleAddDepartment}
               className="w-full sm:w-auto font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-300"
+              color="primary"
+              startContent={<PlusIcon className="w-4 h-4" />}
+              variant="shadow"
+              onPress={handleAddDepartment}
             >
               Add Department
             </Button>
@@ -144,12 +156,18 @@ export default function DepartmentsPage() {
               <CardBody className="p-6 relative">
                 <div
                   className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300`}
-                ></div>
+                />
                 <div className="flex items-center justify-between relative z-10">
                   <div>
-                    <p className="text-sm font-medium text-default-500 mb-1">{stat.title}</p>
-                    <p className="text-3xl font-bold text-default-900">{stat.value}</p>
-                    <p className="text-xs text-default-400 mt-1">{stat.description}</p>
+                    <p className="text-sm font-medium text-default-500 mb-1">
+                      {stat.title}
+                    </p>
+                    <p className="text-3xl font-bold text-default-900">
+                      {stat.value}
+                    </p>
+                    <p className="text-xs text-default-400 mt-1">
+                      {stat.description}
+                    </p>
                   </div>
                   <div
                     className={`p-4 rounded-2xl bg-gradient-to-br ${stat.bgColor} text-white shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110`}
@@ -165,8 +183,12 @@ export default function DepartmentsPage() {
         <Card className="border-0 shadow-xl overflow-hidden">
           <CardHeader className="pb-6">
             <div className="w-full">
-              <h3 className="text-xl font-bold text-default-900">Department List</h3>
-              <p className="text-sm text-default-600">View and manage all departments</p>
+              <h3 className="text-xl font-bold text-default-900">
+                Department List
+              </h3>
+              <p className="text-sm text-default-600">
+                View and manage all departments
+              </p>
             </div>
           </CardHeader>
           <CardBody className="pt-0">
@@ -181,11 +203,9 @@ export default function DepartmentsPage() {
             ) : (
               <DepartmentTable
                 departments={departments}
-                onEdit={handleEditDepartment}
                 onDelete={handleDeleteDepartment}
-                onRefresh={() => {
-                  console.log("Refresh departments");
-                }}
+                onEdit={handleEditDepartment}
+                onRefresh={refreshDepartments}
               />
             )}
           </CardBody>
@@ -193,11 +213,11 @@ export default function DepartmentsPage() {
       </div>
 
       <DepartmentModal
+        department={selectedDepartment || undefined}
         isOpen={isModalOpen}
+        mode={selectedDepartment ? 'edit' : 'create'}
         onClose={handleModalClose}
         onSubmit={handleSubmit}
-        department={selectedDepartment || undefined}
-        mode={selectedDepartment ? "edit" : "create"}
       />
     </>
   );

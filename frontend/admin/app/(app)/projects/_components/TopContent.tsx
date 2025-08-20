@@ -1,6 +1,7 @@
-import { Input, Select, SelectItem, Button } from "@heroui/react";
-import { SearchIcon, RefreshCwIcon } from "lucide-react";
-import { ProjectStatus } from "@/types/project";
+import { Input, Select, SelectItem, Button } from '@heroui/react';
+import { SearchIcon, RefreshCwIcon } from 'lucide-react';
+
+import { ProjectStatus } from '@/types/project';
 
 type TopContentProps = {
   filterValue: string;
@@ -20,10 +21,10 @@ export default function TopContent({
   onRefresh,
 }: TopContentProps) {
   const statusOptions = [
-    { key: "pending", label: "Pending" },
-    { key: "active", label: "Active" },
-    { key: "completed", label: "Completed" },
-    { key: "cancelled", label: "Cancelled" },
+    { key: 'pending', label: 'Pending' },
+    { key: 'active', label: 'Active' },
+    { key: 'completed', label: 'Completed' },
+    { key: 'cancelled', label: 'Cancelled' },
   ];
 
   return (
@@ -40,28 +41,27 @@ export default function TopContent({
         />
 
         <Select
+          className="w-full sm:max-w-[200px]"
           label="Status"
           placeholder="Filter by status"
           selectedKeys={selectedStatus ? new Set(selectedStatus) : new Set()}
-          onSelectionChange={(keys) => {
+          selectionMode="multiple"
+          onSelectionChange={keys => {
             const selected = Array.from(keys) as ProjectStatus[];
+
             onStatusChange(selected);
           }}
-          selectionMode="multiple"
-          className="w-full sm:max-w-[200px]"
         >
-          {statusOptions.map((status) => (
-            <SelectItem key={status.key}>
-              {status.label}
-            </SelectItem>
+          {statusOptions.map(status => (
+            <SelectItem key={status.key}>{status.label}</SelectItem>
           ))}
         </Select>
 
         <Button
-          variant="bordered"
-          startContent={<RefreshCwIcon className="w-4 h-4" />}
-          onPress={onRefresh}
           className="w-full sm:w-auto"
+          startContent={<RefreshCwIcon className="w-4 h-4" />}
+          variant="bordered"
+          onPress={onRefresh}
         >
           Refresh
         </Button>

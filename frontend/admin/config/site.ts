@@ -1,31 +1,16 @@
+import type { NavSection } from '@/types/nav';
+
 import {
   HomeIcon,
   SchoolIcon,
   UserIcon,
-  CircleCheckBig,
   SettingsIcon,
-  Palette,
-  BellRing,
-  DollarSignIcon,
-  University,
-  Megaphone,
-  Ticket,
-  ShieldAlert,
   LogOutIcon,
-  MonitorSmartphone,
-  HandCoins,
-  Flower,
-  BadgeCent,
-  Footprints,
   FolderIcon,
   FileTextIcon,
   MessageCircleIcon,
-  UserRoundSearch,
-  UserRoundSearchIcon
-} from "lucide-react";
-
-import type { NavSection } from "@/types/nav";
-import { user } from "@heroui/theme";
+  UserRoundSearchIcon,
+} from 'lucide-react';
 
 export const siteConfig: {
   name: string;
@@ -33,49 +18,80 @@ export const siteConfig: {
   navMenuItems: NavSection[];
   links: Record<string, string>;
 } = {
-  name: "ATA-IT Management",
-  description: "",
+  name: 'ATA-IT Management',
+  description: '',
   navMenuItems: [
     {
-      section: "Dashboard",
+      section: 'Dashboard',
+      items: [{ label: 'Dashboard', href: '/dashboard', icon: HomeIcon }],
+    },
+    {
+      section: 'User Management',
       items: [
-        { label: "Dashboard", href: "/dashboard", icon: HomeIcon },
+        {
+          label: 'Users Management',
+          href: '/users',
+          icon: UserIcon,
+          permission: 'users:read',
+        }, // ไม่มีขื่อแบบทางการ
+        {
+          label: 'Departments',
+          href: '/departments',
+          icon: SchoolIcon,
+          permission: 'departments:read',
+        },
       ],
     },
     {
-      section: "User Management",
+      section: 'Projects & Feedbacks',
       items: [
-        { label: "Users Management", href: "/users", icon: UserIcon, permission: "users:read" }, // ไม่มีขื่อแบบทางการ
-        { label: "Departments", href: "/departments", icon: SchoolIcon, permission: "departments:read" },
+        {
+          label: 'Projects',
+          href: '/projects',
+          icon: FolderIcon,
+          permission: 'projects:read',
+        },
+        {
+          label: 'Feedbacks',
+          href: '/feedbacks',
+          icon: FileTextIcon,
+          permission: 'feedbacks:read',
+        },
+        {
+          label: 'Submissions',
+          href: '/submissions',
+          icon: UserRoundSearchIcon,
+          permission: 'submissions:read',
+        },
+        {
+          label: 'Questions',
+          href: '/questions',
+          icon: MessageCircleIcon,
+          permission: 'questions:read',
+        },
       ],
     },
     {
-      section: "Projects & Feedbacks",
+      section: 'Settings',
       items: [
-        { label: "Projects", href: "/projects", icon: FolderIcon, permission: "projects:read" },
-        { label: "Feedbacks", href: "/feedbacks", icon: FileTextIcon, permission: "feedbacks:read" },
-        { label: "Submissions", href: "/submissions", icon: UserRoundSearchIcon, permission: "submissions:read" },
-        { label: "Questions", href: "/questions", icon: MessageCircleIcon, permission: "questions:read" }
+        {
+          label: 'Settings',
+          href: '/settings',
+          icon: SettingsIcon,
+          permission: 'system:read',
+        },
       ],
     },
     {
-      section: "Settings",
-      items: [
-        { label: "Settings", href: "/settings", icon: SettingsIcon, permission: "system:read" },
-      ],
-    },
-    {
-      section: "Account",
-      items: [
-        { label: "Logout", href: "/logout", icon: LogOutIcon },
-      ],
+      section: 'Account',
+      items: [{ label: 'Logout', href: '/logout', icon: LogOutIcon }],
     },
   ],
   links: {
-    github: "https://github.com/heroui-inc/heroui",
-    twitter: "https://twitter.com/hero_ui",
-    docs: "https://heroui.com",
-    discord: "https://discord.gg/9b6yyZKmH4",
-    sponsor: "https://patreon.com/jrgarciadev",
+    github: 'https://github.com/heroui-inc/heroui',
+    twitter: 'https://twitter.com/hero_ui',
+    docs: 'https://heroui.com',
+    discord: 'https://discord.gg/9b6yyZKmH4',
+    sponsor: 'https://patreon.com/jrgarciadev',
   },
 };

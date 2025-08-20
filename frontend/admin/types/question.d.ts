@@ -1,13 +1,18 @@
-export type QuestionType = 'single_choice' | 'multiple_choice' | 'text_based' | 'rating' | 'boolean';
+export type QuestionType =
+  | 'single_choice'
+  | 'multiple_choice'
+  | 'text_based'
+  | 'rating'
+  | 'boolean';
 
-export type QuestionCategory = 
-  | 'project_satisfaction' 
-  | 'technical_skills' 
-  | 'communication' 
-  | 'leadership' 
-  | 'work_environment' 
-  | 'work_life_balance' 
-  | 'team_collaboration' 
+export type QuestionCategory =
+  | 'project_satisfaction'
+  | 'technical_skills'
+  | 'communication'
+  | 'leadership'
+  | 'work_environment'
+  | 'work_life_balance'
+  | 'team_collaboration'
   | 'general';
 
 export interface AnswerOption {

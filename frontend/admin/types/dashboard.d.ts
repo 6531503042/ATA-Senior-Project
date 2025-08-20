@@ -47,4 +47,4 @@ export type DashboardStats = {
   recentProjects: Project[];
   recentFeedbacks: Feedback[];
   chartData: ChartData;
-}; 
+};

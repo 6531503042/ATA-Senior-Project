@@ -1,6 +1,16 @@
-import { Input, Select, SelectItem, Button, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@heroui/react";
-import { SearchIcon, RefreshCwIcon, EllipsisVertical } from "lucide-react";
-import { UserRole, UserStatus } from "@/types/user";
+import {
+  Input,
+  Select,
+  SelectItem,
+  Button,
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+} from '@heroui/react';
+import { SearchIcon, RefreshCwIcon, EllipsisVertical } from 'lucide-react';
+
+import { UserRole, UserStatus } from '@/types/user';
 
 type TopContentProps = {
   filterValue: string;
@@ -30,17 +40,17 @@ export default function TopContent({
   onDeleteSelected,
 }: TopContentProps) {
   const roleOptions = [
-    { key: "admin", label: "Admin" },
-    { key: "manager", label: "Manager" },
-    { key: "user", label: "User" },
-    { key: "guest", label: "Guest" },
+    { key: 'admin', label: 'Admin' },
+    { key: 'manager', label: 'Manager' },
+    { key: 'user', label: 'User' },
+    { key: 'guest', label: 'Guest' },
   ];
 
   const statusOptions = [
-    { key: "active", label: "Active" },
-    { key: "inactive", label: "Inactive" },
-    { key: "pending", label: "Pending" },
-    { key: "suspended", label: "Suspended" },
+    { key: 'active', label: 'Active' },
+    { key: 'inactive', label: 'Inactive' },
+    { key: 'pending', label: 'Pending' },
+    { key: 'suspended', label: 'Suspended' },
   ];
 
   return (
@@ -54,47 +64,53 @@ export default function TopContent({
             placeholder="Search users..."
             startContent={<SearchIcon className="w-4 h-4 text-default-400" />}
             value={filterValue}
+            variant="bordered"
             onClear={onClear}
             onValueChange={onSearchChange}
-            variant="bordered"
           />
         </div>
 
         {/* Group: filters + refresh + more (and optional add) */}
         <div className="flex items-end gap-3">
           <Select
+            className="w-[180px]"
             label="Role"
             placeholder="All roles"
             selectedKeys={selectedRole ? new Set(selectedRole) : new Set()}
-            onSelectionChange={(keys) => {
+            selectionMode="multiple"
+            onSelectionChange={keys => {
               const selected = Array.from(keys) as UserRole[];
+
               onRoleChange(selected);
             }}
-            selectionMode="multiple"
-            className="w-[180px]"
           >
-            {roleOptions.map((role) => (
+            {roleOptions.map(role => (
               <SelectItem key={role.key}>{role.label}</SelectItem>
             ))}
           </Select>
 
           <Select
+            className="w-[180px]"
             label="Status"
             placeholder="All status"
             selectedKeys={selectedStatus ? new Set(selectedStatus) : new Set()}
-            onSelectionChange={(keys) => {
+            selectionMode="multiple"
+            onSelectionChange={keys => {
               const selected = Array.from(keys) as UserStatus[];
+
               onStatusChange(selected);
             }}
-            selectionMode="multiple"
-            className="w-[180px]"
           >
-            {statusOptions.map((status) => (
+            {statusOptions.map(status => (
               <SelectItem key={status.key}>{status.label}</SelectItem>
             ))}
           </Select>
 
-          <Button variant="bordered" startContent={<RefreshCwIcon className="w-4 h-4" />} onPress={onRefresh}>
+          <Button
+            startContent={<RefreshCwIcon className="w-4 h-4" />}
+            variant="bordered"
+            onPress={onRefresh}
+          >
             Refresh
           </Button>
 
@@ -111,7 +127,12 @@ export default function TopContent({
                 </DropdownItem>
               ) : null}
               {onDeleteSelected ? (
-                <DropdownItem key="delete" className="text-danger" color="danger" onPress={onDeleteSelected}>
+                <DropdownItem
+                  key="delete"
+                  className="text-danger"
+                  color="danger"
+                  onPress={onDeleteSelected}
+                >
                   Delete Selected
                 </DropdownItem>
               ) : null}

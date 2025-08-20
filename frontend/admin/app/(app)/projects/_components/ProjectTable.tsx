@@ -1,17 +1,27 @@
-import { Project, ProjectStatus } from "@/types/project";
-import { SortDescriptor, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@heroui/react";
-import { Key, useCallback, useMemo, useState } from "react";
-import ProjectCellRenderer from "./ProjectCellRenderer";
-import TopContent from "./TopContent";
-import BottomContent from "./BottomContent";
+import {
+  SortDescriptor,
+  Table,
+  TableBody,
+  TableCell,
+  TableColumn,
+  TableHeader,
+  TableRow,
+} from '@heroui/react';
+import { Key, useCallback, useMemo, useState } from 'react';
+
+import ProjectCellRenderer from './ProjectCellRenderer';
+import TopContent from './TopContent';
+import BottomContent from './BottomContent';
+
+import { Project, ProjectStatus } from '@/types/project';
 
 const COLUMNS = [
-  { name: "PROJECT", uid: "project", allowsSorting: false },
-  { name: "TIMELINE", uid: "timeline", allowsSorting: true },
-  { name: "TEAM", uid: "team", allowsSorting: false },
-  { name: "STATUS", uid: "status", allowsSorting: true },
-  { name: "CATEGORY", uid: "category", allowsSorting: true },
-  { name: "ACTIONS", uid: "actions", allowsSorting: false },
+  { name: 'PROJECT', uid: 'project', allowsSorting: false },
+  { name: 'TIMELINE', uid: 'timeline', allowsSorting: true },
+  { name: 'TEAM', uid: 'team', allowsSorting: false },
+  { name: 'STATUS', uid: 'status', allowsSorting: true },
+  { name: 'CATEGORY', uid: 'category', allowsSorting: true },
+  { name: 'ACTIONS', uid: 'actions', allowsSorting: false },
 ];
 
 type ProjectTableProps = {
@@ -21,17 +31,17 @@ type ProjectTableProps = {
   onRefresh?: () => void;
 };
 
-export default function ProjectTable({ 
-  projects, 
-  onEdit, 
-  onDelete, 
-  onRefresh 
+export default function ProjectTable({
+  projects,
+  onEdit,
+  onDelete,
+  onRefresh,
 }: ProjectTableProps) {
-  const [filterValue, setFilterValue] = useState("");
+  const [filterValue, setFilterValue] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<ProjectStatus[]>([]);
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
-    column: "project",
-    direction: "ascending"
+    column: 'project',
+    direction: 'ascending',
   });
   const [page, setPage] = useState(1);
   const rowsPerPage = 10;
@@ -42,7 +52,7 @@ export default function ProjectTable({
   };
 
   const handleClear = () => {
-    setFilterValue("");
+    setFilterValue('');
     setPage(1);
   };
 
@@ -57,19 +67,19 @@ export default function ProjectTable({
 
     if (!!filterValue) {
       filteredProjects = projects.filter(
-        (project) =>
+        project =>
           project.name.toLowerCase().includes(query) ||
           project.description.toLowerCase().includes(query) ||
           project.category?.toLowerCase().includes(query) ||
           project.client?.toLowerCase().includes(query) ||
-          project.location?.toLowerCase().includes(query)
+          project.location?.toLowerCase().includes(query),
       );
     }
 
     // Filter by status
     if (selectedStatus.length > 0) {
       filteredProjects = filteredProjects.filter(project =>
-        selectedStatus.includes(project.status)
+        selectedStatus.includes(project.status),
       );
     }
 
@@ -81,21 +91,23 @@ export default function ProjectTable({
 
     if (sortDescriptor.column && sortDescriptor.direction) {
       sortedItems.sort((a, b) => {
-        const direction = sortDescriptor.direction === "ascending" ? 1 : -1;
+        const direction = sortDescriptor.direction === 'ascending' ? 1 : -1;
 
-        if (sortDescriptor.column === "status") {
+        if (sortDescriptor.column === 'status') {
           return a.status.localeCompare(b.status) * direction;
         }
 
-        if (sortDescriptor.column === "category") {
+        if (sortDescriptor.column === 'category') {
           const aCategory = a.category || '';
           const bCategory = b.category || '';
+
           return aCategory.localeCompare(bCategory) * direction;
         }
 
-        if (sortDescriptor.column === "timeline") {
+        if (sortDescriptor.column === 'timeline') {
           const aDate = new Date(a.timeline.startDate).getTime();
           const bDate = new Date(b.timeline.startDate).getTime();
+
           return (aDate - bDate) * direction;
         }
 
@@ -105,6 +117,7 @@ export default function ProjectTable({
 
     const start = (page - 1) * rowsPerPage;
     const end = start + rowsPerPage;
+
     return sortedItems.slice(start, end);
   }, [page, filteredItems, sortDescriptor]);
 
@@ -114,57 +127,57 @@ export default function ProjectTable({
     (project: Project, columnKey: Key) => {
       return (
         <ProjectCellRenderer
-          project={project}
           columnKey={columnKey}
-          onEdit={onEdit}
+          project={project}
           onDelete={onDelete}
+          onEdit={onEdit}
         />
       );
     },
-    [onEdit, onDelete]
+    [onEdit, onDelete],
   );
 
   return (
     <Table
       isHeaderSticky
       aria-label="Projects Table"
-      sortDescriptor={sortDescriptor}
-      onSortChange={setSortDescriptor}
-      topContentPlacement="outside"
-      topContent={
-        <TopContent
-          filterValue={filterValue}
-          onClear={handleClear}
-          onSearchChange={handleSearch}
-          selectedStatus={selectedStatus}
-          onStatusChange={handleStatusChange}
-          onRefresh={onRefresh || (() => {})}
-        />
-      }
-      bottomContentPlacement="outside"
       bottomContent={
         <BottomContent
+          currentPage={page}
           page={page}
           pages={pages}
           setPage={setPage}
           totalProjects={filteredItems.length}
-          currentPage={page}
         />
       }
+      bottomContentPlacement="outside"
       classNames={{
-        wrapper: "shadow-none",
-        table: "min-h-[400px]",
-        thead: "bg-white sticky top-0 z-10 shadow-sm",
-        th: "text-default-700 font-semibold text-xs uppercase tracking-wide",
-        tr: "hover:bg-default-50 transition-colors",
-        td: "py-4",
+        wrapper: 'shadow-none',
+        table: 'min-h-[400px]',
+        thead: 'bg-white sticky top-0 z-10 shadow-sm',
+        th: 'text-default-700 font-semibold text-xs uppercase tracking-wide',
+        tr: 'hover:bg-default-50 transition-colors',
+        td: 'py-4',
       }}
+      sortDescriptor={sortDescriptor}
+      topContent={
+        <TopContent
+          filterValue={filterValue}
+          selectedStatus={selectedStatus}
+          onClear={handleClear}
+          onRefresh={onRefresh || (() => {})}
+          onSearchChange={handleSearch}
+          onStatusChange={handleStatusChange}
+        />
+      }
+      topContentPlacement="outside"
+      onSortChange={setSortDescriptor}
     >
       <TableHeader columns={COLUMNS}>
-        {(column) => (
+        {column => (
           <TableColumn
             key={column.uid}
-            align={column.uid === "actions" ? "center" : "start"}
+            align={column.uid === 'actions' ? 'center' : 'start'}
             allowsSorting={column.allowsSorting}
           >
             {column.name}
@@ -184,7 +197,7 @@ export default function ProjectTable({
             key={project.id}
             className="hover:bg-default-50 transition-colors"
           >
-            {(columnKey) => (
+            {columnKey => (
               <TableCell className={`${columnKey.toString()} py-4`}>
                 {renderCell(project, columnKey)}
               </TableCell>

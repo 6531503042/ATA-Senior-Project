@@ -1,16 +1,29 @@
-import { Question } from "@/types/question";
-import { Key } from "react";
-import { Chip, Button, Checkbox } from "@heroui/react";
-import { EditIcon, TrashIcon, MessageSquareIcon, CheckCircleIcon, StarIcon, ToggleLeftIcon } from "lucide-react";
-import { formatQuestionType, formatCategory, getQuestionTypeColor, getCategoryColor } from "@/services/questionService";
+import { Key } from 'react';
+import { Chip, Button, Checkbox } from '@heroui/react';
+import {
+  EditIcon,
+  TrashIcon,
+  MessageSquareIcon,
+  CheckCircleIcon,
+  StarIcon,
+  ToggleLeftIcon,
+} from 'lucide-react';
+
+import { Question } from '@/types/question';
+import {
+  formatQuestionType,
+  formatCategory,
+  getQuestionTypeColor,
+  getCategoryColor,
+} from '@/services/questionService';
 
 export type QuestionColumnKey =
-  | "question"
-  | "type"
-  | "category"
-  | "required"
-  | "status"
-  | "actions";
+  | 'question'
+  | 'type'
+  | 'category'
+  | 'required'
+  | 'status'
+  | 'actions';
 
 type QuestionCellRendererProps = {
   question: Question;
@@ -43,7 +56,7 @@ export default function QuestionCellRenderer({
   };
 
   switch (columnKey) {
-    case "question":
+    case 'question':
       return (
         <div className="flex items-start gap-3 group">
           <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
@@ -63,7 +76,10 @@ export default function QuestionCellRenderer({
                 <p className="text-xs text-default-400 mb-1">Options:</p>
                 <div className="flex flex-wrap gap-1">
                   {question.options.slice(0, 3).map((option, index) => (
-                    <span key={option.id} className="text-xs bg-default-100 px-2 py-1 rounded-md">
+                    <span
+                      key={option.id}
+                      className="text-xs bg-default-100 px-2 py-1 rounded-md"
+                    >
                       {option.text}
                     </span>
                   ))}
@@ -79,84 +95,84 @@ export default function QuestionCellRenderer({
         </div>
       );
 
-    case "type":
+    case 'type':
       return (
         <div className="flex items-center gap-2">
           <div className="p-2 rounded-lg shadow-sm">
             {getTypeIcon(question.type)}
           </div>
           <Chip
-            size="sm"
-            color={getQuestionTypeColor(question.type) as any}
-            variant="flat"
             className="font-medium capitalize shadow-sm"
+            color={getQuestionTypeColor(question.type) as any}
+            size="sm"
+            variant="flat"
           >
             {formatQuestionType(question.type)}
           </Chip>
         </div>
       );
 
-    case "category":
+    case 'category':
       return (
         <div className="flex items-center gap-2">
           <div className="p-2 rounded-lg shadow-sm">
             <MessageSquareIcon className="w-4 h-4 text-blue-500" />
           </div>
           <Chip
-            size="sm"
-            color={getCategoryColor(question.category) as any}
-            variant="flat"
             className="font-medium capitalize shadow-sm"
+            color={getCategoryColor(question.category) as any}
+            size="sm"
+            variant="flat"
           >
             {formatCategory(question.category)}
           </Chip>
         </div>
       );
 
-    case "required":
+    case 'required':
       return (
         <div className="flex items-center gap-2">
           <Checkbox
-            isSelected={question.required}
             isReadOnly
             color="primary"
+            isSelected={question.required}
             size="sm"
           />
           <span className="text-sm font-medium text-default-700">
-            {question.required ? "Required" : "Optional"}
+            {question.required ? 'Required' : 'Optional'}
           </span>
         </div>
       );
 
-    case "status":
+    case 'status':
       return (
         <Chip
-          size="sm"
-          color={question.isActive ? "success" : "default"}
-          variant="flat"
           className="font-medium capitalize shadow-sm"
+          color={question.isActive ? 'success' : 'default'}
+          size="sm"
+          variant="flat"
         >
-          {question.isActive ? "Active" : "Inactive"}
+          {question.isActive ? 'Active' : 'Inactive'}
         </Chip>
       );
 
-    case "actions":
+    case 'actions':
       return (
         <div className="flex items-center gap-2">
           <Button
             isIconOnly
+            className="text-default-400 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 shadow-sm hover:shadow-md"
             size="sm"
             variant="light"
-            className="text-default-400 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 shadow-sm hover:shadow-md"
             onPress={() => onEdit?.(question)}
           >
             <EditIcon className="w-4 h-4" />
           </Button>
           <Button
             isIconOnly
+            className="text-default-400 hover:text-red-600 hover:bg-red-50 transition-all duration-200 shadow-sm hover:shadow-md"
             size="sm"
             variant="light"
-            className="text-default-400 hover:text-red-600 hover:bg-red-50 transition-all duration-200 shadow-sm hover:shadow-md"
             onPress={() => onDelete?.(question.id)}
           >
             <TrashIcon className="w-4 h-4" />

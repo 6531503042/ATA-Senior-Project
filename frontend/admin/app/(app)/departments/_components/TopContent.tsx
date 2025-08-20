@@ -1,5 +1,19 @@
-import { Input, Select, SelectItem, Button, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@heroui/react";
-import { SearchIcon, RefreshCwIcon, EllipsisVertical, PlusIcon } from "lucide-react";
+import {
+  Input,
+  Select,
+  SelectItem,
+  Button,
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+} from '@heroui/react';
+import {
+  SearchIcon,
+  RefreshCwIcon,
+  EllipsisVertical,
+  PlusIcon,
+} from 'lucide-react';
 
 type TopContentProps = {
   filterValue: string;
@@ -23,8 +37,8 @@ export default function TopContent({
   onDeleteSelected,
 }: TopContentProps) {
   const statusOptions = [
-    { key: "active", label: "Active" },
-    { key: "inactive", label: "Inactive" },
+    { key: 'active', label: 'Active' },
+    { key: 'inactive', label: 'Inactive' },
   ];
 
   return (
@@ -37,32 +51,33 @@ export default function TopContent({
             placeholder="Search departments..."
             startContent={<SearchIcon className="w-4 h-4 text-default-400" />}
             value={filterValue}
+            variant="bordered"
             onClear={onClear}
             onValueChange={onSearchChange}
-            variant="bordered"
           />
         </div>
 
         <div className="flex items-end gap-3">
           <Select
+            className="w-[180px]"
             label="Status"
             placeholder="All status"
             selectedKeys={selectedStatus ? new Set(selectedStatus) : new Set()}
-            onSelectionChange={(keys) => {
+            selectionMode="multiple"
+            onSelectionChange={keys => {
               const selected = Array.from(keys) as string[];
+
               onStatusChange(selected);
             }}
-            selectionMode="multiple"
-            className="w-[180px]"
           >
-            {statusOptions.map((status) => (
+            {statusOptions.map(status => (
               <SelectItem key={status.key}>{status.label}</SelectItem>
             ))}
           </Select>
 
           <Button
-            variant="bordered"
             startContent={<RefreshCwIcon className="w-4 h-4" />}
+            variant="bordered"
             onPress={onRefresh}
           >
             Refresh
@@ -89,7 +104,11 @@ export default function TopContent({
           </Dropdown>
 
           {onAdd ? (
-            <Button color="primary" onPress={onAdd} startContent={<PlusIcon className="w-4 h-4" />}>
+            <Button
+              color="primary"
+              startContent={<PlusIcon className="w-4 h-4" />}
+              onPress={onAdd}
+            >
               Add Department
             </Button>
           ) : null}

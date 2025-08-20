@@ -1,8 +1,18 @@
-"use client";
+'use client';
 
-import { Input, Select, SelectItem, Button, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@heroui/react";
-import { SearchIcon, RefreshCwIcon, EllipsisVertical } from "lucide-react";
-import type { SubmissionPrivacy, SubmissionStatus } from "@/types/submission";
+import type { SubmissionPrivacy, SubmissionStatus } from '@/types/submission';
+
+import {
+  Input,
+  Select,
+  SelectItem,
+  Button,
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+} from '@heroui/react';
+import { SearchIcon, RefreshCwIcon, EllipsisVertical } from 'lucide-react';
 
 type Props = {
   query: string;
@@ -15,16 +25,25 @@ type Props = {
   onRefresh: () => void;
 };
 
-export default function TopContent({ query, onQueryChange, onClear, privacy, onPrivacyChange, status, onStatusChange, onRefresh }: Props) {
+export default function TopContent({
+  query,
+  onQueryChange,
+  onClear,
+  privacy,
+  onPrivacyChange,
+  status,
+  onStatusChange,
+  onRefresh,
+}: Props) {
   const privacyOptions: { key: SubmissionPrivacy; label: string }[] = [
-    { key: "PUBLIC", label: "Public" },
-    { key: "ANONYMOUS", label: "Anonymous" },
+    { key: 'PUBLIC', label: 'Public' },
+    { key: 'ANONYMOUS', label: 'Anonymous' },
   ];
 
   const statusOptions: { key: SubmissionStatus; label: string }[] = [
-    { key: "analyzed", label: "Analyzed" },
-    { key: "pending", label: "Pending" },
-    { key: "error", label: "Error" },
+    { key: 'analyzed', label: 'Analyzed' },
+    { key: 'pending', label: 'Pending' },
+    { key: 'error', label: 'Error' },
   ];
 
   return (
@@ -37,40 +56,49 @@ export default function TopContent({ query, onQueryChange, onClear, privacy, onP
             placeholder="Search submissions..."
             startContent={<SearchIcon className="w-4 h-4 text-default-400" />}
             value={query}
+            variant="bordered"
             onClear={onClear}
             onValueChange={onQueryChange}
-            variant="bordered"
           />
         </div>
 
         <div className="flex items-end gap-3">
           <Select
+            className="w-[180px]"
             label="Privacy"
             placeholder="All privacy"
             selectedKeys={new Set(privacy)}
-            onSelectionChange={(keys) => onPrivacyChange(Array.from(keys) as SubmissionPrivacy[])}
             selectionMode="multiple"
-            className="w-[180px]"
+            onSelectionChange={keys =>
+              onPrivacyChange(Array.from(keys) as SubmissionPrivacy[])
+            }
           >
-            {privacyOptions.map((p) => (
+            {privacyOptions.map(p => (
               <SelectItem key={p.key}>{p.label}</SelectItem>
             ))}
           </Select>
 
           <Select
+            className="w-[180px]"
             label="Status"
             placeholder="All status"
             selectedKeys={new Set(status)}
-            onSelectionChange={(keys) => onStatusChange(Array.from(keys) as SubmissionStatus[])}
             selectionMode="multiple"
-            className="w-[180px]"
+            onSelectionChange={keys =>
+              onStatusChange(Array.from(keys) as SubmissionStatus[])
+            }
           >
-            {statusOptions.map((s) => (
+            {statusOptions.map(s => (
               <SelectItem key={s.key}>{s.label}</SelectItem>
             ))}
           </Select>
 
-          <Button color="primary" variant="flat" startContent={<RefreshCwIcon className="w-4 h-4" />} onPress={onRefresh}>
+          <Button
+            color="primary"
+            startContent={<RefreshCwIcon className="w-4 h-4" />}
+            variant="flat"
+            onPress={onRefresh}
+          >
             Refresh
           </Button>
 
@@ -90,5 +118,3 @@ export default function TopContent({ query, onQueryChange, onClear, privacy, onP
     </div>
   );
 }
-
-

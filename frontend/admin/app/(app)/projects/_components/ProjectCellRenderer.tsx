@@ -1,15 +1,16 @@
-import { Project } from "@/types/project";
-import { Key } from "react";
-import { Avatar, AvatarGroup, Chip, Button } from "@heroui/react";
-import { CalendarIcon, TagIcon, MapPinIcon, EditIcon, TrashIcon } from "lucide-react";
+import { Key } from 'react';
+import { Avatar, AvatarGroup, Chip, Button } from '@heroui/react';
+import { CalendarIcon, TagIcon, EditIcon, TrashIcon } from 'lucide-react';
+
+import { Project } from '@/types/project';
 
 export type ProjectColumnKey =
-  | "project"
-  | "timeline"
-  | "team"
-  | "status"
-  | "category"
-  | "actions";
+  | 'project'
+  | 'timeline'
+  | 'team'
+  | 'status'
+  | 'category'
+  | 'actions';
 
 type ProjectCellRendererProps = {
   project: Project;
@@ -43,12 +44,12 @@ export default function ProjectCellRenderer({
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
-      day: 'numeric'
+      day: 'numeric',
     });
   };
 
   switch (columnKey) {
-    case "project":
+    case 'project':
       return (
         <div className="flex items-start gap-3 group">
           <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
@@ -66,27 +67,33 @@ export default function ProjectCellRenderer({
                 <div className="p-1 rounded-md bg-gradient-to-r from-blue-50 to-indigo-50">
                   <TagIcon className="w-3 h-3 text-blue-500" />
                 </div>
-                <span className="text-xs text-blue-600 font-medium">{project.category}</span>
+                <span className="text-xs text-blue-600 font-medium">
+                  {project.category}
+                </span>
               </div>
             )}
           </div>
         </div>
       );
 
-    case "timeline":
+    case 'timeline':
       return (
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-xs text-default-600">
             <div className="p-1 rounded-md bg-gradient-to-r from-green-50 to-emerald-50">
               <CalendarIcon className="w-3 h-3 text-green-500" />
             </div>
-            <span className="font-medium">Start: {formatDate(project.timeline.startDate)}</span>
+            <span className="font-medium">
+              Start: {formatDate(project.timeline.startDate)}
+            </span>
           </div>
           <div className="flex items-center gap-2 text-xs text-default-600">
             <div className="p-1 rounded-md bg-gradient-to-r from-orange-50 to-amber-50">
               <CalendarIcon className="w-3 h-3 text-orange-500" />
             </div>
-            <span className="font-medium">End: {formatDate(project.timeline.endDate)}</span>
+            <span className="font-medium">
+              End: {formatDate(project.timeline.endDate)}
+            </span>
           </div>
           {project.timeline.duration && (
             <div className="text-xs text-default-500 bg-gradient-to-r from-purple-50 to-violet-50 px-2 py-1 rounded-md inline-block">
@@ -96,24 +103,25 @@ export default function ProjectCellRenderer({
         </div>
       );
 
-    case "team":
+    case 'team':
       return (
         <div className="flex items-center gap-3">
           {project.team.length > 0 ? (
             <>
-              <AvatarGroup size="sm" max={3} className="shadow-md">
-                {project.team.map((member) => (
+              <AvatarGroup className="shadow-md" max={3} size="sm">
+                {project.team.map(member => (
                   <Avatar
                     key={member.id}
-                    src={member.avatar}
-                    name={member.name}
                     className="w-8 h-8 shadow-sm border-2 border-white"
+                    name={member.name}
+                    src={member.avatar}
                   />
                 ))}
               </AvatarGroup>
               <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-3 py-1 rounded-full">
                 <span className="text-xs font-medium text-blue-600">
-                  {project.team.length} member{project.team.length !== 1 ? 's' : ''}
+                  {project.team.length} member
+                  {project.team.length !== 1 ? 's' : ''}
                 </span>
               </div>
             </>
@@ -125,19 +133,19 @@ export default function ProjectCellRenderer({
         </div>
       );
 
-    case "status":
+    case 'status':
       return (
         <Chip
-          size="sm"
-          color={getStatusColor(project.status)}
-          variant="flat"
           className="font-medium capitalize shadow-md hover:shadow-lg transition-all duration-200"
+          color={getStatusColor(project.status)}
+          size="sm"
+          variant="flat"
         >
           {project.status}
         </Chip>
       );
 
-    case "category":
+    case 'category':
       return (
         <div className="flex items-center gap-2">
           <div className="p-2 rounded-lg bg-gradient-to-r from-purple-50 to-violet-50 shadow-sm">
@@ -149,23 +157,23 @@ export default function ProjectCellRenderer({
         </div>
       );
 
-    case "actions":
+    case 'actions':
       return (
         <div className="flex items-center gap-2">
           <Button
             isIconOnly
+            className="text-default-400 hover:text-blue-600 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200 shadow-sm hover:shadow-md"
             size="sm"
             variant="light"
-            className="text-default-400 hover:text-blue-600 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200 shadow-sm hover:shadow-md"
             onPress={() => onEdit?.(project)}
           >
             <EditIcon className="w-4 h-4" />
           </Button>
           <Button
             isIconOnly
+            className="text-default-400 hover:text-red-600 hover:bg-gradient-to-r hover:from-red-50 hover:to-pink-50 transition-all duration-200 shadow-sm hover:shadow-md"
             size="sm"
             variant="light"
-            className="text-default-400 hover:text-red-600 hover:bg-gradient-to-r hover:from-red-50 hover:to-pink-50 transition-all duration-200 shadow-sm hover:shadow-md"
             onPress={() => onDelete?.(project.id)}
           >
             <TrashIcon className="w-4 h-4" />

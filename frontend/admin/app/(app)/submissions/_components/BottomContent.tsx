@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { Pagination } from "@heroui/react";
+import { Pagination } from '@heroui/react';
 
 type Props = {
   page: number;
@@ -9,13 +9,23 @@ type Props = {
   onPageChange: (p: number) => void;
 };
 
-export default function BottomContent({ page, rowsPerPage, total, onPageChange }: Props) {
+export default function BottomContent({
+  page,
+  rowsPerPage,
+  total,
+  onPageChange,
+}: Props) {
   const pages = Math.max(1, Math.ceil(total / rowsPerPage));
+
   return (
     <div className="flex w-full items-center justify-center py-3">
-      <Pagination isCompact showShadow page={page} total={pages} onChange={onPageChange} />
+      <Pagination
+        isCompact
+        showShadow
+        page={page}
+        total={pages}
+        onChange={onPageChange}
+      />
     </div>
   );
 }
-
-

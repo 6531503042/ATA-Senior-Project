@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   SortDescriptor,
@@ -8,27 +8,28 @@ import {
   TableColumn,
   TableHeader,
   TableRow,
-} from "@heroui/react";
-import { Key, useCallback, useMemo, useState } from "react";
-import DepartmentCellRenderer from "./DepartmentCellRenderer";
-import TopContent from "./TopContent";
+} from '@heroui/react';
+import { Key, useCallback, useMemo, useState } from 'react';
+
+import DepartmentCellRenderer from './DepartmentCellRenderer';
+import TopContent from './TopContent';
 
 export type Department = {
   id: string;
   name: string;
   manager: string;
   employeeCount: number;
-  status: "active" | "inactive";
+  status: 'active' | 'inactive';
   createdAt: string;
 };
 
 const COLUMNS = [
-  { name: "NAME", uid: "name", allowsSorting: true },
-  { name: "MANAGER", uid: "manager", allowsSorting: true },
-  { name: "EMPLOYEES", uid: "employeeCount", allowsSorting: true },
-  { name: "STATUS", uid: "status", allowsSorting: true },
-  { name: "CREATED AT", uid: "createdAt", allowsSorting: true },
-  { name: "ACTIONS", uid: "actions", allowsSorting: false },
+  { name: 'NAME', uid: 'name', allowsSorting: true },
+  { name: 'MANAGER', uid: 'manager', allowsSorting: true },
+  { name: 'EMPLOYEES', uid: 'employeeCount', allowsSorting: true },
+  { name: 'STATUS', uid: 'status', allowsSorting: true },
+  { name: 'CREATED AT', uid: 'createdAt', allowsSorting: true },
+  { name: 'ACTIONS', uid: 'actions', allowsSorting: false },
 ];
 
 type DepartmentsTableProps = {
@@ -46,10 +47,10 @@ export default function DepartmentsTable({
   onView,
   onRefresh,
 }: DepartmentsTableProps) {
-  const [filterValue, setFilterValue] = useState("");
+  const [filterValue, setFilterValue] = useState('');
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
-    column: "name",
-    direction: "ascending",
+    column: 'name',
+    direction: 'ascending',
   });
   const [page, setPage] = useState(1);
   const rowsPerPage = 10;
@@ -60,7 +61,7 @@ export default function DepartmentsTable({
   };
 
   const handleClear = () => {
-    setFilterValue("");
+    setFilterValue('');
     setPage(1);
   };
 
@@ -70,10 +71,10 @@ export default function DepartmentsTable({
 
     if (filterValue) {
       filtered = filtered.filter(
-        (dept) =>
+        dept =>
           dept.name.toLowerCase().includes(query) ||
           dept.manager.toLowerCase().includes(query) ||
-          dept.status.toLowerCase().includes(query)
+          dept.status.toLowerCase().includes(query),
       );
     }
 
@@ -82,31 +83,39 @@ export default function DepartmentsTable({
 
   const departmentItems = useMemo(() => {
     const sortedItems = [...filteredItems];
-    const direction = sortDescriptor.direction === "ascending" ? 1 : -1;
+    const direction = sortDescriptor.direction === 'ascending' ? 1 : -1;
 
     switch (sortDescriptor.column) {
-      case "name":
+      case 'name':
         sortedItems.sort((a, b) => a.name.localeCompare(b.name) * direction);
         break;
-      case "manager":
-        sortedItems.sort((a, b) => a.manager.localeCompare(b.manager) * direction);
+      case 'manager':
+        sortedItems.sort(
+          (a, b) => a.manager.localeCompare(b.manager) * direction,
+        );
         break;
-      case "employeeCount":
-        sortedItems.sort((a, b) => (a.employeeCount - b.employeeCount) * direction);
+      case 'employeeCount':
+        sortedItems.sort(
+          (a, b) => (a.employeeCount - b.employeeCount) * direction,
+        );
         break;
-      case "status":
-        sortedItems.sort((a, b) => a.status.localeCompare(b.status) * direction);
+      case 'status':
+        sortedItems.sort(
+          (a, b) => a.status.localeCompare(b.status) * direction,
+        );
         break;
-      case "createdAt":
+      case 'createdAt':
         sortedItems.sort((a, b) => {
           const aDate = new Date(a.createdAt).getTime();
           const bDate = new Date(b.createdAt).getTime();
+
           return (aDate - bDate) * direction;
         });
         break;
     }
 
     const start = (page - 1) * rowsPerPage;
+
     return sortedItems.slice(start, start + rowsPerPage);
   }, [filteredItems, sortDescriptor, page]);
 
@@ -115,35 +124,35 @@ export default function DepartmentsTable({
   const renderCell = useCallback(
     (department: Department, columnKey: Key) => (
       <DepartmentCellRenderer
-        department={department}
         columnKey={columnKey}
-        onEdit={onEdit}
+        department={department}
         onDelete={onDelete}
+        onEdit={onEdit}
         onView={onView}
       />
     ),
-    [onEdit, onDelete, onView]
+    [onEdit, onDelete, onView],
   );
 
   return (
     <Table
       aria-label="Departments Table"
       sortDescriptor={sortDescriptor}
-      onSortChange={setSortDescriptor}
       topContent={
         <TopContent
           filterValue={filterValue}
-          onClear={handleClear}
-          onSearchChange={handleSearch}
-          onRefresh={onRefresh || (() => {})}
           selectedStatus={[]}
+          onClear={handleClear}
+          onRefresh={onRefresh || (() => {})}
+          onSearchChange={handleSearch}
           onStatusChange={() => {}}
         />
       }
       topContentPlacement="outside"
+      onSortChange={setSortDescriptor}
     >
       <TableHeader columns={COLUMNS}>
-        {(column) => (
+        {column => (
           <TableColumn key={column.uid} allowsSorting={column.allowsSorting}>
             {column.name}
           </TableColumn>
@@ -152,7 +161,7 @@ export default function DepartmentsTable({
       <TableBody emptyContent="No departments found" items={departmentItems}>
         {(dept: Department) => (
           <TableRow key={dept.id}>
-            {(columnKey) => <TableCell>{renderCell(dept, columnKey)}</TableCell>}
+            {columnKey => <TableCell>{renderCell(dept, columnKey)}</TableCell>}
           </TableRow>
         )}
       </TableBody>

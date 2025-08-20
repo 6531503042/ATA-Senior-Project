@@ -1,14 +1,16 @@
-"use client";
+'use client';
 
-import { Card, CardBody } from "@heroui/react";
-import { 
-  FolderIcon, 
-  FileTextIcon, 
-  UsersIcon, 
-  CheckCircleIcon 
-} from "lucide-react";
-import type { DashboardOverview } from "@/types/dashboard";
-import { getOverviewStatsConfig } from "@/services/dataService";
+import type { DashboardOverview } from '@/types/dashboard';
+
+import { Card, CardBody } from '@heroui/react';
+import {
+  FolderIcon,
+  FileTextIcon,
+  UsersIcon,
+  CheckCircleIcon,
+} from 'lucide-react';
+
+import { getOverviewStatsConfig } from '@/services/dataService';
 
 interface DashboardOverviewProps {
   data: DashboardOverview;
@@ -19,25 +21,25 @@ const iconMap = {
   FolderIcon,
   FileTextIcon,
   UsersIcon,
-  CheckCircleIcon
+  CheckCircleIcon,
 };
 
 export function DashboardOverview({ data }: DashboardOverviewProps) {
   const statsConfig = getOverviewStatsConfig();
-  
+
   const stats = statsConfig.map(config => {
     const IconComponent = iconMap[config.icon as keyof typeof iconMap];
     const rawValue = data[config.key as keyof DashboardOverview] as number;
     const value = config.isPercentage ? `${rawValue}%` : rawValue;
     const growth = data[config.growthKey as keyof DashboardOverview] as string;
-    
+
     return {
       title: config.title,
       value,
       growth,
       icon: IconComponent,
       color: config.color,
-      textColor: config.textColor
+      textColor: config.textColor,
     };
   });
 
@@ -67,4 +69,4 @@ export function DashboardOverview({ data }: DashboardOverviewProps) {
       ))}
     </div>
   );
-} 
+}

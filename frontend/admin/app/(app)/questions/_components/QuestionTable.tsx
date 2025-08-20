@@ -1,18 +1,27 @@
-import { Question, QuestionType, QuestionCategory } from "@/types/question";
-import { SortDescriptor, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@heroui/react";
-import { Key, useCallback, useMemo, useState } from "react";
-import QuestionCellRenderer from "./QuestionCellRenderer";
-import TopContent from "./TopContent";
-import BottomContent from "./BottomContent";
-import { MessageSquareIcon } from "lucide-react";
+import {
+  SortDescriptor,
+  Table,
+  TableBody,
+  TableCell,
+  TableColumn,
+  TableHeader,
+  TableRow,
+} from '@heroui/react';
+import { Key, useCallback, useMemo, useState } from 'react';
+
+import QuestionCellRenderer from './QuestionCellRenderer';
+import TopContent from './TopContent';
+import BottomContent from './BottomContent';
+
+import { Question, QuestionType, QuestionCategory } from '@/types/question';
 
 const COLUMNS = [
-  { name: "QUESTION", uid: "question", allowsSorting: false },
-  { name: "TYPE", uid: "type", allowsSorting: true },
-  { name: "CATEGORY", uid: "category", allowsSorting: true },
-  { name: "REQUIRED", uid: "required", allowsSorting: true },
-  { name: "STATUS", uid: "status", allowsSorting: true },
-  { name: "ACTIONS", uid: "actions", allowsSorting: false },
+  { name: 'QUESTION', uid: 'question', allowsSorting: false },
+  { name: 'TYPE', uid: 'type', allowsSorting: true },
+  { name: 'CATEGORY', uid: 'category', allowsSorting: true },
+  { name: 'REQUIRED', uid: 'required', allowsSorting: true },
+  { name: 'STATUS', uid: 'status', allowsSorting: true },
+  { name: 'ACTIONS', uid: 'actions', allowsSorting: false },
 ];
 
 type QuestionTableProps = {
@@ -22,18 +31,20 @@ type QuestionTableProps = {
   onRefresh?: () => void;
 };
 
-export default function QuestionTable({ 
-  questions, 
-  onEdit, 
-  onDelete, 
-  onRefresh 
+export default function QuestionTable({
+  questions,
+  onEdit,
+  onDelete,
+  onRefresh,
 }: QuestionTableProps) {
-  const [filterValue, setFilterValue] = useState("");
+  const [filterValue, setFilterValue] = useState('');
   const [selectedType, setSelectedType] = useState<QuestionType[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<QuestionCategory[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<QuestionCategory[]>(
+    [],
+  );
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
-    column: "question",
-    direction: "ascending"
+    column: 'question',
+    direction: 'ascending',
   });
   const [page, setPage] = useState(1);
   const rowsPerPage = 10;
@@ -44,7 +55,7 @@ export default function QuestionTable({
   };
 
   const handleClear = () => {
-    setFilterValue("");
+    setFilterValue('');
     setPage(1);
   };
 
@@ -64,24 +75,24 @@ export default function QuestionTable({
 
     if (!!filterValue) {
       filteredQuestions = questions.filter(
-        (question) =>
+        question =>
           question.title.toLowerCase().includes(query) ||
           question.description?.toLowerCase().includes(query) ||
-          question.category.toLowerCase().includes(query)
+          question.category.toLowerCase().includes(query),
       );
     }
 
     // Filter by type
     if (selectedType.length > 0) {
       filteredQuestions = filteredQuestions.filter(question =>
-        selectedType.includes(question.type)
+        selectedType.includes(question.type),
       );
     }
 
     // Filter by category
     if (selectedCategory.length > 0) {
       filteredQuestions = filteredQuestions.filter(question =>
-        selectedCategory.includes(question.category)
+        selectedCategory.includes(question.category),
       );
     }
 
@@ -93,22 +104,26 @@ export default function QuestionTable({
 
     if (sortDescriptor.column && sortDescriptor.direction) {
       sortedItems.sort((a, b) => {
-        const direction = sortDescriptor.direction === "ascending" ? 1 : -1;
+        const direction = sortDescriptor.direction === 'ascending' ? 1 : -1;
 
-        if (sortDescriptor.column === "type") {
+        if (sortDescriptor.column === 'type') {
           return a.type.localeCompare(b.type) * direction;
         }
 
-        if (sortDescriptor.column === "category") {
+        if (sortDescriptor.column === 'category') {
           return a.category.localeCompare(b.category) * direction;
         }
 
-        if (sortDescriptor.column === "required") {
-          return (a.required === b.required ? 0 : a.required ? 1 : -1) * direction;
+        if (sortDescriptor.column === 'required') {
+          return (
+            (a.required === b.required ? 0 : a.required ? 1 : -1) * direction
+          );
         }
 
-        if (sortDescriptor.column === "status") {
-          return (a.isActive === b.isActive ? 0 : a.isActive ? 1 : -1) * direction;
+        if (sortDescriptor.column === 'status') {
+          return (
+            (a.isActive === b.isActive ? 0 : a.isActive ? 1 : -1) * direction
+          );
         }
 
         return 0;
@@ -117,6 +132,7 @@ export default function QuestionTable({
 
     const start = (page - 1) * rowsPerPage;
     const end = start + rowsPerPage;
+
     return sortedItems.slice(start, end);
   }, [page, filteredItems, sortDescriptor]);
 
@@ -126,59 +142,59 @@ export default function QuestionTable({
     (question: Question, columnKey: Key) => {
       return (
         <QuestionCellRenderer
-          question={question}
           columnKey={columnKey}
-          onEdit={onEdit}
+          question={question}
           onDelete={onDelete}
+          onEdit={onEdit}
         />
       );
     },
-    [onEdit, onDelete]
+    [onEdit, onDelete],
   );
 
   return (
     <Table
       isHeaderSticky
       aria-label="Questions Table"
-      sortDescriptor={sortDescriptor}
-      onSortChange={setSortDescriptor}
-      topContentPlacement="outside"
-      topContent={
-        <TopContent
-          filterValue={filterValue}
-          onClear={handleClear}
-          onSearchChange={handleSearch}
-          selectedType={selectedType}
-          onTypeChange={handleTypeChange}
-          selectedCategory={selectedCategory}
-          onCategoryChange={handleCategoryChange}
-          onRefresh={onRefresh || (() => {})}
-        />
-      }
-      bottomContentPlacement="outside"
       bottomContent={
         <BottomContent
+          currentPage={page}
           page={page}
           pages={pages}
           setPage={setPage}
           totalQuestions={filteredItems.length}
-          currentPage={page}
         />
       }
+      bottomContentPlacement="outside"
       classNames={{
-        wrapper: "shadow-none",
-        table: "min-h-[400px]",
-        thead: "bg-white sticky top-0 z-10 shadow-sm",
-        th: "text-default-700 font-semibold text-xs uppercase tracking-wide",
-        tr: "hover:bg-default-50 transition-colors",
-        td: "py-4",
+        wrapper: 'shadow-none',
+        table: 'min-h-[400px]',
+        thead: 'bg-white sticky top-0 z-10 shadow-sm',
+        th: 'text-default-700 font-semibold text-xs uppercase tracking-wide',
+        tr: 'hover:bg-default-50 transition-colors',
+        td: 'py-4',
       }}
+      sortDescriptor={sortDescriptor}
+      topContent={
+        <TopContent
+          filterValue={filterValue}
+          selectedCategory={selectedCategory}
+          selectedType={selectedType}
+          onCategoryChange={handleCategoryChange}
+          onClear={handleClear}
+          onRefresh={onRefresh || (() => {})}
+          onSearchChange={handleSearch}
+          onTypeChange={handleTypeChange}
+        />
+      }
+      topContentPlacement="outside"
+      onSortChange={setSortDescriptor}
     >
       <TableHeader columns={COLUMNS}>
-        {(column) => (
+        {column => (
           <TableColumn
             key={column.uid}
-            align={column.uid === "actions" ? "center" : "start"}
+            align={column.uid === 'actions' ? 'center' : 'start'}
             allowsSorting={column.allowsSorting}
           >
             {column.name}
@@ -198,7 +214,7 @@ export default function QuestionTable({
             key={question.id}
             className="hover:bg-default-50 transition-colors"
           >
-            {(columnKey) => (
+            {columnKey => (
               <TableCell className={`${columnKey.toString()} py-4`}>
                 {renderCell(question, columnKey)}
               </TableCell>

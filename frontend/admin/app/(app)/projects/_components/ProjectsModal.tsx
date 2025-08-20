@@ -1,4 +1,11 @@
-"use client";
+'use client';
+
+import type {
+  Project,
+  CreateProjectRequest,
+  UpdateProjectRequest,
+  ProjectStatus,
+} from '@/types/project';
 
 import {
   Modal,
@@ -11,38 +18,43 @@ import {
   Textarea,
   Select,
   SelectItem,
-  Chip
-} from "@heroui/react";
-import { useState, useEffect } from "react";
-import { CalendarIcon, UsersIcon, PlusIcon, TagIcon, MapPinIcon } from "lucide-react";
-import type { Project, CreateProjectRequest, UpdateProjectRequest, ProjectStatus } from "@/types/project";
+  Chip,
+} from '@heroui/react';
+import { useState, useEffect } from 'react';
+import {
+  CalendarIcon,
+  UsersIcon,
+  PlusIcon,
+  TagIcon,
+  MapPinIcon,
+} from 'lucide-react';
 
 interface ProjectsModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (project: CreateProjectRequest | UpdateProjectRequest) => void;
   project?: Project;
-  mode: "create" | "edit";
+  mode: 'create' | 'edit';
 }
 
-export function ProjectsModal({ 
-  isOpen, 
-  onClose, 
-  onSubmit, 
-  project, 
-  mode 
+export function ProjectsModal({
+  isOpen,
+  onClose,
+  onSubmit,
+  project,
+  mode,
 }: ProjectsModalProps) {
   const [formData, setFormData] = useState<CreateProjectRequest>({
-    name: project?.name || "",
-    description: project?.description || "",
-    startDate: project?.timeline.startDate || "",
-    endDate: project?.timeline.endDate || "",
+    name: project?.name || '',
+    description: project?.description || '',
+    startDate: project?.timeline.startDate || '',
+    endDate: project?.timeline.endDate || '',
     teamMembers: project?.team.map(member => member.id) || [],
-    status: project?.status || "pending",
+    status: project?.status || 'pending',
     category: project?.category,
     tags: project?.tags,
     client: project?.client,
-    location: project?.location
+    location: project?.location,
   });
 
   // Reset form when modal opens/closes or project changes
@@ -58,16 +70,16 @@ export function ProjectsModal({
         category: project.category,
         tags: project.tags,
         client: project.client,
-        location: project.location
+        location: project.location,
       });
     } else if (isOpen && mode === 'create') {
       setFormData({
-        name: "",
-        description: "",
-        startDate: "",
-        endDate: "",
+        name: '',
+        description: '',
+        startDate: '',
+        endDate: '',
         teamMembers: [],
-        status: "pending"
+        status: 'pending',
       });
     }
   }, [isOpen, project, mode]);
@@ -76,12 +88,16 @@ export function ProjectsModal({
   useEffect(() => {
     if (isOpen) {
       // Calculate scrollbar width
-      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-      
+      const scrollbarWidth =
+        window.innerWidth - document.documentElement.clientWidth;
+
       // Add class to body and set scrollbar width
       document.body.classList.add('modal-open');
-      document.body.style.setProperty('--scrollbar-width', `${scrollbarWidth}px`);
-      
+      document.body.style.setProperty(
+        '--scrollbar-width',
+        `${scrollbarWidth}px`,
+      );
+
       return () => {
         document.body.classList.remove('modal-open');
         document.body.style.removeProperty('--scrollbar-width');
@@ -95,7 +111,7 @@ export function ProjectsModal({
     } else if (project) {
       onSubmit({
         id: project.id,
-        ...formData
+        ...formData,
       });
     }
     onClose();
@@ -106,14 +122,17 @@ export function ProjectsModal({
     // For now, we'll just add a placeholder
     setFormData(prev => ({
       ...prev,
-      teamMembers: [...prev.teamMembers, `member-${prev.teamMembers.length + 1}`]
+      teamMembers: [
+        ...prev.teamMembers,
+        `member-${prev.teamMembers.length + 1}`,
+      ],
     }));
   };
 
   const removeTeamMember = (index: number) => {
     setFormData(prev => ({
       ...prev,
-      teamMembers: prev.teamMembers.filter((_, i) => i !== index)
+      teamMembers: prev.teamMembers.filter((_, i) => i !== index),
     }));
   };
 
@@ -121,7 +140,7 @@ export function ProjectsModal({
     if (tag && !formData.tags?.includes(tag)) {
       setFormData(prev => ({
         ...prev,
-        tags: [...(prev.tags || []), tag]
+        tags: [...(prev.tags || []), tag],
       }));
     }
   };
@@ -129,22 +148,23 @@ export function ProjectsModal({
   const removeTag = (tagToRemove: string) => {
     setFormData(prev => ({
       ...prev,
-      tags: prev.tags?.filter(tag => tag !== tagToRemove) || []
+      tags: prev.tags?.filter(tag => tag !== tagToRemove) || [],
     }));
   };
 
   return (
-    <Modal 
-      isOpen={isOpen} 
-      onClose={onClose} 
-      size="3xl"
+    <Modal
       backdrop="blur"
-      scrollBehavior="inside"
-      placement="center"
+      className="mx-4"
+      classNames={{
+        backdrop: 'bg-black/50 backdrop-blur-sm',
+        wrapper: 'overflow-hidden',
+        base: 'overflow-hidden',
+      }}
+      hideCloseButton={false}
       isDismissable={false}
       isKeyboardDismissDisabled={false}
-      hideCloseButton={false}
-      className="mx-4"
+      isOpen={isOpen}
       motionProps={{
         variants: {
           enter: {
@@ -152,7 +172,7 @@ export function ProjectsModal({
             opacity: 1,
             transition: {
               duration: 0.3,
-              ease: "easeOut",
+              ease: 'easeOut',
             },
           },
           exit: {
@@ -160,16 +180,15 @@ export function ProjectsModal({
             opacity: 0,
             transition: {
               duration: 0.2,
-              ease: "easeIn",
+              ease: 'easeIn',
             },
           },
         },
       }}
-      classNames={{
-        backdrop: "bg-black/50 backdrop-blur-sm",
-        wrapper: "overflow-hidden",
-        base: "overflow-hidden",
-      }}
+      placement="center"
+      scrollBehavior="inside"
+      size="3xl"
+      onClose={onClose}
     >
       <ModalContent className="max-h-[90vh] overflow-hidden">
         <ModalHeader className="flex flex-col gap-1 border-b border-default-200 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
@@ -179,15 +198,17 @@ export function ProjectsModal({
             </div>
             <div>
               <h2 className="text-xl font-bold text-default-900">
-                {mode === "create" ? "Create New Project" : "Edit Project"}
+                {mode === 'create' ? 'Create New Project' : 'Edit Project'}
               </h2>
               <p className="text-sm text-default-600">
-                {mode === "create" ? "Fill in the details to create a new project" : "Update project information"}
+                {mode === 'create'
+                  ? 'Fill in the details to create a new project'
+                  : 'Update project information'}
               </p>
             </div>
           </div>
         </ModalHeader>
-        
+
         <ModalBody className="space-y-6 py-6 overflow-y-auto">
           {/* Project Name */}
           <div>
@@ -195,35 +216,41 @@ export function ProjectsModal({
               Project Name <span className="text-red-500">*</span>
             </label>
             <Input
-              placeholder="Enter a unique project name"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               isRequired
-              variant="bordered"
-              size="lg"
               className="w-full"
+              placeholder="Enter a unique project name"
+              size="lg"
+              value={formData.name}
+              variant="bordered"
+              onChange={e => setFormData({ ...formData, name: e.target.value })}
             />
-            <p className="text-xs text-default-500 mt-1">Enter a unique project name</p>
+            <p className="text-xs text-default-500 mt-1">
+              Enter a unique project name
+            </p>
           </div>
-          
+
           {/* Description */}
           <div>
             <label className="block text-sm font-medium text-default-700 mb-2">
               Description <span className="text-red-500">*</span>
             </label>
             <Textarea
+              isRequired
+              className="w-full"
+              maxRows={6}
+              minRows={4}
               placeholder="Enter project description"
               value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              minRows={4}
-              maxRows={6}
-              isRequired
               variant="bordered"
-              className="w-full"
+              onChange={e =>
+                setFormData({ ...formData, description: e.target.value })
+              }
             />
-            <p className="text-xs text-default-500 mt-1">Provide a detailed project description</p>
+            <p className="text-xs text-default-500 mt-1">
+              Provide a detailed project description
+            </p>
           </div>
-          
+
           {/* Start Date & End Date */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
@@ -231,30 +258,38 @@ export function ProjectsModal({
                 Start Date <span className="text-red-500">*</span>
               </label>
               <Input
-                type="date"
-                placeholder="Select start date"
-                value={formData.startDate}
-                onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
                 isRequired
-                variant="bordered"
                 className="w-full"
-                startContent={<CalendarIcon className="w-4 h-4 text-default-400" />}
+                placeholder="Select start date"
+                startContent={
+                  <CalendarIcon className="w-4 h-4 text-default-400" />
+                }
+                type="date"
+                value={formData.startDate}
+                variant="bordered"
+                onChange={e =>
+                  setFormData({ ...formData, startDate: e.target.value })
+                }
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-default-700 mb-2">
                 End Date <span className="text-red-500">*</span>
               </label>
               <Input
-                type="date"
-                placeholder="Select end date"
-                value={formData.endDate}
-                onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
                 isRequired
-                variant="bordered"
                 className="w-full"
-                startContent={<CalendarIcon className="w-4 h-4 text-default-400" />}
+                placeholder="Select end date"
+                startContent={
+                  <CalendarIcon className="w-4 h-4 text-default-400" />
+                }
+                type="date"
+                value={formData.endDate}
+                variant="bordered"
+                onChange={e =>
+                  setFormData({ ...formData, endDate: e.target.value })
+                }
               />
             </div>
           </div>
@@ -265,12 +300,17 @@ export function ProjectsModal({
               Status <span className="text-red-500">*</span>
             </label>
             <Select
+              isRequired
+              className="w-full"
               placeholder="Select status"
               selectedKeys={[formData.status]}
-              onChange={(e) => setFormData({ ...formData, status: e.target.value as ProjectStatus })}
-              isRequired
               variant="bordered"
-              className="w-full"
+              onChange={e =>
+                setFormData({
+                  ...formData,
+                  status: e.target.value as ProjectStatus,
+                })
+              }
             >
               <SelectItem key="pending">Pending</SelectItem>
               <SelectItem key="active">Active</SelectItem>
@@ -286,24 +326,28 @@ export function ProjectsModal({
                 Category
               </label>
               <Input
-                placeholder="Enter project category"
-                value={formData.category || ""}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                variant="bordered"
                 className="w-full"
+                placeholder="Enter project category"
+                value={formData.category || ''}
+                variant="bordered"
+                onChange={e =>
+                  setFormData({ ...formData, category: e.target.value })
+                }
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-default-700 mb-2">
                 Client
               </label>
               <Input
-                placeholder="Enter client name"
-                value={formData.client || ""}
-                onChange={(e) => setFormData({ ...formData, client: e.target.value })}
-                variant="bordered"
                 className="w-full"
+                placeholder="Enter client name"
+                value={formData.client || ''}
+                variant="bordered"
+                onChange={e =>
+                  setFormData({ ...formData, client: e.target.value })
+                }
               />
             </div>
           </div>
@@ -314,12 +358,14 @@ export function ProjectsModal({
               Location
             </label>
             <Input
-              placeholder="Enter project location"
-              value={formData.location || ""}
-              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-              variant="bordered"
               className="w-full"
+              placeholder="Enter project location"
               startContent={<MapPinIcon className="w-4 h-4 text-default-400" />}
+              value={formData.location || ''}
+              variant="bordered"
+              onChange={e =>
+                setFormData({ ...formData, location: e.target.value })
+              }
             />
           </div>
 
@@ -331,13 +377,14 @@ export function ProjectsModal({
             <div className="space-y-3">
               <div className="flex gap-2">
                 <Input
+                  className="flex-1"
                   placeholder="Add a tag"
                   variant="bordered"
-                  className="flex-1"
-                  onKeyPress={(e) => {
+                  onKeyPress={e => {
                     if (e.key === 'Enter') {
                       e.preventDefault();
                       const input = e.target as HTMLInputElement;
+
                       if (input.value.trim()) {
                         addTag(input.value.trim());
                         input.value = '';
@@ -346,10 +393,13 @@ export function ProjectsModal({
                   }}
                 />
                 <Button
-                  variant="bordered"
                   startContent={<TagIcon className="w-4 h-4" />}
+                  variant="bordered"
                   onPress={() => {
-                    const input = document.querySelector('input[placeholder="Add a tag"]') as HTMLInputElement;
+                    const input = document.querySelector(
+                      'input[placeholder="Add a tag"]',
+                    ) as HTMLInputElement;
+
                     if (input?.value.trim()) {
                       addTag(input.value.trim());
                       input.value = '';
@@ -359,16 +409,16 @@ export function ProjectsModal({
                   Add
                 </Button>
               </div>
-              
+
               {formData.tags && formData.tags.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                   {formData.tags.map((tag, index) => (
                     <Chip
                       key={index}
-                      onClose={() => removeTag(tag)}
                       color="primary"
-                      variant="flat"
                       size="sm"
+                      variant="flat"
+                      onClose={() => removeTag(tag)}
                     >
                       {tag}
                     </Chip>
@@ -377,7 +427,7 @@ export function ProjectsModal({
               )}
             </div>
           </div>
-          
+
           {/* Team Members */}
           <div>
             <div className="flex items-center justify-between mb-3">
@@ -388,52 +438,53 @@ export function ProjectsModal({
                 {formData.teamMembers.length} members selected
               </span>
             </div>
-            
+
             {/* Team Members List */}
             {formData.teamMembers.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-3">
                 {formData.teamMembers.map((member, index) => (
                   <Chip
                     key={index}
-                    onClose={() => removeTeamMember(index)}
                     color="primary"
-                    variant="flat"
                     size="sm"
+                    variant="flat"
+                    onClose={() => removeTeamMember(index)}
                   >
                     {member}
                   </Chip>
                 ))}
               </div>
             )}
-            
+
             {/* Add Team Member Button */}
             <Button
-              variant="bordered"
-              startContent={<UsersIcon className="w-4 h-4" />}
-              onPress={addTeamMember}
               className="w-full"
+              startContent={<UsersIcon className="w-4 h-4" />}
+              variant="bordered"
+              onPress={addTeamMember}
             >
               Add Team Member
             </Button>
           </div>
         </ModalBody>
-        
+
         <ModalFooter className="border-t border-default-200 bg-gradient-to-r from-blue-50/30 to-indigo-50/30 dark:from-blue-950/10 dark:to-indigo-950/10">
-          <Button 
-            variant="light" 
-            onPress={onClose}
-            className="font-medium"
-          >
+          <Button className="font-medium" variant="light" onPress={onClose}>
             Cancel
           </Button>
-          <Button 
-            color="primary" 
-            onPress={handleSubmit}
-            isDisabled={!formData.name || !formData.description || !formData.startDate || !formData.endDate}
+          <Button
             className="font-semibold bg-gradient-to-r from-blue-600 to-indigo-600"
+            color="primary"
+            isDisabled={
+              !formData.name ||
+              !formData.description ||
+              !formData.startDate ||
+              !formData.endDate
+            }
             startContent={<PlusIcon className="w-4 h-4" />}
+            onPress={handleSubmit}
           >
-            {mode === "create" ? "Create Project" : "Update Project"}
+            {mode === 'create' ? 'Create Project' : 'Update Project'}
           </Button>
         </ModalFooter>
       </ModalContent>

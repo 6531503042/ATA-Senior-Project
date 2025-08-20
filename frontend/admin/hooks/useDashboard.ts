@@ -1,9 +1,18 @@
-import { useState, useCallback } from "react";
-import { getDashboardData } from "@/services/dataService";
-import type { DashboardStats, Project, Feedback } from "@/types/dashboard";
+import type { DashboardStats, Project, Feedback } from '@/types/dashboard';
+
+import { useState, useCallback, useEffect } from 'react';
+
+import { getDashboardData, getLiveDashboardData } from '@/services/dataService';
 
 export function useDashboard() {
-  const [dashboardData, setDashboardData] = useState<DashboardStats>(getDashboardData());
+  const [dashboardData, setDashboardData] =
+    useState<DashboardStats>(getDashboardData());
+
+  useEffect(() => {
+    getLiveDashboardData()
+      .then(setDashboardData)
+      .catch(() => {});
+  }, []);
 
   const addProject = useCallback((project: Project) => {
     setDashboardData(prev => ({
@@ -11,28 +20,33 @@ export function useDashboard() {
       recentProjects: [project, ...prev.recentProjects.slice(0, 2)],
       overview: {
         ...prev.overview,
-        totalProjects: prev.overview.totalProjects + 1
-      }
+        totalProjects: prev.overview.totalProjects + 1,
+      },
     }));
   }, []);
 
-  const updateProject = useCallback((projectId: string, updates: Partial<Project>) => {
-    setDashboardData(prev => ({
-      ...prev,
-      recentProjects: prev.recentProjects.map(project =>
-        project.id === projectId ? { ...project, ...updates } : project
-      )
-    }));
-  }, []);
+  const updateProject = useCallback(
+    (projectId: string, updates: Partial<Project>) => {
+      setDashboardData(prev => ({
+        ...prev,
+        recentProjects: prev.recentProjects.map(project =>
+          project.id === projectId ? { ...project, ...updates } : project,
+        ),
+      }));
+    },
+    [],
+  );
 
   const deleteProject = useCallback((projectId: string) => {
     setDashboardData(prev => ({
       ...prev,
-      recentProjects: prev.recentProjects.filter(project => project.id !== projectId),
+      recentProjects: prev.recentProjects.filter(
+        project => project.id !== projectId,
+      ),
       overview: {
         ...prev.overview,
-        totalProjects: Math.max(0, prev.overview.totalProjects - 1)
-      }
+        totalProjects: Math.max(0, prev.overview.totalProjects - 1),
+      },
     }));
   }, []);
 
@@ -42,28 +56,33 @@ export function useDashboard() {
       recentFeedbacks: [feedback, ...prev.recentFeedbacks.slice(0, 2)],
       overview: {
         ...prev.overview,
-        totalSubmissions: prev.overview.totalSubmissions + 1
-      }
+        totalSubmissions: prev.overview.totalSubmissions + 1,
+      },
     }));
   }, []);
 
-  const updateFeedback = useCallback((feedbackId: string, updates: Partial<Feedback>) => {
-    setDashboardData(prev => ({
-      ...prev,
-      recentFeedbacks: prev.recentFeedbacks.map(feedback =>
-        feedback.id === feedbackId ? { ...feedback, ...updates } : feedback
-      )
-    }));
-  }, []);
+  const updateFeedback = useCallback(
+    (feedbackId: string, updates: Partial<Feedback>) => {
+      setDashboardData(prev => ({
+        ...prev,
+        recentFeedbacks: prev.recentFeedbacks.map(feedback =>
+          feedback.id === feedbackId ? { ...feedback, ...updates } : feedback,
+        ),
+      }));
+    },
+    [],
+  );
 
   const deleteFeedback = useCallback((feedbackId: string) => {
     setDashboardData(prev => ({
       ...prev,
-      recentFeedbacks: prev.recentFeedbacks.filter(feedback => feedback.id !== feedbackId),
+      recentFeedbacks: prev.recentFeedbacks.filter(
+        feedback => feedback.id !== feedbackId,
+      ),
       overview: {
         ...prev.overview,
-        totalSubmissions: Math.max(0, prev.overview.totalSubmissions - 1)
-      }
+        totalSubmissions: Math.max(0, prev.overview.totalSubmissions - 1),
+      },
     }));
   }, []);
 
@@ -72,6 +91,7 @@ export function useDashboard() {
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(dataBlob);
     const link = document.createElement('a');
+
     link.href = url;
     link.download = 'dashboard-data.json';
     link.click();
@@ -86,6 +106,6 @@ export function useDashboard() {
     addFeedback,
     updateFeedback,
     deleteFeedback,
-    exportData
+    exportData,
   };
-} 
+}

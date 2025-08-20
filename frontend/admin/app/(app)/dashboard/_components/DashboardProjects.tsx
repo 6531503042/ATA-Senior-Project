@@ -1,8 +1,23 @@
-"use client";
+'use client';
 
-import { Card, CardBody, CardHeader, Button, Avatar, Chip, Progress } from "@heroui/react";
-import { EyeIcon, MoreVerticalIcon, FolderIcon, UsersIcon, CalendarIcon } from "lucide-react";
-import type { Project } from "@/types/dashboard";
+import type { Project } from '@/types/dashboard';
+
+import {
+  Card,
+  CardBody,
+  CardHeader,
+  Button,
+  Avatar,
+  Chip,
+  Progress,
+} from '@heroui/react';
+import {
+  EyeIcon,
+  MoreVerticalIcon,
+  FolderIcon,
+  UsersIcon,
+  CalendarIcon,
+} from 'lucide-react';
 
 interface DashboardProjectsProps {
   projects: Project[];
@@ -24,9 +39,11 @@ export function DashboardProjects({ projects }: DashboardProjectsProps) {
 
   const getInitials = (title: string) => {
     const words = title.split(' ');
+
     if (words.length >= 2) {
       return words[0].charAt(0) + words[1].charAt(0);
     }
+
     return title.substring(0, 2).toUpperCase();
   };
 
@@ -47,29 +64,29 @@ export function DashboardProjects({ projects }: DashboardProjectsProps) {
           </div>
         </div>
         <Button
-          variant="bordered"
+          className="w-full sm:w-auto"
           color="primary"
           size="sm"
           startContent={<EyeIcon className="w-4 h-4" />}
-          className="w-full sm:w-auto"
+          variant="bordered"
         >
           View All
         </Button>
       </CardHeader>
       <CardBody className="space-y-4 p-4">
-        {projects.map((project) => (
+        {projects.map(project => (
           <div
             key={project.id}
             className="group relative flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 rounded-xl border border-default-200 hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all duration-300 cursor-pointer bg-white dark:bg-default-50"
           >
             <Avatar
-              className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-semibold shadow-md"
               showFallback
+              className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-semibold shadow-md"
               name={getInitials(project.title)}
             >
               {getInitials(project.title)}
             </Avatar>
-            
+
             <div className="flex-1 min-w-0 space-y-3">
               <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                 <h4 className="font-semibold text-default-900 truncate text-base">
@@ -77,10 +94,10 @@ export function DashboardProjects({ projects }: DashboardProjectsProps) {
                 </h4>
                 <div className="flex items-center gap-2">
                   <Chip
-                    size="sm"
-                    color={getStatusColor(project.status)}
-                    variant="flat"
                     className="text-xs font-medium"
+                    color={getStatusColor(project.status)}
+                    size="sm"
+                    variant="flat"
                   >
                     {project.status}
                   </Chip>
@@ -90,11 +107,11 @@ export function DashboardProjects({ projects }: DashboardProjectsProps) {
                   </div>
                 </div>
               </div>
-              
+
               <p className="text-sm text-default-600 line-clamp-2 leading-relaxed">
                 {project.description}
               </p>
-              
+
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                 <div className="flex items-center gap-4 text-xs text-default-500">
                   <div className="flex items-center gap-1">
@@ -105,22 +122,28 @@ export function DashboardProjects({ projects }: DashboardProjectsProps) {
                     <span>Progress: {project.progress}%</span>
                   </div>
                 </div>
-                
+
                 <div className="w-full sm:w-32">
                   <Progress
-                    value={project.progress}
                     className="h-2"
-                    color={project.progress >= 80 ? "success" : project.progress >= 60 ? "warning" : "danger"}
+                    color={
+                      project.progress >= 80
+                        ? 'success'
+                        : project.progress >= 60
+                          ? 'warning'
+                          : 'danger'
+                    }
+                    value={project.progress}
                   />
                 </div>
               </div>
             </div>
-            
+
             <Button
               isIconOnly
-              variant="light"
-              size="sm"
               className="text-default-400 hover:text-default-600 transition-colors flex-shrink-0 opacity-0 group-hover:opacity-100"
+              size="sm"
+              variant="light"
             >
               <MoreVerticalIcon className="w-4 h-4" />
             </Button>
@@ -129,4 +152,4 @@ export function DashboardProjects({ projects }: DashboardProjectsProps) {
       </CardBody>
     </Card>
   );
-} 
+}

@@ -1,4 +1,4 @@
-import { Key } from "react";
+import { Key } from 'react';
 import {
   Chip,
   Button,
@@ -6,7 +6,7 @@ import {
   DropdownTrigger,
   DropdownMenu,
   DropdownItem,
-} from "@heroui/react";
+} from '@heroui/react';
 import {
   EditIcon,
   TrashIcon,
@@ -15,25 +15,24 @@ import {
   CalendarIcon,
   EllipsisVertical,
   EyeIcon,
-} from "lucide-react";
-
+} from 'lucide-react';
 
 type Department = {
   id: string;
   name: string;
   manager: string;
   employeeCount: number;
-  status: "active" | "inactive";
+  status: 'active' | 'inactive';
   createdAt: string;
 };
 
 export type DepartmentColumnKey =
-  | "name"
-  | "manager"
-  | "employeeCount"
-  | "status"
-  | "createdAt"
-  | "actions";
+  | 'name'
+  | 'manager'
+  | 'employeeCount'
+  | 'status'
+  | 'createdAt'
+  | 'actions';
 
 type DepartmentCellRendererProps = {
   department: Department;
@@ -51,7 +50,7 @@ export default function DepartmentCellRenderer({
   onView,
 }: DepartmentCellRendererProps) {
   switch (columnKey) {
-    case "name":
+    case 'name':
       return (
         <div className="flex items-center gap-2">
           <div className="p-2 rounded-lg bg-default-100 text-default-600">
@@ -63,14 +62,14 @@ export default function DepartmentCellRenderer({
         </div>
       );
 
-    case "manager":
+    case 'manager':
       return (
         <span className="text-sm text-default-600">
-          {department.manager || "N/A"}
+          {department.manager || 'N/A'}
         </span>
       );
 
-    case "employeeCount":
+    case 'employeeCount':
       return (
         <div className="flex items-center gap-1">
           <UsersIcon className="w-4 h-4 text-default-500" />
@@ -78,19 +77,19 @@ export default function DepartmentCellRenderer({
         </div>
       );
 
-    case "status":
+    case 'status':
       return (
         <Chip
-          size="sm"
-          color={department.status === "active" ? "success" : "danger"}
-          variant="flat"
           className="capitalize font-medium"
+          color={department.status === 'active' ? 'success' : 'danger'}
+          size="sm"
+          variant="flat"
         >
-          {department.status || "inactive"}
+          {department.status || 'inactive'}
         </Chip>
       );
 
-    case "createdAt":
+    case 'createdAt':
       return (
         <div className="flex items-center gap-2">
           <CalendarIcon className="w-4 h-4 text-default-500" />
@@ -100,7 +99,7 @@ export default function DepartmentCellRenderer({
         </div>
       );
 
-    case "actions":
+    case 'actions':
       return (
         <Dropdown>
           <DropdownTrigger>

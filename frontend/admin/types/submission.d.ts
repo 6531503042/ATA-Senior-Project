@@ -1,8 +1,8 @@
-export type SubmissionPrivacy = "ANONYMOUS" | "PUBLIC";
+export type SubmissionPrivacy = 'ANONYMOUS' | 'PUBLIC';
 
-export type SubmissionStatus = "analyzed" | "pending" | "error";
+export type SubmissionStatus = 'analyzed' | 'pending' | 'error';
 
-export type SubmissionSentiment = "positive" | "neutral" | "negative";
+export type SubmissionSentiment = 'positive' | 'neutral' | 'negative';
 
 export interface SubmissionItem {
   id: string;
@@ -38,5 +38,3 @@ export interface SubmissionResponse {
   items: SubmissionItem[];
   stats: SubmissionStats;
 }
-
-

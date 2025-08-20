@@ -1,17 +1,26 @@
-import { User, UserRole, UserStatus } from "@/types/user";
-import { SortDescriptor, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@heroui/react";
-import { Key, useCallback, useMemo, useState } from "react";
-import UserCellRenderer from "./UserCellRenderer";
-import TopContent from "./TopContent";
-import BottomContent from "./BottomContent";
+import {
+  SortDescriptor,
+  Table,
+  TableBody,
+  TableCell,
+  TableColumn,
+  TableHeader,
+  TableRow,
+} from '@heroui/react';
+import { Key, useCallback, useMemo, useState } from 'react';
+
+import UserCellRenderer from './UserCellRenderer';
+import TopContent from './TopContent';
+
+import { User, UserRole, UserStatus } from '@/types/user';
 
 const COLUMNS = [
-  { name: "USER", uid: "user", allowsSorting: false },
-  { name: "ROLE", uid: "role", allowsSorting: true },
-  { name: "STATUS", uid: "status", allowsSorting: true },
-  { name: "DEPARTMENT", uid: "department", allowsSorting: true },
-  { name: "LAST LOGIN", uid: "lastLogin", allowsSorting: true },
-  { name: "ACTIONS", uid: "actions", allowsSorting: false },
+  { name: 'USER', uid: 'user', allowsSorting: false },
+  { name: 'ROLE', uid: 'role', allowsSorting: true },
+  { name: 'STATUS', uid: 'status', allowsSorting: true },
+  { name: 'DEPARTMENT', uid: 'department', allowsSorting: true },
+  { name: 'LAST LOGIN', uid: 'lastLogin', allowsSorting: true },
+  { name: 'ACTIONS', uid: 'actions', allowsSorting: false },
 ];
 
 type UserTableProps = {
@@ -22,19 +31,19 @@ type UserTableProps = {
   onRefresh?: () => void;
 };
 
-export default function UserTable({ 
-  users, 
-  onEdit, 
-  onDelete, 
+export default function UserTable({
+  users,
+  onEdit,
+  onDelete,
   onView,
-  onRefresh 
+  onRefresh,
 }: UserTableProps) {
-  const [filterValue, setFilterValue] = useState("");
+  const [filterValue, setFilterValue] = useState('');
   const [selectedRole, setSelectedRole] = useState<UserRole[]>([]);
   const [selectedStatus, setSelectedStatus] = useState<UserStatus[]>([]);
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
-    column: "user",
-    direction: "ascending"
+    column: 'user',
+    direction: 'ascending',
   });
   const [page, setPage] = useState(1);
   const rowsPerPage = 10;
@@ -45,7 +54,7 @@ export default function UserTable({
   };
 
   const handleClear = () => {
-    setFilterValue("");
+    setFilterValue('');
     setPage(1);
   };
 
@@ -65,21 +74,25 @@ export default function UserTable({
 
     if (!!filterValue) {
       filteredUsers = users.filter(
-        (user) =>
+        user =>
           user.username.toLowerCase().includes(query) ||
           user.firstName.toLowerCase().includes(query) ||
           user.lastName.toLowerCase().includes(query) ||
           user.email.toLowerCase().includes(query) ||
-          user.department?.toLowerCase().includes(query)
+          user.department?.toLowerCase().includes(query),
       );
     }
 
     if (selectedRole.length > 0) {
-      filteredUsers = filteredUsers.filter(user => selectedRole.includes(user.role));
+      filteredUsers = filteredUsers.filter(user =>
+        selectedRole.includes(user.role),
+      );
     }
 
     if (selectedStatus.length > 0) {
-      filteredUsers = filteredUsers.filter(user => selectedStatus.includes(user.status));
+      filteredUsers = filteredUsers.filter(user =>
+        selectedStatus.includes(user.status),
+      );
     }
 
     return filteredUsers;
@@ -90,25 +103,32 @@ export default function UserTable({
 
     if (sortDescriptor.column && sortDescriptor.direction) {
       sortedItems.sort((a, b) => {
-        const direction = sortDescriptor.direction === "ascending" ? 1 : -1;
+        const direction = sortDescriptor.direction === 'ascending' ? 1 : -1;
 
-        if (sortDescriptor.column === "role") return a.role.localeCompare(b.role) * direction;
-        if (sortDescriptor.column === "status") return a.status.localeCompare(b.status) * direction;
-        if (sortDescriptor.column === "department") {
-          const aDept = a.department || ''; const bDept = b.department || '';
+        if (sortDescriptor.column === 'role')
+          return a.role.localeCompare(b.role) * direction;
+        if (sortDescriptor.column === 'status')
+          return a.status.localeCompare(b.status) * direction;
+        if (sortDescriptor.column === 'department') {
+          const aDept = a.department || '';
+          const bDept = b.department || '';
+
           return aDept.localeCompare(bDept) * direction;
         }
-        if (sortDescriptor.column === "lastLogin") {
+        if (sortDescriptor.column === 'lastLogin') {
           const aDate = a.lastLogin ? new Date(a.lastLogin).getTime() : 0;
           const bDate = b.lastLogin ? new Date(b.lastLogin).getTime() : 0;
+
           return (aDate - bDate) * direction;
         }
+
         return 0;
       });
     }
 
     const start = (page - 1) * rowsPerPage;
     const end = start + rowsPerPage;
+
     return sortedItems.slice(start, end);
   }, [page, filteredItems, sortDescriptor]);
 
@@ -117,14 +137,14 @@ export default function UserTable({
   const renderCell = useCallback(
     (user: User, columnKey: Key) => (
       <UserCellRenderer
-        user={user}
         columnKey={columnKey}
-        onEdit={onEdit}
+        user={user}
         onDelete={onDelete}
+        onEdit={onEdit}
         onView={onView}
       />
     ),
-    [onEdit, onDelete, onView]
+    [onEdit, onDelete, onView],
   );
 
   return (
@@ -133,30 +153,35 @@ export default function UserTable({
       topContent={
         <TopContent
           filterValue={filterValue}
-          onClear={handleClear}
-          onSearchChange={handleSearch}
           selectedRole={selectedRole}
-          onRoleChange={handleRoleChange}
           selectedStatus={selectedStatus}
-          onStatusChange={handleStatusChange}
+          onClear={handleClear}
           onRefresh={onRefresh || (() => {})}
+          onRoleChange={handleRoleChange}
+          onSearchChange={handleSearch}
+          onStatusChange={handleStatusChange}
         />
       }
       topContentPlacement="outside"
     >
       <TableHeader columns={COLUMNS}>
-        {(column) => (
-          <TableColumn key={column.uid} align={column.uid === "actions" ? "center" : "start"} allowsSorting={column.allowsSorting}>
+        {column => (
+          <TableColumn
+            key={column.uid}
+            align={column.uid === 'actions' ? 'center' : 'start'}
+            allowsSorting={column.allowsSorting}
+          >
             {column.name}
           </TableColumn>
         )}
       </TableHeader>
-      <TableBody emptyContent={<span className="text-default-400">No users found</span>} items={[...userItems]}>
+      <TableBody
+        emptyContent={<span className="text-default-400">No users found</span>}
+        items={[...userItems]}
+      >
         {(user: User) => (
           <TableRow key={user.id}>
-            {(columnKey) => (
-              <TableCell>{renderCell(user, columnKey)}</TableCell>
-            )}
+            {columnKey => <TableCell>{renderCell(user, columnKey)}</TableCell>}
           </TableRow>
         )}
       </TableBody>

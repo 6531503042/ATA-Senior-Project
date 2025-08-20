@@ -1,4 +1,4 @@
-import { Pagination } from "@heroui/react";
+import { Pagination } from '@heroui/react';
 
 export type BottomContentProps = {
   page: number;
@@ -18,7 +18,8 @@ export default function BottomContent({
   return (
     <div className="py-2 px-2 flex justify-between items-center">
       <div className="text-sm text-default-500">
-        Showing {((currentPage - 1) * 10) + 1} to {Math.min(currentPage * 10, totalProjects)} of {totalProjects} projects
+        Showing {(currentPage - 1) * 10 + 1} to{' '}
+        {Math.min(currentPage * 10, totalProjects)} of {totalProjects} projects
       </div>
       <Pagination
         isCompact

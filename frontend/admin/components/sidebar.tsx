@@ -1,14 +1,21 @@
 'use client';
 
-import { useEffect, useState } from "react";
-import { Tooltip } from "@heroui/tooltip";
-import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
-import { Button, Avatar, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from "@heroui/react";
-import clsx from "clsx";
-import { usePathname, useRouter } from "next/navigation";
-import { Href } from "@react-types/shared";
+import { useEffect, useState } from 'react';
+import { Tooltip } from '@heroui/tooltip';
+import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
+import {
+  Button,
+  Avatar,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
+} from '@heroui/react';
+import clsx from 'clsx';
+import { usePathname, useRouter } from 'next/navigation';
+import { Href } from '@react-types/shared';
 
-import { siteConfig } from "@/config/site";
+import { siteConfig } from '@/config/site';
 // import { useProfile } from "@/hooks/useProfile";
 
 export const Sidebar = () => {
@@ -16,31 +23,31 @@ export const Sidebar = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
-//   const user = useProfile((state) => state.user);
+  //   const user = useProfile((state) => state.user);
 
   const handleClick = (href: Href) => {
     router.push(href);
   };
 
   useEffect(() => {
-    const saved = localStorage.getItem("sidebar-collapsed");
+    const saved = localStorage.getItem('sidebar-collapsed');
+
     if (saved !== null) {
-      setCollapsed(saved === "true");
+      setCollapsed(saved === 'true');
     }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("sidebar-collapsed", collapsed.toString());
+    localStorage.setItem('sidebar-collapsed', collapsed.toString());
   }, [collapsed]);
-
 
   return (
     <>
       <aside
         className={clsx(
-          "fixed lg:static h-screen border-r border-[#00000010] dark:border-[#ffffff25] flex flex-col overflow-hidden transition-all duration-200 ease-in-out z-40",
-          collapsed ? "w-16" : "w-64",
-          isMobileOpen ? "left-0" : "-left-full lg:left-0"
+          'fixed lg:static h-screen border-r border-[#00000010] dark:border-[#ffffff25] flex flex-col overflow-hidden transition-all duration-200 ease-in-out z-40',
+          collapsed ? 'w-16' : 'w-64',
+          isMobileOpen ? 'left-0' : '-left-full lg:left-0',
         )}
       >
         {/* Header */}
@@ -58,15 +65,19 @@ export const Sidebar = () => {
             className="ml-auto hidden lg:flex"
             size="sm"
             variant="light"
-            onPress={() => setCollapsed((prev) => !prev)}
+            onPress={() => setCollapsed(prev => !prev)}
           >
-            {collapsed ? <ChevronRightIcon className="w-4 h-4" /> : <ChevronLeftIcon className="w-4 h-4" />}
+            {collapsed ? (
+              <ChevronRightIcon className="w-4 h-4" />
+            ) : (
+              <ChevronLeftIcon className="w-4 h-4" />
+            )}
           </Button>
         </div>
 
         {/* Navigation */}
         <div className="flex-1 overflow-y-auto py-4">
-          {siteConfig.navMenuItems.map((section) => {
+          {siteConfig.navMenuItems.map(section => {
             return (
               <div key={section.section} className="space-y-1">
                 {!collapsed && (
@@ -77,39 +88,39 @@ export const Sidebar = () => {
                   </div>
                 )}
                 <div className="space-y-1 px-2">
-                  {section.items.map((item) => {
+                  {section.items.map(item => {
                     const Icon = item.icon;
                     const isActive = pathname.startsWith(item.href);
 
                     return (
                       <Tooltip
                         key={item.href}
-                        className={clsx(collapsed ? "block" : "invisible")}
-                        content={collapsed ? item.label : ""}
+                        className={clsx(collapsed ? 'block' : 'invisible')}
+                        content={collapsed ? item.label : ''}
                         placement="right"
                       >
                         <Button
                           className={clsx(
-                            "relative flex items-center gap-3 p-2 rounded-md transition-all duration-200 ease-in-out w-full font-semibold",
-                            collapsed ? "justify-center" : "justify-start",
+                            'relative flex items-center gap-3 p-2 rounded-md transition-all duration-200 ease-in-out w-full font-semibold',
+                            collapsed ? 'justify-center' : 'justify-start',
                             isActive
-                              ? "bg-primary-50 text-primary font-bold shadow-primary-50 shadow-lg"
-                              : "hover:bg-default-100 text-default-700"
+                              ? 'bg-primary-50 text-primary font-bold shadow-primary-50 shadow-lg'
+                              : 'hover:bg-default-100 text-default-700',
                           )}
                           isIconOnly={collapsed}
-                          variant={isActive ? "shadow" : "light"}
+                          variant={isActive ? 'shadow' : 'light'}
                           onPress={() => handleClick(item.href)}
                         >
                           <span
                             className={clsx(
-                              "absolute left-0 top-0 h-full w-1 rounded-r-md transition-all duration-200 ease-in-out",
-                              isActive ? "bg-primary" : "bg-transparent"
+                              'absolute left-0 top-0 h-full w-1 rounded-r-md transition-all duration-200 ease-in-out',
+                              isActive ? 'bg-primary' : 'bg-transparent',
                             )}
                           />
                           <Icon
                             className={clsx(
-                              "w-5 h-5 z-10",
-                              isActive ? "text-primary" : "text-default-500"
+                              'w-5 h-5 z-10',
+                              isActive ? 'text-primary' : 'text-default-500',
                             )}
                           />
                           {!collapsed && (
@@ -131,7 +142,11 @@ export const Sidebar = () => {
             <Dropdown placement="top-start">
               <DropdownTrigger>
                 <div className="flex items-center gap-2 cursor-pointer hover:bg-default-100 p-2 rounded-md transition-colors">
-                  <Avatar className="w-8 h-8" size="sm" src="https://i.pravatar.cc/150?u=a042581f4e29026024d" />
+                  <Avatar
+                    className="w-8 h-8"
+                    size="sm"
+                    src="https://i.pravatar.cc/150?u=a042581f4e29026024d"
+                  />
                   <div className="flex flex-col">
                     <span className="text-sm font-medium">
                       {/* {user?.name.first} {user?.name.middle} {user?.name.last} */}
@@ -148,7 +163,7 @@ export const Sidebar = () => {
                   className="text-danger"
                   color="danger"
                   onPress={() => {
-                    router.push("/logout");
+                    router.push('/logout');
                   }}
                 >
                   Log Out
