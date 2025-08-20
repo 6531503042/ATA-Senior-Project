@@ -8,6 +8,7 @@ public class GlobalServiceException extends RuntimeException{
     private final ErrorCode error;
 
     public GlobalServiceException(ErrorCode error) {
+        super((String) null); // detail จะ fallback เป็น code ใน handler
         this.error = error;
     }
 

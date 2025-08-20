@@ -1,5 +1,6 @@
-package dev.bengi.main.modules.user.model;
+package dev.bengi.main.modules.role.model;
 
+import dev.bengi.main.modules.role.enums.roleName;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,7 +15,7 @@ import java.time.LocalDateTime;
 @Table("roles")
 @NoArgsConstructor
 @AllArgsConstructor
-public class role {
+public class Role {
 
     @Id
     private Long id;

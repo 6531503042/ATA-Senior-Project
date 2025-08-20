@@ -41,11 +41,10 @@ public class GlobalExceptionHandler {
             errors = webe.getFieldErrors().stream().map(this::toError).toList();
         }
 
-        var pd = ProblemDetail.forStatusAndDetail(ErrorCode.INVALID_REQUEST.status, "Validation failed");
-        pd.setTitle(ErrorCode.INVALID_REQUEST.code);
-        pd.setType(URI.create(ErrorCode.INVALID_REQUEST.type()));
+        var pd = ProblemDetail.forStatusAndDetail(ErrorCode.VALIDATION_ERROR.status, "Validation failed");
+        pd.setTitle(ErrorCode.VALIDATION_ERROR.code);
         pd.setProperty("errors", errors);
-        attachCommon(pd, exchange, ErrorCode.INVALID_REQUEST.code);
+        attachCommon(pd, exchange, ErrorCode.VALIDATION_ERROR.code);
         return Mono.just(pd);
     }
 
