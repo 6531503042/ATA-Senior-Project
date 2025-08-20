@@ -2,11 +2,11 @@ spring:
   application:
     name: main
   r2dbc:
-    url: r2dbc:postgresql://localhost:5432/ata
+    url: r2dbc:postgresql://localhost:3307/senior
     username: postgres
     password: postgres
   datasource:
-    url: jdbc:postgresql://localhost:5432/ata
+    url: jdbc:postgresql://localhost:3307/senior
     username: postgres
     password: postgres
   flyway:
@@ -26,6 +26,10 @@ logging:
   level:
     root: INFO
     org.springframework.r2dbc: INFO
+    io.r2dbc.postgresql: WARN
+    io.r2dbc.postgresql.QUERY: WARN
+    io.r2dbc.postgresql.client.ReactorNettyClient: WARN
+    reactor.netty: WARN
     org.springframework.security: INFO
 
 jwt:
