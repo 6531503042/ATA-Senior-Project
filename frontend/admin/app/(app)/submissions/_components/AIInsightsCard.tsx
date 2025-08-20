@@ -50,15 +50,15 @@ export default function AIInsightsCard({
         <div className="space-y-3">
           <h4 className="text-sm font-medium">Key Recommendations</h4>
           <ul className="space-y-2">
-            <li className="flex items-center justify-between rounded-lg border px-3 py-2">
+            <li className="flex items-center justify-between rounded-lg border border-black/10 shadow-md shadow-slate-200/50 px-3 py-2">
               <span className="text-sm text-default-700">Clarify onboarding checklist</span>
               <Chip size="sm" variant="flat" color="warning">High</Chip>
             </li>
-            <li className="flex items-center justify-between rounded-lg border px-3 py-2">
+            <li className="flex items-center justify-between rounded-lg border border-black/10 shadow-md shadow-slate-200/50 px-3 py-2">
               <span className="text-sm text-default-700">Improve cross-team communication</span>
               <Chip size="sm" variant="flat" color="primary">Medium</Chip>
             </li>
-            <li className="flex items-center justify-between rounded-lg border px-3 py-2">
+            <li className="flex items-center justify-between rounded-lg border border-black/10 shadow-md shadow-slate-200/50 px-3 py-2">
               <span className="text-sm text-default-700">Refine feedback form copy</span>
               <Chip size="sm" variant="flat">Low</Chip>
             </li>

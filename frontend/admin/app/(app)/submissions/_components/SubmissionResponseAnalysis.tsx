@@ -25,7 +25,7 @@ export default function SubmissionResponseAnalysis() {
       <CardBody className="space-y-3 pt-4">
         <ul className="space-y-2">
           {items.map((it) => (
-            <li key={it.label} className="flex items-center justify-between rounded-lg border px-3 py-2">
+            <li key={it.label} className="flex items-center justify-between rounded-lg border border-black/5 shadow-lg shadow-slate-100 px-3 py-2">
               <div className="flex items-center gap-2">
                 <div className="p-1.5 rounded-md bg-default-100"><ListChecks className="w-3.5 h-3.5 text-default-600" /></div>
                 <span className="text-sm font-medium">{it.label}</span>

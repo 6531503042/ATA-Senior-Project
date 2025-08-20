@@ -1327,6 +1327,574 @@ function FeedbackReplyModal({ isOpen, to, onClose, onSent }) {
     }, this);
 }
 }}),
+"[project]/app/(app)/feedbacks/_components/FeedbackQuestionSelect.tsx [app-ssr] (ecmascript)": ((__turbopack_context__) => {
+"use strict";
+
+var { g: global, __dirname } = __turbopack_context__;
+{
+__turbopack_context__.s({
+    "default": (()=>FeedbackQuestionSelect)
+});
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/server/route-modules/app-page/vendored/ssr/react-jsx-dev-runtime.js [app-ssr] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$card$2f$dist$2f$chunk$2d$O24IAYCG$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__card_default__as__Card$3e$__ = __turbopack_context__.i("[project]/node_modules/@heroui/card/dist/chunk-O24IAYCG.mjs [app-ssr] (ecmascript) <export card_default as Card>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$card$2f$dist$2f$chunk$2d$LGSBTEIA$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__card_body_default__as__CardBody$3e$__ = __turbopack_context__.i("[project]/node_modules/@heroui/card/dist/chunk-LGSBTEIA.mjs [app-ssr] (ecmascript) <export card_body_default as CardBody>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$chip$2f$dist$2f$chunk$2d$IHOGUXIG$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__chip_default__as__Chip$3e$__ = __turbopack_context__.i("[project]/node_modules/@heroui/chip/dist/chunk-IHOGUXIG.mjs [app-ssr] (ecmascript) <export chip_default as Chip>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$checkbox$2f$dist$2f$chunk$2d$XJ2YRSUP$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__checkbox_default__as__Checkbox$3e$__ = __turbopack_context__.i("[project]/node_modules/@heroui/checkbox/dist/chunk-XJ2YRSUP.mjs [app-ssr] (ecmascript) <export checkbox_default as Checkbox>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$button$2f$dist$2f$chunk$2d$WBUKVQRU$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__button_default__as__Button$3e$__ = __turbopack_context__.i("[project]/node_modules/@heroui/button/dist/chunk-WBUKVQRU.mjs [app-ssr] (ecmascript) <export button_default as Button>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$select$2f$dist$2f$chunk$2d$Y2AYO5NJ$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__select_default__as__Select$3e$__ = __turbopack_context__.i("[project]/node_modules/@heroui/select/dist/chunk-Y2AYO5NJ.mjs [app-ssr] (ecmascript) <export select_default as Select>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$listbox$2f$dist$2f$chunk$2d$BJFJ4DRR$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__listbox_item_base_default__as__SelectItem$3e$__ = __turbopack_context__.i("[project]/node_modules/@heroui/listbox/dist/chunk-BJFJ4DRR.mjs [app-ssr] (ecmascript) <export listbox_item_base_default as SelectItem>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$input$2f$dist$2f$chunk$2d$QESP63UR$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__textarea_default__as__Textarea$3e$__ = __turbopack_context__.i("[project]/node_modules/@heroui/input/dist/chunk-QESP63UR.mjs [app-ssr] (ecmascript) <export textarea_default as Textarea>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$switch$2f$dist$2f$chunk$2d$TQNYOUFX$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__switch_default__as__Switch$3e$__ = __turbopack_context__.i("[project]/node_modules/@heroui/switch/dist/chunk-TQNYOUFX.mjs [app-ssr] (ecmascript) <export switch_default as Switch>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/server/route-modules/app-page/vendored/ssr/react.js [app-ssr] (ecmascript)");
+'use client';
+;
+;
+;
+function typeLabel(t) {
+    switch(t){
+        case 'single_choice':
+            return 'Single';
+        case 'multiple_choice':
+            return 'Multiple';
+        case 'text_based':
+            return 'Text';
+        case 'rating':
+            return 'Rating';
+        case 'boolean':
+            return 'Yes/No';
+    }
+}
+function initAnswerForType(t) {
+    switch(t){
+        case 'multiple_choice':
+            return [];
+        case 'boolean':
+            return false;
+        default:
+            return ''; // text/single/rating (rating will be coerced later)
+    }
+}
+function getOptionById(opts, id) {
+    if (!opts || !id) return undefined;
+    for(let i = 0; i < opts.length; i++)if (opts[i].id === id) return opts[i];
+    return undefined;
+}
+function FeedbackQuestionSelect({ projectName, questionsByProject, selectedIds, answers, onSelectedIdsChange, onAnswerChange, className }) {
+    const availableQuestions = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useMemo"])(()=>{
+        const list = projectName ? questionsByProject[projectName] || [] : [];
+        const filtered = [];
+        for(let i = 0; i < list.length; i++){
+            if (list[i].isActive) filtered.push(list[i]);
+        }
+        filtered.sort((a, b)=>(a.order || 0) - (b.order || 0));
+        return filtered;
+    }, [
+        projectName,
+        questionsByProject
+    ]);
+    const selectedSet = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useMemo"])(()=>new Set(selectedIds), [
+        selectedIds
+    ]);
+    const toggleOne = (id, makeSelected)=>{
+        const nextIdsSet = new Set(selectedIds);
+        if (makeSelected) nextIdsSet.add(id);
+        else nextIdsSet.delete(id);
+        // Build next answers: keep only those in next selection; init new ones
+        const next = {};
+        const nextIds = Array.from(nextIdsSet);
+        for(let i = 0; i < nextIds.length; i++){
+            const qid = nextIds[i];
+            const q = availableQuestions.find((x)=>x.id === qid);
+            if (!q) continue;
+            next[qid] = answers[qid] !== undefined ? answers[qid] : initAnswerForType(q.type);
+        }
+        onSelectedIdsChange(nextIds, next);
+    };
+    const selectAll = ()=>{
+        const ids = availableQuestions.map((q)=>q.id);
+        const next = {};
+        for(let i = 0; i < ids.length; i++){
+            const q = availableQuestions[i];
+            next[q.id] = answers[q.id] !== undefined ? answers[q.id] : initAnswerForType(q.type);
+        }
+        onSelectedIdsChange(ids, next);
+    };
+    const clearAll = ()=>onSelectedIdsChange([], {});
+    return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+        className: className,
+        children: [
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "mb-3 flex items-center justify-between",
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "text-base font-semibold text-default-800",
+                        children: "Questions"
+                    }, void 0, false, {
+                        fileName: "[project]/app/(app)/feedbacks/_components/FeedbackQuestionSelect.tsx",
+                        lineNumber: 128,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "flex items-center gap-2",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$chip$2f$dist$2f$chunk$2d$IHOGUXIG$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__chip_default__as__Chip$3e$__["Chip"], {
+                                size: "sm",
+                                variant: "flat",
+                                children: [
+                                    availableQuestions.length,
+                                    " total"
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/app/(app)/feedbacks/_components/FeedbackQuestionSelect.tsx",
+                                lineNumber: 130,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$chip$2f$dist$2f$chunk$2d$IHOGUXIG$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__chip_default__as__Chip$3e$__["Chip"], {
+                                size: "sm",
+                                variant: "flat",
+                                color: "primary",
+                                children: [
+                                    selectedIds.length,
+                                    " selected"
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/app/(app)/feedbacks/_components/FeedbackQuestionSelect.tsx",
+                                lineNumber: 133,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$button$2f$dist$2f$chunk$2d$WBUKVQRU$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__button_default__as__Button$3e$__["Button"], {
+                                size: "sm",
+                                variant: "light",
+                                onPress: selectAll,
+                                isDisabled: !projectName || availableQuestions.length === 0,
+                                children: "Select all"
+                            }, void 0, false, {
+                                fileName: "[project]/app/(app)/feedbacks/_components/FeedbackQuestionSelect.tsx",
+                                lineNumber: 136,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$button$2f$dist$2f$chunk$2d$WBUKVQRU$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__button_default__as__Button$3e$__["Button"], {
+                                size: "sm",
+                                variant: "light",
+                                onPress: clearAll,
+                                isDisabled: selectedIds.length === 0,
+                                children: "Clear"
+                            }, void 0, false, {
+                                fileName: "[project]/app/(app)/feedbacks/_components/FeedbackQuestionSelect.tsx",
+                                lineNumber: 139,
+                                columnNumber: 11
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/app/(app)/feedbacks/_components/FeedbackQuestionSelect.tsx",
+                        lineNumber: 129,
+                        columnNumber: 9
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "[project]/app/(app)/feedbacks/_components/FeedbackQuestionSelect.tsx",
+                lineNumber: 127,
+                columnNumber: 7
+            }, this),
+            !projectName ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "text-default-500 text-sm border border-dashed border-default-200 rounded-xl p-4",
+                children: "Choose a project first to see its questions."
+            }, void 0, false, {
+                fileName: "[project]/app/(app)/feedbacks/_components/FeedbackQuestionSelect.tsx",
+                lineNumber: 147,
+                columnNumber: 9
+            }, this) : availableQuestions.length === 0 ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "text-default-500 text-sm border border-dashed border-default-200 rounded-xl p-4",
+                children: "No questions found for this project."
+            }, void 0, false, {
+                fileName: "[project]/app/(app)/feedbacks/_components/FeedbackQuestionSelect.tsx",
+                lineNumber: 151,
+                columnNumber: 9
+            }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Fragment"], {
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "space-y-2",
+                        children: availableQuestions.map((q)=>{
+                            const checked = selectedSet.has(q.id);
+                            return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$card$2f$dist$2f$chunk$2d$O24IAYCG$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__card_default__as__Card$3e$__["Card"], {
+                                className: `border-default-200 hover:border-default-300 transition-colors ${checked ? 'border-primary-300' : 'border'}`,
+                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$card$2f$dist$2f$chunk$2d$LGSBTEIA$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__card_body_default__as__CardBody$3e$__["CardBody"], {
+                                    className: "py-3",
+                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "flex items-start gap-3",
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$checkbox$2f$dist$2f$chunk$2d$XJ2YRSUP$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__checkbox_default__as__Checkbox$3e$__["Checkbox"], {
+                                                isSelected: checked,
+                                                onValueChange: (v)=>toggleOne(q.id, v),
+                                                "aria-label": `Select ${q.title}`
+                                            }, void 0, false, {
+                                                fileName: "[project]/app/(app)/feedbacks/_components/FeedbackQuestionSelect.tsx",
+                                                lineNumber: 169,
+                                                columnNumber: 23
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                className: "min-w-0 flex-1",
+                                                children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                        className: "flex items-center gap-2",
+                                                        children: [
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                className: "font-medium text-default-900 truncate",
+                                                                children: q.title
+                                                            }, void 0, false, {
+                                                                fileName: "[project]/app/(app)/feedbacks/_components/FeedbackQuestionSelect.tsx",
+                                                                lineNumber: 176,
+                                                                columnNumber: 27
+                                                            }, this),
+                                                            q.required ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$chip$2f$dist$2f$chunk$2d$IHOGUXIG$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__chip_default__as__Chip$3e$__["Chip"], {
+                                                                size: "sm",
+                                                                color: "danger",
+                                                                variant: "flat",
+                                                                children: "Required"
+                                                            }, void 0, false, {
+                                                                fileName: "[project]/app/(app)/feedbacks/_components/FeedbackQuestionSelect.tsx",
+                                                                lineNumber: 178,
+                                                                columnNumber: 29
+                                                            }, this) : null,
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$chip$2f$dist$2f$chunk$2d$IHOGUXIG$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__chip_default__as__Chip$3e$__["Chip"], {
+                                                                size: "sm",
+                                                                variant: "flat",
+                                                                children: [
+                                                                    "#",
+                                                                    q.order ?? 0
+                                                                ]
+                                                            }, void 0, true, {
+                                                                fileName: "[project]/app/(app)/feedbacks/_components/FeedbackQuestionSelect.tsx",
+                                                                lineNumber: 182,
+                                                                columnNumber: 27
+                                                            }, this)
+                                                        ]
+                                                    }, void 0, true, {
+                                                        fileName: "[project]/app/(app)/feedbacks/_components/FeedbackQuestionSelect.tsx",
+                                                        lineNumber: 175,
+                                                        columnNumber: 25
+                                                    }, this),
+                                                    q.description ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                        className: "text-xs text-default-500 mt-0.5 line-clamp-2",
+                                                        children: q.description
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/app/(app)/feedbacks/_components/FeedbackQuestionSelect.tsx",
+                                                        lineNumber: 187,
+                                                        columnNumber: 27
+                                                    }, this) : null,
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                        className: "flex flex-wrap gap-2 mt-2",
+                                                        children: [
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$chip$2f$dist$2f$chunk$2d$IHOGUXIG$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__chip_default__as__Chip$3e$__["Chip"], {
+                                                                size: "sm",
+                                                                variant: "flat",
+                                                                color: "secondary",
+                                                                children: typeLabel(q.type)
+                                                            }, void 0, false, {
+                                                                fileName: "[project]/app/(app)/feedbacks/_components/FeedbackQuestionSelect.tsx",
+                                                                lineNumber: 190,
+                                                                columnNumber: 27
+                                                            }, this),
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$chip$2f$dist$2f$chunk$2d$IHOGUXIG$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__chip_default__as__Chip$3e$__["Chip"], {
+                                                                size: "sm",
+                                                                variant: "flat",
+                                                                children: q.category
+                                                            }, void 0, false, {
+                                                                fileName: "[project]/app/(app)/feedbacks/_components/FeedbackQuestionSelect.tsx",
+                                                                lineNumber: 193,
+                                                                columnNumber: 27
+                                                            }, this)
+                                                        ]
+                                                    }, void 0, true, {
+                                                        fileName: "[project]/app/(app)/feedbacks/_components/FeedbackQuestionSelect.tsx",
+                                                        lineNumber: 189,
+                                                        columnNumber: 25
+                                                    }, this)
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "[project]/app/(app)/feedbacks/_components/FeedbackQuestionSelect.tsx",
+                                                lineNumber: 174,
+                                                columnNumber: 23
+                                            }, this)
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/app/(app)/feedbacks/_components/FeedbackQuestionSelect.tsx",
+                                        lineNumber: 168,
+                                        columnNumber: 21
+                                    }, this)
+                                }, void 0, false, {
+                                    fileName: "[project]/app/(app)/feedbacks/_components/FeedbackQuestionSelect.tsx",
+                                    lineNumber: 167,
+                                    columnNumber: 19
+                                }, this)
+                            }, q.id, false, {
+                                fileName: "[project]/app/(app)/feedbacks/_components/FeedbackQuestionSelect.tsx",
+                                lineNumber: 161,
+                                columnNumber: 17
+                            }, this);
+                        })
+                    }, void 0, false, {
+                        fileName: "[project]/app/(app)/feedbacks/_components/FeedbackQuestionSelect.tsx",
+                        lineNumber: 157,
+                        columnNumber: 11
+                    }, this),
+                    selectedIds.length > 0 ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "mt-4 space-y-3",
+                        children: selectedIds.map((id)=>{
+                            const q = availableQuestions.find((x)=>x.id === id);
+                            if (!q) return null;
+                            switch(q.type){
+                                case 'text_based':
+                                    return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "space-y-2 rounded-xl border border-default-200 p-3",
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                className: "text-sm font-medium text-default-700",
+                                                children: [
+                                                    q.title,
+                                                    q.required ? ' *' : ''
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "[project]/app/(app)/feedbacks/_components/FeedbackQuestionSelect.tsx",
+                                                lineNumber: 216,
+                                                columnNumber: 25
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$input$2f$dist$2f$chunk$2d$QESP63UR$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__textarea_default__as__Textarea$3e$__["Textarea"], {
+                                                placeholder: q.description || 'Type your answer...',
+                                                value: answers[id] || '',
+                                                onChange: (e)=>onAnswerChange(id, e.target.value),
+                                                minRows: 3,
+                                                variant: "bordered"
+                                            }, void 0, false, {
+                                                fileName: "[project]/app/(app)/feedbacks/_components/FeedbackQuestionSelect.tsx",
+                                                lineNumber: 220,
+                                                columnNumber: 25
+                                            }, this)
+                                        ]
+                                    }, id, true, {
+                                        fileName: "[project]/app/(app)/feedbacks/_components/FeedbackQuestionSelect.tsx",
+                                        lineNumber: 215,
+                                        columnNumber: 23
+                                    }, this);
+                                case 'single_choice':
+                                    {
+                                        const current = typeof answers[id] === 'string' ? answers[id] : '';
+                                        const selected = current ? new Set([
+                                            current
+                                        ]) : new Set();
+                                        return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            className: "space-y-2 rounded-xl border border-default-200 p-3",
+                                            children: [
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    className: "text-sm font-medium text-default-700",
+                                                    children: [
+                                                        q.title,
+                                                        q.required ? ' *' : ''
+                                                    ]
+                                                }, void 0, true, {
+                                                    fileName: "[project]/app/(app)/feedbacks/_components/FeedbackQuestionSelect.tsx",
+                                                    lineNumber: 235,
+                                                    columnNumber: 25
+                                                }, this),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$select$2f$dist$2f$chunk$2d$Y2AYO5NJ$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__select_default__as__Select$3e$__["Select"], {
+                                                    selectedKeys: selected,
+                                                    onSelectionChange: (keys)=>{
+                                                        const arr = keys === 'all' ? (q.options || []).map((o)=>o.id) : Array.from(keys);
+                                                        onAnswerChange(id, arr.length ? arr[0] : '');
+                                                    },
+                                                    variant: "bordered",
+                                                    placeholder: q.description || 'Select one option',
+                                                    items: q.options || [],
+                                                    children: (opt)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$listbox$2f$dist$2f$chunk$2d$BJFJ4DRR$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__listbox_item_base_default__as__SelectItem$3e$__["SelectItem"], {
+                                                            children: opt.text
+                                                        }, opt.id, false, {
+                                                            fileName: "[project]/app/(app)/feedbacks/_components/FeedbackQuestionSelect.tsx",
+                                                            lineNumber: 249,
+                                                            columnNumber: 51
+                                                        }, this)
+                                                }, void 0, false, {
+                                                    fileName: "[project]/app/(app)/feedbacks/_components/FeedbackQuestionSelect.tsx",
+                                                    lineNumber: 239,
+                                                    columnNumber: 25
+                                                }, this)
+                                            ]
+                                        }, id, true, {
+                                            fileName: "[project]/app/(app)/feedbacks/_components/FeedbackQuestionSelect.tsx",
+                                            lineNumber: 234,
+                                            columnNumber: 23
+                                        }, this);
+                                    }
+                                case 'multiple_choice':
+                                    {
+                                        const selected = Array.isArray(answers[id]) ? new Set(answers[id]) : new Set();
+                                        return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            className: "space-y-2 rounded-xl border border-default-200 p-3",
+                                            children: [
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    className: "text-sm font-medium text-default-700",
+                                                    children: [
+                                                        q.title,
+                                                        q.required ? ' *' : ''
+                                                    ]
+                                                }, void 0, true, {
+                                                    fileName: "[project]/app/(app)/feedbacks/_components/FeedbackQuestionSelect.tsx",
+                                                    lineNumber: 260,
+                                                    columnNumber: 25
+                                                }, this),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$select$2f$dist$2f$chunk$2d$Y2AYO5NJ$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__select_default__as__Select$3e$__["Select"], {
+                                                    selectionMode: "multiple",
+                                                    selectedKeys: selected,
+                                                    onSelectionChange: (keys)=>{
+                                                        const arr = keys === 'all' ? (q.options || []).map((o)=>o.id) : Array.from(keys);
+                                                        onAnswerChange(id, arr);
+                                                    },
+                                                    variant: "bordered",
+                                                    placeholder: q.description || 'Select one or more options',
+                                                    items: q.options || [],
+                                                    children: (opt)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$listbox$2f$dist$2f$chunk$2d$BJFJ4DRR$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__listbox_item_base_default__as__SelectItem$3e$__["SelectItem"], {
+                                                            children: opt.text
+                                                        }, opt.id, false, {
+                                                            fileName: "[project]/app/(app)/feedbacks/_components/FeedbackQuestionSelect.tsx",
+                                                            lineNumber: 278,
+                                                            columnNumber: 51
+                                                        }, this)
+                                                }, void 0, false, {
+                                                    fileName: "[project]/app/(app)/feedbacks/_components/FeedbackQuestionSelect.tsx",
+                                                    lineNumber: 264,
+                                                    columnNumber: 25
+                                                }, this)
+                                            ]
+                                        }, id, true, {
+                                            fileName: "[project]/app/(app)/feedbacks/_components/FeedbackQuestionSelect.tsx",
+                                            lineNumber: 259,
+                                            columnNumber: 23
+                                        }, this);
+                                    }
+                                case 'rating':
+                                    {
+                                        const ratingOpts = q.options && q.options.length ? q.options : Array.from({
+                                            length: 5
+                                        }, (_, i)=>({
+                                                id: String(i + 1),
+                                                text: String(i + 1),
+                                                value: i + 1
+                                            }));
+                                        const current = answers[id];
+                                        const selectedKey = typeof current === 'number' ? String(current) : current || '';
+                                        const selected = selectedKey ? new Set([
+                                            selectedKey
+                                        ]) : new Set();
+                                        return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            className: "space-y-2 rounded-xl border border-default-200 p-3",
+                                            children: [
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    className: "text-sm font-medium text-default-700",
+                                                    children: [
+                                                        q.title,
+                                                        q.required ? ' *' : ''
+                                                    ]
+                                                }, void 0, true, {
+                                                    fileName: "[project]/app/(app)/feedbacks/_components/FeedbackQuestionSelect.tsx",
+                                                    lineNumber: 300,
+                                                    columnNumber: 25
+                                                }, this),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$select$2f$dist$2f$chunk$2d$Y2AYO5NJ$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__select_default__as__Select$3e$__["Select"], {
+                                                    selectedKeys: selected,
+                                                    onSelectionChange: (keys)=>{
+                                                        const arr = keys === 'all' ? ratingOpts.map((o)=>o.id) : Array.from(keys);
+                                                        const key = arr[0] || '';
+                                                        const opt = ratingOpts.find((o)=>o.id === key);
+                                                        const val = typeof opt?.value === 'number' ? opt.value : Number(key);
+                                                        onAnswerChange(id, val);
+                                                    },
+                                                    variant: "bordered",
+                                                    placeholder: q.description || 'Select a rating',
+                                                    items: ratingOpts,
+                                                    children: (opt)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$listbox$2f$dist$2f$chunk$2d$BJFJ4DRR$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__listbox_item_base_default__as__SelectItem$3e$__["SelectItem"], {
+                                                            children: opt.text
+                                                        }, opt.id, false, {
+                                                            fileName: "[project]/app/(app)/feedbacks/_components/FeedbackQuestionSelect.tsx",
+                                                            lineNumber: 317,
+                                                            columnNumber: 51
+                                                        }, this)
+                                                }, void 0, false, {
+                                                    fileName: "[project]/app/(app)/feedbacks/_components/FeedbackQuestionSelect.tsx",
+                                                    lineNumber: 304,
+                                                    columnNumber: 25
+                                                }, this)
+                                            ]
+                                        }, id, true, {
+                                            fileName: "[project]/app/(app)/feedbacks/_components/FeedbackQuestionSelect.tsx",
+                                            lineNumber: 299,
+                                            columnNumber: 23
+                                        }, this);
+                                    }
+                                case 'boolean':
+                                    {
+                                        const val = typeof answers[id] === 'boolean' ? answers[id] : false;
+                                        return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            className: "space-y-2 rounded-xl border border-default-200 p-3",
+                                            children: [
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    className: "flex items-center justify-between",
+                                                    children: [
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                            className: "text-sm font-medium text-default-700",
+                                                            children: [
+                                                                q.title,
+                                                                q.required ? ' *' : ''
+                                                            ]
+                                                        }, void 0, true, {
+                                                            fileName: "[project]/app/(app)/feedbacks/_components/FeedbackQuestionSelect.tsx",
+                                                            lineNumber: 328,
+                                                            columnNumber: 27
+                                                        }, this),
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$switch$2f$dist$2f$chunk$2d$TQNYOUFX$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__switch_default__as__Switch$3e$__["Switch"], {
+                                                            isSelected: val,
+                                                            onValueChange: (v)=>onAnswerChange(id, v)
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/app/(app)/feedbacks/_components/FeedbackQuestionSelect.tsx",
+                                                            lineNumber: 332,
+                                                            columnNumber: 27
+                                                        }, this)
+                                                    ]
+                                                }, void 0, true, {
+                                                    fileName: "[project]/app/(app)/feedbacks/_components/FeedbackQuestionSelect.tsx",
+                                                    lineNumber: 327,
+                                                    columnNumber: 25
+                                                }, this),
+                                                q.description ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    className: "text-xs text-default-500",
+                                                    children: q.description
+                                                }, void 0, false, {
+                                                    fileName: "[project]/app/(app)/feedbacks/_components/FeedbackQuestionSelect.tsx",
+                                                    lineNumber: 335,
+                                                    columnNumber: 27
+                                                }, this) : null
+                                            ]
+                                        }, id, true, {
+                                            fileName: "[project]/app/(app)/feedbacks/_components/FeedbackQuestionSelect.tsx",
+                                            lineNumber: 326,
+                                            columnNumber: 23
+                                        }, this);
+                                    }
+                            }
+                        })
+                    }, void 0, false, {
+                        fileName: "[project]/app/(app)/feedbacks/_components/FeedbackQuestionSelect.tsx",
+                        lineNumber: 207,
+                        columnNumber: 13
+                    }, this) : null
+                ]
+            }, void 0, true)
+        ]
+    }, void 0, true, {
+        fileName: "[project]/app/(app)/feedbacks/_components/FeedbackQuestionSelect.tsx",
+        lineNumber: 125,
+        columnNumber: 5
+    }, this);
+}
+}}),
 "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx [app-ssr] (ecmascript)": ((__turbopack_context__) => {
 "use strict";
 
@@ -1350,7 +1918,9 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/server/route-modules/app-page/vendored/ssr/react.js [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$plus$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__PlusIcon$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/plus.js [app-ssr] (ecmascript) <export default as PlusIcon>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$tag$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__TagIcon$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/tag.js [app-ssr] (ecmascript) <export default as TagIcon>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$app$2f28$app$292f$feedbacks$2f$_components$2f$FeedbackQuestionSelect$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/app/(app)/feedbacks/_components/FeedbackQuestionSelect.tsx [app-ssr] (ecmascript)");
 'use client';
+;
 ;
 ;
 ;
@@ -1505,7 +2075,7 @@ function FeedbackCreateModal({ isOpen, onClose, onSubmit, projectOptions = [], q
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$modal$2f$dist$2f$chunk$2d$UKLRQS27$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__modal_default__as__Modal$3e$__["Modal"], {
         isOpen: isOpen,
         onClose: onClose,
-        size: "lg",
+        size: "3xl",
         backdrop: "blur",
         scrollBehavior: "inside",
         placement: "center",
@@ -1535,7 +2105,7 @@ function FeedbackCreateModal({ isOpen, onClose, onSubmit, projectOptions = [], q
             }
         },
         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$modal$2f$dist$2f$chunk$2d$NWAOTABO$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__modal_content_default__as__ModalContent$3e$__["ModalContent"], {
-            className: "max-h-[90vh] overflow-hidden",
+            className: "max-h-[90vh] w-[100vw] max-w-[1100px] overflow-hidden",
             children: [
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$modal$2f$dist$2f$chunk$2d$IGSAU2ZA$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__modal_header_default__as__ModalHeader$3e$__["ModalHeader"], {
                     className: "flex flex-col gap-1 border-b border-default-200 bg-gradient-to-r from-violet-50 to-blue-50",
@@ -1548,12 +2118,12 @@ function FeedbackCreateModal({ isOpen, onClose, onSubmit, projectOptions = [], q
                                     className: "w-5 h-5"
                                 }, void 0, false, {
                                     fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                    lineNumber: 244,
+                                    lineNumber: 247,
                                     columnNumber: 15
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                lineNumber: 243,
+                                lineNumber: 246,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1563,7 +2133,7 @@ function FeedbackCreateModal({ isOpen, onClose, onSubmit, projectOptions = [], q
                                         children: "Create Feedback"
                                     }, void 0, false, {
                                         fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                        lineNumber: 247,
+                                        lineNumber: 250,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1571,28 +2141,28 @@ function FeedbackCreateModal({ isOpen, onClose, onSubmit, projectOptions = [], q
                                         children: "Choose project, select questions, and add answers"
                                     }, void 0, false, {
                                         fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                        lineNumber: 250,
+                                        lineNumber: 253,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                lineNumber: 246,
+                                lineNumber: 249,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                        lineNumber: 242,
+                        lineNumber: 245,
                         columnNumber: 11
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                    lineNumber: 241,
+                    lineNumber: 244,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$modal$2f$dist$2f$chunk$2d$FOPEYBSC$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__modal_body_default__as__ModalBody$3e$__["ModalBody"], {
-                    className: "space-y-6  overflow-y-auto flex flex-row",
+                    className: "py-6 overflow-y-auto flex flex-row gap-6",
                     children: [
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                             className: "flex flex-col gap-6",
@@ -1608,13 +2178,13 @@ function FeedbackCreateModal({ isOpen, onClose, onSubmit, projectOptions = [], q
                                                     children: "*"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                                    lineNumber: 263,
+                                                    lineNumber: 266,
                                                     columnNumber: 25
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                            lineNumber: 262,
+                                            lineNumber: 265,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$input$2f$dist$2f$chunk$2d$SSA7SXE4$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__input_default__as__Input$3e$__["Input"], {
@@ -1626,13 +2196,13 @@ function FeedbackCreateModal({ isOpen, onClose, onSubmit, projectOptions = [], q
                                             size: "lg"
                                         }, void 0, false, {
                                             fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                            lineNumber: 265,
+                                            lineNumber: 268,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                    lineNumber: 261,
+                                    lineNumber: 264,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1646,13 +2216,13 @@ function FeedbackCreateModal({ isOpen, onClose, onSubmit, projectOptions = [], q
                                                     children: "*"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                                    lineNumber: 278,
+                                                    lineNumber: 281,
                                                     columnNumber: 25
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                            lineNumber: 277,
+                                            lineNumber: 280,
                                             columnNumber: 15
                                         }, this),
                                         projectOptions.length > 0 ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$select$2f$dist$2f$chunk$2d$Y2AYO5NJ$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__select_default__as__Select$3e$__["Select"], {
@@ -1667,12 +2237,12 @@ function FeedbackCreateModal({ isOpen, onClose, onSubmit, projectOptions = [], q
                                                     children: p
                                                 }, p, false, {
                                                     fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                                    lineNumber: 291,
+                                                    lineNumber: 294,
                                                     columnNumber: 21
                                                 }, this))
                                         }, void 0, false, {
                                             fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                            lineNumber: 281,
+                                            lineNumber: 284,
                                             columnNumber: 17
                                         }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$input$2f$dist$2f$chunk$2d$SSA7SXE4$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__input_default__as__Input$3e$__["Input"], {
                                             placeholder: "Enter project name",
@@ -1682,13 +2252,13 @@ function FeedbackCreateModal({ isOpen, onClose, onSubmit, projectOptions = [], q
                                             variant: "bordered"
                                         }, void 0, false, {
                                             fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                            lineNumber: 295,
+                                            lineNumber: 298,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                    lineNumber: 276,
+                                    lineNumber: 279,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1698,7 +2268,7 @@ function FeedbackCreateModal({ isOpen, onClose, onSubmit, projectOptions = [], q
                                             children: "Category"
                                         }, void 0, false, {
                                             fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                            lineNumber: 307,
+                                            lineNumber: 310,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$input$2f$dist$2f$chunk$2d$SSA7SXE4$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__input_default__as__Input$3e$__["Input"], {
@@ -1710,18 +2280,18 @@ function FeedbackCreateModal({ isOpen, onClose, onSubmit, projectOptions = [], q
                                                 className: "w-4 h-4 text-default-400"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                                lineNumber: 315,
+                                                lineNumber: 318,
                                                 columnNumber: 31
                                             }, void 0)
                                         }, void 0, false, {
                                             fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                            lineNumber: 310,
+                                            lineNumber: 313,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                    lineNumber: 306,
+                                    lineNumber: 309,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1735,13 +2305,13 @@ function FeedbackCreateModal({ isOpen, onClose, onSubmit, projectOptions = [], q
                                                     children: "*"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                                    lineNumber: 322,
+                                                    lineNumber: 325,
                                                     columnNumber: 25
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                            lineNumber: 321,
+                                            lineNumber: 324,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$input$2f$dist$2f$chunk$2d$QESP63UR$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__textarea_default__as__Textarea$3e$__["Textarea"], {
@@ -1754,13 +2324,13 @@ function FeedbackCreateModal({ isOpen, onClose, onSubmit, projectOptions = [], q
                                             variant: "bordered"
                                         }, void 0, false, {
                                             fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                            lineNumber: 324,
+                                            lineNumber: 327,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                    lineNumber: 320,
+                                    lineNumber: 323,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1774,7 +2344,7 @@ function FeedbackCreateModal({ isOpen, onClose, onSubmit, projectOptions = [], q
                                                     children: "Submit as anonymous"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                                    lineNumber: 338,
+                                                    lineNumber: 341,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1782,13 +2352,13 @@ function FeedbackCreateModal({ isOpen, onClose, onSubmit, projectOptions = [], q
                                                     children: "When enabled, reporter identity will be hidden."
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                                    lineNumber: 339,
+                                                    lineNumber: 342,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                            lineNumber: 337,
+                                            lineNumber: 340,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$switch$2f$dist$2f$chunk$2d$TQNYOUFX$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__switch_default__as__Switch$3e$__["Switch"], {
@@ -1796,13 +2366,13 @@ function FeedbackCreateModal({ isOpen, onClose, onSubmit, projectOptions = [], q
                                             onValueChange: setAnonymous
                                         }, void 0, false, {
                                             fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                            lineNumber: 343,
+                                            lineNumber: 346,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                    lineNumber: 336,
+                                    lineNumber: 339,
                                     columnNumber: 13
                                 }, this),
                                 !anonymous && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1815,7 +2385,7 @@ function FeedbackCreateModal({ isOpen, onClose, onSubmit, projectOptions = [], q
                                                     children: "Reporter Name"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                                    lineNumber: 349,
+                                                    lineNumber: 352,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$input$2f$dist$2f$chunk$2d$SSA7SXE4$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__input_default__as__Input$3e$__["Input"], {
@@ -1825,13 +2395,13 @@ function FeedbackCreateModal({ isOpen, onClose, onSubmit, projectOptions = [], q
                                                     variant: "bordered"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                                    lineNumber: 352,
+                                                    lineNumber: 355,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                            lineNumber: 348,
+                                            lineNumber: 351,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1845,13 +2415,13 @@ function FeedbackCreateModal({ isOpen, onClose, onSubmit, projectOptions = [], q
                                                             children: "*"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                                            lineNumber: 361,
+                                                            lineNumber: 364,
                                                             columnNumber: 36
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                                    lineNumber: 360,
+                                                    lineNumber: 363,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$input$2f$dist$2f$chunk$2d$SSA7SXE4$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__input_default__as__Input$3e$__["Input"], {
@@ -1863,54 +2433,58 @@ function FeedbackCreateModal({ isOpen, onClose, onSubmit, projectOptions = [], q
                                                     isRequired: true
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                                    lineNumber: 363,
+                                                    lineNumber: 366,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                            lineNumber: 359,
+                                            lineNumber: 362,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                    lineNumber: 347,
+                                    lineNumber: 350,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                            lineNumber: 259,
+                            lineNumber: 262,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h1", {
-                                children: [
-                                    "Select Question ",
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                        className: "text-red-500",
-                                        children: "*"
-                                    }, void 0, false, {
-                                        fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                        lineNumber: 377,
-                                        columnNumber: 33
-                                    }, this)
-                                ]
-                            }, void 0, true, {
+                            className: "flex-1 min-w-[280px]",
+                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$app$2f28$app$292f$feedbacks$2f$_components$2f$FeedbackQuestionSelect$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
+                                projectName: projectName,
+                                questionsByProject: questionsByProject || {},
+                                selectedIds: Array.from(selectedQuestions),
+                                answers: answers,
+                                onSelectedIdsChange: (ids, nextAnswers)=>{
+                                    setSelectedQuestions(new Set(ids)); // keep Set upstream
+                                    setAnswers(nextAnswers);
+                                },
+                                onAnswerChange: (qid, value)=>{
+                                    setAnswers((prev)=>({
+                                            ...prev,
+                                            [qid]: value
+                                        }));
+                                }
+                            }, void 0, false, {
                                 fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                lineNumber: 377,
+                                lineNumber: 380,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                            lineNumber: 376,
+                            lineNumber: 379,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                    lineNumber: 257,
+                    lineNumber: 260,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$modal$2f$dist$2f$chunk$2d$O5MCAK4F$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__modal_footer_default__as__ModalFooter$3e$__["ModalFooter"], {
@@ -1923,7 +2497,7 @@ function FeedbackCreateModal({ isOpen, onClose, onSubmit, projectOptions = [], q
                             children: "Cancel"
                         }, void 0, false, {
                             fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                            lineNumber: 383,
+                            lineNumber: 397,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$heroui$2f$button$2f$dist$2f$chunk$2d$WBUKVQRU$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__button_default__as__Button$3e$__["Button"], {
@@ -1935,30 +2509,30 @@ function FeedbackCreateModal({ isOpen, onClose, onSubmit, projectOptions = [], q
                                 className: "w-4 h-4"
                             }, void 0, false, {
                                 fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                                lineNumber: 391,
+                                lineNumber: 405,
                                 columnNumber: 27
                             }, void 0),
                             children: "Create Feedback"
                         }, void 0, false, {
                             fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                            lineNumber: 386,
+                            lineNumber: 400,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-                    lineNumber: 382,
+                    lineNumber: 396,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-            lineNumber: 240,
+            lineNumber: 243,
             columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "[project]/app/(app)/feedbacks/_components/FeedbackCreateModal.tsx",
-        lineNumber: 219,
+        lineNumber: 222,
         columnNumber: 5
     }, this);
 }
@@ -2417,4 +2991,4 @@ function FeedbacksPage() {
 
 };
 
-//# sourceMappingURL=_b780cfd7._.js.map
+//# sourceMappingURL=_247f2bf9._.js.map
