@@ -784,40 +784,6 @@
     grid-column: span 12 / span 12;
   }
 
-  .container {
-    width: 100%;
-  }
-
-  @media (width >= 40rem) {
-    .container {
-      max-width: 40rem;
-    }
-  }
-
-  @media (width >= 48rem) {
-    .container {
-      max-width: 48rem;
-    }
-  }
-
-  @media (width >= 64rem) {
-    .container {
-      max-width: 64rem;
-    }
-  }
-
-  @media (width >= 80rem) {
-    .container {
-      max-width: 80rem;
-    }
-  }
-
-  @media (width >= 96rem) {
-    .container {
-      max-width: 96rem;
-    }
-  }
-
   .-m-2 {
     margin: calc(var(--spacing) * -2);
   }
@@ -936,10 +902,6 @@
 
   .mt-2 {
     margin-top: calc(var(--spacing) * 2);
-  }
-
-  .mt-3 {
-    margin-top: calc(var(--spacing) * 3);
   }
 
   .mt-4 {
@@ -1467,10 +1429,6 @@
 
   .w-\[80\%\] {
     width: 80%;
-  }
-
-  .w-\[95vw\] {
-    width: 95vw;
   }
 
   .w-\[100vw\] {
@@ -2603,10 +2561,6 @@
 
   .border-secondary-400 {
     border-color: hsl(var(--heroui-secondary-400) / 1);
-  }
-
-  .border-slate-100 {
-    border-color: var(--color-slate-100);
   }
 
   .border-success {
@@ -4723,16 +4677,6 @@
     }
   }
 
-  .shadow-black\/10 {
-    --tw-shadow-color: #0000001a;
-  }
-
-  @supports (color: color-mix(in lab, red, red)) {
-    .shadow-black\/10 {
-      --tw-shadow-color: color-mix(in oklab, color-mix(in oklab, var(--color-black) 10%, transparent) var(--tw-shadow-alpha), transparent);
-    }
-  }
-
   .shadow-blue-300 {
     --tw-shadow-color: oklch(80.9% .105 251.813);
   }
@@ -4813,16 +4757,6 @@
     }
   }
 
-  .shadow-slate-50 {
-    --tw-shadow-color: oklch(98.4% .003 247.858);
-  }
-
-  @supports (color: color-mix(in lab, red, red)) {
-    .shadow-slate-50 {
-      --tw-shadow-color: color-mix(in oklab, var(--color-slate-50) var(--tw-shadow-alpha), transparent);
-    }
-  }
-
   .shadow-slate-100 {
     --tw-shadow-color: oklch(96.8% .007 247.896);
   }
@@ -4830,16 +4764,6 @@
   @supports (color: color-mix(in lab, red, red)) {
     .shadow-slate-100 {
       --tw-shadow-color: color-mix(in oklab, var(--color-slate-100) var(--tw-shadow-alpha), transparent);
-    }
-  }
-
-  .shadow-slate-200 {
-    --tw-shadow-color: oklch(92.9% .013 255.508);
-  }
-
-  @supports (color: color-mix(in lab, red, red)) {
-    .shadow-slate-200 {
-      --tw-shadow-color: color-mix(in oklab, var(--color-slate-200) var(--tw-shadow-alpha), transparent);
     }
   }
 
@@ -10576,12 +10500,6 @@
   @media (width >= 64rem) {
     .lg\:grid-cols-4 {
       grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
-  }
-
-  @media (width >= 64rem) {
-    .lg\:grid-cols-\[1fr\,1\.15fr\] {
-      grid-template-columns: 1fr, 1.15fr;
     }
   }
 
