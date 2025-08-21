@@ -240,7 +240,7 @@ export default function FeedbackCreateModal({
         },
       }}
     >
-      <ModalContent className="max-h-[90vh] w-[100vw] max-w-[1100px] overflow-hidden">
+      <ModalContent className="max-h-[90vh] w-[100vw] max-w-[1400px] overflow-hidden">
         <ModalHeader className="flex flex-col gap-1 border-b border-default-200 bg-gradient-to-r from-violet-50 to-blue-50">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-gradient-to-r from-indigo-500 to-blue-600 text-white">
@@ -257,7 +257,7 @@ export default function FeedbackCreateModal({
           </div>
         </ModalHeader>
 
-        <ModalBody className="py-6 overflow-y-auto flex flex-row gap-6">
+        <ModalBody className="py-6 overflow-y-auto flex flex-row gap-6 flex-1/3">
           {/* Left Body */}
           <div className="flex flex-col gap-6">
             {/* Subject */}
@@ -311,7 +311,7 @@ export default function FeedbackCreateModal({
                 Category
               </label>
               <Input
-                placeholder="e.g., UX, Performance, Bug, Kudos"
+                placeholder="Select category"
                 value={category}
                 onChange={e => setCategory(e.target.value)}
                 variant="bordered"
