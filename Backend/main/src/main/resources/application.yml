@@ -33,7 +33,8 @@ logging:
     org.springframework.security: INFO
 
 jwt:
-  secret: change-me-please-at-least-256-bits-length-change-me-please-256-bits
+  # Use plain string or base64:<encoded>; both are supported. Plain strings shorter than 32 bytes will be SHA-256 expanded.
+  secret: 9b565deb729cf3201a19c54af3b31afbae6819226c0f1adb2e524fd121973f1c54f74048
   expiration: 3600000 # 1 hour in ms
   refresh-expiration: 604800000 # 7 days in ms
 

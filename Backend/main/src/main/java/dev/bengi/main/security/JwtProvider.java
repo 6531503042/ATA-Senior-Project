@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.io.DecodingException;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -14,6 +15,8 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 @Component
 public class JwtProvider {
@@ -28,12 +31,34 @@ public class JwtProvider {
     private long jwtRefreshExpirationMs;
 
     private SecretKey getSigningKey() {
+        String secret = jwtSecret;
+
+        // Support prefix-based explicit base64 secrets: base64:...
+        if (secret != null && secret.startsWith("base64:")) {
+            secret = secret.substring("base64:".length());
+            try {
+                return Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret));
+            } catch (DecodingException | IllegalArgumentException e) {
+                // fall through to raw handling below
+            }
+        }
+
+        // Try base64 first (no prefix case), then raw
         try {
-            byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
+            byte[] keyBytes = Decoders.BASE64.decode(secret);
             return Keys.hmacShaKeyFor(keyBytes);
-        } catch (IllegalArgumentException ex) {
-            // Fallback to raw string bytes if not Base64-encoded
-            return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+        } catch (DecodingException | IllegalArgumentException e) {
+            byte[] raw = secret.getBytes(StandardCharsets.UTF_8);
+            // Ensure at least 256-bit (32 bytes) key material by hashing if needed
+            if (raw.length < 32) {
+                try {
+                    MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
+                    raw = sha256.digest(raw);
+                } catch (NoSuchAlgorithmException ignored) {
+                    // Should not happen; SHA-256 is standard. If it does, the raw bytes will be used.
+                }
+            }
+            return Keys.hmacShaKeyFor(raw);
         }
     }
 

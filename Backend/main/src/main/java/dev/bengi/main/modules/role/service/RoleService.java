@@ -25,10 +25,15 @@ public class RoleService {
 
     @Transactional
     public Mono<RoleResponse> create(RoleRequestCreate req) {
-        Role entity = mapper.toEntity(req);
-        return roleRepository.save(entity)
-                .map(mapper::toResponse)
-                .doOnSuccess(d -> log.info("Role created: {}", d));
+        return roleRepository.existsByName(req.name().asString())
+                .flatMap(exists -> exists
+                        ? Mono.error(new dev.bengi.main.exception.GlobalServiceException(dev.bengi.main.exception.ErrorCode.CONFLICT, "Role already exists"))
+                        : Mono.defer(() -> {
+                            Role entity = mapper.toEntity(req);
+                            return roleRepository.save(entity)
+                                    .map(mapper::toResponse)
+                                    .doOnSuccess(d -> log.info("Role created: {}", d));
+                        }));
     }
 
     @Transactional
