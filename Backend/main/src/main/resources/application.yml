@@ -38,3 +38,28 @@ jwt:
   expiration: 3600000 # 1 hour in ms
   refresh-expiration: 604800000 # 7 days in ms
 
+# Application Security Configuration
+app:
+  allowed-origins: "http://localhost:3000,http://localhost:3001,http://localhost:8081"
+  security:
+    # Rate limiting configuration
+    rate-limit:
+      enabled: true
+      requests-per-minute: 100
+      auth-requests-per-minute: 5
+    # CORS settings
+    cors:
+      max-age: 3600
+      allow-credentials: true
+    # Session management
+    session:
+      concurrent-sessions: 3
+      prevent-login-if-maximum: false
+    # Security headers
+    headers:
+      frame-options: DENY
+      content-type-options: true
+      xss-protection: true
+      referrer-policy: STRICT_ORIGIN_WHEN_CROSS_ORIGIN
+      hsts-max-age: 31536000
+

@@ -48,7 +48,7 @@ public class JwtProvider {
             byte[] keyBytes = Decoders.BASE64.decode(secret);
             return Keys.hmacShaKeyFor(keyBytes);
         } catch (DecodingException | IllegalArgumentException e) {
-            byte[] raw = secret.getBytes(StandardCharsets.UTF_8);
+            byte[] raw = (secret != null ? secret : "default-secret").getBytes(StandardCharsets.UTF_8);
             // Ensure at least 256-bit (32 bytes) key material by hashing if needed
             if (raw.length < 32) {
                 try {
@@ -96,7 +96,6 @@ public class JwtProvider {
         return parseClaims(token).getSubject();
     }
 
-    @SuppressWarnings("unchecked")
     public List<String> getRoles(String token) {
         Claims claims = parseClaims(token);
         Object roles = claims.get("roles");

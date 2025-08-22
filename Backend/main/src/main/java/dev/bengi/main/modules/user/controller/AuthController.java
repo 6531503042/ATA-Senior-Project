@@ -5,10 +5,12 @@ import dev.bengi.main.modules.user.dto.RegisterRequest;
 import dev.bengi.main.modules.user.dto.TokenValidationResponse;
 import dev.bengi.main.modules.user.dto.JwtResponse;
 import dev.bengi.main.modules.user.service.UserService;
+import dev.bengi.main.security.SecurityAuditService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -17,6 +19,7 @@ import reactor.core.publisher.Mono;
 public class AuthController {
 
     private final UserService userService;
+    private final SecurityAuditService auditService;
 
     @PostMapping("/register")
     public Mono<ResponseEntity<Void>> register(@Valid @RequestBody RegisterRequest request) {
@@ -24,8 +27,9 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public Mono<ResponseEntity<JwtResponse>> login(@Valid @RequestBody LoginRequest request) {
-        return userService.login(request).map(ResponseEntity::ok);
+    public Mono<ResponseEntity<JwtResponse>> login(@Valid @RequestBody LoginRequest request, ServerWebExchange exchange) {
+        String clientIp = auditService.getClientIpAddress(exchange);
+        return userService.login(request, clientIp).map(ResponseEntity::ok);
     }
 
     @GetMapping("/validate")
