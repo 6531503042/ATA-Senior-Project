@@ -20,6 +20,13 @@ public interface ProjectMemberRepository extends R2dbcRepository<dev.bengi.main.
     @Query("SELECT COUNT(*) FROM project_members WHERE project_id = :projectId")
     Mono<Long> countMembersForProject(Long projectId);
 
+    // Advanced dashboard metrics queries
+    @Query("SELECT COUNT(DISTINCT user_id) FROM project_members")
+    Mono<Long> countDistinctMembers();
+
+    @Query("SELECT COUNT(DISTINCT user_id) FROM project_members pm JOIN projects p ON pm.project_id = p.id WHERE p.created_at >= :from AND p.created_at < :to")
+    Mono<Long> countNewMembersBetween(java.time.LocalDateTime from, java.time.LocalDateTime to);
+
     // Dummy row type for R2dbcRepository requirement; we use custom queries above
     class ProjectMemberRow {
         public Long id; // not used

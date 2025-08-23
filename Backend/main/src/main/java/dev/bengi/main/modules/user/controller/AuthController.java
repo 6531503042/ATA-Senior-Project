@@ -36,6 +36,24 @@ public class AuthController {
     public Mono<ResponseEntity<TokenValidationResponse>> validate(@RequestHeader(name = "Authorization", required = false) String token) {
         return userService.validate(token).map(ResponseEntity::ok);
     }
+
+    @PostMapping("/refresh-token")
+    public Mono<ResponseEntity<JwtResponse>> refreshToken(
+            @RequestHeader(value = "Refresh-Token", required = true) String refreshToken) {
+        return userService.refreshToken(refreshToken)
+                .map(response -> ResponseEntity.ok()
+                        .header("Authorization", "Bearer " + response.accessToken())
+                        .header("Refresh-Token", response.refreshToken())
+                        .body(response))
+                .onErrorResume(error -> 
+                    Mono.just(ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED)
+                            .body(new JwtResponse(null, null, null, null, null, java.util.List.of()))));
+    }
+
+    @PostMapping("/logout")
+    public Mono<ResponseEntity<String>> logout() {
+        return Mono.just(ResponseEntity.ok("User logged out successfully"));
+    }
 }
 
 

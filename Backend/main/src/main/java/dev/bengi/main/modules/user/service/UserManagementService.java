@@ -398,4 +398,27 @@ public class UserManagementService {
                 .map((row, meta) -> row.get(0, Long.class))
                 .one();
     }
+
+    // Additional method for employee endpoints
+    
+    public Mono<PageResponse<UserResponseDto>> findUsersByDepartment(Long departmentId, PageRequest pageRequest) {
+        String baseQuery = """
+            SELECT u.*, d.name as department_name
+            FROM users u
+            LEFT JOIN departments d ON u.department_id = d.id
+            WHERE u.department_id = :departmentId AND u.active = true
+            """;
+        
+        String countQuery = "SELECT COUNT(*) FROM users u WHERE u.department_id = :departmentId AND u.active = true";
+
+        return paginationService.executePaginatedQuery(
+            baseQuery + " AND department_id = " + departmentId,
+            countQuery,
+            pageRequest,
+            ALLOWED_SORT_FIELDS,
+            SEARCHABLE_FIELDS,
+            this::executeUserQuery,
+            this::executeCountQuery
+        );
+    }
 }

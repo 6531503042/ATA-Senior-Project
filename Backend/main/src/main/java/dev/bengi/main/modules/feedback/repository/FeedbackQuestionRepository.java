@@ -2,7 +2,6 @@ package dev.bengi.main.modules.feedback.repository;
 
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.r2dbc.repository.R2dbcRepository;
-import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 
 public interface FeedbackQuestionRepository extends R2dbcRepository<FeedbackQuestionRepository.FeedbackQuestionRow, Long> {

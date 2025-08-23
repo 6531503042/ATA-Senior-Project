@@ -41,6 +41,16 @@ public interface FeedbackRepository extends R2dbcRepository<Feedback, Long> {
         AND (end_date IS NULL OR end_date >= NOW())
         """)
     Mono<Long> countActiveAndAvailable();
+
+    // Advanced dashboard metrics queries
+    @Query("SELECT COUNT(*) FROM feedbacks WHERE active = true")
+    Mono<Long> countActiveFeedbacks();
+
+    @Query("SELECT COUNT(*) FROM feedbacks WHERE end_date < NOW()")
+    Mono<Long> countCompletedFeedbacks();
+
+    @Query("SELECT AVG((SELECT COUNT(*) FROM submissions WHERE feedback_id = f.id)) FROM feedbacks f WHERE f.active = true")
+    Mono<Double> getAverageResponseRate();
 }
 
 

@@ -95,6 +95,34 @@ public class UserService {
                 .map(u -> new TokenValidationResponse(true, u.getId(), u.getUsername(), roles, "OK"))
                 .switchIfEmpty(Mono.just(new TokenValidationResponse(false, null, username, roles, "User not found")));
     }
+
+    public Mono<JwtResponse> refreshToken(String refreshToken) {
+        if (refreshToken == null || refreshToken.isEmpty()) {
+            return Mono.error(new GlobalServiceException(ErrorCode.BAD_REQUEST, "Refresh token is required"));
+        }
+
+        if (!jwtProvider.validateToken(refreshToken)) {
+            return Mono.error(new GlobalServiceException(ErrorCode.UNAUTHORIZED, "Invalid refresh token"));
+        }
+
+        String username = jwtProvider.getUsernameFromToken(refreshToken);
+        
+        return userRepository.findByUsername(username)
+                .switchIfEmpty(Mono.error(new GlobalServiceException(ErrorCode.NOT_FOUND, "User not found")))
+                .flatMap(user -> userRepository.findRoleNamesByUsername(user.getUsername()).collectList()
+                        .map(roleNames -> {
+                            user.setRoles(new java.util.HashSet<>(roleNames));
+                            return user;
+                        }))
+                .map(user -> {
+                    List<String> roles = user.getRoles().isEmpty() ? List.of("USER") : user.getRoles().stream().toList();
+                    String newAccessToken = jwtProvider.createToken(user.getUsername(), roles);
+                    String newRefreshToken = jwtProvider.createRefreshToken(user.getUsername());
+                    
+                    log.info("Token refreshed successfully for user: {}", user.getUsername());
+                    return new JwtResponse(newAccessToken, newRefreshToken, user.getId(), user.getUsername(), user.getEmail(), roles);
+                });
+    }
 }
 
 

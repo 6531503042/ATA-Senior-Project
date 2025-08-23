@@ -1,5 +1,8 @@
 package dev.bengi.main.modules.question.service;
 
+import dev.bengi.main.common.pagination.PageRequest;
+import dev.bengi.main.common.pagination.PageResponse;
+import dev.bengi.main.common.pagination.PaginationService;
 import dev.bengi.main.exception.ErrorCode;
 import dev.bengi.main.exception.GlobalServiceException;
 import dev.bengi.main.modules.question.dto.*;
@@ -18,6 +21,7 @@ import reactor.core.publisher.Mono;
 public class QuestionService {
     private final QuestionRepository questionRepository;
     private final QuestionMapper mapper;
+    private final PaginationService paginationService;
 
     @Transactional
     public Mono<QuestionResponseDto> create(QuestionRequestDto req) {
@@ -50,6 +54,13 @@ public class QuestionService {
 
     public Flux<QuestionResponseDto> getAll() {
         return questionRepository.findAll().map(mapper::toResponse);
+    }
+
+    public Mono<PageResponse<QuestionResponseDto>> getAll(PageRequest pageRequest) {
+        return paginationService.paginateInMemory(
+            questionRepository.findAll().map(mapper::toResponse),
+            pageRequest
+        );
     }
 }
 

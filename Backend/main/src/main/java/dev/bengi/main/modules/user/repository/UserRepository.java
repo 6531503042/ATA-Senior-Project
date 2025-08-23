@@ -26,4 +26,14 @@ public interface UserRepository extends R2dbcRepository<User, Long> {
 
     @Query("SELECT r.name FROM roles r JOIN user_roles ur ON ur.role_id = r.id JOIN users u ON ur.user_id = u.id WHERE u.username = :username")
     reactor.core.publisher.Flux<String> findRoleNamesByUsername(String username);
+
+    // Advanced dashboard metrics queries
+    @Query("SELECT COUNT(DISTINCT id) FROM users WHERE active = true")
+    Mono<Long> countActiveUsers();
+
+    @Query("SELECT COUNT(*) FROM users WHERE created_at >= :from AND created_at < :to")
+    Mono<Long> countCreatedBetween(java.time.LocalDateTime from, java.time.LocalDateTime to);
+
+    @Query("SELECT COUNT(*) FROM users WHERE last_login_at >= :from AND last_login_at < :to")
+    Mono<Long> countActiveUsersBetween(java.time.LocalDateTime from, java.time.LocalDateTime to);
 }

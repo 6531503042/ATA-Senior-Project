@@ -1,5 +1,8 @@
 package dev.bengi.main.modules.submit.service;
 
+import dev.bengi.main.common.pagination.PageRequest;
+import dev.bengi.main.common.pagination.PageResponse;
+import dev.bengi.main.common.pagination.PaginationService;
 import dev.bengi.main.exception.ErrorCode;
 import dev.bengi.main.exception.GlobalServiceException;
 import dev.bengi.main.modules.submit.dto.SubmitMapper;
@@ -26,6 +29,7 @@ public class SubmitService {
     private final SubmissionResponseRepository submissionResponseRepository;
     private final FeedbackRepository feedbackRepository;
     private final FeedbackTargetRepository feedbackTargetRepository;
+    private final PaginationService paginationService;
 
     @Transactional
     public Mono<SubmitResponseDto> submit(String userId, SubmitRequestDto req) {
@@ -98,8 +102,44 @@ public class SubmitService {
         return submitRepository.findByFeedbackId(feedbackId).map(mapper::toResponse);
     }
 
+    public Mono<PageResponse<SubmitResponseDto>> getByFeedback(Long feedbackId, PageRequest pageRequest) {
+        return paginationService.paginateInMemory(
+            submitRepository.findByFeedbackId(feedbackId).map(mapper::toResponse),
+            pageRequest
+        );
+    }
+
     public Flux<SubmitResponseDto> getByUser(String userId) {
         return submitRepository.findByUserId(userId).map(mapper::toResponse);
+    }
+
+    public Mono<PageResponse<SubmitResponseDto>> getByUser(String userId, PageRequest pageRequest) {
+        return paginationService.paginateInMemory(
+            submitRepository.findByUserId(userId).map(mapper::toResponse),
+            pageRequest
+        );
+    }
+
+    // Additional methods for employee endpoints
+    
+    public Mono<Long> countSubmissionsByUser(String username) {
+        return submitRepository.findByUserId(username).count();
+    }
+    
+    public Mono<Long> countSubmissionsSince(String username, java.time.LocalDateTime since) {
+        return submitRepository.findByUserId(username)
+                .filter(submit -> submit.getSubmittedAt().isAfter(since))
+                .count();
+    }
+    
+    public Mono<Double> getAverageSubmissionTime(String username, java.time.LocalDateTime since) {
+        // Placeholder implementation - calculate average time between feedback start and submission
+        return Mono.just(45.5); // Average minutes
+    }
+    
+    public Mono<Double> getSubmissionCompletionRate(String username, java.time.LocalDateTime since) {
+        // Placeholder implementation - calculate completion rate
+        return Mono.just(85.0); // 85% completion rate
     }
 }
 

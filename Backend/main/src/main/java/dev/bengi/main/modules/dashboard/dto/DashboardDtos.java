@@ -12,6 +12,32 @@ public class DashboardDtos {
 			String completionGrowth
 	) {}
 
+	// Advanced metrics DTOs
+	public record AdvancedMetrics(
+			long totalActiveFeedbacks,
+			long totalCompletedFeedbacks,
+			long totalActiveUsers,
+			double averageResponseRate,
+			double averageRating,
+			long uniqueSubmitters,
+			String engagementRate
+	) {}
+
+	public record DepartmentMetrics(
+			Long departmentId,
+			String departmentName,
+			long activeMembers,
+			long totalSubmissions,
+			double averageRating,
+			String participationRate
+	) {}
+
+	public record TimeSeriesMetric(
+			String period,
+			long value,
+			String category
+	) {}
+
 	public record ProjectItem(
 			Long id,
 			String title,
@@ -44,5 +70,58 @@ public class DashboardDtos {
 			java.util.List<ProjectItem> recentProjects,
 			java.util.List<FeedbackItem> recentFeedbacks,
 			ChartData chartData
+	) {}
+
+	// Enhanced dashboard stats with advanced metrics
+	public record EnhancedDashboardStats(
+			DashboardOverview overview,
+			AdvancedMetrics advanced,
+			java.util.List<ProjectItem> recentProjects,
+			java.util.List<FeedbackItem> recentFeedbacks,
+			java.util.List<DepartmentMetrics> departmentMetrics,
+			ChartData chartData,
+			java.util.List<TimeSeriesMetric> timeSeriesData
+	) {}
+
+	// Real-time dashboard features
+	public record RealTimeUpdate(
+			String type, // "notification", "metric_update", "activity"
+			String message,
+			Object data,
+			java.time.LocalDateTime timestamp,
+			String severity // "info", "warning", "error", "success"
+	) {}
+
+	public record ActivityFeed(
+			Long id,
+			String actorName,
+			String action,
+			String targetType,
+			String targetName,
+			java.time.LocalDateTime timestamp,
+			String icon,
+			String color
+	) {}
+
+	public record QuickAction(
+			String id,
+			String title,
+			String description,
+			String icon,
+			String url,
+			String category,
+			boolean enabled
+	) {}
+
+	public record DashboardWidget(
+			String id,
+			String title,
+			String type, // "chart", "metric", "list", "table"
+			Object data,
+			int gridX,
+			int gridY,
+			int gridW,
+			int gridH,
+			boolean visible
 	) {}
 }

@@ -18,6 +18,16 @@ public interface SubmitRepository extends R2dbcRepository<Submit, Long> {
 
     @Query("SELECT * FROM submissions ORDER BY submitted_at DESC LIMIT :limit")
     Flux<Submit> findRecent(int limit);
+
+    // Advanced dashboard metrics queries
+    @Query("SELECT COUNT(DISTINCT user_id) FROM submissions WHERE submitted_at >= :from AND submitted_at < :to")
+    Mono<Long> countUniqueSubmittersBetween(java.time.LocalDateTime from, java.time.LocalDateTime to);
+
+    @Query("SELECT COUNT(DISTINCT feedback_id) FROM submissions WHERE submitted_at >= :from AND submitted_at < :to")
+    Mono<Long> countFeedbacksWithSubmissionsBetween(java.time.LocalDateTime from, java.time.LocalDateTime to);
+
+    @Query("SELECT AVG(rating) FROM submissions WHERE submitted_at >= :from AND submitted_at < :to AND rating IS NOT NULL")
+    Mono<Double> getAverageRatingBetween(java.time.LocalDateTime from, java.time.LocalDateTime to);
 }
 
 

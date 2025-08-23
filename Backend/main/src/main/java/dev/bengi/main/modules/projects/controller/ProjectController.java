@@ -1,5 +1,7 @@
 package dev.bengi.main.modules.projects.controller;
 
+import dev.bengi.main.common.pagination.PageResponse;
+import dev.bengi.main.common.pagination.PaginationService;
 import dev.bengi.main.modules.projects.dto.ProjectRequestDto;
 import dev.bengi.main.modules.projects.dto.ProjectResponseDto;
 import dev.bengi.main.modules.projects.dto.ProjectUpdateRequestDto;
@@ -10,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,6 +23,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 public class ProjectController {
 
     private final ProjectService projectService;
+    private final PaginationService paginationService;
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -44,8 +48,10 @@ public class ProjectController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
-    public Flux<ProjectResponseDto> list() {
-        return projectService.getAll();
+    public Mono<ResponseEntity<PageResponse<ProjectResponseDto>>> list(ServerWebExchange exchange) {
+        var pageRequest = paginationService.parsePageRequest(exchange);
+        return projectService.getAll(pageRequest)
+                .map(ResponseEntity::ok);
     }
 
     @DeleteMapping("/{id}")

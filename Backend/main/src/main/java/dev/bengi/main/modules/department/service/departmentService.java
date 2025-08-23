@@ -1,5 +1,8 @@
 package dev.bengi.main.modules.department.service;
 
+import dev.bengi.main.common.pagination.PageRequest;
+import dev.bengi.main.common.pagination.PageResponse;
+import dev.bengi.main.common.pagination.PaginationService;
 import dev.bengi.main.exception.ErrorCode;
 import dev.bengi.main.exception.GlobalServiceException;
 import dev.bengi.main.modules.department.dto.DepartmentMapper;
@@ -22,6 +25,7 @@ public class DepartmentService {
 
     private final DepartmentRepository departmentRepository;
     private final DepartmentMapper mapper;
+    private final PaginationService paginationService;
 
     @Transactional
     public Mono<DepartmentResponseDto> create(DepartmentRequestDto req) {
@@ -65,5 +69,12 @@ public class DepartmentService {
 
     public Flux<DepartmentResponseDto> listActive() {
         return departmentRepository.findByActive(true).map(mapper::toResponse);
+    }
+
+    public Mono<PageResponse<DepartmentResponseDto>> listActive(PageRequest pageRequest) {
+        return paginationService.paginateInMemory(
+            departmentRepository.findByActive(true).map(mapper::toResponse),
+            pageRequest
+        );
     }
 }
