@@ -29,6 +29,22 @@ public class User {
 
     private String password;
 
+    @Column("first_name")
+    private String firstName;
+
+    @Column("last_name")
+    private String lastName;
+
+    private String phone;
+
+    @Column("department_id")
+    private Long departmentId;
+
+    private boolean active = true;
+
+    @Column("last_login_at")
+    private LocalDateTime lastLoginAt;
+
     @CreatedDate
     @Column("created_at")
     private LocalDateTime createdAt;
@@ -39,4 +55,7 @@ public class User {
 
     @Transient
     private Set<String> roles = new HashSet<>();
+
+    @Transient
+    private String departmentName;
 }

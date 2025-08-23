@@ -1,5 +1,8 @@
 package dev.bengi.main.modules.role.service;
 
+import dev.bengi.main.common.pagination.PageRequest;
+import dev.bengi.main.common.pagination.PageResponse;
+import dev.bengi.main.common.pagination.PaginationService;
 import dev.bengi.main.modules.role.dto.RoleMapper;
 import dev.bengi.main.modules.role.dto.RoleRequestCreate;
 import dev.bengi.main.modules.role.dto.RoleRequestUpdate;
@@ -22,6 +25,7 @@ public class RoleService {
 
     private final RoleRepository roleRepository;
     private final RoleMapper mapper;
+    private final PaginationService paginationService;
 
     @Transactional
     public Mono<RoleResponse> create(RoleRequestCreate req) {
@@ -63,5 +67,12 @@ public class RoleService {
 
     public Flux<RoleResponse> getAll() {
         return roleRepository.findAll().map(mapper::toResponse);
+    }
+
+    public Mono<PageResponse<RoleResponse>> getAll(PageRequest pageRequest) {
+        return paginationService.paginateInMemory(
+            roleRepository.findAll().map(mapper::toResponse),
+            pageRequest
+        );
     }
 }

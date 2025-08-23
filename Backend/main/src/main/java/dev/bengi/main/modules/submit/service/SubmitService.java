@@ -33,19 +33,51 @@ public class SubmitService {
         if (userId == null || userId.isBlank()) {
             return Mono.error(new GlobalServiceException(ErrorCode.UNAUTHORIZED, "Missing user"));
         }
-        // Minimal existence check (extend with project members logic if needed)
+        
+        // Validate feedback existence and timing
         return feedbackRepository.findById(req.feedbackId())
                 .switchIfEmpty(Mono.error(new GlobalServiceException(ErrorCode.NOT_FOUND, "Feedback not found")))
+                .flatMap(feedback -> validateFeedbackTiming(feedback))
                 .then(validateResponses(req))
                 .then(Mono.defer(() -> {
-        Submit entity = mapper.toEntity(req);
-        entity.setUserId(userId);
-        return submitRepository.save(entity)
-                .flatMap(saved -> reactor.core.publisher.Flux.fromIterable(req.responses().entrySet())
-                        .flatMap(e -> submissionResponseRepository.upsertResponse(saved.getId(), e.getKey(), e.getValue()))
-                        .then(Mono.just(saved)))
-                .map(mapper::toResponse);
+                    Submit entity = mapper.toEntity(req);
+                    entity.setUserId(userId);
+                    return submitRepository.save(entity)
+                            .flatMap(saved -> reactor.core.publisher.Flux.fromIterable(req.responses().entrySet())
+                                    .flatMap(e -> submissionResponseRepository.upsertResponse(saved.getId(), e.getKey(), e.getValue()))
+                                    .then(Mono.just(saved)))
+                            .map(mapper::toResponse);
                 }));
+    }
+
+    private Mono<Void> validateFeedbackTiming(dev.bengi.main.modules.feedback.model.Feedback feedback) {
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        
+        // Check if feedback is active
+        if (!feedback.isActive()) {
+            return Mono.error(new GlobalServiceException(
+                ErrorCode.BAD_REQUEST, 
+                "This feedback is not active"
+            ));
+        }
+        
+        // Check start date
+        if (feedback.getStartDate() != null && now.isBefore(feedback.getStartDate())) {
+            return Mono.error(new GlobalServiceException(
+                ErrorCode.BAD_REQUEST, 
+                "Feedback submission has not started yet. Available from: " + feedback.getStartDate()
+            ));
+        }
+        
+        // Check end date
+        if (feedback.getEndDate() != null && now.isAfter(feedback.getEndDate())) {
+            return Mono.error(new GlobalServiceException(
+                ErrorCode.BAD_REQUEST, 
+                "Feedback submission has ended. Deadline was: " + feedback.getEndDate()
+            ));
+        }
+        
+        return Mono.empty();
     }
 
     private Mono<Void> validateResponses(SubmitRequestDto req) {

@@ -1,5 +1,7 @@
 package dev.bengi.main.modules.role.controller;
 
+import dev.bengi.main.common.pagination.PageResponse;
+import dev.bengi.main.common.pagination.PaginationService;
 import dev.bengi.main.modules.role.dto.RoleRequestCreate;
 import dev.bengi.main.modules.role.dto.RoleRequestUpdate;
 import dev.bengi.main.modules.role.dto.RoleResponse;
@@ -9,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,6 +22,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 public class RoleController {
 
     private final RoleService roleService;
+    private final PaginationService paginationService;
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -29,8 +33,10 @@ public class RoleController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public Flux<RoleResponse> list() {
-        return roleService.getAll();
+    public Mono<ResponseEntity<PageResponse<RoleResponse>>> list(ServerWebExchange exchange) {
+        var pageRequest = paginationService.parsePageRequest(exchange);
+        return roleService.getAll(pageRequest)
+                .map(ResponseEntity::ok);
     }
 
     @GetMapping("/{id}")
