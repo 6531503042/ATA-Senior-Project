@@ -1,6 +1,7 @@
 package dev.bengi.main.modules.question.dto;
 
 import dev.bengi.main.modules.question.enums.QuestionType;
+import dev.bengi.main.modules.question.enums.QuestionCategory;
 import java.time.LocalDateTime;
 
 public record QuestionResponseDto(
@@ -8,7 +9,7 @@ public record QuestionResponseDto(
         String text,
         String description,
         QuestionType questionType,
-        String category,
+        QuestionCategory category,
         boolean required,
         String validationRules,
         LocalDateTime createdAt,

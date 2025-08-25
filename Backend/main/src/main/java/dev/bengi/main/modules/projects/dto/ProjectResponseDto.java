@@ -8,7 +8,7 @@ public record ProjectResponseDto(
         String description,
         LocalDateTime startDate,
         LocalDateTime endDate,
-        String status,
+        boolean active,
         Long departmentId,
         LocalDateTime createdAt,
         LocalDateTime updatedAt

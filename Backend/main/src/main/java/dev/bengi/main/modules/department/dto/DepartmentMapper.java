@@ -9,7 +9,7 @@ public interface DepartmentMapper {
 
     // Create: DTO -> Entity
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "active", expression = "java(Boolean.TRUE.equals(req.active()))")
+    @Mapping(target = "active", constant = "true")
     Department toEntity(DepartmentRequestDto req);
 
     // Update (partial)

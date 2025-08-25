@@ -43,10 +43,10 @@ app:
   allowed-origins: "http://localhost:3000,http://localhost:3001,http://localhost:8081"
   security:
     # Rate limiting configuration
-    rate-limit:
-      enabled: true
-      requests-per-minute: 100
-      auth-requests-per-minute: 5
+    # rate-limit:
+    #   enabled: true
+    #   requests-per-minute: 100
+    #   auth-requests-per-minute: 5
     # CORS settings
     cors:
       max-age: 3600

@@ -22,7 +22,7 @@ public class Project {
     private String description;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
-    private String status;
+    private boolean active;
     @Column("department_id")
     private Long departmentId;
     @CreatedDate

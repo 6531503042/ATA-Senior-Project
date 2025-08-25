@@ -13,6 +13,7 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import dev.bengi.main.modules.question.enums.QuestionType;
+import dev.bengi.main.modules.question.enums.QuestionCategory;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
@@ -51,6 +52,11 @@ public class QuestionController {
     @GetMapping("/types")
     public Mono<ResponseEntity<java.util.List<QuestionType>>> types() {
         return Mono.just(ResponseEntity.ok(java.util.Arrays.asList(QuestionType.values())));
+    }
+
+    @GetMapping("/categories")
+    public Mono<ResponseEntity<java.util.List<QuestionCategory>>> categories() {
+        return Mono.just(ResponseEntity.ok(java.util.Arrays.asList(QuestionCategory.values())));
     }
 
     @DeleteMapping("/{id}")

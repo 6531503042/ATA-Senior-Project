@@ -17,7 +17,6 @@ import reactor.core.publisher.Mono;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.*;
-import dev.bengi.main.modules.dashboard.dto.DashboardDtos.*;
 
 @Service
 @RequiredArgsConstructor
@@ -93,7 +92,7 @@ public class DashboardService {
                                 p.getDescription(),
                                 cnt.intValue(),
                                 p.getCreatedAt(),
-                                p.getStatus(),
+                                p.isActive() ? "ACTIVE" : "INACTIVE",
                                 "https://i.pravatar.cc/150?u=project",
                                 0
                         )))

@@ -1,6 +1,7 @@
 package dev.bengi.main.modules.question.model;
 
 import dev.bengi.main.modules.question.enums.QuestionType;
+import dev.bengi.main.modules.question.enums.QuestionCategory;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -26,7 +27,7 @@ public class Question {
     private String description;
     @Column("question_type")
     private QuestionType questionType;
-    private String category;
+    private QuestionCategory category;
     private boolean required;
     @Column("validation_rules")
     private String validationRules;

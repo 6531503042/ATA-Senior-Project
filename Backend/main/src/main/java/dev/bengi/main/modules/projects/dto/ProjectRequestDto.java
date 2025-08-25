@@ -9,7 +9,7 @@ public record ProjectRequestDto(
         String description,
         LocalDateTime startDate,
         LocalDateTime endDate,
-        String status,
+        boolean active,
         Long departmentId
 ) {}
 
