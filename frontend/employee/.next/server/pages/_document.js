@@ -1,6 +1,5 @@
-const CHUNK_PUBLIC_PATH = "server/pages/_document.js";
-const runtime = require("../chunks/ssr/[turbopack]_runtime.js");
-runtime.loadChunk("server/chunks/ssr/node_modules_next_14f8521f._.js");
-runtime.loadChunk("server/chunks/ssr/[root-of-the-server]__c75c51b7._.js");
-runtime.getOrInstantiateRuntimeModule("[project]/node_modules/next/document.js [ssr] (ecmascript)", CHUNK_PUBLIC_PATH);
-module.exports = runtime.getOrInstantiateRuntimeModule("[project]/node_modules/next/document.js [ssr] (ecmascript)", CHUNK_PUBLIC_PATH).exports;
+var R=require("../chunks/ssr/[turbopack]_runtime.js")("server/pages/_document.js")
+R.c("server/chunks/ssr/4851b_641f60f0._.js")
+R.c("server/chunks/ssr/[root-of-the-server]__e6a4d965._.js")
+R.m("[project]/frontend/employee/node_modules/next/document.js [ssr] (ecmascript)")
+module.exports=R.m("[project]/frontend/employee/node_modules/next/document.js [ssr] (ecmascript)").exports

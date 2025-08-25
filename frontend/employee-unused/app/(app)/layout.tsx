@@ -1,7 +1,6 @@
 "use client";
 
-import { Navbar } from "@/components/navbar";
-import { Sidebar } from "@/components/sidebar";
+import { Navbar } from "";
 import { BreadcrumbProvider } from "@/hooks/useBreadcrumb";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
