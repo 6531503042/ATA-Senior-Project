@@ -19,7 +19,7 @@ export default function Navbar() {
         className="font-bold text-lg text-default-900 mr-6 cursor-pointer"
         onClick={() => router.push('/dashboard')}
       >
-        Employee Portal
+        ATA
       </div>
 
       {/* Buttons */}

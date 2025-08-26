@@ -221,3 +221,4 @@ frontend/admin-example
 *.map
 *.map
 frontend/employee/.next/trace
+/frontend/employee/.next
