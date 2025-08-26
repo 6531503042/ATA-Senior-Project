@@ -14,6 +14,7 @@ import {
 } from '@heroui/react';
 import { useRouter } from 'next/navigation';
 import { useCallback } from 'react';
+import LogoATA from "@/app/assets/ata-logo-bg-remove.png"
 
 function EmployeeTopbar() {
   const router = useRouter();
@@ -26,9 +27,9 @@ function EmployeeTopbar() {
   }, [router]);
 
   return (
-    <Navbar maxWidth="full" className="border-b border-default-200 bg-background/70 backdrop-blur">
+    <Navbar maxWidth="full" className="border-b border-b-black/10 bg-background/70 backdrop-blur h-20">
       <NavbarBrand className="gap-2">
-        <img src="/logo-sdad.png" alt="Logo" className="h-7 w-7" />
+        <img src={LogoATA.src} alt="Logo" className="h-7 w-7 p-1" />
         <span className="font-semibold tracking-wide">Employee</span>
       </NavbarBrand>
 
