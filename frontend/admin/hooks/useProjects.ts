@@ -1,187 +1,83 @@
-import type {
-  Project,
-  CreateProjectRequest,
-  UpdateProjectRequest,
-  ProjectResponse,
-  ProjectStats,
-} from '@/types/project';
+import { useCallback, useEffect, useState } from 'react';
+import { api } from '../libs/apiClient';
+import type { Project, CreateProjectRequest, UpdateProjectRequest, ProjectMembersRequestDto } from '../types/project';
+import type { PageResponse } from '../types/pagination';
 
-import { useState, useCallback, useEffect } from 'react';
-import { useApi } from '@/hooks/useApi';
-
-const base = '/api/projects';
-
-function mapProject(api: any): Project {
-  return {
-    id: String(api.id),
-    name: String(api.name),
-    description: String(api.description ?? ''),
-    status: (api.status ?? 'active') as Project['status'],
-    timeline: { startDate: api.startDate, endDate: api.endDate },
-    team: [],
-    category: undefined,
-    tags: undefined,
-    client: undefined,
-    location: undefined,
-    createdAt: api.createdAt,
-    updatedAt: api.updatedAt,
-    initial: String(api.name || '').charAt(0).toUpperCase(),
-  };
-}
-
-async function fetchProjects(request: ReturnType<typeof useApi>['request']): Promise<ProjectResponse> {
-  const res = await request<any[]>(`${base}`, 'GET');
-  const projects = (res.data || []).map(mapProject);
-  const stats: ProjectStats = {
-    totalProjects: projects.length,
-    activeProjects: projects.filter(p => p.status === 'active').length,
-    completedProjects: projects.filter(p => p.status === 'completed').length,
-    totalMembers: projects.reduce(acc => acc + 0, 0),
-  } as any;
-  return {
-    projects,
-    stats,
-    pagination: { page: 1, limit: projects.length, total: projects.length, totalPages: 1 },
-  };
-}
-
-async function createProjectApi(request: ReturnType<typeof useApi>['request'], data: CreateProjectRequest): Promise<Project> {
-  const payload = {
-    name: data.name,
-    description: data.description,
-    startDate: data.startDate,
-    endDate: data.endDate,
-    status: data.status,
-  };
-  const res = await request<any>(`${base}`, 'POST', payload);
-  return mapProject(res.data);
-}
-
-async function updateProjectApi(request: ReturnType<typeof useApi>['request'], data: UpdateProjectRequest): Promise<Project> {
-  const payload: any = {
-    name: data.name,
-    description: data.description,
-    startDate: data.startDate,
-    endDate: data.endDate,
-    status: data.status,
-  };
-  const res = await request<any>(`${base}/${data.id}`, 'PUT', payload);
-  return mapProject(res.data);
-}
-
-async function deleteProjectApi(request: ReturnType<typeof useApi>['request'], projectId: string): Promise<void> {
-  await request<void>(`${base}/${projectId}`, 'DELETE');
-}
-
-export function useProjects() {
-  const { request } = useApi();
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [stats, setStats] = useState({
-    totalProjects: 0,
-    activeProjects: 0,
-    completedProjects: 0,
-    totalMembers: 0,
-  });
-  const [loading, setLoading] = useState(true);
+export function useProjects(params?: Record<string, any>) {
+  const [data, setData] = useState<PageResponse<Project> | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Load projects
-  const loadProjects = useCallback(async () => {
+  const fetchList = useCallback(async () => {
+    setLoading(true);
     try {
-      setLoading(true);
+      const res = await api.get<PageResponse<Project>>('/api/projects', params);
+      setData(res);
       setError(null);
-      const response: ProjectResponse = await fetchProjects(request);
-
-      setProjects(response.projects);
-      setStats(response.stats);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load projects');
+    } catch (e: any) {
+      setError(e?.message || 'Failed to load projects');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [params]);
 
-  // Create project
-  const addProject = useCallback(async (data: CreateProjectRequest) => {
-    try {
-      setError(null);
-      const newProject = await createProjectApi(request, data);
-
-      setProjects(prev => [newProject, ...prev]);
-
-      // Update stats
-      setStats(prev => ({
-        ...prev,
-        totalProjects: prev.totalProjects + 1,
-        activeProjects:
-          data.status === 'active'
-            ? prev.activeProjects + 1
-            : prev.activeProjects,
-      }));
-
-      return newProject;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create project');
-      throw err;
-    }
-  }, []);
-
-  // Update project
-  const editProject = useCallback(async (data: UpdateProjectRequest) => {
-    try {
-      setError(null);
-      const updatedProject = await updateProjectApi(request, data);
-
-      setProjects(prev =>
-        prev.map(project =>
-          project.id === data.id ? updatedProject : project,
-        ),
-      );
-
-      return updatedProject;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update project');
-      throw err;
-    }
-  }, []);
-
-  // Delete project
-  const removeProject = useCallback(async (projectId: string) => {
-    try {
-      setError(null);
-      await deleteProjectApi(request, projectId);
-      setProjects(prev => prev.filter(project => project.id !== projectId));
-
-      // Update stats
-      setStats(prev => ({
-        ...prev,
-        totalProjects: Math.max(0, prev.totalProjects - 1),
-      }));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete project');
-      throw err;
-    }
-  }, []);
-
-  // Refresh projects
-  const refreshProjects = useCallback(() => {
-    loadProjects();
-  }, [loadProjects]);
-
-  // Load projects on mount
   useEffect(() => {
-    loadProjects();
-  }, [loadProjects]);
+    fetchList();
+  }, [fetchList]);
 
-  return {
-    projects,
-    stats,
-    loading,
-    error,
-    addProject,
-    editProject,
-    removeProject,
-    refreshProjects,
-    loadProjects,
-  };
+  return { data, loading, error, refresh: fetchList };
+}
+
+export function useProject(id?: number) {
+  const [data, setData] = useState<Project | null>(null);
+  const [loading, setLoading] = useState<boolean>(!!id);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    if (!id) return;
+    setLoading(true);
+    api
+      .get<Project>(`/api/projects/${id}`)
+      .then((res) => {
+        if (!mounted) return;
+        setData(res);
+        setError(null);
+      })
+      .catch((e: any) => {
+        if (!mounted) return;
+        setError(e?.message || 'Failed to load project');
+      })
+      .finally(() => {
+        if (!mounted) return;
+        setLoading(false);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [id]);
+
+  return { data, loading, error };
+}
+
+export async function createProject(body: CreateProjectRequest) {
+  return api.post<Project>('/api/projects', body);
+}
+
+export async function updateProject(id: number, body: UpdateProjectRequest) {
+  return api.put<Project>(`/api/projects/${id}`, body);
+}
+
+export async function deleteProject(id: number) {
+  return api.delete<void>(`/api/projects/${id}`);
+}
+
+export async function addProjectMembers(projectId: number, memberIds: number[]) {
+  const body: ProjectMembersRequestDto = { memberIds };
+  return api.post<void>(`/api/projects/${projectId}/members`, body);
+}
+
+export async function removeProjectMembers(projectId: number, memberIds: number[]) {
+  const body: ProjectMembersRequestDto = { memberIds };
+  return api.delete<void>(`/api/projects/${projectId}/members`, { body } as any);
 }

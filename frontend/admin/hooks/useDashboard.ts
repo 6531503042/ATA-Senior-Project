@@ -1,111 +1,143 @@
-import type { DashboardStats, Project, Feedback } from '@/types/dashboard';
+import { useCallback } from 'react';
+import { useGet } from './useApi';
+import type { 
+  DashboardStats, 
+  EnhancedDashboardStats,
+  ActivityFeed,
+  QuickAction,
+  RealTimeUpdate,
+  SystemHealth,
+  RealTimeMetrics
+} from '../types/dashboard';
+import { getToken } from '@/utils/storage';
+import useAuthStore from '@/hooks/useAuth';
 
-import { useState, useCallback, useEffect } from 'react';
+// Basic dashboard hook
+export function useDashboard(autoFetch: boolean = true, enabled: boolean = true) {
+  return useGet<DashboardStats>('/api/dashboard', { 
+    autoFetch,
+    enabled,
+    onError: (error) => {
+      console.error('Failed to load dashboard:', error);
+    }
+  });
+}
 
-import { getDashboardData, getLiveDashboardData } from '@/services/dataService';
+// Enhanced dashboard hook
+export function useEnhancedDashboard(autoFetch: boolean = true, enabled: boolean = true) {
+  return useGet<EnhancedDashboardStats>('/api/dashboard/advanced', { 
+    autoFetch,
+    enabled,
+    onError: (error) => {
+      console.error('Failed to load enhanced dashboard:', error);
+    }
+  });
+}
 
-export function useDashboard() {
-  const [dashboardData, setDashboardData] =
-    useState<DashboardStats>(getDashboardData());
+// Activity feed hook
+export function useActivityFeed(limit: number = 20, enabled: boolean = true) {
+  return useGet<ActivityFeed[]>('/api/dashboard/activity-feed', {
+    params: { limit },
+    autoFetch: true,
+    enabled,
+    onError: (error) => {
+      console.error('Failed to load activity feed:', error);
+    }
+  });
+}
 
-  useEffect(() => {
-    getLiveDashboardData()
-      .then(setDashboardData)
-      .catch(() => {});
-  }, []);
+// Quick actions hook
+export function useQuickActions(enabled: boolean = true) {
+  return useGet<QuickAction[]>('/api/dashboard/quick-actions', {
+    autoFetch: true,
+    enabled,
+    onError: (error) => {
+      console.error('Failed to load quick actions:', error);
+    }
+  });
+}
 
-  const addProject = useCallback((project: Project) => {
-    setDashboardData(prev => ({
-      ...prev,
-      recentProjects: [project, ...prev.recentProjects.slice(0, 2)],
-      overview: {
-        ...prev.overview,
-        totalProjects: prev.overview.totalProjects + 1,
-      },
-    }));
-  }, []);
+// Real-time notifications hook
+export function useNotifications(limit: number = 10, enabled: boolean = true) {
+  return useGet<RealTimeUpdate[]>('/api/dashboard/notifications', {
+    params: { limit },
+    autoFetch: true,
+    enabled,
+    onError: (error) => {
+      console.error('Failed to load notifications:', error);
+    }
+  });
+}
 
-  const updateProject = useCallback(
-    (projectId: string, updates: Partial<Project>) => {
-      setDashboardData(prev => ({
-        ...prev,
-        recentProjects: prev.recentProjects.map(project =>
-          project.id === projectId ? { ...project, ...updates } : project,
-        ),
-      }));
-    },
-    [],
-  );
+// Real-time metrics hook
+export function useRealTimeMetrics(enabled: boolean = true) {
+  return useGet<RealTimeMetrics>('/api/dashboard/realtime-metrics', {
+    autoFetch: true,
+    enabled,
+    onError: (error) => {
+      console.error('Failed to load real-time metrics:', error);
+    }
+  });
+}
 
-  const deleteProject = useCallback((projectId: string) => {
-    setDashboardData(prev => ({
-      ...prev,
-      recentProjects: prev.recentProjects.filter(
-        project => project.id !== projectId,
-      ),
-      overview: {
-        ...prev.overview,
-        totalProjects: Math.max(0, prev.overview.totalProjects - 1),
-      },
-    }));
-  }, []);
+// System health hook
+export function useSystemHealth(enabled: boolean = true) {
+  return useGet<SystemHealth>('/api/dashboard/health', {
+    autoFetch: true,
+    enabled,
+    onError: (error) => {
+      console.error('Failed to load system health:', error);
+    }
+  });
+}
 
-  const addFeedback = useCallback((feedback: Feedback) => {
-    setDashboardData(prev => ({
-      ...prev,
-      recentFeedbacks: [feedback, ...prev.recentFeedbacks.slice(0, 2)],
-      overview: {
-        ...prev.overview,
-        totalSubmissions: prev.overview.totalSubmissions + 1,
-      },
-    }));
-  }, []);
+// Combined dashboard hook for comprehensive data - Simplified to prevent infinite re-renders
+export function useDashboardData() {
+  const auth = useAuthStore();
+  const token = getToken('accessToken');
+  const isEnabled = !!token && !!auth.user;
 
-  const updateFeedback = useCallback(
-    (feedbackId: string, updates: Partial<Feedback>) => {
-      setDashboardData(prev => ({
-        ...prev,
-        recentFeedbacks: prev.recentFeedbacks.map(feedback =>
-          feedback.id === feedbackId ? { ...feedback, ...updates } : feedback,
-        ),
-      }));
-    },
-    [],
-  );
+  const dashboard = useDashboard(true, isEnabled);
+  const enhanced = useEnhancedDashboard(true, isEnabled);
+  const activityFeed = useActivityFeed(10, isEnabled);
+  const quickActions = useQuickActions(isEnabled);
+  const notifications = useNotifications(5, isEnabled);
+  const realTimeMetrics = useRealTimeMetrics(isEnabled);
+  const systemHealth = useSystemHealth(isEnabled);
 
-  const deleteFeedback = useCallback((feedbackId: string) => {
-    setDashboardData(prev => ({
-      ...prev,
-      recentFeedbacks: prev.recentFeedbacks.filter(
-        feedback => feedback.id !== feedbackId,
-      ),
-      overview: {
-        ...prev.overview,
-        totalSubmissions: Math.max(0, prev.overview.totalSubmissions - 1),
-      },
-    }));
-  }, []);
+  const refresh = useCallback(() => {
+    if (!isEnabled) return;
+    dashboard.refetch();
+    enhanced.refetch();
+  }, [dashboard, enhanced, isEnabled]);
 
-  const exportData = useCallback(() => {
-    const dataStr = JSON.stringify(dashboardData, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement('a');
-
-    link.href = url;
-    link.download = 'dashboard-data.json';
-    link.click();
-    URL.revokeObjectURL(url);
-  }, [dashboardData]);
+  const loading = dashboard.loading || enhanced.loading;
+  const error = dashboard.error || enhanced.error;
 
   return {
-    dashboardData,
-    addProject,
-    updateProject,
-    deleteProject,
-    addFeedback,
-    updateFeedback,
-    deleteFeedback,
-    exportData,
-  };
+    // Data
+    dashboard: dashboard.data,
+    enhanced: enhanced.data,
+    activityFeed: activityFeed.data || [],
+    quickActions: quickActions.data || [],
+    notifications: notifications.data || [],
+    realTimeMetrics: realTimeMetrics.data,
+    systemHealth: systemHealth.data,
+    
+    // States
+    loading,
+    error,
+    
+    // Actions
+    refresh,
+    
+    // Individual loaders
+    dashboardLoading: dashboard.loading,
+    enhancedLoading: enhanced.loading,
+    activityLoading: activityFeed.loading,
+    quickActionsLoading: quickActions.loading,
+    notificationsLoading: notifications.loading,
+    realTimeMetricsLoading: realTimeMetrics.loading,
+    systemHealthLoading: systemHealth.loading,
+  } as const;
 }

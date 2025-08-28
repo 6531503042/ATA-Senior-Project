@@ -1,10 +1,8 @@
 export interface Department {
-  id: string;
+  id: number;
   name: string;
   description: string;
-  manager: string;
-  employeeCount: number;
-  status: 'active' | 'inactive';
+  active: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -19,16 +17,12 @@ export interface DepartmentStats {
 export interface CreateDepartmentRequest {
   name: string;
   description: string;
-  manager: string;
-  employeeCount: number;
-  status: 'active' | 'inactive';
+  active?: boolean;
 }
 
 export interface UpdateDepartmentRequest {
-  id: string;
+  id: number;
   name?: string;
   description?: string;
-  manager?: string;
-  employeeCount?: number;
-  status?: 'active' | 'inactive';
+  active?: boolean;
 }

@@ -1,97 +1,247 @@
 'use client';
 
-import type { Project } from '@/types/dashboard';
-
-import { Button } from '@heroui/react';
-import { LayoutDashboard, PlusIcon, DownloadIcon } from 'lucide-react';
 import { useState } from 'react';
-
-import { DashboardOverview } from './_components/DashboardOverview';
-import { DashboardProjects } from './_components/DashboardProjects';
-import { DashboardFeedbacks } from './_components/DashboardFeedbacks';
-import { DashboardChart } from './_components/DashboardChart';
-import { ProjectModal } from './_components/ProjectModal';
-
+import { Button, Card, CardBody, Skeleton } from '@heroui/react';
+import { RefreshCw, LayoutDashboard, Users, Building, HelpCircle, MessageSquare, Send, FileText, TrendingUp } from 'lucide-react';
+import { useAuthContext } from '@/contexts/AuthContext';
+import { useDashboardData } from '@/hooks/useDashboard';
 import { PageHeader } from '@/components/ui/page-header';
-import { useDashboard } from '@/hooks/useDashboard';
+import { CardStat } from '@/components/ui/card-stat';
+import { DashboardStats } from './_components/DashboardStats';
+import { DashboardMetrics } from './_components/DashboardMetrics';
+import { DashboardChart } from './_components/DashboardChart';
+import { DashboardOverview } from './_components/DashboardOverview';
+import { RecentActivity } from './_components/RecentActivity';
+import { RecentProjects } from './_components/RecentProjects';
+import { RecentFeedbacks } from './_components/RecentFeedbacks';
 
-export default function Dashboard() {
-  const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
-  const { dashboardData, addProject, exportData } = useDashboard();
+export default function DashboardPage() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
-  const handleCreateProject = (projectData: Partial<Project>) => {
-    const newProject: Project = {
-      id: Date.now().toString(),
-      title: projectData.title || '',
-      description: projectData.description || '',
-      participants: projectData.participants || 0,
-      createdAt: 'Just now',
-      status: projectData.status || 'pending',
-      avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026024g',
-      progress: 0,
-    };
+  // Real data hooks
+  const {
+    dashboard,
+    enhanced,
+    activityFeed,
+    loading: dataLoading,
+    error: dataError,
+    refresh,
+  } = useDashboardData();
 
-    addProject(newProject);
+  // Proper authentication context usage
+  const { user, signOut, loading: authLoading } = useAuthContext();
+
+  const handleRefresh = () => {
+    setLoading(true);
+    try {
+      refresh();
+    } finally {
+      setTimeout(() => setLoading(false), 600);
+    }
   };
+
+  // Show loading state while auth is being determined
+  if (authLoading || loading || dataLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-transparent">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-default-600 border-t-transparent mx-auto mb-6"></div>
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">Loading Dashboard</h2>
+          <p className="text-gray-600">Please wait while we fetch your data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error if no authenticated user
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-transparent">
+        <Card className="max-w-md">
+          <CardBody className="p-6 text-center">
+            <h2 className="text-xl font-semibold text-red-600 mb-2">Authentication Required</h2>
+            <p className="text-gray-600 mb-4">You need to be logged in to access the dashboard.</p>
+            <Button 
+              color="primary" 
+              variant="flat" 
+              onPress={() => signOut()}
+            >
+              Go to Login
+            </Button>
+            
+            {/* Debug: Test Login Button */}
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <p className="text-xs text-gray-500 mb-2">Debug: Test with sample credentials</p>
+              <Button 
+                size="sm"
+                color="secondary" 
+                variant="flat" 
+                onPress={() => {
+                  // Test with sample credentials
+                  const testCredentials = {
+                    username: 'admin',
+                    password: 'admin123'
+                  };
+                  console.log('Testing login with:', testCredentials);
+                  // You can manually test this in the browser console
+                  localStorage.setItem('testCredentials', JSON.stringify(testCredentials));
+                }}
+              >
+                Set Test Credentials
+              </Button>
+            </div>
+          </CardBody>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <>
       <PageHeader
         description="System overview — quickly access key modules, recent activity, and system statistics."
         icon={<LayoutDashboard />}
-      />
-
-      <div className="h-fit w-full flex flex-row justify-between items-center">
-        <h1 className="text-3xl font-semibold">Overview</h1>
-        <div className="flex gap-3">
+        right={
           <Button
-            startContent={<DownloadIcon className="w-4 h-4" />}
-            variant="light"
-            onPress={exportData}
-          >
-            Export
-          </Button>
-          <Button
+            size="sm"
+            variant="flat"
             color="primary"
-            size="lg"
-            startContent={<PlusIcon className="w-4 h-4" />}
-            variant="shadow"
-            onPress={() => setIsProjectModalOpen(true)}
+            startContent={<RefreshCw size={16} />}
+            onPress={handleRefresh}
+            isLoading={loading}
           >
-            New Project
+            Refresh
           </Button>
-        </div>
-      </div>
-
-      <DashboardOverview data={dashboardData.overview} />
-
-      <div className="space-y-10">
-        <div>
-          <h2 className="text-3xl font-bold text-default-900 mb-6">
-            Analytics
-          </h2>
-          <div className="w-full min-h-[600px] rounded-3xl shadow-xl overflow-hidden">
-            <DashboardChart data={dashboardData.chartData} />
-          </div>
-        </div>
-
-        <div>
-          <h2 className="text-3xl font-bold text-default-900 mb-6">
-            Recent Activity
-          </h2>
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-            <DashboardProjects projects={dashboardData.recentProjects} />
-            <DashboardFeedbacks feedbacks={dashboardData.recentFeedbacks} />
-          </div>
-        </div>
-      </div>
-
-      <ProjectModal
-        isOpen={isProjectModalOpen}
-        mode="create"
-        onClose={() => setIsProjectModalOpen(false)}
-        onSubmit={handleCreateProject}
+        }
       />
+
+      <div className="h-fit w-full flex flex-row justify-between items-center mb-6">
+        <h1 className="text-3xl font-semibold">Dashboard</h1>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-default-500">
+            Welcome back, {user.firstName || user.username}!
+          </span>
+        </div>
+      </div>
+
+      {/* Quick Stats Section */}
+      <div className="mb-6">
+        <DashboardStats 
+          stats={dashboard ? {
+            totalUsers: dashboard.overview.totalMembers,
+            totalDepartments: 0,
+            totalQuestions: 0,
+            totalFeedbacks: dashboard.overview.totalSubmissions,
+            totalSubmissions: dashboard.overview.totalSubmissions,
+            totalProjects: dashboard.overview.totalProjects,
+          } : null as any} 
+          loading={dataLoading} 
+        />
+      </div>
+
+      {/* Main Dashboard Content */}
+      <div className="space-y-6">
+        {/* Overview Section */}
+        <CardStat 
+          colors="blue-100" 
+          icon={<TrendingUp className="w-4 h-4" />} 
+          label="System Overview"
+          defaultOpen={true}
+          isClosable={false}
+        >
+          <div className="w-full">
+            <DashboardOverview data={dashboard?.overview || null} loading={dataLoading} />
+          </div>
+        </CardStat>
+
+        {/* Chart Section */}
+        {dashboard?.chartData && (
+          <CardStat 
+            colors="green-100" 
+            icon={<TrendingUp className="w-4 h-4" />} 
+            label="Analytics Chart"
+            defaultOpen={true}
+          >
+            <div className="w-full">
+              <DashboardChart data={dashboard.chartData} loading={dataLoading} />
+            </div>
+          </CardStat>
+        )}
+
+        {/* Metrics Section */}
+        <CardStat 
+          colors="purple-100" 
+          icon={<TrendingUp className="w-4 h-4" />} 
+          label="Performance Metrics"
+        >
+          <div className="w-full">
+            <DashboardMetrics 
+              dashboard={dashboard || null}
+              enhanced={enhanced || null}
+              loading={dataLoading}
+            />
+          </div>
+        </CardStat>
+
+        {/* Recent Activity Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-1">
+            <CardStat 
+              colors="orange-100" 
+              icon={<Users className="w-4 h-4" />} 
+              label="Recent Projects"
+            >
+              <div className="w-full">
+                <RecentProjects projects={dashboard?.recentProjects || []} loading={dataLoading} />
+              </div>
+            </CardStat>
+          </div>
+
+          <div className="lg:col-span-1">
+            <CardStat 
+              colors="red-100" 
+              icon={<MessageSquare className="w-4 h-4" />} 
+              label="Recent Feedbacks"
+            >
+              <div className="w-full">
+                <RecentFeedbacks feedbacks={dashboard?.recentFeedbacks || []} loading={dataLoading} />
+              </div>
+            </CardStat>
+          </div>
+
+          <div className="lg:col-span-1">
+            <CardStat 
+              colors="indigo-100" 
+              icon={<FileText className="w-4 h-4" />} 
+              label="Recent Activity"
+            >
+              <div className="w-full">
+                <RecentActivity activities={activityFeed} loading={dataLoading} />
+              </div>
+            </CardStat>
+          </div>
+        </div>
+      </div>
+
+      {/* Error Display */}
+      {(error || dataError) && (
+        <Card className="mt-6 bg-red-50 border border-red-200">
+          <CardBody className="p-6">
+            <p className="text-red-600 font-medium">Error loading dashboard data</p>
+            <p className="text-red-500 text-sm mt-1">{(error || dataError)?.message as any}</p>
+            <Button 
+              size="sm" 
+              color="danger" 
+              variant="flat" 
+              onPress={handleRefresh}
+              className="mt-4"
+            >
+              Try Again
+            </Button>
+          </CardBody>
+        </Card>
+      )}
     </>
   );
 }

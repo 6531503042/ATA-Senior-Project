@@ -1,21 +1,21 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '../libs/apiClient';
-import type { Question, CreateQuestionRequest, UpdateQuestionRequest } from '../types/question';
+import type { Feedback, CreateFeedbackRequest, UpdateFeedbackRequest } from '../types/feedback';
 import type { PageResponse } from '../types/pagination';
 
-export function useQuestions(params?: Record<string, any>) {
-  const [data, setData] = useState<PageResponse<Question> | null>(null);
+export function useFeedbacks(params?: Record<string, any>) {
+  const [data, setData] = useState<PageResponse<Feedback> | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchList = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await api.get<PageResponse<Question>>('/api/questions', params);
+      const res = await api.get<PageResponse<Feedback>>('/api/feedbacks', params);
       setData(res);
       setError(null);
     } catch (e: any) {
-      setError(e?.message || 'Failed to load questions');
+      setError(e?.message || 'Failed to load feedbacks');
     } finally {
       setLoading(false);
     }
@@ -28,8 +28,8 @@ export function useQuestions(params?: Record<string, any>) {
   return { data, loading, error, refresh: fetchList };
 }
 
-export function useQuestion(id?: number) {
-  const [data, setData] = useState<Question | null>(null);
+export function useFeedback(id?: number) {
+  const [data, setData] = useState<Feedback | null>(null);
   const [loading, setLoading] = useState<boolean>(!!id);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,7 +38,7 @@ export function useQuestion(id?: number) {
     if (!id) return;
     setLoading(true);
     api
-      .get<Question>(`/api/questions/${id}`)
+      .get<Feedback>(`/api/feedbacks/${id}`)
       .then((res) => {
         if (!mounted) return;
         setData(res);
@@ -46,7 +46,7 @@ export function useQuestion(id?: number) {
       })
       .catch((e: any) => {
         if (!mounted) return;
-        setError(e?.message || 'Failed to load question');
+        setError(e?.message || 'Failed to load feedback');
       })
       .finally(() => {
         if (!mounted) return;
@@ -60,14 +60,19 @@ export function useQuestion(id?: number) {
   return { data, loading, error };
 }
 
-export async function createQuestion(body: CreateQuestionRequest) {
-  return api.post<Question>('/api/questions', body);
+export async function createFeedback(body: CreateFeedbackRequest) {
+  return api.post<Feedback>('/api/feedbacks', body);
 }
 
-export async function updateQuestion(id: number, body: UpdateQuestionRequest) {
-  return api.put<Question>(`/api/questions/${id}`, body);
+export async function updateFeedback(id: number, body: UpdateFeedbackRequest) {
+  return api.put<Feedback>(`/api/feedbacks/${id}`, body);
 }
 
-export async function deleteQuestion(id: number) {
-  return api.delete<void>(`/api/questions/${id}`);
+export async function deleteFeedback(id: number) {
+  return api.delete<void>(`/api/feedbacks/${id}`);
 }
+
+export async function canSubmit(feedbackId: number) {
+  return api.get<boolean>(`/api/feedbacks/validation/${feedbackId}/can-submit`);
+}
+

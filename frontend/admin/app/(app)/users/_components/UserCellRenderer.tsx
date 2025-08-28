@@ -50,7 +50,33 @@ export default function UserCellRenderer({
   onDelete,
   onView,
 }: UserCellRendererProps) {
-  const getRoleIcon = (role: User['role']) => {
+  // Helper functions to get role and status with fallbacks
+  const getUserRole = () => {
+    if (user.role) return user.role;
+    if (user.roles && user.roles.length > 0) {
+      return user.roles[0].toLowerCase();
+    }
+    return 'user';
+  };
+
+  const getUserStatus = () => {
+    if (user.status) return user.status;
+    return user.active ? 'active' : 'inactive';
+  };
+
+  const getUserDepartment = () => {
+    if (user.department) return user.department;
+    if (user.departments && user.departments.length > 0) {
+      return user.departments[0].name;
+    }
+    return 'N/A';
+  };
+
+  const getUserLastLogin = () => {
+    return user.lastLogin || user.lastLoginAt || null;
+  };
+
+  const getRoleIcon = (role: string) => {
     switch (role) {
       case 'admin':
         return <ShieldIcon className="w-4 h-4" />;
@@ -83,31 +109,33 @@ export default function UserCellRenderer({
       );
 
     case 'role':
+      const role = getUserRole();
       return (
         <div className="flex items-center gap-2">
           <div className="p-2 rounded-lg bg-default-100 text-default-600">
-            {getRoleIcon(user.role)}
+            {getRoleIcon(role)}
           </div>
           <Chip
             className="font-medium capitalize"
-            color={getUserRoleColor(user.role) as any}
+            color={getUserRoleColor(role as any) as any}
             size="sm"
             variant="flat"
           >
-            {formatUserRole(user.role)}
+            {formatUserRole(role as any)}
           </Chip>
         </div>
       );
 
     case 'status':
+      const status = getUserStatus();
       return (
         <Chip
           className="font-medium capitalize"
-          color={getUserStatusColor(user.status) as any}
+          color={getUserStatusColor(status as any) as any}
           size="sm"
           variant="flat"
         >
-          {formatUserStatus(user.status)}
+          {formatUserStatus(status as any)}
         </Chip>
       );
 
@@ -118,7 +146,7 @@ export default function UserCellRenderer({
             <BuildingIcon className="w-4 h-4" />
           </div>
           <span className="text-sm font-medium text-default-700">
-            {user.department || 'N/A'}
+            {getUserDepartment()}
           </span>
         </div>
       );
@@ -130,7 +158,7 @@ export default function UserCellRenderer({
             <ClockIcon className="w-4 h-4" />
           </div>
           <span className="text-sm text-default-600">
-            {formatDate(user.lastLogin || null)}
+            {formatDate(getUserLastLogin())}
           </span>
         </div>
       );
@@ -163,7 +191,7 @@ export default function UserCellRenderer({
               className="text-danger"
               color="danger"
               startContent={<TrashIcon size={16} />}
-              onPress={() => onDelete?.(user.id)}
+              onPress={() => onDelete?.(user.id.toString())}
             >
               Delete
             </DropdownItem>

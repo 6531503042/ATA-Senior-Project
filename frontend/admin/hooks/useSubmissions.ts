@@ -1,112 +1,92 @@
 'use client';
 
-import type {
-  SubmissionItem,
-  SubmissionStats,
-  SubmissionFilters,
-  SubmissionPagination,
-} from '@/types/submission';
+import { useCallback, useEffect, useState } from 'react';
+import { api } from '../libs/apiClient';
+import type { Submission, CreateSubmissionRequest } from '../types/submission';
+import type { PageResponse } from '../types/pagination';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
-
-import { apiRequest } from '@/libs/apiClient';
-
-const base = '/api/submits';
-
-function toItem(api: any): SubmissionItem {
-  return {
-    id: String(api.id),
-    feedbackId: String(api.feedbackId),
-    feedbackTitle: String(api.feedbackTitle ?? 'Feedback'),
-    projectName: String(api.projectName ?? 'Project'),
-    submittedBy: api.submittedBy ?? null,
-    privacy: api.privacyLevel === 'PUBLIC' ? 'PUBLIC' : 'ANONYMOUS',
-    submittedAt: String(api.submittedAt ?? api.updatedAt ?? new Date().toISOString()),
-    status: 'analyzed',
-    overallSentiment: null,
-  };
-}
-
-export function useSubmissions() {
-  const [items, setItems] = useState<SubmissionItem[]>([]);
-  const [stats, setStats] = useState<SubmissionStats>({
-    total: 0,
-    analyzed: 0,
-    pending: 0,
-    errors: 0,
-  });
-  const [loading, setLoading] = useState(false);
+export function useSubmissions(params?: Record<string, any>) {
+  const [data, setData] = useState<PageResponse<Submission> | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [filters, setFilters] = useState<SubmissionFilters>({
-    query: '',
-    privacy: [],
-    status: [],
-  });
-  const [pagination, setPagination] = useState<SubmissionPagination>({
-    page: 1,
-    rowsPerPage: 10,
-  });
-
-  const refresh = useCallback(async () => {
+  const fetchList = useCallback(async () => {
+    setLoading(true);
     try {
-      setLoading(true);
+      const res = await api.get<PageResponse<Submission>>('/api/submits', params);
+      setData(res);
       setError(null);
-      const res = await apiRequest<any[]>(`${base}/me`, 'GET');
-      const raw = (res.data || []).map(toItem);
-
-      const query = (filters?.query || '').toLowerCase();
-      const privacySet = new Set(filters?.privacy || []);
-      const statusSet = new Set(filters?.status || []);
-
-      const filtered = raw.filter(it => {
-        const matchesQuery =
-          !query ||
-          it.id.includes(query) ||
-          it.feedbackTitle.toLowerCase().includes(query) ||
-          it.projectName.toLowerCase().includes(query) ||
-          (it.submittedBy || '').toLowerCase().includes(query);
-        const matchesPrivacy = privacySet.size === 0 || privacySet.has(it.privacy);
-        const matchesStatus = statusSet.size === 0 || statusSet.has(it.status);
-        return matchesQuery && matchesPrivacy && matchesStatus;
-      });
-
-      setItems(filtered);
-      setStats({ total: filtered.length, analyzed: filtered.length, pending: 0, errors: 0 });
     } catch (e: any) {
       setError(e?.message || 'Failed to load submissions');
     } finally {
       setLoading(false);
     }
-  }, [filters]);
+  }, [params]);
 
   useEffect(() => {
-    refresh();
-  }, [refresh]);
+    fetchList();
+  }, [fetchList]);
 
-  const pagedItems = useMemo(() => {
-    const start = (pagination.page - 1) * pagination.rowsPerPage;
-    return items.slice(start, start + pagination.rowsPerPage);
-  }, [items, pagination]);
+  return { data, loading, error, refresh: fetchList };
+}
 
-  const setQuery = (query: string) => setFilters(f => ({ ...f, query }));
-  const setPrivacy = (privacy: SubmissionFilters['privacy']) =>
-    setFilters(f => ({ ...f, privacy }));
-  const setStatus = (status: SubmissionFilters['status']) =>
-    setFilters(f => ({ ...f, status }));
+export function useSubmissionsByFeedback(feedbackId?: number, params?: Record<string, any>) {
+  const [data, setData] = useState<PageResponse<Submission> | null>(null);
+  const [loading, setLoading] = useState<boolean>(!!feedbackId);
+  const [error, setError] = useState<string | null>(null);
 
-  return {
-    items: pagedItems,
-    allItems: items,
-    stats,
-    loading,
-    error,
-    filters,
-    pagination,
-    setPagination,
-    setQuery,
-    setPrivacy,
-    setStatus,
-    refresh,
-  };
+  useEffect(() => {
+    let mounted = true;
+    if (!feedbackId) return;
+    setLoading(true);
+    api
+      .get<PageResponse<Submission>>(`/api/submits/feedback/${feedbackId}`, params)
+      .then((res) => {
+        if (!mounted) return;
+        setData(res);
+        setError(null);
+      })
+      .catch((e: any) => {
+        if (!mounted) return;
+        setError(e?.message || 'Failed to load submissions');
+      })
+      .finally(() => {
+        if (!mounted) return;
+        setLoading(false);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [feedbackId, params]);
+
+  return { data, loading, error };
+}
+
+export function useMySubmissions(params?: Record<string, any>) {
+  const [data, setData] = useState<PageResponse<Submission> | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchList = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await api.get<PageResponse<Submission>>('/api/submits/me', params);
+      setData(res);
+      setError(null);
+    } catch (e: any) {
+      setError(e?.message || 'Failed to load submissions');
+    } finally {
+      setLoading(false);
+    }
+  }, [params]);
+
+  useEffect(() => {
+    fetchList();
+  }, [fetchList]);
+
+  return { data, loading, error, refresh: fetchList };
+}
+
+export async function createSubmission(body: CreateSubmissionRequest) {
+  return api.post<Submission>('/api/submits', body);
 }

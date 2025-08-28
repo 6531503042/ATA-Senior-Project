@@ -58,9 +58,7 @@ export default function SubmissionDetailPage({
   );
 }
 
-('use client');
-
-import { getSubmissionsByFeedback } from '@/services/submissionService';
+// Note: This appears to be duplicate code or incorrect placement
 
 export default function SubmissionDetailPage({
   params,

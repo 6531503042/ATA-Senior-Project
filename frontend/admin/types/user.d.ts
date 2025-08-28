@@ -1,47 +1,50 @@
-export type UserRole = 'admin' | 'manager' | 'user' | 'guest';
+// User Types for Backend API Integration
 
-export type UserStatus = 'active' | 'inactive' | 'pending' | 'suspended';
+export interface DepartmentSummary {
+  id: number;
+  name: string;
+}
 
 export interface User {
-  id: string;
+  id: number;
   username: string;
   email: string;
   firstName: string;
   lastName: string;
-  role: UserRole;
-  status: UserStatus;
-  avatar?: string;
   phone?: string;
-  department?: string;
-  position?: string;
-  lastLogin?: string;
+  departments: DepartmentSummary[];
+  roles: string[];
+  active: boolean;
+  lastLoginAt?: string;
   createdAt: string;
   updatedAt: string;
+  // Additional fields for UI compatibility
+  role?: string; // For backward compatibility with UI components
+  status?: 'active' | 'inactive' | 'pending' | 'suspended'; // For backward compatibility with UI components
+  lastLogin?: string; // Alias for lastLoginAt
+  department?: string; // Alias for department name
+  position?: string; // Optional position field
 }
 
 export interface CreateUserRequest {
   username: string;
   email: string;
-  firstName: string;
-  lastName: string;
-  role: UserRole;
+  firstName?: string;
+  lastName?: string;
   password: string;
   phone?: string;
-  department?: string;
-  position?: string;
+  departmentId?: number;
+  roles?: string[];
+  active?: boolean;
 }
 
 export interface UpdateUserRequest {
-  id: string;
-  username?: string;
   email?: string;
   firstName?: string;
   lastName?: string;
-  role?: UserRole;
-  status?: UserStatus;
   phone?: string;
-  department?: string;
-  position?: string;
+  departmentId?: number;
+  active?: boolean;
 }
 
 export interface UserStats {
@@ -52,10 +55,10 @@ export interface UserStats {
 }
 
 export interface UserFilters {
-  role?: UserRole[];
-  status?: UserStatus[];
+  role?: string[];
+  status?: ('active' | 'inactive')[];
   search?: string;
-  department?: string[];
+  departmentId?: number[];
 }
 
 export interface UserPagination {
@@ -69,4 +72,34 @@ export interface UserResponse {
   users: User[];
   stats: UserStats;
   pagination: UserPagination;
+}
+
+// Employee-specific types
+export interface EmployeeDashboardSummary {
+  user: User;
+  projectCount: number;
+  availableFeedbacks: number;
+  totalSubmissions: number;
+  pendingFeedbacks: number;
+  timestamp: string;
+}
+
+export interface EmployeeActivityData {
+  userId: number;
+  username: string;
+  lastLoginAt?: string;
+  submissionsLast30Days: number;
+  projectsJoinedLast30Days: number;
+  feedbacksCompletedLast30Days: number;
+  activityScore: number;
+}
+
+export interface EmployeePerformanceData {
+  userId: number;
+  username: string;
+  averageSubmissionTimeMinutes: number;
+  completionRate: number;
+  averageRatingGiven: number;
+  contributionScore: number;
+  overallPerformanceScore: number;
 }

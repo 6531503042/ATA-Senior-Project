@@ -10,20 +10,25 @@ import {
   DropdownItem,
   DropdownMenu,
   DropdownTrigger,
+  Chip,
+  Card,
+  CardBody,
 } from '@heroui/react';
 import clsx from 'clsx';
 import { usePathname, useRouter } from 'next/navigation';
 import { Href } from '@react-types/shared';
 
 import { siteConfig } from '@/config/site';
-// import { useProfile } from "@/hooks/useProfile";
+import { useAuthContext } from '@/contexts/AuthContext';
 
 export const Sidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
-  //   const user = useProfile((state) => state.user);
+  
+  // Proper authentication context usage
+  const { user, signOut, loading: authLoading } = useAuthContext();
 
   const handleClick = (href: Href) => {
     router.push(href);
@@ -54,9 +59,11 @@ export const Sidebar = () => {
         <div className="flex items-center justify-between p-4 border-b border-[#00000010] dark:border-[#ffffff25]">
           {!collapsed && (
             <div className="flex items-center gap-2">
-              <Avatar className="w-8 h-8" size="sm" src="/logo.png" />
+              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">A</span>
+              </div>
               <span className="font-semibold text-default-900">
-                {/* {user?.name.first} {user?.name.middle} {user?.name.last} */}
+                Admin Panel
               </span>
             </div>
           )}
@@ -139,37 +146,49 @@ export const Sidebar = () => {
         {/* Footer */}
         {!collapsed && (
           <div className="border-t border-[#00000010] dark:border-[#ffffff25] p-4">
-            <Dropdown placement="top-start">
-              <DropdownTrigger>
-                <div className="flex items-center gap-2 cursor-pointer hover:bg-default-100 p-2 rounded-md transition-colors">
+            <Card className="bg-white/50 dark:bg-default-50/50 border-none shadow-sm">
+              <CardBody className="p-3">
+                <div className="flex items-center gap-3">
                   <Avatar
-                    className="w-8 h-8"
+                    className="w-9 h-9"
                     size="sm"
-                    src="https://i.pravatar.cc/150?u=a042581f4e29026024d"
+                    name={user?.firstName || user?.username}
                   />
-                  <div className="flex flex-col">
-                    <span className="text-sm font-medium">
-                      {/* {user?.name.first} {user?.name.middle} {user?.name.last} */}
-                    </span>
-                    {/* <span className="text-xs text-default-500">{user?.role.name}</span> */}
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold truncate">
+                      {user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username : 'Guest'}
+                    </p>
+                    <p className="text-xs text-default-500 truncate">{user?.email}</p>
+                    {user?.roles?.length ? (
+                      <div className="mt-1 flex flex-wrap gap-1">
+                        {user.roles.slice(0, 2).map((role: string, idx: number) => (
+                          <Chip key={idx} size="sm" variant="flat" color="primary" className="text-[10px]">
+                            {role}
+                          </Chip>
+                        ))}
+                      </div>
+                    ) : null}
                   </div>
                 </div>
-              </DropdownTrigger>
-              <DropdownMenu aria-label="User menu">
-                <DropdownItem key="profile">Profile</DropdownItem>
-                <DropdownItem key="settings">Settings</DropdownItem>
-                <DropdownItem
-                  key="logout"
-                  className="text-danger"
-                  color="danger"
-                  onPress={() => {
-                    router.push('/logout');
-                  }}
-                >
-                  Log Out
-                </DropdownItem>
-              </DropdownMenu>
-            </Dropdown>
+                <div className="mt-3 flex items-center justify-between">
+                  <Chip size="sm" variant="flat" color={user?.active ? 'success' : 'danger'}>
+                    {user?.active ? 'Active' : 'Inactive'}
+                  </Chip>
+                  <Dropdown placement="top-end">
+                    <DropdownTrigger>
+                      <Button size="sm" variant="light">Actions</Button>
+                    </DropdownTrigger>
+                    <DropdownMenu aria-label="User menu">
+                      <DropdownItem key="profile" onPress={() => router.push('/profile')}>Profile</DropdownItem>
+                      <DropdownItem key="settings" onPress={() => router.push('/settings')}>Settings</DropdownItem>
+                      <DropdownItem key="logout" className="text-danger" color="danger" onPress={signOut}>
+                        Log Out
+                      </DropdownItem>
+                    </DropdownMenu>
+                  </Dropdown>
+                </div>
+              </CardBody>
+            </Card>
           </div>
         )}
       </aside>

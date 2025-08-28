@@ -1,0 +1,171 @@
+import { getToken } from '@/utils/storage';
+import type { RequestOptions, ApiError } from '@/types/api';
+
+class ApiClient {
+  private baseUrl: string;
+
+  constructor(baseUrl: string) {
+    this.baseUrl = baseUrl.replace(/\/$/, '');
+    console.log('API Client initialized with base URL:', this.baseUrl);
+  }
+
+  private buildUrl(path: string, params?: Record<string, any>): string {
+    const url = new URL(`${this.baseUrl}${path}`);
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value === undefined || value === null) return;
+        if (Array.isArray(value)) {
+          value.forEach(v => url.searchParams.append(key, String(v)));
+        } else {
+          url.searchParams.set(key, String(value));
+        }
+      });
+    }
+    return url.toString();
+  }
+
+  private buildHeaders(opts?: RequestOptions): HeadersInit {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...(opts?.headers || {}),
+    };
+    
+    // Check if auth is explicitly disabled
+    const authDisabled = opts?.auth === false;
+    
+    if (!authDisabled) {
+      const token = getToken('accessToken');
+      console.log('🔐 Token check:', { 
+        hasToken: !!token, 
+        tokenLength: token?.length,
+        authDisabled: authDisabled 
+      });
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+        console.log('✅ Authorization header set:', `Bearer ${token.substring(0, 20)}...`);
+      } else {
+        console.log('❌ No access token found in localStorage');
+      }
+    } else {
+      console.log('🔓 Auth disabled for this request');
+    }
+    
+    return headers;
+  }
+
+  private async request<T>(path: string, opts: RequestOptions = {}): Promise<T> {
+    const url = this.buildUrl(path, opts.params);
+    console.log(`Making ${opts.method || 'GET'} request to:`, url);
+    
+    try {
+      const requestOptions = {
+        method: opts.method || 'GET',
+        headers: this.buildHeaders(opts),
+        body: opts.body ? JSON.stringify(opts.body) : undefined,
+        signal: opts.signal,
+      };
+
+      console.log('Request options:', {
+        method: requestOptions.method,
+        headers: requestOptions.headers,
+        body: requestOptions.body ? 'Present' : 'None'
+      });
+
+      const res = await fetch(url, requestOptions);
+
+      console.log('Response status:', res.status, res.statusText);
+
+      if (!res.ok) {
+        let message = `Request failed with ${res.status}`;
+        let errorData: any = {};
+        
+        try {
+          const data = await res.json();
+          message = data?.message || data?.error || message;
+          errorData = data;
+          console.log('Error response data:', data);
+        } catch (e) {
+          // If JSON parsing fails, use status text
+          message = res.statusText || message;
+          console.log('Could not parse error response as JSON');
+        }
+
+        const error: ApiError = {
+          message,
+          code: `HTTP_${res.status}`,
+          details: errorData,
+          timestamp: new Date().toISOString(),
+        };
+
+        throw error;
+      }
+
+      if (res.status === 204) return undefined as unknown as T;
+      
+      const contentType = res.headers.get('content-type') || '';
+      if (contentType.includes('application/json')) {
+        const data = await res.json();
+        console.log('Response data:', data);
+        return data as T;
+      }
+      
+      // Fallback to text
+      const text = await res.text();
+      console.log('Response text:', text);
+      return text as unknown as T;
+    } catch (error) {
+      console.error('Request error:', error);
+      
+      if (error instanceof Error && 'code' in error) {
+        throw error; // Re-throw API errors
+      }
+      
+      // Handle network errors
+      const networkError: ApiError = {
+        message: error instanceof Error ? error.message : 'Network error',
+        code: 'NETWORK_ERROR',
+        timestamp: new Date().toISOString(),
+      };
+      
+      throw networkError;
+    }
+  }
+
+  get<T>(path: string, params?: Record<string, any>, opts?: RequestOptions) {
+    return this.request<T>(path, { ...opts, params, method: 'GET' });
+  }
+
+  post<T>(path: string, body?: any, opts?: RequestOptions) {
+    return this.request<T>(path, { ...opts, body, method: 'POST' });
+  }
+
+  put<T>(path: string, body?: any, opts?: RequestOptions) {
+    return this.request<T>(path, { ...opts, body, method: 'PUT' });
+  }
+
+  patch<T>(path: string, body?: any, opts?: RequestOptions) {
+    return this.request<T>(path, { ...opts, body, method: 'PATCH' });
+  }
+
+  delete<T>(path: string, opts?: RequestOptions) {
+    return this.request<T>(path, { ...opts, method: 'DELETE' });
+  }
+}
+
+// Create API client instance with proper environment variable handling
+const getApiBaseUrl = () => {
+  // Check for environment variable first (using the same name as admin-example)
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+  
+  // Fallback to localhost for development
+  return 'http://localhost:8080';
+};
+
+const apiBaseUrl = getApiBaseUrl();
+console.log('Environment API URL:', process.env.NEXT_PUBLIC_API_URL);
+console.log('Using API Base URL:', apiBaseUrl);
+
+export const api = new ApiClient(apiBaseUrl);
+

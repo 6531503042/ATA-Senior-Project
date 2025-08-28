@@ -1,60 +1,47 @@
-export type QuestionType =
-  | 'single_choice'
-  | 'multiple_choice'
-  | 'text_based'
-  | 'rating'
-  | 'boolean';
+export type QuestionType = 'MULTIPLE_CHOICE' | 'SINGLE_CHOICE' | 'TEXT_BASED' | 'RATING' | 'SENTIMENT';
 
-export type QuestionCategory =
-  | 'project_satisfaction'
-  | 'technical_skills'
-  | 'communication'
-  | 'leadership'
-  | 'work_environment'
-  | 'work_life_balance'
-  | 'team_collaboration'
-  | 'general';
-
-export interface AnswerOption {
-  id: string;
-  text: string;
-  value?: string | number;
-}
+export type QuestionCategory = 
+  | 'WORK_ENVIRONMENT'
+  | 'WORK_LIFE_BALANCE'
+  | 'TEAM_COLLABORATION'
+  | 'PROJECT_MANAGEMENT'
+  | 'PROJECT_SATISFACTION'
+  | 'TECHNICAL_SKILLS'
+  | 'COMMUNICATION'
+  | 'LEADERSHIP'
+  | 'INNOVATION'
+  | 'PERSONAL_GROWTH'
+  | 'GENERAL';
 
 export interface Question {
-  id: string;
-  title: string;
+  id: number;
+  text: string;
   description?: string;
-  type: QuestionType;
+  questionType: QuestionType;
   category: QuestionCategory;
-  options?: AnswerOption[];
   required: boolean;
-  order: number;
-  isActive: boolean;
+  validationRules?: string;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface CreateQuestionRequest {
-  title: string;
+  text: string;
   description?: string;
-  type: QuestionType;
+  questionType: QuestionType;
   category: QuestionCategory;
-  options?: AnswerOption[];
   required: boolean;
-  order?: number;
+  validationRules?: string;
 }
 
 export interface UpdateQuestionRequest {
-  id: string;
-  title?: string;
+  id: number;
+  text?: string;
   description?: string;
-  type?: QuestionType;
+  questionType?: QuestionType;
   category?: QuestionCategory;
-  options?: AnswerOption[];
   required?: boolean;
-  order?: number;
-  isActive?: boolean;
+  validationRules?: string;
 }
 
 export interface QuestionStats {
@@ -68,7 +55,7 @@ export interface QuestionFilters {
   type?: QuestionType[];
   category?: QuestionCategory[];
   search?: string;
-  isActive?: boolean;
+  required?: boolean;
 }
 
 export interface QuestionPagination {

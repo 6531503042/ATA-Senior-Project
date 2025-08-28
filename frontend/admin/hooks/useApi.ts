@@ -1,186 +1,159 @@
-// สำหรับใช้เป็น template ทุกการใช้ hook (Default Hook Style)
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { api } from '@/libs/apiClient';
+import type { ApiError } from '@/types/api';
 
-import { useState } from 'react';
-
-import { getToken } from '@/utils/storage';
-
-interface RequestOptions extends RequestInit {
-  headers?: HeadersInit;
+interface UseApiOptions {
+  onSuccess?: (data: any) => void;
+  onError?: (error: ApiError) => void;
 }
 
-interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
-  message?: string;
+interface UseApiReturn<T> {
+  data: T | null;
+  loading: boolean;
+  error: ApiError | null;
+  execute: (endpoint: string, options?: any) => Promise<T>;
+  reset: () => void;
 }
 
-// General API Hook
-export const useApi = () => {
+export function useApi<T = any>(options: UseApiOptions = {}): UseApiReturn<T> {
+  const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ApiError | null>(null);
 
-  const request = async <T, B = unknown>(
-    endpoint: string,
-    method: string,
-    body?: B,
-    options: RequestOptions = {},
-  ): Promise<ApiResponse<T>> => {
+  const execute = useCallback(async (endpoint: string, requestOptions: any = {}) => {
     try {
       setLoading(true);
       setError(null);
 
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') || '';
-      const cleanEndpoint = endpoint.replace(/^\//, '');
-      const url = `${baseUrl}/${cleanEndpoint}`;
-
-      // eslint-disable-next-line no-console
-      console.log(`Making ${method} request to ${url}`, { body, options });
-
-      const headers: HeadersInit = {};
-
-      // Attach bearer token if available (client-side only)
-      try {
-        const token =
-          typeof window !== 'undefined' ? getToken('accessToken') : null;
-
-        if (token) {
-          (headers as Record<string, string>)['Authorization'] =
-            `Bearer ${token}`;
-        }
-      } catch {}
-
-      if (['POST', 'PUT', 'PATCH'].includes(method) && body) {
-        if (body instanceof FormData) {
-          // Browser will automatically set the boundary for Formdata
-        } else {
-          (headers as Record<string, string>)['Content-Type'] =
-            'application/json';
-        }
+      const { method = 'GET', body, params, ...opts } = requestOptions;
+      
+      let result: T;
+      
+      switch (method.toUpperCase()) {
+        case 'GET':
+          result = await api.get<T>(endpoint, params, opts);
+          break;
+        case 'POST':
+          result = await api.post<T>(endpoint, body, opts);
+          break;
+        case 'PUT':
+          result = await api.put<T>(endpoint, body, opts);
+          break;
+        case 'PATCH':
+          result = await api.patch<T>(endpoint, body, opts);
+          break;
+        case 'DELETE':
+          result = await api.delete<T>(endpoint, opts);
+          break;
+        default:
+          throw new Error(`Unsupported HTTP method: ${method}`);
       }
 
-      if (options.headers) {
-        Object.assign(headers, options.headers);
-      }
-
-      const requestOptions: RequestInit = {
-        method,
-        headers,
-        credentials: 'include',
-        ...options,
-      };
-
-      if (body && !['GET', 'DELETE'].includes(method)) {
-        requestOptions.body =
-          body instanceof FormData ? body : JSON.stringify(body);
-      }
-
-      // eslint-disable-next-line no-console
-      console.log('Request options:', requestOptions);
-
-      const response = await fetch(url, requestOptions);
-
-      // eslint-disable-next-line no-console
-      console.log('Response status:', response.status);
-
-      if (response.status === 204) {
-        return { success: true };
-      }
-
-      const data = await response.json();
-
-      // eslint-disable-next-line no-console
-      console.log('Response data:', data);
-
-      if (!response.ok) {
-        const errorMessage =
-          data.message || `HTTP error! status: ${response.status}`;
-
-        // eslint-disable-next-line no-console
-        console.error('API Error:', {
-          status: response.status,
-          message: errorMessage,
-          data,
-        });
-        throw new Error(errorMessage);
-      }
-
-      return {
-        success: true,
-        data: data.data || data,
-      };
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Request error:', error);
-      const errorMessage =
-        error instanceof Error ? error.message : 'An unknown error occurred';
-
-      setError(errorMessage);
-      throw error;
+      setData(result);
+      options.onSuccess?.(result);
+      return result;
+    } catch (err) {
+      const apiError = err as ApiError;
+      setError(apiError);
+      options.onError?.(apiError);
+      throw apiError;
     } finally {
       setLoading(false);
     }
+  }, [options]);
+
+  const reset = useCallback(() => {
+    setData(null);
+    setError(null);
+    setLoading(false);
+  }, []);
+
+  return {
+    data,
+    loading,
+    error,
+    execute,
+    reset,
   };
+}
 
-  return { request, loading, error };
-};
+// Specialized hooks for common operations
+export function useGet<T = any>(endpoint: string, options: UseApiOptions & { 
+  autoFetch?: boolean;
+  params?: Record<string, any>;
+  enabled?: boolean; // new: guard condition
+} = {}) {
+  const { autoFetch = false, params, enabled = true, ...apiOptions } = options;
+  const { data, loading, error, execute, reset } = useApi<T>(apiOptions);
 
-// Non-hook request helper for service modules (no React state, safe outside components)
-export async function apiRequest<T, B = unknown>(
-  endpoint: string,
-  method: string,
-  body?: B,
-  options: RequestInit = {},
-): Promise<{ success: boolean; data?: T }> {
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') || '';
-  const cleanEndpoint = endpoint.replace(/^\//, '');
-  const url = `${baseUrl}/${cleanEndpoint}`;
+  // Prevent duplicate fetches in React StrictMode (dev)
+  const didAutoFetchRef = useRef(false);
 
-  const headers: HeadersInit = {};
+  const fetch = useCallback(() => {
+    return execute(endpoint, { method: 'GET', params });
+  }, [execute, endpoint, params]);
 
-  try {
-    const token =
-      typeof window !== 'undefined' ? getToken('accessToken') : null;
-
-    if (token) {
-      (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
+  // Auto-fetch on mount if enabled (guarded, once)
+  useEffect(() => {
+    if (autoFetch && enabled && !didAutoFetchRef.current) {
+      didAutoFetchRef.current = true;
+      fetch();
     }
-  } catch {}
+  }, [autoFetch, enabled, fetch]);
 
-  if (
-    ['POST', 'PUT', 'PATCH'].includes(method) &&
-    body &&
-    !(body instanceof FormData)
-  ) {
-    (headers as Record<string, string>)['Content-Type'] = 'application/json';
-  }
+  return {
+    data,
+    loading,
+    error,
+    refetch: fetch,
+    reset,
+  } as const;
+}
 
-  if ((options as any).headers) {
-    Object.assign(headers, (options as any).headers);
-  }
+export function usePost<T = any>(endpoint: string, options: UseApiOptions = {}) {
+  const { data, loading, error, execute, reset } = useApi<T>(options);
 
-  const requestOptions: RequestInit = {
-    method,
-    headers,
-    credentials: 'include',
-    ...options,
+  const post = useCallback((body?: any, requestOptions?: any) => {
+    return execute(endpoint, { method: 'POST', body, ...requestOptions });
+  }, [execute, endpoint]);
+
+  return {
+    data,
+    loading,
+    error,
+    post,
+    reset,
   };
+}
 
-  if (body && !['GET', 'DELETE'].includes(method)) {
-    (requestOptions as any).body =
-      body instanceof FormData ? body : JSON.stringify(body);
-  }
+export function usePut<T = any>(endpoint: string, options: UseApiOptions = {}) {
+  const { data, loading, error, execute, reset } = useApi<T>(options);
 
-  const response = await fetch(url, requestOptions);
+  const put = useCallback((body?: any, requestOptions?: any) => {
+    return execute(endpoint, { method: 'PUT', body, ...requestOptions });
+  }, [execute, endpoint]);
 
-  if (response.status === 204) return { success: true };
-  const data = await response.json();
+  return {
+    data,
+    loading,
+    error,
+    put,
+    reset,
+  };
+}
 
-  if (!response.ok) {
-    const message =
-      (data && (data.message || data.error)) || `HTTP ${response.status}`;
+export function useDelete<T = any>(endpoint: string, options: UseApiOptions = {}) {
+  const { data, loading, error, execute, reset } = useApi<T>(options);
 
-    throw new Error(message);
-  }
+  const deleteResource = useCallback((requestOptions?: any) => {
+    return execute(endpoint, { method: 'DELETE', ...requestOptions });
+  }, [execute, endpoint]);
 
-  return { success: true, data: data.data || data };
+  return {
+    data,
+    loading,
+    error,
+    delete: deleteResource,
+    reset,
+  };
 }
