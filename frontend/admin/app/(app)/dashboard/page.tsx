@@ -8,6 +8,7 @@ import { useDashboardData } from '@/hooks/useDashboard';
 import { PageHeader } from '@/components/ui/page-header';
 import { CardStat } from '@/components/ui/card-stat';
 import { DashboardStats } from './_components/DashboardStats';
+import { QuickCreate } from './_components/QuickCreate';
 import { DashboardMetrics } from './_components/DashboardMetrics';
 import { DashboardChart } from './_components/DashboardChart';
 import { DashboardOverview } from './_components/DashboardOverview';
@@ -71,26 +72,6 @@ export default function DashboardPage() {
             </Button>
             
             {/* Debug: Test Login Button */}
-            <div className="mt-4 pt-4 border-t border-default-200">
-              <p className="text-xs text-default-500 mb-2">Debug: Test with sample credentials</p>
-              <Button 
-                size="sm"
-                color="secondary" 
-                variant="flat" 
-                onPress={() => {
-                  // Test with sample credentials
-                  const testCredentials = {
-                    username: 'admin',
-                    password: 'admin123'
-                  };
-                  console.log('Testing login with:', testCredentials);
-                  // You can manually test this in the browser console
-                  localStorage.setItem('testCredentials', JSON.stringify(testCredentials));
-                }}
-              >
-                Set Test Credentials
-              </Button>
-            </div>
           </CardBody>
         </Card>
       </div>
@@ -116,16 +97,12 @@ export default function DashboardPage() {
         }
       />
 
-      <div className="h-fit w-full flex flex-row justify-between items-center mb-6">
-        <h1 className="text-3xl font-semibold">Dashboard</h1>
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-default-500">
-            Welcome back, {user.firstName || user.username}!
-          </span>
-        </div>
+      {/* Quick Create row above overall stats */}
+      <div className="mb-4 flex justify-end">
+        <QuickCreate showRefresh={false} />
       </div>
 
-      {/* Quick Stats Section */}
+      {/* Quick Stats Section - larger and tighter spacing */}
       <div className="mb-6">
         <DashboardStats 
           stats={dashboard ? {
