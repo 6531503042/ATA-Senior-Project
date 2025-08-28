@@ -91,10 +91,10 @@ export function DashboardStats({ stats, loading = false }: DashboardStatsProps) 
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-2">
         {[...Array(6)].map((_, index) => (
-          <Card key={index} className="shadow-sm border border-default-200">
-            <CardBody className="p-4">
+          <Card key={index} className="shadow-lg border-0 rounded-2xl">
+            <CardBody className="p-3">
               <div className="space-y-3">
                 <Skeleton className="w-10 h-10 rounded-lg" />
                 <div className="space-y-2">
@@ -110,27 +110,27 @@ export function DashboardStats({ stats, loading = false }: DashboardStatsProps) 
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
       {statsConfig.map((stat, index) => {
         const Icon = stat.icon;
         const StatCard = (
           <Card 
             key={index} 
-            className="shadow-sm border border-default-200 hover:shadow-md transition-shadow duration-200 cursor-pointer"
+            className="bg-white shadow-xl border-0 rounded-2xl hover:shadow-2xl hover:-translate-y-0.5 transition-all duration-200 cursor-pointer ring-1 ring-default-200/60"
             isPressable
           >
             <CardBody className="p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-lg ${stat.bgColor}`}>
+                  <div className={`p-2 rounded-xl ${stat.bgColor} shadow-inner`}> 
                     <Icon className={`w-5 h-5 ${stat.textColor}`} />
                   </div>
                   <div>
                     <p className="text-sm font-medium text-default-600">{stat.title}</p>
-                    <p className="text-xl font-bold text-default-900">{stat.value.toLocaleString()}</p>
+                    <p className="text-2xl font-extrabold text-default-900">{stat.value.toLocaleString()}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 bg-default-100 px-2 py-1 rounded-lg">
                   {stat.trendUp ? (
                     <ArrowUpRight className="w-4 h-4 text-green-500" />
                   ) : (

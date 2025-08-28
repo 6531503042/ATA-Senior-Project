@@ -13,7 +13,7 @@ export function RecentProjects({ projects, loading = false }: RecentProjectsProp
     return (
       <div className="space-y-4">
         {[...Array(3)].map((_, index) => (
-          <div key={index} className="flex items-start gap-3 p-3 rounded-lg border border-default-200">
+          <div key={index} className="flex items-start gap-3 p-3 rounded-2xl border border-default-200 bg-white shadow-md">
             <Skeleton className="w-10 h-10 rounded-full" />
             <div className="flex-1 space-y-2">
               <Skeleton className="w-3/4 h-4 rounded" />
@@ -44,7 +44,7 @@ export function RecentProjects({ projects, loading = false }: RecentProjectsProp
   return (
     <div className="space-y-3">
       {projects.slice(0, 5).map((project, index) => (
-        <div key={project.id || index} className="flex items-start gap-3 p-3 rounded-lg border border-default-200 hover:bg-default-50 transition-colors">
+        <div key={project.id || index} className="flex items-start gap-3 p-3 rounded-2xl border border-default-200 bg-white shadow-md hover:shadow-lg transition-all">
           <Avatar 
             size="sm" 
             name={project.title?.charAt(0) || 'P'} 

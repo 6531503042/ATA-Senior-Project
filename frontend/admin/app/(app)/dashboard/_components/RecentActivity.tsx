@@ -36,7 +36,7 @@ export function RecentActivity({ activities, loading = false }: RecentActivityPr
     return (
       <div className="space-y-4">
         {[...Array(5)].map((_, index) => (
-          <div key={index} className="flex items-start gap-3 p-3 rounded-lg border border-default-200">
+          <div key={index} className="flex items-start gap-3 p-3 rounded-2xl border border-default-200 bg-white shadow-md">
             <Skeleton className="w-10 h-10 rounded-full" />
             <div className="flex-1 space-y-2">
               <Skeleton className="w-3/4 h-4 rounded" />
@@ -62,7 +62,7 @@ export function RecentActivity({ activities, loading = false }: RecentActivityPr
       {activities.slice(0, 5).map((activity, index) => (
         <div
           key={`${activity.icon}-${activity.actorName}-${activity.action}-${activity.timestamp}-${index}`}
-          className="flex items-start gap-3 p-3 rounded-lg border border-default-200 hover:bg-default-50 transition-colors"
+          className="flex items-start gap-3 p-3 rounded-2xl border border-default-200 bg-white shadow-md hover:shadow-lg transition-all"
         >
           <Avatar
             name={activity.actorName?.charAt(0) || 'U'}

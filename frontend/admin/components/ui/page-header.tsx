@@ -15,7 +15,7 @@ export function PageHeader({ title, right, icon, description }: PageHeaderProps)
         <div className="mb-6 w-full">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-2">
                 <div className="flex items-center gap-4">
-                    <div className="p-3 rounded-xl bg-gradient-to-r shadow-lg from-[#3b82f6] to-[#4f46e5] border">
+                    <div className="p-3 rounded-xl bg-gradient-to-r shadow-lg from-[#3b82f6] to-[#4f46e5]">
                         {icon && <span className="text-white">{icon}</span>}
                     </div>
                     <div>

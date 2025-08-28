@@ -42,8 +42,8 @@ export function DashboardChart({ data, loading = false }: DashboardChartProps) {
   const maxValue = Math.max(...data.datasets[0]?.data || [0]);
   
   return (
-    <Card className="shadow-sm h-full">
-      <CardHeader className="pb-4">
+    <Card className="shadow-lg border-0 rounded-2xl h-full">
+      <CardHeader className="pb-2">
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-blue-100 rounded-lg">
@@ -62,30 +62,26 @@ export function DashboardChart({ data, loading = false }: DashboardChartProps) {
       </CardHeader>
       <CardBody className="pt-0">
         {data && data.labels && data.datasets && data.datasets.length > 0 ? (
-          <div className="space-y-6">
+          <div className="space-y-4">
             {/* Simple Bar Chart */}
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <h4 className="font-medium text-gray-700">{data.datasets[0]?.label || 'Data'}</h4>
                 <span className="text-sm text-gray-500">Last 7 days</span>
               </div>
-              <div className="space-y-3">
+              <div className="grid grid-cols-7 gap-2 items-end h-40">
                 {data.labels.map((label, index) => {
                   const value = data.datasets[0]?.data[index] || 0;
                   const percentage = maxValue > 0 ? (value / maxValue) * 100 : 0;
                   
                   return (
-                    <div key={index} className="space-y-1">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">{label}</span>
-                        <span className="font-medium text-gray-900">{value}</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
-                          className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all duration-500"
-                          style={{ width: `${percentage}%` }}
-                        />
-                      </div>
+                    <div key={index} className="flex flex-col items-center justify-end h-full">
+                      <div
+                        className="w-8 rounded-t-lg bg-gradient-to-t from-blue-600 to-blue-400"
+                        style={{ height: `${percentage}%` }}
+                        title={`${label}: ${value}`}
+                      />
+                      <span className="mt-2 text-xs text-gray-600">{label}</span>
                     </div>
                   );
                 })}
@@ -93,7 +89,7 @@ export function DashboardChart({ data, loading = false }: DashboardChartProps) {
             </div>
 
             {/* Chart Legend */}
-            <div className="flex flex-wrap gap-4 pt-4 border-t border-gray-100">
+            <div className="flex flex-wrap gap-4 pt-3 border-t border-gray-100">
               {data.datasets.map((dataset, index) => (
                 <div key={index} className="flex items-center gap-2">
                   <div 

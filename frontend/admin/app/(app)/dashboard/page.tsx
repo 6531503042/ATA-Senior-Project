@@ -46,9 +46,9 @@ export default function DashboardPage() {
     return (
       <div className="flex items-center justify-center min-h-screen bg-transparent">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-4 border-default-600 border-t-transparent mx-auto mb-6"></div>
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">Loading Dashboard</h2>
-          <p className="text-gray-600">Please wait while we fetch your data...</p>
+          <div className="animate-spin rounded-full h-16 w-16 mx-auto mb-6"></div>
+          <h2 className="text-xl font-semibold text-default-800 mb-2">Loading Dashboard</h2>
+          <p className="text-default-600">Please wait while we fetch your data...</p>
         </div>
       </div>
     );
@@ -61,7 +61,7 @@ export default function DashboardPage() {
         <Card className="max-w-md">
           <CardBody className="p-6 text-center">
             <h2 className="text-xl font-semibold text-red-600 mb-2">Authentication Required</h2>
-            <p className="text-gray-600 mb-4">You need to be logged in to access the dashboard.</p>
+            <p className="text-default-600 mb-4">You need to be logged in to access the dashboard.</p>
             <Button 
               color="primary" 
               variant="flat" 
@@ -71,8 +71,8 @@ export default function DashboardPage() {
             </Button>
             
             {/* Debug: Test Login Button */}
-            <div className="mt-4 pt-4 border-t border-gray-200">
-              <p className="text-xs text-gray-500 mb-2">Debug: Test with sample credentials</p>
+            <div className="mt-4 pt-4 border-t border-default-200">
+              <p className="text-xs text-default-500 mb-2">Debug: Test with sample credentials</p>
               <Button 
                 size="sm"
                 color="secondary" 
