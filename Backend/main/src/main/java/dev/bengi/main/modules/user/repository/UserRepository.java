@@ -36,4 +36,8 @@ public interface UserRepository extends R2dbcRepository<User, Long> {
 
     @Query("SELECT COUNT(*) FROM users WHERE last_login_at >= :from AND last_login_at < :to")
     Mono<Long> countActiveUsersBetween(java.time.LocalDateTime from, java.time.LocalDateTime to);
+
+    // Dashboard stats methods
+    @Query("SELECT COUNT(*) FROM users WHERE created_at >= :from AND created_at < :to")
+    Mono<Long> countNewUsersBetween(java.time.LocalDateTime from, java.time.LocalDateTime to);
 }

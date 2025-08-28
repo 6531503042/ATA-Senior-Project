@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/dashboard")
 @RequiredArgsConstructor
@@ -47,6 +49,43 @@ public class DashboardController {
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
     public Mono<ResponseEntity<java.util.List<TimeSeriesMetric>>> getTimeSeriesData() {
         return dashboardService.getTimeSeriesData().map(ResponseEntity::ok);
+    }
+
+    // Individual stats endpoints for dashboard cards
+    @GetMapping("/stats/users")
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    public Mono<ResponseEntity<Map<String, Object>>> getUsersStats() {
+        return dashboardService.getUsersStats().map(ResponseEntity::ok);
+    }
+
+    @GetMapping("/stats/departments")
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    public Mono<ResponseEntity<Map<String, Object>>> getDepartmentsStats() {
+        return dashboardService.getDepartmentsStats().map(ResponseEntity::ok);
+    }
+
+    @GetMapping("/stats/questions")
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    public Mono<ResponseEntity<Map<String, Object>>> getQuestionsStats() {
+        return dashboardService.getQuestionsStats().map(ResponseEntity::ok);
+    }
+
+    @GetMapping("/stats/feedbacks")
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    public Mono<ResponseEntity<Map<String, Object>>> getFeedbacksStats() {
+        return dashboardService.getFeedbacksStats().map(ResponseEntity::ok);
+    }
+
+    @GetMapping("/stats/submissions")
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    public Mono<ResponseEntity<Map<String, Object>>> getSubmissionsStats() {
+        return dashboardService.getSubmissionsStats().map(ResponseEntity::ok);
+    }
+
+    @GetMapping("/stats/projects")
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    public Mono<ResponseEntity<Map<String, Object>>> getProjectsStats() {
+        return dashboardService.getProjectsStats().map(ResponseEntity::ok);
     }
 
     // Interactive and real-time dashboard features

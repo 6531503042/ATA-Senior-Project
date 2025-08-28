@@ -22,6 +22,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 @Service
@@ -47,6 +49,21 @@ public class UserManagementService {
     private static final Set<String> SEARCHABLE_FIELDS = Set.of(
         "username", "email", "first_name", "last_name"
     );
+
+    public Mono<Map<String, Object>> getUserStats() {
+        return Mono.zip(
+                userRepository.count(),
+                userRepository.countActiveUsers(),
+                roleRepository.count()
+        ).map(tuple -> {
+            Map<String, Object> stats = new HashMap<>();
+            stats.put("totalUsers", tuple.getT1());
+            stats.put("activeUsers", tuple.getT2());
+            stats.put("inactiveUsers", tuple.getT1() - tuple.getT2());
+            stats.put("totalRoles", tuple.getT3());
+            return stats;
+        });
+    }
 
     public Mono<PageResponse<UserResponseDto>> findAllUsers(PageRequest pageRequest) {
         String baseQuery = """

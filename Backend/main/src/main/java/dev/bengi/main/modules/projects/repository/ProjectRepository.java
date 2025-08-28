@@ -15,6 +15,10 @@ public interface ProjectRepository extends R2dbcRepository<Project, Long> {
 
     @Query("SELECT COUNT(*) FROM projects WHERE created_at >= :from AND created_at < :to")
     Mono<Long> countCreatedBetween(LocalDateTime from, LocalDateTime to);
+
+    // Dashboard stats methods
+    @Query("SELECT COUNT(*) FROM projects WHERE active = true")
+    Mono<Long> countActiveProjects();
 }
 
 

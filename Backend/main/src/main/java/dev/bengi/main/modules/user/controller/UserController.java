@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
+import java.util.Map;
+
 /**
  * User Management Controller
  * Handles CRUD operations for users with proper authorization
@@ -35,6 +37,13 @@ public class UserController {
     public Mono<ResponseEntity<PageResponse<UserResponseDto>>> listUsers(ServerWebExchange exchange) {
         var pageRequest = paginationService.parsePageRequest(exchange);
         return userManagementService.findAllUsers(pageRequest)
+                .map(ResponseEntity::ok);
+    }
+
+    @GetMapping("/stats")
+    @PreAuthorize("hasRole('ADMIN')")
+    public Mono<ResponseEntity<Map<String, Object>>> getUserStats() {
+        return userManagementService.getUserStats()
                 .map(ResponseEntity::ok);
     }
 

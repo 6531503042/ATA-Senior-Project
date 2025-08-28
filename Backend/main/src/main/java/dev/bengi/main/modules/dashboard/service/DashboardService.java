@@ -30,6 +30,138 @@ public class DashboardService {
     private final DepartmentRepository departmentRepository;
     private final DatabaseClient databaseClient;
 
+    // Individual stats methods for dashboard cards
+    public Mono<Map<String, Object>> getUsersStats() {
+        YearMonth now = YearMonth.now();
+        LocalDateTime monthStart = now.atDay(1).atStartOfDay();
+        LocalDateTime monthEnd = now.plusMonths(1).atDay(1).atStartOfDay();
+        LocalDateTime prevMonthStart = now.minusMonths(1).atDay(1).atStartOfDay();
+        
+        return Mono.zip(
+                userRepository.count(),
+                userRepository.countActiveUsers(),
+                userRepository.countNewUsersBetween(monthStart, monthEnd),
+                userRepository.countNewUsersBetween(prevMonthStart, monthStart)
+        ).map(t -> {
+            Map<String, Object> stats = new HashMap<>();
+            stats.put("totalUsers", t.getT1());
+            stats.put("activeUsers", t.getT2());
+            stats.put("newUsersThisMonth", t.getT3());
+            stats.put("newUsersLastMonth", t.getT4());
+            stats.put("growth", formatGrowth(t.getT3(), t.getT4()));
+            return stats;
+        });
+    }
+
+    public Mono<Map<String, Object>> getDepartmentsStats() {
+        YearMonth now = YearMonth.now();
+        LocalDateTime monthStart = now.atDay(1).atStartOfDay();
+        LocalDateTime monthEnd = now.plusMonths(1).atDay(1).atStartOfDay();
+        LocalDateTime prevMonthStart = now.minusMonths(1).atDay(1).atStartOfDay();
+        
+        return Mono.zip(
+                departmentRepository.count(),
+                departmentRepository.countActiveDepartments(),
+                departmentRepository.countNewDepartmentsBetween(monthStart, monthEnd),
+                departmentRepository.countNewDepartmentsBetween(prevMonthStart, monthStart)
+        ).map(t -> {
+            Map<String, Object> stats = new HashMap<>();
+            stats.put("totalDepartments", t.getT1());
+            stats.put("activeDepartments", t.getT2());
+            stats.put("newDepartmentsThisMonth", t.getT3());
+            stats.put("newDepartmentsLastMonth", t.getT4());
+            stats.put("growth", formatGrowth(t.getT3(), t.getT4()));
+            return stats;
+        });
+    }
+
+    public Mono<Map<String, Object>> getQuestionsStats() {
+        // Since we don't have a questions table, we'll use feedbacks as questions
+        YearMonth now = YearMonth.now();
+        LocalDateTime monthStart = now.atDay(1).atStartOfDay();
+        LocalDateTime monthEnd = now.plusMonths(1).atDay(1).atStartOfDay();
+        LocalDateTime prevMonthStart = now.minusMonths(1).atDay(1).atStartOfDay();
+        
+        return Mono.zip(
+                feedbackRepository.count(),
+                feedbackRepository.countActiveFeedbacks(),
+                feedbackRepository.countCreatedBetween(monthStart, monthEnd),
+                feedbackRepository.countCreatedBetween(prevMonthStart, monthStart)
+        ).map(t -> {
+            Map<String, Object> stats = new HashMap<>();
+            stats.put("totalQuestions", t.getT1());
+            stats.put("activeQuestions", t.getT2());
+            stats.put("newQuestionsThisMonth", t.getT3());
+            stats.put("newQuestionsLastMonth", t.getT4());
+            stats.put("growth", formatGrowth(t.getT3(), t.getT4()));
+            return stats;
+        });
+    }
+
+    public Mono<Map<String, Object>> getFeedbacksStats() {
+        YearMonth now = YearMonth.now();
+        LocalDateTime monthStart = now.atDay(1).atStartOfDay();
+        LocalDateTime monthEnd = now.plusMonths(1).atDay(1).atStartOfDay();
+        LocalDateTime prevMonthStart = now.minusMonths(1).atDay(1).atStartOfDay();
+        
+        return Mono.zip(
+                feedbackRepository.count(),
+                feedbackRepository.countActiveFeedbacks(),
+                feedbackRepository.countCreatedBetween(monthStart, monthEnd),
+                feedbackRepository.countCreatedBetween(prevMonthStart, monthStart)
+        ).map(t -> {
+            Map<String, Object> stats = new HashMap<>();
+            stats.put("totalFeedbacks", t.getT1());
+            stats.put("activeFeedbacks", t.getT2());
+            stats.put("newFeedbacksThisMonth", t.getT3());
+            stats.put("newFeedbacksLastMonth", t.getT4());
+            stats.put("growth", formatGrowth(t.getT3(), t.getT4()));
+            return stats;
+        });
+    }
+
+    public Mono<Map<String, Object>> getSubmissionsStats() {
+        YearMonth now = YearMonth.now();
+        LocalDateTime monthStart = now.atDay(1).atStartOfDay();
+        LocalDateTime monthEnd = now.plusMonths(1).atDay(1).atStartOfDay();
+        LocalDateTime prevMonthStart = now.minusMonths(1).atDay(1).atStartOfDay();
+        
+        return Mono.zip(
+                submitRepository.count(),
+                submitRepository.countSubmittedBetween(monthStart, monthEnd),
+                submitRepository.countSubmittedBetween(prevMonthStart, monthStart)
+        ).map(t -> {
+            Map<String, Object> stats = new HashMap<>();
+            stats.put("totalSubmissions", t.getT1());
+            stats.put("submissionsThisMonth", t.getT2());
+            stats.put("submissionsLastMonth", t.getT3());
+            stats.put("growth", formatGrowth(t.getT2(), t.getT3()));
+            return stats;
+        });
+    }
+
+    public Mono<Map<String, Object>> getProjectsStats() {
+        YearMonth now = YearMonth.now();
+        LocalDateTime monthStart = now.atDay(1).atStartOfDay();
+        LocalDateTime monthEnd = now.plusMonths(1).atDay(1).atStartOfDay();
+        LocalDateTime prevMonthStart = now.minusMonths(1).atDay(1).atStartOfDay();
+        
+        return Mono.zip(
+                projectRepository.count(),
+                projectRepository.countActiveProjects(),
+                projectRepository.countCreatedBetween(monthStart, monthEnd),
+                projectRepository.countCreatedBetween(prevMonthStart, monthStart)
+        ).map(t -> {
+            Map<String, Object> stats = new HashMap<>();
+            stats.put("totalProjects", t.getT1());
+            stats.put("activeProjects", t.getT2());
+            stats.put("newProjectsThisMonth", t.getT3());
+            stats.put("newProjectsLastMonth", t.getT4());
+            stats.put("growth", formatGrowth(t.getT3(), t.getT4()));
+            return stats;
+        });
+    }
+
     public Mono<DashboardStats> getStats(String currentUsername) {
         // Overview metrics - enhanced with actual data
         Mono<Long> totalProjects = projectRepository.count();
