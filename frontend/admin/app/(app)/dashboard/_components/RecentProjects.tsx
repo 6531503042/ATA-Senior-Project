@@ -13,7 +13,7 @@ export function RecentProjects({ projects, loading = false }: RecentProjectsProp
     return (
       <div className="space-y-4">
         {[...Array(3)].map((_, index) => (
-          <div key={index} className="flex items-start gap-3 p-3 rounded-2xl border border-default-200 bg-white shadow-md">
+          <div key={index} className="flex items-start gap-3 p-4 rounded-2xl border border-default-200 bg-white shadow-lg hover:shadow-xl transition-all">
             <Skeleton className="w-10 h-10 rounded-full" />
             <div className="flex-1 space-y-2">
               <Skeleton className="w-3/4 h-4 rounded" />
@@ -42,20 +42,20 @@ export function RecentProjects({ projects, loading = false }: RecentProjectsProp
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {projects.slice(0, 5).map((project, index) => (
-        <div key={project.id || index} className="flex items-start gap-3 p-3 rounded-2xl border border-default-200 bg-white shadow-md hover:shadow-lg transition-all">
+        <div key={project.id || index} className="flex items-start gap-3 p-4 rounded-2xl border border-default-200 bg-white shadow-lg hover:shadow-xl transition-all duration-200 hover:-translate-y-0.5">
           <Avatar 
             size="sm" 
             name={project.title?.charAt(0) || 'P'} 
-            className="flex-shrink-0 bg-primary text-white"
+            className="flex-shrink-0 bg-primary text-white shadow-md"
           />
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between mb-2">
               <p className="text-sm font-medium text-default-900 truncate">
                 {project.title}
               </p>
-              <Chip size="sm" variant="flat" color="primary" className="ml-2">
+              <Chip size="sm" variant="flat" color="primary" className="ml-2 shadow-sm">
                 {project.status}
               </Chip>
             </div>

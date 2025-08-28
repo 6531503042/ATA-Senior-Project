@@ -36,7 +36,7 @@ export function RecentActivity({ activities, loading = false }: RecentActivityPr
     return (
       <div className="space-y-4">
         {[...Array(5)].map((_, index) => (
-          <div key={index} className="flex items-start gap-3 p-3 rounded-2xl border border-default-200 bg-white shadow-md">
+          <div key={index} className="flex items-start gap-3 p-4 rounded-2xl border border-default-200 bg-white shadow-lg hover:shadow-xl transition-all">
             <Skeleton className="w-10 h-10 rounded-full" />
             <div className="flex-1 space-y-2">
               <Skeleton className="w-3/4 h-4 rounded" />
@@ -58,16 +58,16 @@ export function RecentActivity({ activities, loading = false }: RecentActivityPr
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {activities.slice(0, 5).map((activity, index) => (
         <div
           key={`${activity.icon}-${activity.actorName}-${activity.action}-${activity.timestamp}-${index}`}
-          className="flex items-start gap-3 p-3 rounded-2xl border border-default-200 bg-white shadow-md hover:shadow-lg transition-all"
+          className="flex items-start gap-3 p-4 rounded-2xl border border-default-200 bg-white shadow-lg hover:shadow-xl transition-all duration-200 hover:-translate-y-0.5"
         >
           <Avatar
             name={activity.actorName?.charAt(0) || 'U'}
             size="sm"
-            className="flex-shrink-0 bg-primary text-white"
+            className="flex-shrink-0 bg-primary text-white shadow-md"
           />
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between">
@@ -80,7 +80,7 @@ export function RecentActivity({ activities, loading = false }: RecentActivityPr
                   {formatTimeAgo(activity.timestamp)}
                 </p>
               </div>
-              <div className={`px-2 py-1 rounded-full text-xs font-medium ${getActivityColor(activity.action)}`}>
+              <div className={`px-3 py-1.5 rounded-full text-xs font-medium shadow-sm ${getActivityColor(activity.action)}`}>
                 {activity.action}
               </div>
             </div>

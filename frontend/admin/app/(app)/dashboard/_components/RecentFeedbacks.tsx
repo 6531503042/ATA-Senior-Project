@@ -22,7 +22,7 @@ export function RecentFeedbacks({ feedbacks, loading = false }: RecentFeedbacksP
     return (
       <div className="space-y-4">
         {[...Array(3)].map((_, index) => (
-          <div key={index} className="flex items-start gap-3 p-3 rounded-2xl border border-default-200 bg-white shadow-md">
+          <div key={index} className="flex items-start gap-3 p-4 rounded-2xl border border-default-200 bg-white shadow-lg hover:shadow-xl transition-all">
             <Skeleton className="w-10 h-10 rounded-full" />
             <div className="flex-1 space-y-2">
               <Skeleton className="w-3/4 h-4 rounded" />
@@ -48,13 +48,13 @@ export function RecentFeedbacks({ feedbacks, loading = false }: RecentFeedbacksP
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {feedbacks.slice(0, 5).map((feedback, index) => (
-        <div key={feedback.id || index} className="flex items-start gap-3 p-3 rounded-2xl border border-default-200 bg-white shadow-md hover:shadow-lg transition-all">
+        <div key={feedback.id || index} className="flex items-start gap-3 p-4 rounded-2xl border border-default-200 bg-white shadow-lg hover:shadow-xl transition-all duration-200 hover:-translate-y-0.5">
           <Avatar 
             size="sm" 
             name={feedback.projectTitle?.charAt(0) || 'F'} 
-            className="flex-shrink-0 bg-primary text-white"
+            className="flex-shrink-0 bg-primary text-white shadow-md"
           />
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between mb-2">
@@ -65,7 +65,7 @@ export function RecentFeedbacks({ feedbacks, loading = false }: RecentFeedbacksP
                 size="sm" 
                 variant="flat" 
                 color={getSentimentColor(feedback.sentiment)}
-                className="ml-2"
+                className="ml-2 shadow-sm"
               >
                 {feedback.status}
               </Chip>
@@ -79,7 +79,7 @@ export function RecentFeedbacks({ feedbacks, loading = false }: RecentFeedbacksP
                 {feedback.participants} participants
               </span>
               <span>•</span>
-              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+              <span className={`px-2 py-1 rounded-full text-xs font-medium shadow-sm ${
                 feedback.sentiment?.toLowerCase() === 'positive' ? 'bg-green-100 text-green-700' :
                 feedback.sentiment?.toLowerCase() === 'negative' ? 'bg-red-100 text-red-700' :
                 'bg-default-100 text-default-700'
