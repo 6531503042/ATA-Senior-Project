@@ -1,13 +1,6 @@
-import './globals.css'; // keep if you have it
-import Providers from './providers';
-import { Noto_Sans_Thai } from 'next/font/google';
 import type { Metadata } from 'next';
-
-const notoThai = Noto_Sans_Thai({
-  subsets: ['latin', 'thai'],
-  variable: '--font-sans',
-  display: 'swap',
-});
+import {Providers} from './providers';
+import "./globals.css";
 
 export const metadata: Metadata = {
   title: 'Employee Portal',
@@ -17,8 +10,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${notoThai.className} bg-background text-foreground antialiased`}>
-        {/* Client-only providers live inside this server layout */}
+      <body>
         <Providers>{children}</Providers>
       </body>
     </html>

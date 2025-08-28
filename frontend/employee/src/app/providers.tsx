@@ -1,17 +1,12 @@
-'use client';
+"use client";
 
-import { HeroUIProvider } from '@heroui/react';
-import { ThemeProvider as NextThemesProvider } from 'next-themes';
-import { useRouter } from 'next/navigation';
-import { ReactNode } from 'react';
+import { HeroUIProvider } from "@heroui/react";
+import { AlertDialogProvider } from "@/app/components/ui/alert-dialog";
 
-export default function Providers({ children }: { children: ReactNode }) {
-  const router = useRouter();
+export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <NextThemesProvider attribute="class" defaultTheme="light" enableSystem>
-      <HeroUIProvider navigate={router.push}>
-        {children}
-      </HeroUIProvider>
-    </NextThemesProvider>
+    <HeroUIProvider>
+      <AlertDialogProvider>{children}</AlertDialogProvider>
+    </HeroUIProvider>
   );
 }
