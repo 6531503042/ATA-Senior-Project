@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, ReactNode } from "react";
+import { createContext, useContext, useEffect, ReactNode, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import useAuthStore from "@/hooks/useAuth";
 import type { AuthContextType } from "@/types/auth";
@@ -15,6 +15,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const auth = useAuthStore();
   const router = useRouter();
   const pathname = usePathname();
+  const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Protected routes that require authentication
   const protectedRoutes = ["/", "/dashboard", "/users", "/projects", "/questions", "/feedbacks", "/departments", "/roles"];
@@ -38,16 +39,63 @@ export function AuthProvider({ children }: AuthProviderProps) {
     checkAuth();
   }, [auth, router, pathname]);
 
-  // Auto-refresh token when needed
+  // Auto-refresh token with better scheduling
   useEffect(() => {
-    const interval = setInterval(async () => {
+    const startTokenRefresh = async () => {
       if (auth.isLoggedIn()) {
-        await auth.ensureValidSession();
+        // Initial check - only if user is logged in
+        try {
+          await auth.ensureValidSession();
+        } catch (error) {
+          console.warn("Initial token validation failed:", error);
+        }
+        
+        // Set up interval for periodic checks (every 10 minutes instead of 4)
+        refreshIntervalRef.current = setInterval(async () => {
+          if (auth.isLoggedIn()) {
+            try {
+              console.log("Performing periodic token validation...");
+              const success = await auth.ensureValidSession();
+              if (!success) {
+                // If refresh failed, redirect to login
+                console.log("Token refresh failed, redirecting to login");
+                router.push("/login");
+              }
+            } catch (error) {
+              console.warn("Periodic token validation failed:", error);
+              // Don't redirect immediately on error, let it retry
+            }
+          }
+        }, 10 * 60 * 1000); // Check every 10 minutes instead of 4
       }
-    }, 5 * 60 * 1000); // Check every 5 minutes
+    };
 
-    return () => clearInterval(interval);
-  }, [auth]);
+    const stopTokenRefresh = () => {
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
+        refreshIntervalRef.current = null;
+      }
+    };
+
+    // Start token refresh when component mounts or auth state changes
+    startTokenRefresh();
+
+    // Cleanup on unmount
+    return () => {
+      stopTokenRefresh();
+    };
+  }, [auth, router]);
+
+  // Additional effect to handle auth state changes
+  useEffect(() => {
+    if (!auth.isLoggedIn()) {
+      // Clear interval if user is not logged in
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
+        refreshIntervalRef.current = null;
+      }
+    }
+  }, [auth.isLoggedIn()]);
 
   const contextValue: AuthContextType = {
     user: auth.user,
@@ -59,6 +107,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     },
     signOut: async () => {
+      // Clear refresh interval before signing out
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
+        refreshIntervalRef.current = null;
+      }
       await auth.signOut();
       router.push("/login");
     },

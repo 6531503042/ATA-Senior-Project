@@ -117,8 +117,12 @@ const useAuth = create<AuthStore>()(
       refreshToken: async () => {
         try {
           const refreshToken = getToken("refreshToken");
-          if (!refreshToken) return false;
+          if (!refreshToken) {
+            console.log("No refresh token available");
+            return false;
+          }
 
+          console.log("Attempting to refresh token...");
           const response = await api.post<JwtResponse>('/api/auth/refresh-token', {}, { 
             headers: { 'Refresh-Token': refreshToken },
             auth: false 
@@ -128,12 +132,29 @@ const useAuth = create<AuthStore>()(
           saveToken("accessToken", response.accessToken);
           saveToken("refreshToken", response.refreshToken);
 
-          // Get updated user profile
-          const userResponse = await api.get<User>('/api/users/me');
-          set({ user: userResponse });
+          console.log("Token refreshed successfully");
+
+          // Get updated user profile if needed
+          if (response.userId) {
+            const user: User = {
+              id: response.userId,
+              username: response.username,
+              firstName: response.username,
+              lastName: '',
+              email: response.email,
+              roles: response.roles,
+              active: true,
+              departments: [],
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            };
+            set({ user });
+          }
 
           return true;
         } catch (err) {
+          console.error("Token refresh failed:", err);
+          
           // Token refresh failed, clear everything
           set({ user: null, error: "Session expired. Please log in again." });
           removeToken("accessToken");
@@ -157,23 +178,46 @@ const useAuth = create<AuthStore>()(
 
       ensureValidSession: async () => {
         const accessToken = getToken("accessToken");
-        if (!accessToken) return false;
+        if (!accessToken) {
+          console.log("No access token found");
+          return false;
+        }
 
-        // Check if token is expired
-        if (isTokenExpired(accessToken)) {
+        // Check if token will expire soon (within 5 minutes)
+        if (isTokenExpiringSoon(accessToken)) {
+          console.log("Token expiring soon, refreshing...");
           return await get().refreshToken();
         }
 
-        // Validate token with backend
-        try {
-          const validation = await api.get<TokenValidationResponse>('/api/auth/validate', undefined, { auth: false });
-          if (!validation.valid) {
+        // Check if token is already expired
+        if (isTokenExpired(accessToken)) {
+          console.log("Token expired, refreshing...");
+          return await get().refreshToken();
+        }
+
+        // Only validate with backend occasionally (not on every check)
+        // This reduces unnecessary API calls
+        const lastValidation = getToken("lastValidation");
+        const now = Date.now();
+        const validationInterval = 10 * 60 * 1000; // 10 minutes
+
+        if (!lastValidation || (now - parseInt(lastValidation)) > validationInterval) {
+          try {
+            console.log("Performing token validation with backend...");
+            const validation = await api.get<TokenValidationResponse>('/api/auth/validate');
+            saveToken("lastValidation", now.toString());
+            
+            if (!validation.valid) {
+              console.log("Token validation failed, refreshing...");
+              return await get().refreshToken();
+            }
+          } catch (err) {
+            console.log("Token validation error, attempting refresh...");
             return await get().refreshToken();
           }
-          return true;
-        } catch (err) {
-          return await get().refreshToken();
         }
+
+        return true;
       },
 
       clearError: () => {
@@ -202,6 +246,24 @@ function isTokenExpired(token: string): boolean {
     const currentTime = Math.floor(Date.now() / 1000);
 
     return exp < currentTime;
+  } catch (err) {
+    console.warn("Error parsing token:", err);
+    return true;
+  }
+}
+
+/**
+ * Helper to check if JWT will expire soon (within 5 minutes)
+ */
+function isTokenExpiringSoon(token: string): boolean {
+  try {
+    const [, payloadBase64] = token.split(".");
+    const payload = JSON.parse(atob(payloadBase64));
+    const exp = payload.exp;
+    const currentTime = Math.floor(Date.now() / 1000);
+    const fiveMinutes = 5 * 60; // 5 minutes in seconds
+
+    return exp < (currentTime + fiveMinutes);
   } catch (err) {
     console.warn("Error parsing token:", err);
     return true;
