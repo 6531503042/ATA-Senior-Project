@@ -8,9 +8,10 @@ interface QuickCreateProps {
   showRefresh?: boolean;
   onRefresh?: () => void;
   isRefreshing?: boolean;
+  layout?: 'inline' | 'compact';
 }
 
-export function QuickCreate({ showRefresh = true, onRefresh, isRefreshing = false }: QuickCreateProps) {
+export function QuickCreate({ showRefresh = true, onRefresh, isRefreshing = false, layout = 'inline' }: QuickCreateProps) {
   const actions = [
     {
       key: 'project',
@@ -41,6 +42,28 @@ export function QuickCreate({ showRefresh = true, onRefresh, isRefreshing = fals
       className: 'from-[#FB923C] to-[#F59E0B]',
     },
   ];
+
+  if (layout === 'compact') {
+    return (
+      <div className="w-full">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          {actions.map((a) => (
+            <Link key={a.key} href={a.href}>
+              <Button
+                startContent={a.icon}
+                className={`w-full font-semibold text-white bg-gradient-to-r ${a.className}`}
+                radius="lg"
+                variant="shadow"
+                size="sm"
+              >
+                {a.label}
+              </Button>
+            </Link>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center gap-2">

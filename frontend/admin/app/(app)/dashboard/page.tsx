@@ -170,8 +170,8 @@ export default function DashboardPage() {
             defaultOpen={true}
             isClosable={false}
           >
-            <div className="w-full flex justify-end">
-              <QuickCreate showRefresh={false} />
+            <div className="w-full">
+              <QuickCreate showRefresh={false} layout="compact" />
             </div>
           </CardStat>
 
@@ -179,6 +179,7 @@ export default function DashboardPage() {
             colors="orange-100" 
             icon={<Users className="w-4 h-4" />} 
             label="Recent Projects"
+            defaultOpen={true}
           >
             <div className="w-full">
               <RecentProjects projects={dashboard?.recentProjects || []} loading={dataLoading} />
@@ -189,6 +190,7 @@ export default function DashboardPage() {
             colors="red-100" 
             icon={<MessageSquare className="w-4 h-4" />} 
             label="Recent Feedbacks"
+            defaultOpen={true}
           >
             <div className="w-full">
               <RecentFeedbacks feedbacks={dashboard?.recentFeedbacks || []} loading={dataLoading} />
@@ -199,6 +201,7 @@ export default function DashboardPage() {
             colors="indigo-100" 
             icon={<FileText className="w-4 h-4" />} 
             label="Recent Activity"
+            defaultOpen={true}
           >
             <div className="w-full">
               <RecentActivity activities={activityFeed} loading={dataLoading} />
