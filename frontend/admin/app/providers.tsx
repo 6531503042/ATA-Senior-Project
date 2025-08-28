@@ -7,6 +7,7 @@ import { HeroUIProvider } from '@heroui/react';
 import { ToastProvider } from '@heroui/toast';
 import { useRouter } from 'next/navigation';
 import { ThemeProvider as NextThemesProvider } from 'next-themes';
+
 import { AuthProvider } from '@/contexts/AuthContext';
 
 export interface ProvidersProps {

@@ -1,5 +1,6 @@
-import { getToken } from '@/utils/storage';
 import type { RequestOptions, ApiError } from '@/types/api';
+
+import { getToken } from '@/utils/storage';
 
 class ApiClient {
   private baseUrl: string;
@@ -11,6 +12,7 @@ class ApiClient {
 
   private buildUrl(path: string, params?: Record<string, any>): string {
     const url = new URL(`${this.baseUrl}${path}`);
+
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
         if (value === undefined || value === null) return;
@@ -21,6 +23,7 @@ class ApiClient {
         }
       });
     }
+
     return url.toString();
   }
 
@@ -29,34 +32,42 @@ class ApiClient {
       'Content-Type': 'application/json',
       ...(opts?.headers || {}),
     };
-    
+
     // Check if auth is explicitly disabled
     const authDisabled = opts?.auth === false;
-    
+
     if (!authDisabled) {
       const token = getToken('accessToken');
-      console.log('🔐 Token check:', { 
-        hasToken: !!token, 
+
+      console.log('🔐 Token check:', {
+        hasToken: !!token,
         tokenLength: token?.length,
-        authDisabled: authDisabled 
+        authDisabled: authDisabled,
       });
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
-        console.log('✅ Authorization header set:', `Bearer ${token.substring(0, 20)}...`);
+        console.log(
+          '✅ Authorization header set:',
+          `Bearer ${token.substring(0, 20)}...`,
+        );
       } else {
         console.log('❌ No access token found in localStorage');
       }
     } else {
       console.log('🔓 Auth disabled for this request');
     }
-    
+
     return headers;
   }
 
-  private async request<T>(path: string, opts: RequestOptions = {}): Promise<T> {
+  private async request<T>(
+    path: string,
+    opts: RequestOptions = {},
+  ): Promise<T> {
     const url = this.buildUrl(path, opts.params);
+
     console.log(`Making ${opts.method || 'GET'} request to:`, url);
-    
+
     try {
       const requestOptions = {
         method: opts.method || 'GET',
@@ -68,7 +79,7 @@ class ApiClient {
       console.log('Request options:', {
         method: requestOptions.method,
         headers: requestOptions.headers,
-        body: requestOptions.body ? 'Present' : 'None'
+        body: requestOptions.body ? 'Present' : 'None',
       });
 
       const res = await fetch(url, requestOptions);
@@ -78,9 +89,10 @@ class ApiClient {
       if (!res.ok) {
         let message = `Request failed with ${res.status}`;
         let errorData: any = {};
-        
+
         try {
           const data = await res.json();
+
           message = data?.message || data?.error || message;
           errorData = data;
           console.log('Error response data:', data);
@@ -88,6 +100,12 @@ class ApiClient {
           // If JSON parsing fails, use status text
           message = res.statusText || message;
           console.log('Could not parse error response as JSON');
+        }
+
+        // Handle 401/403 errors gracefully for unauthenticated requests
+        if (res.status === 401 || res.status === 403) {
+          console.log(`[API] Auth error for ${opts.method || 'GET'} ${url} - returning fallback data`);
+          return {} as T; // Return empty object as fallback
         }
 
         const error: ApiError = {
@@ -101,32 +119,37 @@ class ApiClient {
       }
 
       if (res.status === 204) return undefined as unknown as T;
-      
+
       const contentType = res.headers.get('content-type') || '';
+
       if (contentType.includes('application/json')) {
         const data = await res.json();
+
         console.log('Response data:', data);
+
         return data as T;
       }
-      
+
       // Fallback to text
       const text = await res.text();
+
       console.log('Response text:', text);
+
       return text as unknown as T;
     } catch (error) {
       console.error('Request error:', error);
-      
+
       if (error instanceof Error && 'code' in error) {
         throw error; // Re-throw API errors
       }
-      
+
       // Handle network errors
       const networkError: ApiError = {
         message: error instanceof Error ? error.message : 'Network error',
         code: 'NETWORK_ERROR',
         timestamp: new Date().toISOString(),
       };
-      
+
       throw networkError;
     }
   }
@@ -158,14 +181,14 @@ const getApiBaseUrl = () => {
   if (process.env.NEXT_PUBLIC_API_URL) {
     return process.env.NEXT_PUBLIC_API_URL;
   }
-  
+
   // Fallback to localhost for development
   return 'http://localhost:8080';
 };
 
 const apiBaseUrl = getApiBaseUrl();
+
 console.log('Environment API URL:', process.env.NEXT_PUBLIC_API_URL);
 console.log('Using API Base URL:', apiBaseUrl);
 
 export const api = new ApiClient(apiBaseUrl);
-

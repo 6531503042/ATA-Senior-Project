@@ -18,7 +18,7 @@ export const getOverviewStatsConfig = (): StatsConfig[] => [
     color: 'bg-blue-100',
     textColor: 'text-blue-600',
     isPercentage: false,
-    growthKey: 'projectsGrowth'
+    growthKey: 'projectsGrowth',
   },
   {
     key: 'totalSubmissions',
@@ -27,7 +27,7 @@ export const getOverviewStatsConfig = (): StatsConfig[] => [
     color: 'bg-green-100',
     textColor: 'text-green-600',
     isPercentage: false,
-    growthKey: 'submissionsGrowth'
+    growthKey: 'submissionsGrowth',
   },
   {
     key: 'totalMembers',
@@ -36,7 +36,7 @@ export const getOverviewStatsConfig = (): StatsConfig[] => [
     color: 'bg-purple-100',
     textColor: 'text-purple-600',
     isPercentage: false,
-    growthKey: 'membersGrowth'
+    growthKey: 'membersGrowth',
   },
   {
     key: 'completionRate',
@@ -45,8 +45,8 @@ export const getOverviewStatsConfig = (): StatsConfig[] => [
     color: 'bg-orange-100',
     textColor: 'text-orange-600',
     isPercentage: true,
-    growthKey: 'completionGrowth'
-  }
+    growthKey: 'completionGrowth',
+  },
 ];
 
 export const formatNumber = (num: number): string => {
@@ -55,6 +55,7 @@ export const formatNumber = (num: number): string => {
   } else if (num >= 1000) {
     return (num / 1000).toFixed(1) + 'K';
   }
+
   return num.toString();
 };
 
@@ -64,24 +65,26 @@ export const formatPercentage = (value: number): string => {
 
 export const formatGrowth = (growth: string): string => {
   if (!growth) return '+0%';
-  
+
   const isPositive = growth.startsWith('+');
   const color = isPositive ? 'text-green-600' : 'text-red-600';
-  
+
   return growth;
 };
 
 export const getTrendIcon = (growth: string) => {
   if (!growth) return 'MinusIcon';
-  
+
   const isPositive = growth.startsWith('+');
+
   return isPositive ? 'TrendingUpIcon' : 'TrendingDownIcon';
 };
 
 export const getTrendColor = (growth: string) => {
   if (!growth) return 'text-gray-500';
-  
+
   const isPositive = growth.startsWith('+');
+
   return isPositive ? 'text-green-600' : 'text-red-600';
 };
 
@@ -89,9 +92,10 @@ export const calculateGrowth = (current: number, previous: number): string => {
   if (previous === 0) {
     return current > 0 ? '+100%' : '0%';
   }
-  
+
   const growth = ((current - previous) / previous) * 100;
   const sign = growth >= 0 ? '+' : '';
+
   return `${sign}${growth.toFixed(1)}%`;
 };
 
@@ -130,19 +134,23 @@ export const formatDate = (dateString: string) => {
   try {
     const date = new Date(dateString);
     const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-    
+    const diffInHours = Math.floor(
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60),
+    );
+
     if (diffInHours < 1) {
       return 'Just now';
     } else if (diffInHours < 24) {
       return `${diffInHours}h ago`;
-    } else if (diffInHours < 168) { // 7 days
+    } else if (diffInHours < 168) {
+      // 7 days
       const days = Math.floor(diffInHours / 24);
+
       return `${days}d ago`;
     } else {
       return date.toLocaleDateString('en-US', {
         month: 'short',
-        day: 'numeric'
+        day: 'numeric',
       });
     }
   } catch {
@@ -153,11 +161,13 @@ export const formatDate = (dateString: string) => {
 export const getProgressColor = (progress: number) => {
   if (progress >= 80) return 'success';
   if (progress >= 60) return 'warning';
+
   return 'danger';
 };
 
 export const getScoreColor = (score: number) => {
   if (score >= 7) return 'success';
   if (score >= 5) return 'warning';
+
   return 'danger';
 };

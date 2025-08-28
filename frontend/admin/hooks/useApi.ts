@@ -1,6 +1,8 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
-import { api } from '@/libs/apiClient';
 import type { ApiError } from '@/types/api';
+
+import { useState, useCallback, useEffect, useRef } from 'react';
+
+import { api } from '@/libs/apiClient';
 
 interface UseApiOptions {
   onSuccess?: (data: any) => void;
@@ -20,47 +22,52 @@ export function useApi<T = any>(options: UseApiOptions = {}): UseApiReturn<T> {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<ApiError | null>(null);
 
-  const execute = useCallback(async (endpoint: string, requestOptions: any = {}) => {
-    try {
-      setLoading(true);
-      setError(null);
+  const execute = useCallback(
+    async (endpoint: string, requestOptions: any = {}) => {
+      try {
+        setLoading(true);
+        setError(null);
 
-      const { method = 'GET', body, params, ...opts } = requestOptions;
-      
-      let result: T;
-      
-      switch (method.toUpperCase()) {
-        case 'GET':
-          result = await api.get<T>(endpoint, params, opts);
-          break;
-        case 'POST':
-          result = await api.post<T>(endpoint, body, opts);
-          break;
-        case 'PUT':
-          result = await api.put<T>(endpoint, body, opts);
-          break;
-        case 'PATCH':
-          result = await api.patch<T>(endpoint, body, opts);
-          break;
-        case 'DELETE':
-          result = await api.delete<T>(endpoint, opts);
-          break;
-        default:
-          throw new Error(`Unsupported HTTP method: ${method}`);
+        const { method = 'GET', body, params, ...opts } = requestOptions;
+
+        let result: T;
+
+        switch (method.toUpperCase()) {
+          case 'GET':
+            result = await api.get<T>(endpoint, params, opts);
+            break;
+          case 'POST':
+            result = await api.post<T>(endpoint, body, opts);
+            break;
+          case 'PUT':
+            result = await api.put<T>(endpoint, body, opts);
+            break;
+          case 'PATCH':
+            result = await api.patch<T>(endpoint, body, opts);
+            break;
+          case 'DELETE':
+            result = await api.delete<T>(endpoint, opts);
+            break;
+          default:
+            throw new Error(`Unsupported HTTP method: ${method}`);
+        }
+
+        setData(result);
+        options.onSuccess?.(result);
+
+        return result;
+      } catch (err) {
+        const apiError = err as ApiError;
+
+        setError(apiError);
+        options.onError?.(apiError);
+        throw apiError;
+      } finally {
+        setLoading(false);
       }
-
-      setData(result);
-      options.onSuccess?.(result);
-      return result;
-    } catch (err) {
-      const apiError = err as ApiError;
-      setError(apiError);
-      options.onError?.(apiError);
-      throw apiError;
-    } finally {
-      setLoading(false);
-    }
-  }, [options]);
+    },
+    [options],
+  );
 
   const reset = useCallback(() => {
     setData(null);
@@ -78,11 +85,14 @@ export function useApi<T = any>(options: UseApiOptions = {}): UseApiReturn<T> {
 }
 
 // Specialized hooks for common operations
-export function useGet<T = any>(endpoint: string, options: UseApiOptions & { 
-  autoFetch?: boolean;
-  params?: Record<string, any>;
-  enabled?: boolean; // new: guard condition
-} = {}) {
+export function useGet<T = any>(
+  endpoint: string,
+  options: UseApiOptions & {
+    autoFetch?: boolean;
+    params?: Record<string, any>;
+    enabled?: boolean; // new: guard condition
+  } = {},
+) {
   const { autoFetch = false, params, enabled = true, ...apiOptions } = options;
   const { data, loading, error, execute, reset } = useApi<T>(apiOptions);
 
@@ -110,12 +120,18 @@ export function useGet<T = any>(endpoint: string, options: UseApiOptions & {
   } as const;
 }
 
-export function usePost<T = any>(endpoint: string, options: UseApiOptions = {}) {
+export function usePost<T = any>(
+  endpoint: string,
+  options: UseApiOptions = {},
+) {
   const { data, loading, error, execute, reset } = useApi<T>(options);
 
-  const post = useCallback((body?: any, requestOptions?: any) => {
-    return execute(endpoint, { method: 'POST', body, ...requestOptions });
-  }, [execute, endpoint]);
+  const post = useCallback(
+    (body?: any, requestOptions?: any) => {
+      return execute(endpoint, { method: 'POST', body, ...requestOptions });
+    },
+    [execute, endpoint],
+  );
 
   return {
     data,
@@ -129,9 +145,12 @@ export function usePost<T = any>(endpoint: string, options: UseApiOptions = {}) 
 export function usePut<T = any>(endpoint: string, options: UseApiOptions = {}) {
   const { data, loading, error, execute, reset } = useApi<T>(options);
 
-  const put = useCallback((body?: any, requestOptions?: any) => {
-    return execute(endpoint, { method: 'PUT', body, ...requestOptions });
-  }, [execute, endpoint]);
+  const put = useCallback(
+    (body?: any, requestOptions?: any) => {
+      return execute(endpoint, { method: 'PUT', body, ...requestOptions });
+    },
+    [execute, endpoint],
+  );
 
   return {
     data,
@@ -142,12 +161,18 @@ export function usePut<T = any>(endpoint: string, options: UseApiOptions = {}) {
   };
 }
 
-export function useDelete<T = any>(endpoint: string, options: UseApiOptions = {}) {
+export function useDelete<T = any>(
+  endpoint: string,
+  options: UseApiOptions = {},
+) {
   const { data, loading, error, execute, reset } = useApi<T>(options);
 
-  const deleteResource = useCallback((requestOptions?: any) => {
-    return execute(endpoint, { method: 'DELETE', ...requestOptions });
-  }, [execute, endpoint]);
+  const deleteResource = useCallback(
+    (requestOptions?: any) => {
+      return execute(endpoint, { method: 'DELETE', ...requestOptions });
+    },
+    [execute, endpoint],
+  );
 
   return {
     data,

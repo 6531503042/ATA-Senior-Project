@@ -43,7 +43,7 @@ export default function SubmissionsPage() {
   const feedbackOptions = useMemo(() => {
     const map = new Map<string, string>();
 
-    allItems.forEach(it => {
+    (allItems || []).forEach(it => {
       if (!map.has(it.feedbackId)) map.set(it.feedbackId, it.feedbackTitle);
     });
 
@@ -52,8 +52,8 @@ export default function SubmissionsPage() {
 
   const sentimentCounts = useMemo(() => {
     const filtered = selectedFeedbackId
-      ? allItems.filter(i => i.feedbackId === selectedFeedbackId)
-      : allItems;
+      ? (allItems || []).filter(i => i.feedbackId === selectedFeedbackId)
+      : (allItems || []);
     const init = { positive: 0, neutral: 0, negative: 0 } as Record<
       string,
       number

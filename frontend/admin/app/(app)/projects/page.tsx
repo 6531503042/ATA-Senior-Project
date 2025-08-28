@@ -15,7 +15,7 @@ import ProjectTable from './_components/ProjectTable';
 
 import { PageHeader } from '@/components/ui/page-header';
 import { ConfirmationModal } from '@/components/modal/ConfirmationModal';
-import { useProjects } from '@/hooks/useProjects';
+import { useProjectsLegacy } from '@/hooks/useProjects';
 
 export default function ProjectsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -31,7 +31,7 @@ export default function ProjectsPage() {
     editProject,
     removeProject,
     refreshProjects,
-  } = useProjects();
+  } = useProjectsLegacy();
 
   const handleCreateProject = async (data: CreateProjectRequest) => {
     try {
@@ -223,7 +223,7 @@ export default function ProjectsPage() {
               <ProjectTable
                 projects={projects}
                 onDelete={(projectId: string) => {
-                  const project = projects.find(p => p.id === projectId);
+                  const project = projects.find((p: Project) => p.id === Number(projectId));
 
                   if (project) {
                     handleDelete(project);
@@ -255,7 +255,7 @@ export default function ProjectsPage() {
         title="Delete Project"
         onClose={handleDeleteModalClose}
         onConfirm={() =>
-          projectToDelete && handleDeleteProject(projectToDelete.id)
+          projectToDelete && handleDeleteProject(projectToDelete.id.toString())
         }
       />
     </>

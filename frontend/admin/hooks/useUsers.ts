@@ -1,24 +1,86 @@
-import type { User, CreateUserRequest, UpdateUserRequest, UserStats } from '@/types/user';
+import type {
+  User,
+  CreateUserRequest,
+  UpdateUserRequest,
+  UserStats,
+} from '@/types/user';
 
 import { useState, useCallback, useEffect } from 'react';
-import { apiRequest } from '@/libs/apiClient';
+
+import { api } from '@/libs/apiClient';
 
 const base = '/api/users';
 
+// API functions
+async function getUsers(): Promise<{ users: User[]; stats: UserStats }> {
+  try {
+    const [usersResponse, statsResponse] = await Promise.all([
+      api.get<User[]>('/api/users'),
+      api.get<UserStats>('/api/users/stats'),
+    ]);
+
+    // Ensure usersResponse is an array
+    const users = Array.isArray(usersResponse) ? usersResponse : [];
+
+    return {
+      users: users.map(mapUser),
+      stats: statsResponse,
+    };
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    throw error;
+  }
+}
+
+async function createUser(data: CreateUserRequest): Promise<User> {
+  try {
+    const response = await api.post<User>('/api/users', data);
+
+    return mapUser(response);
+  } catch (error) {
+    console.error('Error creating user:', error);
+    throw error;
+  }
+}
+
+async function updateUser(data: UpdateUserRequest): Promise<User> {
+  try {
+    const response = await api.put<User>(`/api/users/${data.id}`, data);
+
+    return mapUser(response);
+  } catch (error) {
+    console.error('Error updating user:', error);
+    throw error;
+  }
+}
+
+async function deleteUser(userId: number): Promise<void> {
+  try {
+    await api.delete(`/api/users/${userId}`);
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    throw error;
+  }
+}
+
 function mapUser(api: any): User {
   return {
-    id: String(api.id ?? api.userId ?? ''),
+    id: Number(api.id ?? api.userId ?? 0),
     username: String(api.username ?? ''),
     email: String(api.email ?? ''),
     firstName: String(api.firstName ?? api.fullname ?? ''),
     lastName: String(api.lastName ?? ''),
-    role: String(api.role ?? 'user'),
-    status: (api.status ?? 'active') as User['status'],
     phone: api.phone ?? '',
-    department: api.department ?? '',
-    position: api.position ?? '',
+    departments: api.departments ?? [],
+    roles: api.roles ?? [],
+    active: Boolean(api.active ?? api.status === 'active'),
+    lastLoginAt: api.lastLoginAt ?? api.lastLogin,
     createdAt: api.createdAt ?? new Date().toISOString(),
     updatedAt: api.updatedAt ?? new Date().toISOString(),
+    role: api.role ?? 'user',
+    status: api.status ?? (api.active ? 'active' : 'inactive'),
+    department: api.department ?? '',
+    position: api.position ?? '',
   };
 }
 
@@ -43,6 +105,14 @@ export function useUsers() {
       setStats(response.stats);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch users');
+      // Set fallback data when API fails
+      setUsers([]);
+      setStats({
+        totalUsers: 0,
+        activeUsers: 0,
+        inactiveUsers: 0,
+        totalRoles: 0,
+      });
     } finally {
       setLoading(false);
     }
@@ -120,7 +190,7 @@ export function useUsers() {
   );
 
   const removeUser = useCallback(
-    async (userId: string) => {
+    async (userId: number) => {
       try {
         setLoading(true);
         setError(null);

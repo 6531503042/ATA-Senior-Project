@@ -1,9 +1,11 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { api } from '../libs/apiClient';
 import type { Submission, CreateSubmissionRequest } from '../types/submission';
 import type { PageResponse } from '../types/pagination';
+
+import { useCallback, useEffect, useState } from 'react';
+
+import { api } from '../libs/apiClient';
 
 export function useSubmissions(params?: Record<string, any>) {
   const [data, setData] = useState<PageResponse<Submission> | null>(null);
@@ -13,7 +15,11 @@ export function useSubmissions(params?: Record<string, any>) {
   const fetchList = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await api.get<PageResponse<Submission>>('/api/submits', params);
+      const res = await api.get<PageResponse<Submission>>(
+        '/api/submits',
+        params,
+      );
+
       setData(res);
       setError(null);
     } catch (e: any) {
@@ -30,18 +36,25 @@ export function useSubmissions(params?: Record<string, any>) {
   return { data, loading, error, refresh: fetchList };
 }
 
-export function useSubmissionsByFeedback(feedbackId?: number, params?: Record<string, any>) {
+export function useSubmissionsByFeedback(
+  feedbackId?: number,
+  params?: Record<string, any>,
+) {
   const [data, setData] = useState<PageResponse<Submission> | null>(null);
   const [loading, setLoading] = useState<boolean>(!!feedbackId);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
+
     if (!feedbackId) return;
     setLoading(true);
     api
-      .get<PageResponse<Submission>>(`/api/submits/feedback/${feedbackId}`, params)
-      .then((res) => {
+      .get<PageResponse<Submission>>(
+        `/api/submits/feedback/${feedbackId}`,
+        params,
+      )
+      .then(res => {
         if (!mounted) return;
         setData(res);
         setError(null);
@@ -54,6 +67,7 @@ export function useSubmissionsByFeedback(feedbackId?: number, params?: Record<st
         if (!mounted) return;
         setLoading(false);
       });
+
     return () => {
       mounted = false;
     };
@@ -70,7 +84,11 @@ export function useMySubmissions(params?: Record<string, any>) {
   const fetchList = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await api.get<PageResponse<Submission>>('/api/submits/me', params);
+      const res = await api.get<PageResponse<Submission>>(
+        '/api/submits/me',
+        params,
+      );
+
       setData(res);
       setError(null);
     } catch (e: any) {

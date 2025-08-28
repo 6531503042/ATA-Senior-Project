@@ -1,7 +1,13 @@
 'use client';
 
-import { Button, Card, CardBody, Tooltip } from '@heroui/react';
-import { RefreshCw, FolderPlus, MessageSquarePlus, UserPlus, BarChart3 } from 'lucide-react';
+import { Button, Tooltip } from '@heroui/react';
+import {
+  RefreshCw,
+  FolderPlus,
+  MessageSquarePlus,
+  UserPlus,
+  BarChart3,
+} from 'lucide-react';
 import Link from 'next/link';
 
 interface QuickCreateProps {
@@ -11,7 +17,12 @@ interface QuickCreateProps {
   layout?: 'inline' | 'compact';
 }
 
-export function QuickCreate({ showRefresh = true, onRefresh, isRefreshing = false, layout = 'inline' }: QuickCreateProps) {
+export function QuickCreate({
+  showRefresh = true,
+  onRefresh,
+  isRefreshing = false,
+  layout = 'inline',
+}: QuickCreateProps) {
   const actions = [
     {
       key: 'project',
@@ -47,14 +58,14 @@ export function QuickCreate({ showRefresh = true, onRefresh, isRefreshing = fals
     return (
       <div className="w-full">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          {actions.map((a) => (
+          {actions.map(a => (
             <Link key={a.key} href={a.href}>
               <Button
-                startContent={a.icon}
                 className={`w-full font-semibold text-white bg-gradient-to-r ${a.className}`}
                 radius="lg"
-                variant="shadow"
                 size="sm"
+                startContent={a.icon}
+                variant="shadow"
               >
                 {a.label}
               </Button>
@@ -71,10 +82,10 @@ export function QuickCreate({ showRefresh = true, onRefresh, isRefreshing = fals
         <Tooltip content="Refresh">
           <Button
             isIconOnly
-            variant="flat"
-            radius="lg"
-            onPress={onRefresh}
             isLoading={isRefreshing}
+            radius="lg"
+            variant="flat"
+            onPress={onRefresh}
           >
             <RefreshCw className="w-4 h-4" />
           </Button>
@@ -82,14 +93,14 @@ export function QuickCreate({ showRefresh = true, onRefresh, isRefreshing = fals
       )}
 
       <div className="hidden sm:flex items-center gap-2">
-        {actions.map((a) => (
+        {actions.map(a => (
           <Link key={a.key} href={a.href}>
             <Button
-              startContent={a.icon}
               className={`font-semibold text-white bg-gradient-to-r ${a.className}`}
               radius="lg"
-              variant="shadow"
               size="sm"
+              startContent={a.icon}
+              variant="shadow"
             >
               {a.label}
             </Button>
@@ -99,5 +110,3 @@ export function QuickCreate({ showRefresh = true, onRefresh, isRefreshing = fals
     </div>
   );
 }
-
-

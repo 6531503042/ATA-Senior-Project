@@ -1,7 +1,7 @@
-"use client";
-import { useState } from "react";
-import { Card, CardHeader, CardBody, Button } from "@heroui/react";
-import { ChevronDown, ChevronUp } from "lucide-react";
+'use client';
+import { useState } from 'react';
+import { Card, CardHeader, CardBody, Button } from '@heroui/react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 export function CardStat({
   icon,
@@ -21,7 +21,7 @@ export function CardStat({
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   const toggle = () => {
-    if (isClosable) setIsOpen((prev) => !prev);
+    if (isClosable) setIsOpen(prev => !prev);
   };
 
   // Map color classes to proper gradient classes
@@ -44,11 +44,15 @@ export function CardStat({
       'rose-100': 'from-rose-500 to-rose-600',
       'fuchsia-100': 'from-fuchsia-500 to-fuchsia-600',
     };
+
     return colorMap[color] || 'from-blue-500 to-blue-600';
   };
 
   return (
-    <Card isHoverable className="px-3 py-3 bg-white rounded-2xl overflow-hidden shadow-xl border-0 ring-1 ring-default-200/60 hover:shadow-2xl transition-all duration-300">
+    <Card
+      isHoverable
+      className="px-3 py-3 bg-white rounded-2xl overflow-hidden shadow-xl border-0 ring-1 ring-default-200/60 hover:shadow-2xl transition-all duration-300"
+    >
       <CardHeader
         className="font-semibold gap-3 flex items-center justify-between cursor-pointer border-b border-default-200/60 pb-4"
         onClick={toggle}
@@ -63,7 +67,7 @@ export function CardStat({
         </div>
 
         {isClosable && (
-          <Button isIconOnly size="sm" variant="light" className="ml-auto">
+          <Button isIconOnly className="ml-auto" size="sm" variant="light">
             {isOpen ? (
               <ChevronUp className="w-4 h-4" />
             ) : (

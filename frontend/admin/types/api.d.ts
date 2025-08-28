@@ -24,7 +24,7 @@ export interface ApiEndpoints {
     refresh: '/api/auth/refresh-token';
     logout: '/api/auth/logout';
   };
-  
+
   // Users
   users: {
     list: '/api/users';
@@ -40,7 +40,7 @@ export interface ApiEndpoints {
     search: '/api/users/search';
     byRole: (roleName: string) => `/api/users/by-role/${roleName}`;
   };
-  
+
   // Questions
   questions: {
     list: '/api/questions';
@@ -51,7 +51,7 @@ export interface ApiEndpoints {
     types: '/api/questions/types';
     categories: '/api/questions/categories';
   };
-  
+
   // Projects
   projects: {
     list: '/api/projects';
@@ -62,22 +62,33 @@ export interface ApiEndpoints {
     addMembers: (id: number) => `/api/projects/${id}/members`;
     removeMembers: (id: number) => `/api/projects/${id}/members`;
   };
-  
+
   // Project Authority
   projectAuthority: {
     init: '/api/projects/authority/init';
     roles: '/api/projects/authority/roles';
     getRole: (roleId: number) => `/api/projects/authority/roles/${roleId}`;
     createRole: '/api/projects/authority/roles';
-    assignRole: (projectId: number) => `/api/projects/authority/${projectId}/assign`;
-    bulkAssign: (projectId: number) => `/api/projects/authority/${projectId}/bulk-assign`;
-    removeMember: (projectId: number, userId: number) => `/api/projects/authority/${projectId}/members/${userId}`;
-    getMembers: (projectId: number) => `/api/projects/authority/${projectId}/members`;
-    checkPermission: (projectId: number) => `/api/projects/authority/${projectId}/check-permission`;
+    assignRole: (
+      projectId: number,
+    ) => `/api/projects/authority/${projectId}/assign`;
+    bulkAssign: (
+      projectId: number,
+    ) => `/api/projects/authority/${projectId}/bulk-assign`;
+    removeMember: (
+      projectId: number,
+      userId: number,
+    ) => `/api/projects/authority/${projectId}/members/${userId}`;
+    getMembers: (
+      projectId: number,
+    ) => `/api/projects/authority/${projectId}/members`;
+    checkPermission: (
+      projectId: number,
+    ) => `/api/projects/authority/${projectId}/check-permission`;
     overview: '/api/projects/authority/overview';
     permissions: '/api/projects/authority/permissions';
   };
-  
+
   // Departments
   departments: {
     list: '/api/departments';
@@ -86,7 +97,7 @@ export interface ApiEndpoints {
     update: (id: number) => `/api/departments/${id}`;
     delete: (id: number) => `/api/departments/${id}`;
   };
-  
+
   // Feedback
   feedbacks: {
     list: '/api/feedbacks';
@@ -99,27 +110,43 @@ export interface ApiEndpoints {
     removeQuestions: (id: number) => `/api/feedbacks/${id}/questions`;
     addTargetUsers: (id: number) => `/api/feedbacks/${id}/target-users`;
     removeTargetUsers: (id: number) => `/api/feedbacks/${id}/target-users`;
-    addTargetDepartments: (id: number) => `/api/feedbacks/${id}/target-departments`;
-    removeTargetDepartments: (id: number) => `/api/feedbacks/${id}/target-departments`;
-    getProjectMembers: (projectId: number) => `/api/feedbacks/projects/${projectId}/members`;
+    addTargetDepartments: (
+      id: number,
+    ) => `/api/feedbacks/${id}/target-departments`;
+    removeTargetDepartments: (
+      id: number,
+    ) => `/api/feedbacks/${id}/target-departments`;
+    getProjectMembers: (
+      projectId: number,
+    ) => `/api/feedbacks/projects/${projectId}/members`;
     canSubmit: (id: number) => `/api/feedbacks/${id}/can-submit`;
     statistics: '/api/feedbacks/statistics';
     metrics: '/api/feedbacks/metrics';
     recent: '/api/feedbacks/recent';
     byUser: (userId: string) => `/api/feedbacks/user/${userId}`;
-    byDepartment: (departmentId: number) => `/api/feedbacks/department/${departmentId}`;
-    departmentWide: (departmentId: number) => `/api/feedbacks/department/${departmentId}/wide`;
+    byDepartment: (
+      departmentId: number,
+    ) => `/api/feedbacks/department/${departmentId}`;
+    departmentWide: (
+      departmentId: number,
+    ) => `/api/feedbacks/department/${departmentId}/wide`;
     activate: (id: number) => `/api/feedbacks/${id}/activate`;
     close: (id: number) => `/api/feedbacks/${id}/close`;
   };
-  
+
   // Feedback Validation
   feedbackValidation: {
-    canSubmit: (feedbackId: number) => `/api/feedbacks/validation/${feedbackId}/can-submit`;
-    constraints: (feedbackId: number) => `/api/feedbacks/validation/${feedbackId}/constraints`;
-    validate: (feedbackId: number) => `/api/feedbacks/validation/${feedbackId}/validate`;
+    canSubmit: (
+      feedbackId: number,
+    ) => `/api/feedbacks/validation/${feedbackId}/can-submit`;
+    constraints: (
+      feedbackId: number,
+    ) => `/api/feedbacks/validation/${feedbackId}/constraints`;
+    validate: (
+      feedbackId: number,
+    ) => `/api/feedbacks/validation/${feedbackId}/validate`;
   };
-  
+
   // Submissions
   submissions: {
     list: '/api/submits';
@@ -128,7 +155,7 @@ export interface ApiEndpoints {
     byFeedback: (feedbackId: number) => `/api/submits/feedback/${feedbackId}`;
     mySubmissions: '/api/submits/me';
   };
-  
+
   // Dashboard
   dashboard: {
     stats: '/api/dashboard';
@@ -143,7 +170,7 @@ export interface ApiEndpoints {
     notifications: '/api/dashboard/notifications';
     health: '/api/dashboard/health';
   };
-  
+
   // Employee
   employees: {
     profile: '/api/employees/profile';
@@ -157,7 +184,7 @@ export interface ApiEndpoints {
     departmentColleagues: '/api/employees/department-colleagues';
     statistics: '/api/employees/statistics';
   };
-  
+
   // Roles
   roles: {
     list: '/api/roles';

@@ -1,9 +1,11 @@
-"use client";
+'use client';
 
-import { createContext, useContext, useEffect, ReactNode, useRef } from "react";
-import { useRouter, usePathname } from "next/navigation";
-import useAuthStore from "@/hooks/useAuth";
-import type { AuthContextType } from "@/types/auth";
+import type { AuthContextType } from '@/types/auth';
+
+import { createContext, useContext, useEffect, ReactNode, useRef } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
+
+import useAuthStore from '@/hooks/useAuth';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -18,21 +20,32 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Protected routes that require authentication
-  const protectedRoutes = ["/", "/dashboard", "/users", "/projects", "/questions", "/feedbacks", "/departments", "/roles"];
-  const authRoutes = ["/login", "/logout"];
+  const protectedRoutes = [
+    '/',
+    '/dashboard',
+    '/users',
+    '/projects',
+    '/questions',
+    '/feedbacks',
+    '/departments',
+    '/roles',
+  ];
+  const authRoutes = ['/login', '/logout'];
 
   useEffect(() => {
     const checkAuth = async () => {
       const isLoggedIn = auth.isLoggedIn();
       const isAuthRoute = authRoutes.some(route => pathname.startsWith(route));
-      const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
+      const isProtectedRoute = protectedRoutes.some(route =>
+        pathname.startsWith(route),
+      );
 
       if (!isLoggedIn && isProtectedRoute) {
         // Redirect to login if not authenticated and trying to access protected route
-        router.push("/login");
-      } else if (isLoggedIn && isAuthRoute && pathname !== "/logout") {
+        router.push('/login');
+      } else if (isLoggedIn && isAuthRoute && pathname !== '/logout') {
         // Redirect to dashboard if authenticated and trying to access auth routes
-        router.push("/");
+        router.push('/');
       }
     };
 
@@ -47,26 +60,30 @@ export function AuthProvider({ children }: AuthProviderProps) {
         try {
           await auth.ensureValidSession();
         } catch (error) {
-          console.warn("Initial token validation failed:", error);
+          console.warn('Initial token validation failed:', error);
         }
-        
+
         // Set up interval for periodic checks (every 10 minutes instead of 4)
-        refreshIntervalRef.current = setInterval(async () => {
-          if (auth.isLoggedIn()) {
-            try {
-              console.log("Performing periodic token validation...");
-              const success = await auth.ensureValidSession();
-              if (!success) {
-                // If refresh failed, redirect to login
-                console.log("Token refresh failed, redirecting to login");
-                router.push("/login");
+        refreshIntervalRef.current = setInterval(
+          async () => {
+            if (auth.isLoggedIn()) {
+              try {
+                console.log('Performing periodic token validation...');
+                const success = await auth.ensureValidSession();
+
+                if (!success) {
+                  // If refresh failed, redirect to login
+                  console.log('Token refresh failed, redirecting to login');
+                  router.push('/login');
+                }
+              } catch (error) {
+                console.warn('Periodic token validation failed:', error);
+                // Don't redirect immediately on error, let it retry
               }
-            } catch (error) {
-              console.warn("Periodic token validation failed:", error);
-              // Don't redirect immediately on error, let it retry
             }
-          }
-        }, 10 * 60 * 1000); // Check every 10 minutes instead of 4
+          },
+          10 * 60 * 1000,
+        ); // Check every 10 minutes instead of 4
       }
     };
 
@@ -102,8 +119,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     loading: auth.loading,
     signIn: async (username: string, password: string) => {
       const success = await auth.signIn(username, password);
+
       if (success) {
-        router.push("/");
+        router.push('/');
       }
     },
     signOut: async () => {
@@ -113,22 +131,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
         refreshIntervalRef.current = null;
       }
       await auth.signOut();
-      router.push("/login");
+      router.push('/login');
     },
   };
 
   return (
-    <AuthContext.Provider value={contextValue}>
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
   );
 }
 
 export function useAuthContext() {
   const context = useContext(AuthContext);
+
   if (context === undefined) {
-    throw new Error("useAuthContext must be used within an AuthProvider");
+    throw new Error('useAuthContext must be used within an AuthProvider');
   }
+
   return context;
 }
-

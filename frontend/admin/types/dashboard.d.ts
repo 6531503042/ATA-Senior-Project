@@ -44,6 +44,7 @@ export interface ProjectItem {
   status: string;
   avatar: string;
   progress: number;
+  dueDate?: string;
 }
 
 export interface FeedbackItem {
@@ -164,7 +165,13 @@ export interface DashboardCardProps {
   title: string;
   value: number | string;
   icon: React.ReactNode;
-  color?: 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'default';
+  color?:
+    | 'primary'
+    | 'secondary'
+    | 'success'
+    | 'warning'
+    | 'danger'
+    | 'default';
   href?: string;
   loading?: boolean;
   trend?: string;
@@ -174,6 +181,12 @@ export interface MetricCardProps {
   title: string;
   value: number | string;
   icon: React.ReactNode;
-  color?: 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'default';
+  color?:
+    | 'primary'
+    | 'secondary'
+    | 'success'
+    | 'warning'
+    | 'danger'
+    | 'default';
   loading?: boolean;
 }

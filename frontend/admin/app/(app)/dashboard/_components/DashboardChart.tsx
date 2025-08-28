@@ -1,8 +1,9 @@
 'use client';
 
+import type { ChartData } from '@/types/dashboard';
+
 import { Card, CardBody, CardHeader, Skeleton } from '@heroui/react';
 import { BarChart3, TrendingUp } from 'lucide-react';
-import type { ChartData } from '@/types/dashboard';
 
 interface DashboardChartProps {
   data: ChartData;
@@ -19,7 +20,9 @@ export function DashboardChart({ data, loading = false }: DashboardChartProps) {
               <BarChart3 className="w-5 h-5 text-blue-600" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">Analytics Overview</h3>
+              <h3 className="text-lg font-semibold text-gray-900">
+                Analytics Overview
+              </h3>
               <p className="text-sm text-gray-600">Performance metrics</p>
             </div>
           </div>
@@ -39,8 +42,8 @@ export function DashboardChart({ data, loading = false }: DashboardChartProps) {
   }
 
   // Simple chart visualization using CSS
-  const maxValue = Math.max(...data.datasets[0]?.data || [0]);
-  
+  const maxValue = Math.max(...(data.datasets[0]?.data || [0]));
+
   return (
     <Card className="shadow-lg border-0 rounded-2xl h-full">
       <CardHeader className="pb-2">
@@ -50,8 +53,12 @@ export function DashboardChart({ data, loading = false }: DashboardChartProps) {
               <BarChart3 className="w-5 h-5 text-blue-600" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">Analytics Overview</h3>
-              <p className="text-sm text-gray-600">Performance metrics over time</p>
+              <h3 className="text-lg font-semibold text-gray-900">
+                Analytics Overview
+              </h3>
+              <p className="text-sm text-gray-600">
+                Performance metrics over time
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-2 text-green-600">
@@ -66,22 +73,30 @@ export function DashboardChart({ data, loading = false }: DashboardChartProps) {
             {/* Simple Bar Chart */}
             <div className="space-y-4">
               <div className="flex justify-between items-center">
-                <h4 className="font-medium text-gray-700">{data.datasets[0]?.label || 'Data'}</h4>
+                <h4 className="font-medium text-gray-700">
+                  {data.datasets[0]?.label || 'Data'}
+                </h4>
                 <span className="text-sm text-gray-500">Last 7 days</span>
               </div>
               <div className="grid grid-cols-7 gap-2 items-end h-40">
                 {data.labels.map((label, index) => {
                   const value = data.datasets[0]?.data[index] || 0;
-                  const percentage = maxValue > 0 ? (value / maxValue) * 100 : 0;
-                  
+                  const percentage =
+                    maxValue > 0 ? (value / maxValue) * 100 : 0;
+
                   return (
-                    <div key={index} className="flex flex-col items-center justify-end h-full">
+                    <div
+                      key={index}
+                      className="flex flex-col items-center justify-end h-full"
+                    >
                       <div
                         className="w-8 rounded-t-lg bg-gradient-to-t from-blue-600 to-blue-400"
                         style={{ height: `${percentage}%` }}
                         title={`${label}: ${value}`}
                       />
-                      <span className="mt-2 text-xs text-gray-600">{label}</span>
+                      <span className="mt-2 text-xs text-gray-600">
+                        {label}
+                      </span>
                     </div>
                   );
                 })}
@@ -92,9 +107,11 @@ export function DashboardChart({ data, loading = false }: DashboardChartProps) {
             <div className="flex flex-wrap gap-4 pt-3 border-t border-gray-100">
               {data.datasets.map((dataset, index) => (
                 <div key={index} className="flex items-center gap-2">
-                  <div 
+                  <div
                     className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: dataset.backgroundColor || '#3B82F6' }}
+                    style={{
+                      backgroundColor: dataset.backgroundColor || '#3B82F6',
+                    }}
                   />
                   <span className="text-sm text-gray-600">{dataset.label}</span>
                 </div>
@@ -105,7 +122,9 @@ export function DashboardChart({ data, loading = false }: DashboardChartProps) {
           <div className="text-center py-12">
             <BarChart3 className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-600 font-medium">No chart data available</p>
-            <p className="text-sm text-gray-500 mt-1">Data will appear here when available</p>
+            <p className="text-sm text-gray-500 mt-1">
+              Data will appear here when available
+            </p>
           </div>
         )}
       </CardBody>

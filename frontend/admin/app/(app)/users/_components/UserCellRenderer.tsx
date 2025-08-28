@@ -56,11 +56,13 @@ export default function UserCellRenderer({
     if (user.roles && user.roles.length > 0) {
       return user.roles[0].toLowerCase();
     }
+
     return 'user';
   };
 
   const getUserStatus = () => {
     if (user.status) return user.status;
+
     return user.active ? 'active' : 'inactive';
   };
 
@@ -69,6 +71,7 @@ export default function UserCellRenderer({
     if (user.departments && user.departments.length > 0) {
       return user.departments[0].name;
     }
+
     return 'N/A';
   };
 
@@ -110,6 +113,7 @@ export default function UserCellRenderer({
 
     case 'role':
       const role = getUserRole();
+
       return (
         <div className="flex items-center gap-2">
           <div className="p-2 rounded-lg bg-default-100 text-default-600">
@@ -128,6 +132,7 @@ export default function UserCellRenderer({
 
     case 'status':
       const status = getUserStatus();
+
       return (
         <Chip
           className="font-medium capitalize"

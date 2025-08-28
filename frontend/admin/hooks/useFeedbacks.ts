@@ -1,7 +1,13 @@
-import { useCallback, useEffect, useState } from 'react';
-import { api } from '../libs/apiClient';
-import type { Feedback, CreateFeedbackRequest, UpdateFeedbackRequest } from '../types/feedback';
+import type {
+  Feedback,
+  CreateFeedbackRequest,
+  UpdateFeedbackRequest,
+} from '../types/feedback';
 import type { PageResponse } from '../types/pagination';
+
+import { useCallback, useEffect, useState } from 'react';
+
+import { api } from '../libs/apiClient';
 
 export function useFeedbacks(params?: Record<string, any>) {
   const [data, setData] = useState<PageResponse<Feedback> | null>(null);
@@ -11,7 +17,11 @@ export function useFeedbacks(params?: Record<string, any>) {
   const fetchList = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await api.get<PageResponse<Feedback>>('/api/feedbacks', params);
+      const res = await api.get<PageResponse<Feedback>>(
+        '/api/feedbacks',
+        params,
+      );
+
       setData(res);
       setError(null);
     } catch (e: any) {
@@ -35,11 +45,12 @@ export function useFeedback(id?: number) {
 
   useEffect(() => {
     let mounted = true;
+
     if (!id) return;
     setLoading(true);
     api
       .get<Feedback>(`/api/feedbacks/${id}`)
-      .then((res) => {
+      .then(res => {
         if (!mounted) return;
         setData(res);
         setError(null);
@@ -52,6 +63,7 @@ export function useFeedback(id?: number) {
         if (!mounted) return;
         setLoading(false);
       });
+
     return () => {
       mounted = false;
     };
@@ -75,4 +87,3 @@ export async function deleteFeedback(id: number) {
 export async function canSubmit(feedbackId: number) {
   return api.get<boolean>(`/api/feedbacks/validation/${feedbackId}/can-submit`);
 }
-

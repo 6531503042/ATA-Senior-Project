@@ -1,33 +1,34 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { User, EyeClosed, Eye, Lock, AlertCircle } from "lucide-react";
-import { Button, Input } from "@heroui/react";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { User, EyeClosed, Eye, Lock, AlertCircle } from 'lucide-react';
+import { Button, Input } from '@heroui/react';
 
-import useAuthStore from "@/hooks/useAuth";
+import useAuthStore from '@/hooks/useAuth';
 
 export default function LoginPage() {
   const { signIn, loading, error, clearError } = useAuthStore();
   const router = useRouter();
 
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [isVisible, setIsVisible] = useState(false);
 
-  const toggleVisibility = () => setIsVisible((prev) => !prev);
+  const toggleVisibility = () => setIsVisible(prev => !prev);
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     clearError();
-    
+
     try {
       const success = await signIn(username, password);
+
       if (success) {
-        router.push("/");
+        router.push('/');
       }
     } catch (error) {
-      console.error("Login error:", error);
+      console.error('Login error:', error);
     }
   };
 
@@ -40,36 +41,30 @@ export default function LoginPage() {
         >
           <div className="text-center">
             <h2 className="text-3xl font-bold text-gray-900">Welcome back</h2>
-            <p className="mt-2 text-gray-600">
-              Sign in to access your account
-            </p>
+            <p className="mt-2 text-gray-600">Sign in to access your account</p>
           </div>
 
           <Input
+            isRequired
             label="Username"
             placeholder="Enter your username"
+            size="lg"
             startContent={
               <User className="text-xl text-gray-400 flex-shrink-0" />
             }
             type="text"
             value={username}
             variant="bordered"
-            onChange={(e) => setUsername(e.target.value)}
-            isRequired
-            size="lg"
+            onChange={e => setUsername(e.target.value)}
           />
 
           <Input
-            label="Password"
-            placeholder="Enter your password"
-            startContent={
-              <Lock className="text-xl text-gray-400 flex-shrink-0" />
-            }
+            isRequired
             endContent={
               <button
+                className="focus:outline-none"
                 type="button"
                 onClick={toggleVisibility}
-                className="focus:outline-none"
               >
                 {isVisible ? (
                   <Eye className="text-xl text-gray-400" />
@@ -78,12 +73,16 @@ export default function LoginPage() {
                 )}
               </button>
             }
-            type={isVisible ? "text" : "password"}
+            label="Password"
+            placeholder="Enter your password"
+            size="lg"
+            startContent={
+              <Lock className="text-xl text-gray-400 flex-shrink-0" />
+            }
+            type={isVisible ? 'text' : 'password'}
             value={password}
             variant="bordered"
-            onChange={(e) => setPassword(e.target.value)}
-            isRequired
-            size="lg"
+            onChange={e => setPassword(e.target.value)}
           />
 
           {error && (
@@ -93,15 +92,15 @@ export default function LoginPage() {
             </div>
           )}
 
-          <Button 
-            className="w-full" 
-            color="primary" 
-            isLoading={loading} 
-            type="submit"
+          <Button
+            className="w-full"
+            color="primary"
             disabled={!username || !password}
+            isLoading={loading}
             size="lg"
+            type="submit"
           >
-            {loading ? "Signing in..." : "Sign In"}
+            {loading ? 'Signing in...' : 'Sign In'}
           </Button>
         </form>
       </div>

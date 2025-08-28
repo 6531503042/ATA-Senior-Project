@@ -7,7 +7,7 @@ import type {
 
 import { useState, useCallback, useEffect } from 'react';
 
-import { useApi } from '@/hooks/useApi';
+import { api } from '@/libs/apiClient';
 
 const base = '/api/departments';
 
@@ -24,57 +24,66 @@ function mapDepartment(api: any): Department {
   };
 }
 
-async function getDepartments(request: ReturnType<typeof useApi>['request']) {
-  const res = await request<any[]>(`${base}`, 'GET');
-  const list = (res.data || []).map(mapDepartment);
-  const stats: DepartmentStats = {
-    totalDepartments: list.length,
-    activeDepartments: list.filter(d => d.status === 'active').length,
-    inactiveDepartments: list.filter(d => d.status === 'inactive').length,
-    totalEmployees: list.reduce(a => a + 0, 0),
-  };
+async function getDepartments() {
+  try {
+    const response = await api.get<any[]>(`${base}`);
+    const departments = Array.isArray(response) ? response : [];
+    const list = departments.map(mapDepartment);
+    
+    const stats: DepartmentStats = {
+      totalDepartments: list.length,
+      activeDepartments: list.filter(d => d.status === 'active').length,
+      inactiveDepartments: list.filter(d => d.status === 'inactive').length,
+      totalEmployees: list.reduce((acc, d) => acc + d.employeeCount, 0),
+    };
 
-  return { departments: list, stats };
+    return { departments: list, stats };
+  } catch (error) {
+    console.error('Error fetching departments:', error);
+    throw error;
+  }
 }
 
-async function createDepartment(
-  request: ReturnType<typeof useApi>['request'],
-  data: CreateDepartmentRequest,
-) {
-  const payload = {
-    name: data.name,
-    description: data.description,
-    active: data.status === 'active',
-  };
-  const res = await request<any>(`${base}`, 'POST', payload);
-
-  return mapDepartment(res.data);
+async function createDepartment(data: CreateDepartmentRequest) {
+  try {
+    const payload = {
+      name: data.name,
+      description: data.description,
+      active: data.status === 'active',
+    };
+    const response = await api.post<any>(`${base}`, payload);
+    return mapDepartment(response);
+  } catch (error) {
+    console.error('Error creating department:', error);
+    throw error;
+  }
 }
 
-async function updateDepartment(
-  request: ReturnType<typeof useApi>['request'],
-  data: UpdateDepartmentRequest,
-) {
-  const payload: any = { name: data.name, description: data.description };
+async function updateDepartment(data: UpdateDepartmentRequest) {
+  try {
+    const payload: any = { name: data.name, description: data.description };
 
-  if (typeof data.status !== 'undefined')
-    payload.active = data.status === 'active';
-  const res = await request<any>(`${base}/${data.id}`, 'PUT', payload);
-
-  return mapDepartment(res.data);
+    if (typeof data.status !== 'undefined')
+      payload.active = data.status === 'active';
+    const response = await api.put<any>(`${base}/${data.id}`, payload);
+    return mapDepartment(response);
+  } catch (error) {
+    console.error('Error updating department:', error);
+    throw error;
+  }
 }
 
-async function deleteDepartment(
-  request: ReturnType<typeof useApi>['request'],
-  id: string,
-) {
-  await request<void>(`${base}/${id}`, 'DELETE');
-
-  return true;
+async function deleteDepartment(id: string) {
+  try {
+    await api.delete(`${base}/${id}`);
+    return true;
+  } catch (error) {
+    console.error('Error deleting department:', error);
+    throw error;
+  }
 }
 
 export function useDepartments() {
-  const { request } = useApi();
   const [departments, setDepartments] = useState<Department[]>([]);
   const [stats, setStats] = useState<DepartmentStats>({
     totalDepartments: 0,
@@ -89,7 +98,7 @@ export function useDepartments() {
     try {
       setLoading(true);
       setError(null);
-      const response = await getDepartments(request);
+      const response = await getDepartments();
 
       setDepartments(response.departments);
       setStats(response.stats);
@@ -97,6 +106,14 @@ export function useDepartments() {
       setError(
         err instanceof Error ? err.message : 'Failed to fetch departments',
       );
+      // Set fallback data when API fails
+      setDepartments([]);
+      setStats({
+        totalDepartments: 0,
+        activeDepartments: 0,
+        inactiveDepartments: 0,
+        totalEmployees: 0,
+      });
     } finally {
       setLoading(false);
     }
@@ -106,29 +123,21 @@ export function useDepartments() {
     try {
       setLoading(true);
       setError(null);
-      const newDept = await createDepartment(request, data);
+      const newDepartment = await createDepartment(data);
 
-      setDepartments(prev => [newDept, ...prev]);
+      setDepartments(prev => [newDepartment, ...prev]);
 
+      // Update stats
       setStats(prev => ({
         ...prev,
         totalDepartments: prev.totalDepartments + 1,
-        activeDepartments:
-          data.status === 'active'
-            ? prev.activeDepartments + 1
-            : prev.activeDepartments,
-        inactiveDepartments:
-          data.status === 'inactive'
-            ? prev.inactiveDepartments + 1
-            : prev.inactiveDepartments,
-        totalEmployees: prev.totalEmployees + (data.employeeCount || 0),
+        activeDepartments: prev.activeDepartments + (data.status === 'active' ? 1 : 0),
+        inactiveDepartments: prev.inactiveDepartments + (data.status === 'inactive' ? 1 : 0),
       }));
 
-      return newDept;
+      return newDepartment;
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Failed to create department',
-      );
+      setError(err instanceof Error ? err.message : 'Failed to create department');
       throw err;
     } finally {
       setLoading(false);
@@ -140,12 +149,13 @@ export function useDepartments() {
       try {
         setLoading(true);
         setError(null);
-        const updatedDept = await updateDepartment(request, data);
+        const updatedDepartment = await updateDepartment(data);
 
         setDepartments(prev =>
-          prev.map(dep => (dep.id === data.id ? updatedDept : dep)),
+          prev.map(dept => (dept.id === data.id ? updatedDepartment : dept)),
         );
 
+        // Update stats if status changed
         if (data.status) {
           setStats(prev => {
             const oldDept = departments.find(d => d.id === data.id);
@@ -157,12 +167,9 @@ export function useDepartments() {
 
             if (oldDept.status === 'active' && data.status !== 'active') {
               activeChange = -1;
-              inactiveChange = +1;
-            } else if (
-              oldDept.status !== 'active' &&
-              data.status === 'active'
-            ) {
-              activeChange = +1;
+              inactiveChange = 1;
+            } else if (oldDept.status !== 'active' && data.status === 'active') {
+              activeChange = 1;
               inactiveChange = -1;
             }
 
@@ -174,11 +181,9 @@ export function useDepartments() {
           });
         }
 
-        return updatedDept;
+        return updatedDepartment;
       } catch (err) {
-        setError(
-          err instanceof Error ? err.message : 'Failed to update department',
-        );
+        setError(err instanceof Error ? err.message : 'Failed to update department');
         throw err;
       } finally {
         setLoading(false);
@@ -188,16 +193,17 @@ export function useDepartments() {
   );
 
   const removeDepartment = useCallback(
-    async (departmentId: string) => {
+    async (id: string) => {
       try {
         setLoading(true);
         setError(null);
-        await deleteDepartment(request, departmentId);
+        await deleteDepartment(id);
 
-        const deptToDelete = departments.find(d => d.id === departmentId);
+        const deptToDelete = departments.find(d => d.id === id);
 
-        setDepartments(prev => prev.filter(dep => dep.id !== departmentId));
+        setDepartments(prev => prev.filter(dept => dept.id !== id));
 
+        // Update stats
         if (deptToDelete) {
           setStats(prev => ({
             ...prev,
@@ -210,14 +216,10 @@ export function useDepartments() {
               deptToDelete.status === 'inactive'
                 ? prev.inactiveDepartments - 1
                 : prev.inactiveDepartments,
-            totalEmployees:
-              prev.totalEmployees - (deptToDelete.employeeCount || 0),
           }));
         }
       } catch (err) {
-        setError(
-          err instanceof Error ? err.message : 'Failed to delete department',
-        );
+        setError(err instanceof Error ? err.message : 'Failed to delete department');
         throw err;
       } finally {
         setLoading(false);
@@ -230,6 +232,7 @@ export function useDepartments() {
     await fetchDepartments();
   }, [fetchDepartments]);
 
+  // Load initial data
   useEffect(() => {
     fetchDepartments();
   }, [fetchDepartments]);

@@ -1,7 +1,13 @@
-import { useCallback, useEffect, useState } from 'react';
-import { api } from '../libs/apiClient';
-import type { Question, CreateQuestionRequest, UpdateQuestionRequest } from '../types/question';
+import type {
+  Question,
+  CreateQuestionRequest,
+  UpdateQuestionRequest,
+} from '../types/question';
 import type { PageResponse } from '../types/pagination';
+
+import { useCallback, useEffect, useState } from 'react';
+
+import { api } from '../libs/apiClient';
 
 export function useQuestions(params?: Record<string, any>) {
   const [data, setData] = useState<PageResponse<Question> | null>(null);
@@ -11,7 +17,11 @@ export function useQuestions(params?: Record<string, any>) {
   const fetchList = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await api.get<PageResponse<Question>>('/api/questions', params);
+      const res = await api.get<PageResponse<Question>>(
+        '/api/questions',
+        params,
+      );
+
       setData(res);
       setError(null);
     } catch (e: any) {
@@ -35,11 +45,12 @@ export function useQuestion(id?: number) {
 
   useEffect(() => {
     let mounted = true;
+
     if (!id) return;
     setLoading(true);
     api
       .get<Question>(`/api/questions/${id}`)
-      .then((res) => {
+      .then(res => {
         if (!mounted) return;
         setData(res);
         setError(null);
@@ -52,6 +63,7 @@ export function useQuestion(id?: number) {
         if (!mounted) return;
         setLoading(false);
       });
+
     return () => {
       mounted = false;
     };

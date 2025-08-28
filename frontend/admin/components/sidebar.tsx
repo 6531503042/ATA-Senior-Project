@@ -26,7 +26,7 @@ export const Sidebar = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
-  
+
   // Proper authentication context usage
   const { user, signOut, loading: authLoading } = useAuthContext();
 
@@ -151,37 +151,71 @@ export const Sidebar = () => {
                 <div className="flex items-center gap-3">
                   <Avatar
                     className="w-9 h-9"
-                    size="sm"
                     name={user?.firstName || user?.username}
+                    size="sm"
                   />
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-semibold truncate">
-                      {user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username : 'Guest'}
+                      {user
+                        ? `${user.firstName || ''} ${user.lastName || ''}`.trim() ||
+                          user.username
+                        : 'Guest'}
                     </p>
-                    <p className="text-xs text-default-500 truncate">{user?.email}</p>
+                    <p className="text-xs text-default-500 truncate">
+                      {user?.email}
+                    </p>
                     {user?.roles?.length ? (
                       <div className="mt-1 flex flex-wrap gap-1">
-                        {user.roles.slice(0, 2).map((role: string, idx: number) => (
-                          <Chip key={idx} size="sm" variant="flat" color="primary" className="text-[10px]">
-                            {role}
-                          </Chip>
-                        ))}
+                        {user.roles
+                          .slice(0, 2)
+                          .map((role: string, idx: number) => (
+                            <Chip
+                              key={idx}
+                              className="text-[10px]"
+                              color="primary"
+                              size="sm"
+                              variant="flat"
+                            >
+                              {role}
+                            </Chip>
+                          ))}
                       </div>
                     ) : null}
                   </div>
                 </div>
                 <div className="mt-3 flex items-center justify-between">
-                  <Chip size="sm" variant="flat" color={user?.active ? 'success' : 'danger'}>
+                  <Chip
+                    color={user?.active ? 'success' : 'danger'}
+                    size="sm"
+                    variant="flat"
+                  >
                     {user?.active ? 'Active' : 'Inactive'}
                   </Chip>
                   <Dropdown placement="top-end">
                     <DropdownTrigger>
-                      <Button size="sm" variant="light">Actions</Button>
+                      <Button size="sm" variant="light">
+                        Actions
+                      </Button>
                     </DropdownTrigger>
                     <DropdownMenu aria-label="User menu">
-                      <DropdownItem key="profile" onPress={() => router.push('/profile')}>Profile</DropdownItem>
-                      <DropdownItem key="settings" onPress={() => router.push('/settings')}>Settings</DropdownItem>
-                      <DropdownItem key="logout" className="text-danger" color="danger" onPress={signOut}>
+                      <DropdownItem
+                        key="profile"
+                        onPress={() => router.push('/profile')}
+                      >
+                        Profile
+                      </DropdownItem>
+                      <DropdownItem
+                        key="settings"
+                        onPress={() => router.push('/settings')}
+                      >
+                        Settings
+                      </DropdownItem>
+                      <DropdownItem
+                        key="logout"
+                        className="text-danger"
+                        color="danger"
+                        onPress={signOut}
+                      >
                         Log Out
                       </DropdownItem>
                     </DropdownMenu>

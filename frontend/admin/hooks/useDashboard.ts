@@ -1,36 +1,45 @@
-import { useCallback } from 'react';
-import { useGet } from './useApi';
-import type { 
-  DashboardStats, 
+import type {
+  DashboardStats,
   EnhancedDashboardStats,
   ActivityFeed,
   QuickAction,
   RealTimeUpdate,
   SystemHealth,
-  RealTimeMetrics
+  RealTimeMetrics,
 } from '../types/dashboard';
+
+import { useCallback } from 'react';
+
+import { useGet } from './useApi';
+
 import { getToken } from '@/utils/storage';
 import useAuthStore from '@/hooks/useAuth';
 
 // Basic dashboard hook
-export function useDashboard(autoFetch: boolean = true, enabled: boolean = true) {
-  return useGet<DashboardStats>('/api/dashboard', { 
+export function useDashboard(
+  autoFetch: boolean = true,
+  enabled: boolean = true,
+) {
+  return useGet<DashboardStats>('/api/dashboard', {
     autoFetch,
     enabled,
-    onError: (error) => {
+    onError: error => {
       console.error('Failed to load dashboard:', error);
-    }
+    },
   });
 }
 
 // Enhanced dashboard hook
-export function useEnhancedDashboard(autoFetch: boolean = true, enabled: boolean = true) {
-  return useGet<EnhancedDashboardStats>('/api/dashboard/advanced', { 
+export function useEnhancedDashboard(
+  autoFetch: boolean = true,
+  enabled: boolean = true,
+) {
+  return useGet<EnhancedDashboardStats>('/api/dashboard/advanced', {
     autoFetch,
     enabled,
-    onError: (error) => {
+    onError: error => {
       console.error('Failed to load enhanced dashboard:', error);
-    }
+    },
   });
 }
 
@@ -40,9 +49,9 @@ export function useActivityFeed(limit: number = 20, enabled: boolean = true) {
     params: { limit },
     autoFetch: true,
     enabled,
-    onError: (error) => {
+    onError: error => {
       console.error('Failed to load activity feed:', error);
-    }
+    },
   });
 }
 
@@ -51,9 +60,9 @@ export function useQuickActions(enabled: boolean = true) {
   return useGet<QuickAction[]>('/api/dashboard/quick-actions', {
     autoFetch: true,
     enabled,
-    onError: (error) => {
+    onError: error => {
       console.error('Failed to load quick actions:', error);
-    }
+    },
   });
 }
 
@@ -63,9 +72,9 @@ export function useNotifications(limit: number = 10, enabled: boolean = true) {
     params: { limit },
     autoFetch: true,
     enabled,
-    onError: (error) => {
+    onError: error => {
       console.error('Failed to load notifications:', error);
-    }
+    },
   });
 }
 
@@ -74,9 +83,9 @@ export function useRealTimeMetrics(enabled: boolean = true) {
   return useGet<RealTimeMetrics>('/api/dashboard/realtime-metrics', {
     autoFetch: true,
     enabled,
-    onError: (error) => {
+    onError: error => {
       console.error('Failed to load real-time metrics:', error);
-    }
+    },
   });
 }
 
@@ -85,9 +94,9 @@ export function useSystemHealth(enabled: boolean = true) {
   return useGet<SystemHealth>('/api/dashboard/health', {
     autoFetch: true,
     enabled,
-    onError: (error) => {
+    onError: error => {
       console.error('Failed to load system health:', error);
-    }
+    },
   });
 }
 
@@ -123,14 +132,14 @@ export function useDashboardData() {
     notifications: notifications.data || [],
     realTimeMetrics: realTimeMetrics.data,
     systemHealth: systemHealth.data,
-    
+
     // States
     loading,
     error,
-    
+
     // Actions
     refresh,
-    
+
     // Individual loaders
     dashboardLoading: dashboard.loading,
     enhancedLoading: enhanced.loading,

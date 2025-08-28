@@ -54,7 +54,7 @@ export default function UsersPage() {
     }
   };
 
-  const handleDeleteUser = async (userId: string) => {
+  const handleDeleteUser = async (userId: number) => {
     try {
       await removeUser(userId);
       setIsDeleteModalOpen(false);

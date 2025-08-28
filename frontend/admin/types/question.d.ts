@@ -1,6 +1,11 @@
-export type QuestionType = 'MULTIPLE_CHOICE' | 'SINGLE_CHOICE' | 'TEXT_BASED' | 'RATING' | 'SENTIMENT';
+export type QuestionType =
+  | 'MULTIPLE_CHOICE'
+  | 'SINGLE_CHOICE'
+  | 'TEXT_BASED'
+  | 'RATING'
+  | 'SENTIMENT';
 
-export type QuestionCategory = 
+export type QuestionCategory =
   | 'WORK_ENVIRONMENT'
   | 'WORK_LIFE_BALANCE'
   | 'TEAM_COLLABORATION'

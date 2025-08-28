@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
 import { useState, useEffect } from 'react';
-import { 
-  Button, 
-  Card, 
-  CardBody, 
-  CardHeader, 
-  Table, 
-  TableHeader, 
-  TableColumn, 
-  TableBody, 
-  TableRow, 
+import {
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  Table,
+  TableHeader,
+  TableColumn,
+  TableBody,
+  TableRow,
   TableCell,
   Chip,
   Input,
@@ -23,19 +23,18 @@ import {
   ModalBody,
   ModalFooter,
   Textarea,
-  useDisclosure
+  useDisclosure,
 } from '@heroui/react';
-import { 
-  Plus, 
-  Search, 
-  Filter, 
-  Eye, 
-  Edit, 
-  Trash2, 
+import {
+  Plus,
+  Search,
+  Eye,
+  Trash2,
   Shield,
   Users,
-  Calendar
+  Calendar,
 } from 'lucide-react';
+
 import { api } from '../../../libs/apiClient';
 
 interface Role {
@@ -56,7 +55,7 @@ export default function RolesPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
-  
+
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   useEffect(() => {
@@ -71,8 +70,9 @@ export default function RolesPage() {
         size: 10,
         search: searchTerm || undefined,
       };
-      
+
       const response = await api.get<any>('/api/roles', params);
+
       setRoles(response.content || []);
       setTotalPages(response.totalPages || 1);
     } catch (err: any) {
@@ -84,7 +84,7 @@ export default function RolesPage() {
 
   const handleDelete = async (roleId: number) => {
     if (!confirm('Are you sure you want to delete this role?')) return;
-    
+
     try {
       await api.delete(`/api/roles/${roleId}`);
       loadRoles();
@@ -99,13 +99,15 @@ export default function RolesPage() {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   };
 
   const filteredRoles = roles.filter(role => {
-    const matchesSearch = role.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         role.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch =
+      role.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      role.description.toLowerCase().includes(searchTerm.toLowerCase());
+
     return matchesSearch;
   });
 
@@ -117,8 +119,8 @@ export default function RolesPage() {
           <h1 className="text-2xl font-bold text-gray-900">Roles Management</h1>
           <p className="text-gray-600">Manage user roles and permissions</p>
         </div>
-        <Button 
-          color="primary" 
+        <Button
+          color="primary"
           startContent={<Plus size={16} />}
           onPress={onOpen}
         >
@@ -141,7 +143,7 @@ export default function RolesPage() {
             </div>
           </CardBody>
         </Card>
-        
+
         <Card>
           <CardBody className="p-4">
             <div className="flex items-center gap-3">
@@ -157,7 +159,7 @@ export default function RolesPage() {
             </div>
           </CardBody>
         </Card>
-        
+
         <Card>
           <CardBody className="p-4">
             <div className="flex items-center gap-3">
@@ -180,11 +182,11 @@ export default function RolesPage() {
         <CardBody className="p-4">
           <div className="flex flex-col md:flex-row gap-4">
             <Input
-              placeholder="Search roles..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              startContent={<Search size={16} />}
               className="flex-1"
+              placeholder="Search roles..."
+              startContent={<Search size={16} />}
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
             />
           </div>
         </CardBody>
@@ -198,13 +200,13 @@ export default function RolesPage() {
         <CardBody>
           {loading ? (
             <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto" />
               <p className="text-gray-600 mt-2">Loading roles...</p>
             </div>
           ) : error ? (
             <div className="text-center py-8">
               <p className="text-red-600">{error}</p>
-              <Button color="primary" className="mt-2" onPress={loadRoles}>
+              <Button className="mt-2" color="primary" onPress={loadRoles}>
                 Retry
               </Button>
             </div>
@@ -220,7 +222,7 @@ export default function RolesPage() {
                   <TableColumn>ACTIONS</TableColumn>
                 </TableHeader>
                 <TableBody>
-                  {filteredRoles.map((role) => (
+                  {filteredRoles.map(role => (
                     <TableRow key={role.id}>
                       <TableCell>
                         <div>
@@ -234,13 +236,20 @@ export default function RolesPage() {
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-1">
-                          {role.permissions.slice(0, 3).map((permission, index) => (
-                            <Chip key={index} size="sm" color="primary" variant="flat">
-                              {permission}
-                            </Chip>
-                          ))}
+                          {role.permissions
+                            .slice(0, 3)
+                            .map((permission, index) => (
+                              <Chip
+                                key={index}
+                                color="primary"
+                                size="sm"
+                                variant="flat"
+                              >
+                                {permission}
+                              </Chip>
+                            ))}
                           {role.permissions.length > 3 && (
-                            <Chip size="sm" color="default" variant="flat">
+                            <Chip color="default" size="sm" variant="flat">
                               +{role.permissions.length - 3}
                             </Chip>
                           )}
@@ -248,23 +257,25 @@ export default function RolesPage() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <Users size={16} className="text-gray-400" />
+                          <Users className="text-gray-400" size={16} />
                           <span className="text-sm">{role.userCount}</span>
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
-                          <Calendar size={14} className="text-gray-400" />
-                          <span className="text-sm">{formatDate(role.createdAt)}</span>
+                          <Calendar className="text-gray-400" size={14} />
+                          <span className="text-sm">
+                            {formatDate(role.createdAt)}
+                          </span>
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-2">
                           <Button
-                            size="sm"
-                            variant="flat"
                             color="primary"
+                            size="sm"
                             startContent={<Eye size={14} />}
+                            variant="flat"
                             onPress={() => {
                               setSelectedRole(role);
                               onOpen();
@@ -273,10 +284,10 @@ export default function RolesPage() {
                             View
                           </Button>
                           <Button
-                            size="sm"
-                            variant="flat"
                             color="danger"
+                            size="sm"
                             startContent={<Trash2 size={14} />}
+                            variant="flat"
                             onPress={() => handleDelete(role.id)}
                           >
                             Delete
@@ -287,7 +298,7 @@ export default function RolesPage() {
                   ))}
                 </TableBody>
               </Table>
-              
+
               {filteredRoles.length === 0 && (
                 <div className="text-center py-8">
                   <Shield className="w-12 h-12 text-gray-300 mx-auto mb-2" />
@@ -303,17 +314,17 @@ export default function RolesPage() {
       {totalPages > 1 && (
         <div className="flex justify-center">
           <Pagination
-            total={totalPages}
-            page={page}
-            onChange={setPage}
             showControls
             color="primary"
+            page={page}
+            total={totalPages}
+            onChange={setPage}
           />
         </div>
       )}
 
       {/* Role Detail Modal */}
-      <Modal isOpen={isOpen} onClose={onClose} size="2xl">
+      <Modal isOpen={isOpen} size="2xl" onClose={onClose}>
         <ModalContent>
           <ModalHeader>
             {selectedRole ? 'Role Details' : 'Create New Role'}
@@ -322,42 +333,60 @@ export default function RolesPage() {
             {selectedRole ? (
               <div className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Role Name</label>
+                  <label className="text-sm font-medium text-gray-700">
+                    Role Name
+                  </label>
                   <p className="text-gray-900">{selectedRole.name}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Description</label>
+                  <label className="text-sm font-medium text-gray-700">
+                    Description
+                  </label>
                   <p className="text-gray-900">{selectedRole.description}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Permissions</label>
+                  <label className="text-sm font-medium text-gray-700">
+                    Permissions
+                  </label>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {selectedRole.permissions.map((permission, index) => (
-                      <Chip key={index} size="sm" color="primary" variant="flat">
+                      <Chip
+                        key={index}
+                        color="primary"
+                        size="sm"
+                        variant="flat"
+                      >
                         {permission}
                       </Chip>
                     ))}
                   </div>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Users with this role</label>
+                  <label className="text-sm font-medium text-gray-700">
+                    Users with this role
+                  </label>
                   <p className="text-gray-900">{selectedRole.userCount}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Created</label>
-                  <p className="text-gray-900">{formatDate(selectedRole.createdAt)}</p>
+                  <label className="text-sm font-medium text-gray-700">
+                    Created
+                  </label>
+                  <p className="text-gray-900">
+                    {formatDate(selectedRole.createdAt)}
+                  </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Updated</label>
-                  <p className="text-gray-900">{formatDate(selectedRole.updatedAt)}</p>
+                  <label className="text-sm font-medium text-gray-700">
+                    Updated
+                  </label>
+                  <p className="text-gray-900">
+                    {formatDate(selectedRole.updatedAt)}
+                  </p>
                 </div>
               </div>
             ) : (
               <div className="space-y-4">
-                <Input
-                  label="Role Name"
-                  placeholder="Enter role name"
-                />
+                <Input label="Role Name" placeholder="Enter role name" />
                 <Textarea
                   label="Description"
                   placeholder="Enter role description"
@@ -380,11 +409,7 @@ export default function RolesPage() {
             <Button variant="flat" onPress={onClose}>
               Close
             </Button>
-            {!selectedRole && (
-              <Button color="primary">
-                Create Role
-              </Button>
-            )}
+            {!selectedRole && <Button color="primary">Create Role</Button>}
           </ModalFooter>
         </ModalContent>
       </Modal>

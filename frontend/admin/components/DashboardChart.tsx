@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { Card, CardBody, CardHeader } from '@heroui/react';
 import { BarChart3, TrendingUp } from 'lucide-react';
@@ -19,10 +19,14 @@ interface DashboardChartProps {
   type?: 'bar' | 'line' | 'doughnut';
 }
 
-export function DashboardChart({ title, data, type = 'bar' }: DashboardChartProps) {
+export function DashboardChart({
+  title,
+  data,
+  type = 'bar',
+}: DashboardChartProps) {
   // Simple chart visualization using CSS
-  const maxValue = Math.max(...data.datasets[0]?.data || [0]);
-  
+  const maxValue = Math.max(...(data.datasets[0]?.data || [0]));
+
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -37,7 +41,7 @@ export function DashboardChart({ title, data, type = 'bar' }: DashboardChartProp
             {data.labels.map((label, index) => {
               const value = data.datasets[0]?.data[index] || 0;
               const percentage = maxValue > 0 ? (value / maxValue) * 100 : 0;
-              
+
               return (
                 <div key={label} className="space-y-2">
                   <div className="flex justify-between text-sm">
@@ -65,16 +69,20 @@ export function DashboardChart({ title, data, type = 'bar' }: DashboardChartProp
   );
 }
 
-export function MiniChart({ data, color = "primary" }: { 
-  data: number[]; 
-  color?: "primary" | "success" | "warning" | "danger" 
+export function MiniChart({
+  data,
+  color = 'primary',
+}: {
+  data: number[];
+  color?: 'primary' | 'success' | 'warning' | 'danger';
 }) {
   const maxValue = Math.max(...data);
-  
+
   return (
     <div className="flex items-end gap-1 h-16">
       {data.map((value, index) => {
         const height = maxValue > 0 ? (value / maxValue) * 100 : 0;
+
         return (
           <div
             key={index}

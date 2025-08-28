@@ -39,12 +39,14 @@ export interface CreateUserRequest {
 }
 
 export interface UpdateUserRequest {
+  id: number;
   email?: string;
   firstName?: string;
   lastName?: string;
   phone?: string;
   departmentId?: number;
   active?: boolean;
+  status?: 'active' | 'inactive' | 'pending' | 'suspended';
 }
 
 export interface UserStats {

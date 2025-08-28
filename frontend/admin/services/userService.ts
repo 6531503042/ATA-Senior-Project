@@ -62,24 +62,28 @@ export const getUserStatusColor = (status: User['status']) => {
 
 export const formatDate = (date: string | null) => {
   if (!date) return 'Never';
-  
+
   try {
     const dateObj = new Date(date);
     const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - dateObj.getTime()) / (1000 * 60 * 60));
-    
+    const diffInHours = Math.floor(
+      (now.getTime() - dateObj.getTime()) / (1000 * 60 * 60),
+    );
+
     if (diffInHours < 1) {
       return 'Just now';
     } else if (diffInHours < 24) {
       return `${diffInHours}h ago`;
-    } else if (diffInHours < 168) { // 7 days
+    } else if (diffInHours < 168) {
+      // 7 days
       const days = Math.floor(diffInHours / 24);
+
       return `${days}d ago`;
     } else {
       return dateObj.toLocaleDateString('en-US', {
         month: 'short',
         day: 'numeric',
-        year: 'numeric'
+        year: 'numeric',
       });
     }
   } catch {
@@ -89,14 +93,14 @@ export const formatDate = (date: string | null) => {
 
 export const formatFullDate = (date: string | null) => {
   if (!date) return 'Never';
-  
+
   try {
     return new Date(date).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   } catch {
     return 'Invalid date';
@@ -106,7 +110,7 @@ export const formatFullDate = (date: string | null) => {
 export const getUserInitials = (user: User) => {
   const firstName = user.firstName || '';
   const lastName = user.lastName || '';
-  
+
   if (firstName && lastName) {
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
   } else if (firstName) {
@@ -114,7 +118,7 @@ export const getUserInitials = (user: User) => {
   } else if (user.username) {
     return user.username.charAt(0).toUpperCase();
   }
-  
+
   return 'U';
 };
 
@@ -126,7 +130,7 @@ export const getUserDisplayName = (user: User) => {
   } else if (user.username) {
     return user.username;
   }
-  
+
   return 'Unknown User';
 };
 
@@ -134,6 +138,7 @@ export const getUserDepartmentName = (user: User) => {
   if (user.departments && user.departments.length > 0) {
     return user.departments[0].name;
   }
+
   return 'No Department';
 };
 
@@ -146,12 +151,12 @@ export const canUserEdit = (currentUser: User, targetUser: User) => {
   if (currentUser.roles.includes('ADMIN')) {
     return true;
   }
-  
+
   // Manager can edit users but not admins
   if (currentUser.roles.includes('MANAGER')) {
     return !targetUser.roles.includes('ADMIN');
   }
-  
+
   // Users can only edit themselves
   return currentUser.id === targetUser.id;
 };
@@ -161,12 +166,14 @@ export const canUserDelete = (currentUser: User, targetUser: User) => {
   if (currentUser.roles.includes('ADMIN')) {
     return currentUser.id !== targetUser.id;
   }
-  
+
   // Manager can delete users but not admins or themselves
   if (currentUser.roles.includes('MANAGER')) {
-    return !targetUser.roles.includes('ADMIN') && currentUser.id !== targetUser.id;
+    return (
+      !targetUser.roles.includes('ADMIN') && currentUser.id !== targetUser.id
+    );
   }
-  
+
   // Users cannot delete anyone
   return false;
 };
