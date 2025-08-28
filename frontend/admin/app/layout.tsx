@@ -44,11 +44,9 @@ export default function RootLayout({
       lang="en"
     >
       <Head>
-        <title>HLLC 2025</title>
+        <title>Admin Panel</title>
         <meta charSet="utf-8" />
         <meta content="width=device-width, initial-scale=1" name="viewport" />
-        <link href="/logo-sdad.png" rel="icon" type="image/png" />
-        <link href="/logo-sdad.png" rel="apple-touch-icon" type="image/png" />
       </Head>
       <body
         className={clsx(
