@@ -60,7 +60,10 @@ export function RecentActivity({ activities, loading = false }: RecentActivityPr
   return (
     <div className="space-y-3">
       {activities.slice(0, 5).map((activity, index) => (
-        <div key={activity.id || index} className="flex items-start gap-3 p-3 rounded-lg border border-default-200 hover:bg-default-50 transition-colors">
+        <div
+          key={`${activity.icon}-${activity.actorName}-${activity.action}-${activity.timestamp}-${index}`}
+          className="flex items-start gap-3 p-3 rounded-lg border border-default-200 hover:bg-default-50 transition-colors"
+        >
           <Avatar
             name={activity.actorName?.charAt(0) || 'U'}
             size="sm"

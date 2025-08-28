@@ -235,7 +235,8 @@ public class DashboardService {
                     );
                 })
                 .all()
-                .collectList();
+                .collectList()
+                .onErrorReturn(java.util.Collections.emptyList());
     }
 
     public Mono<List<TimeSeriesMetric>> getTimeSeriesData() {
