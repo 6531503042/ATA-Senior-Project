@@ -97,10 +97,7 @@ export default function DashboardPage() {
         }
       />
 
-      {/* Quick Create row above overall stats */}
-      <div className="mb-4 flex justify-end">
-        <QuickCreate showRefresh={false} />
-      </div>
+      {/* Two-column responsive layout: main + right sidebar */}
 
       {/* Quick Stats Section - larger and tighter spacing */}
       <div className="mb-6">
@@ -117,87 +114,96 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* Main Dashboard Content */}
-      <div className="space-y-6">
-        {/* Overview Section */}
-        <CardStat 
-          colors="blue-100" 
-          icon={<TrendingUp className="w-4 h-4" />} 
-          label="System Overview"
-          defaultOpen={true}
-          isClosable={false}
-        >
-          <div className="w-full">
-            <DashboardOverview data={dashboard?.overview || null} loading={dataLoading} />
-          </div>
-        </CardStat>
-
-        {/* Chart Section */}
-        {dashboard?.chartData && (
+      {/* Main + Sidebar */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Main column */}
+        <div className="lg:col-span-9 space-y-6">
+          {/* Overview Section */}
           <CardStat 
-            colors="green-100" 
+            colors="blue-100" 
             icon={<TrendingUp className="w-4 h-4" />} 
-            label="Analytics Chart"
+            label="System Overview"
             defaultOpen={true}
+            isClosable={false}
           >
             <div className="w-full">
-              <DashboardChart data={dashboard.chartData} loading={dataLoading} />
+              <DashboardOverview data={dashboard?.overview || null} loading={dataLoading} />
             </div>
           </CardStat>
-        )}
 
-        {/* Metrics Section */}
-        <CardStat 
-          colors="purple-100" 
-          icon={<TrendingUp className="w-4 h-4" />} 
-          label="Performance Metrics"
-        >
-          <div className="w-full">
-            <DashboardMetrics 
-              dashboard={dashboard || null}
-              enhanced={enhanced || null}
-              loading={dataLoading}
-            />
-          </div>
-        </CardStat>
-
-        {/* Recent Activity Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-1">
+          {/* Chart Section */}
+          {dashboard?.chartData && (
             <CardStat 
-              colors="orange-100" 
-              icon={<Users className="w-4 h-4" />} 
-              label="Recent Projects"
+              colors="green-100" 
+              icon={<TrendingUp className="w-4 h-4" />} 
+              label="Analytics Chart"
+              defaultOpen={true}
             >
               <div className="w-full">
-                <RecentProjects projects={dashboard?.recentProjects || []} loading={dataLoading} />
+                <DashboardChart data={dashboard.chartData} loading={dataLoading} />
               </div>
             </CardStat>
-          </div>
+          )}
 
-          <div className="lg:col-span-1">
-            <CardStat 
-              colors="red-100" 
-              icon={<MessageSquare className="w-4 h-4" />} 
-              label="Recent Feedbacks"
-            >
-              <div className="w-full">
-                <RecentFeedbacks feedbacks={dashboard?.recentFeedbacks || []} loading={dataLoading} />
-              </div>
-            </CardStat>
-          </div>
+          {/* Metrics Section */}
+          <CardStat 
+            colors="purple-100" 
+            icon={<TrendingUp className="w-4 h-4" />} 
+            label="Performance Metrics"
+          >
+            <div className="w-full">
+              <DashboardMetrics 
+                dashboard={dashboard || null}
+                enhanced={enhanced || null}
+                loading={dataLoading}
+              />
+            </div>
+          </CardStat>
+        </div>
 
-          <div className="lg:col-span-1">
-            <CardStat 
-              colors="indigo-100" 
-              icon={<FileText className="w-4 h-4" />} 
-              label="Recent Activity"
-            >
-              <div className="w-full">
-                <RecentActivity activities={activityFeed} loading={dataLoading} />
-              </div>
-            </CardStat>
-          </div>
+        {/* Right sidebar */}
+        <div className="lg:col-span-3 space-y-4">
+          <CardStat 
+            colors="cyan-100" 
+            icon={<TrendingUp className="w-4 h-4" />} 
+            label="Quick Actions"
+            defaultOpen={true}
+            isClosable={false}
+          >
+            <div className="w-full flex justify-end">
+              <QuickCreate showRefresh={false} />
+            </div>
+          </CardStat>
+
+          <CardStat 
+            colors="orange-100" 
+            icon={<Users className="w-4 h-4" />} 
+            label="Recent Projects"
+          >
+            <div className="w-full">
+              <RecentProjects projects={dashboard?.recentProjects || []} loading={dataLoading} />
+            </div>
+          </CardStat>
+
+          <CardStat 
+            colors="red-100" 
+            icon={<MessageSquare className="w-4 h-4" />} 
+            label="Recent Feedbacks"
+          >
+            <div className="w-full">
+              <RecentFeedbacks feedbacks={dashboard?.recentFeedbacks || []} loading={dataLoading} />
+            </div>
+          </CardStat>
+
+          <CardStat 
+            colors="indigo-100" 
+            icon={<FileText className="w-4 h-4" />} 
+            label="Recent Activity"
+          >
+            <div className="w-full">
+              <RecentActivity activities={activityFeed} loading={dataLoading} />
+            </div>
+          </CardStat>
         </div>
       </div>
 
