@@ -508,6 +508,10 @@ public class FeedbackService {
      * This follows the same pattern as UserManagementService.mapToResponseDto()
      */
     private UserResponseDto mapUserToResponseDto(dev.bengi.main.modules.user.model.User user) {
+        java.util.Set<dev.bengi.main.modules.user.dto.DepartmentSummaryDto> departments = new java.util.HashSet<>();
+        if (user.getDepartmentId() != null) {
+            departments.add(new dev.bengi.main.modules.user.dto.DepartmentSummaryDto(user.getDepartmentId(), null));
+        }
         return new UserResponseDto(
                 user.getId(),
                 user.getUsername(),
@@ -515,8 +519,7 @@ public class FeedbackService {
                 user.getFirstName(),
                 user.getLastName(),
                 user.getPhone(),
-                user.getDepartmentId(),
-                user.getDepartmentName(),
+                departments,
                 user.getRoles(),
                 user.isActive(),
                 user.getLastLoginAt(),

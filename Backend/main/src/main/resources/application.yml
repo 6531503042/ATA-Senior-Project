@@ -42,11 +42,13 @@ jwt:
 app:
   allowed-origins: "http://localhost:3000,http://localhost:3001,http://localhost:8081"
   security:
-    # Rate limiting configuration
-    # rate-limit:
-    #   enabled: true
-    #   requests-per-minute: 100
-    #   auth-requests-per-minute: 5
+    # Rate limiting configuration - COMPLETELY DISABLED
+    rate-limit:
+      enabled: false  # Disabled rate limiting
+      requests-per-minute: 10000  # Very high limit if somehow enabled
+      auth-requests-per-minute: 1000  # Very high limit if somehow enabled
+      burst-capacity: 1000
+      window-size: 60
     # CORS settings
     cors:
       max-age: 3600

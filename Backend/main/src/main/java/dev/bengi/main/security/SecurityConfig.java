@@ -1,9 +1,11 @@
 package dev.bengi.main.security;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
@@ -11,15 +13,18 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.web.server.SecurityWebFilterChain;
-import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsConfigurationSource;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.config.Customizer;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 
+/**
+ * Security configuration for the application
+ * Handles authentication, authorization, CORS, and security headers
+ */
 @Configuration
 @EnableWebFluxSecurity
 @EnableReactiveMethodSecurity
@@ -39,9 +44,9 @@ public class SecurityConfig {
     }
 
     @Bean
+    @Order(1)
+    @ConditionalOnProperty(name = "app.security.rate-limit.enabled", havingValue = "false", matchIfMissing = true)
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http, 
-                                                           JwtAuthenticationFilter jwtFilter,
-                                                           RateLimitingFilter rateLimitingFilter,
                                                            ReactiveAuthenticationManager authManager) {
         return http
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
@@ -70,11 +75,56 @@ public class SecurityConfig {
                         .anyExchange().denyAll()
                 )
                 
-                // Rate Limiting Filter (before authentication)
-                .addFilterBefore(rateLimitingFilter, SecurityWebFiltersOrder.AUTHENTICATION)
+                // Disable unused auth methods
+                .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
+                .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
                 
-                // JWT Filter
-                .addFilterAt(jwtFilter, SecurityWebFiltersOrder.AUTHENTICATION)
+                // Exception handling
+                .exceptionHandling(exceptions -> exceptions
+                        .authenticationEntryPoint((exchange, ex) -> {
+                            exchange.getResponse().setStatusCode(org.springframework.http.HttpStatus.UNAUTHORIZED);
+                            return exchange.getResponse().setComplete();
+                        })
+                        .accessDeniedHandler((exchange, denied) -> {
+                            exchange.getResponse().setStatusCode(org.springframework.http.HttpStatus.FORBIDDEN);
+                            return exchange.getResponse().setComplete();
+                        })
+                )
+                
+                .build();
+    }
+
+    @Bean
+    @Order(2)
+    @ConditionalOnProperty(name = "app.security.rate-limit.enabled", havingValue = "true")
+    public SecurityWebFilterChain springSecurityFilterChainWithRateLimit(ServerHttpSecurity http, 
+                                                                        ReactiveAuthenticationManager authManager) {
+        return http
+                .csrf(ServerHttpSecurity.CsrfSpec::disable)
+                .cors(Customizer.withDefaults())
+                
+                // Authentication Manager
+                .authenticationManager(authManager)
+                
+                // Security Headers
+                .headers(Customizer.withDefaults())
+                
+                // Authorization Rules - use method-level security for fine-grained control
+                .authorizeExchange(auth -> auth
+                        // Public endpoints
+                        .pathMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register").permitAll()
+                        .pathMatchers(HttpMethod.GET, "/api/auth/validate").permitAll()
+                        .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .pathMatchers("/actuator/health", "/actuator/info").permitAll()
+                        .pathMatchers("/actuator/**").hasRole("ADMIN")
+                        
+                        // All other API endpoints require authentication
+                        // Role-based authorization is handled by @PreAuthorize in controllers
+                        .pathMatchers("/api/**").authenticated()
+                        
+                        // Default - deny all other requests
+                        .anyExchange().denyAll()
+                )
                 
                 // Disable unused auth methods
                 .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
@@ -137,8 +187,6 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
-
-
 }
 
 

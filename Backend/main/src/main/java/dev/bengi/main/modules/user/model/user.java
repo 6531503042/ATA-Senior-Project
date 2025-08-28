@@ -35,10 +35,10 @@ public class User {
     @Column("last_name")
     private String lastName;
 
-    private String phone;
-
     @Column("department_id")
     private Long departmentId;
+
+    private String phone;
 
     private boolean active = true;
 
@@ -55,7 +55,4 @@ public class User {
 
     @Transient
     private Set<String> roles = new HashSet<>();
-
-    @Transient
-    private String departmentName;
 }

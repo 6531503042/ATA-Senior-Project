@@ -122,11 +122,14 @@ public class EmployeeController {
         
         return userManagementService.findUserByUsername(username)
                 .flatMap(user -> {
-                    if (user.departmentId() == null) {
+                     Long deptId = (user.departments() != null && !user.departments().isEmpty())
+                            ? user.departments().iterator().next().id()
+                            : null;
+                    if (deptId == null) {
                         // Return empty result if user has no department
                         return Mono.just(PageResponse.<UserResponseDto>empty(pageRequest));
                     }
-                    return userManagementService.findUsersByDepartment(user.departmentId(), pageRequest);
+                    return userManagementService.findUsersByDepartment(deptId, pageRequest);
                 })
                 .map(ResponseEntity::ok);
     }

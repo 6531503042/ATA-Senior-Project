@@ -14,5 +14,6 @@ public interface RoleMapper {
     void updateEntity(@MappingTarget Role target, RoleRequestUpdate req);
 
     // Entity -> Response
-    RoleResponse toResponse(Role entity);
+    @Mapping(target = "name", expression = "java(role.getName() != null ? role.getName().name() : null)")
+    RoleResponse toResponse(Role role);
 }

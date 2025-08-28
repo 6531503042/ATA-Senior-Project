@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Tracks requests per IP address with configurable limits
  */
 @Component
-@ConditionalOnProperty(name = "app.security.rate-limit.enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(name = "app.security.rate-limit.enabled", havingValue = "true", matchIfMissing = false)
 @Slf4j
 public class RateLimitingFilter implements WebFilter {
 

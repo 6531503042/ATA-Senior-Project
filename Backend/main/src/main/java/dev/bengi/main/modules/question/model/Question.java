@@ -27,6 +27,10 @@ public class Question {
     private String description;
     @Column("question_type")
     private QuestionType questionType;
+    @Column("category")
+    private String categoryString;
+    
+    @Transient
     private QuestionCategory category;
     private boolean required;
     @Column("validation_rules")
@@ -40,6 +44,25 @@ public class Question {
 
     @Transient
     private List<String> choices = new ArrayList<>();
+    
+    // Helper methods for category conversion
+    public QuestionCategory getCategory() {
+        return categoryString != null ? QuestionCategory.valueOf(categoryString) : null;
+    }
+    
+    public void setCategory(QuestionCategory category) {
+        this.category = category;
+        this.categoryString = category != null ? category.name() : null;
+    }
+    
+    public String getCategoryString() {
+        return categoryString;
+    }
+    
+    public void setCategoryString(String categoryString) {
+        this.categoryString = categoryString;
+        this.category = categoryString != null ? QuestionCategory.valueOf(categoryString) : null;
+    }
 }
 
 

@@ -283,7 +283,6 @@ public class UserManagementService {
                     user.setLastLoginAt(row.get("last_login_at", LocalDateTime.class));
                     user.setCreatedAt(row.get("created_at", LocalDateTime.class));
                     user.setUpdatedAt(row.get("updated_at", LocalDateTime.class));
-                    user.setDepartmentName(row.get("department_name", String.class));
                     return user;
                 })
                 .one();
@@ -353,6 +352,10 @@ public class UserManagementService {
     }
 
     private UserResponseDto mapToResponseDto(User user) {
+        java.util.Set<dev.bengi.main.modules.user.dto.DepartmentSummaryDto> departments = new java.util.HashSet<>();
+        if (user.getDepartmentId() != null) {
+            departments.add(new dev.bengi.main.modules.user.dto.DepartmentSummaryDto(user.getDepartmentId(), null));
+        }
         return new UserResponseDto(
                 user.getId(),
                 user.getUsername(),
@@ -360,8 +363,7 @@ public class UserManagementService {
                 user.getFirstName(),
                 user.getLastName(),
                 user.getPhone(),
-                user.getDepartmentId(),
-                user.getDepartmentName(),
+                departments,
                 user.getRoles(),
                 user.isActive(),
                 user.getLastLoginAt(),
@@ -385,12 +387,34 @@ public class UserManagementService {
                     user.setLastLoginAt(row.get("last_login_at", LocalDateTime.class));
                     user.setCreatedAt(row.get("created_at", LocalDateTime.class));
                     user.setUpdatedAt(row.get("updated_at", LocalDateTime.class));
-                    user.setDepartmentName(row.get("department_name", String.class));
-                    return user;
+                    String deptName = row.get("department_name", String.class);
+                    return new Object[]{user, deptName};
                 })
                 .all()
-                .flatMap(this::enrichUserWithRoles)
-                .map(this::mapToResponseDto);
+                .flatMap(arr -> {
+                    User u = (User) arr[0];
+                    String deptName = (String) arr[1];
+                    return enrichUserWithRoles(u).map(userWithRoles -> {
+                        java.util.Set<dev.bengi.main.modules.user.dto.DepartmentSummaryDto> departments = new java.util.HashSet<>();
+                        if (userWithRoles.getDepartmentId() != null || deptName != null) {
+                            departments.add(new dev.bengi.main.modules.user.dto.DepartmentSummaryDto(userWithRoles.getDepartmentId(), deptName));
+                        }
+                        return new UserResponseDto(
+                                userWithRoles.getId(),
+                                userWithRoles.getUsername(),
+                                userWithRoles.getEmail(),
+                                userWithRoles.getFirstName(),
+                                userWithRoles.getLastName(),
+                                userWithRoles.getPhone(),
+                                departments,
+                                userWithRoles.getRoles(),
+                                userWithRoles.isActive(),
+                                userWithRoles.getLastLoginAt(),
+                                userWithRoles.getCreatedAt(),
+                                userWithRoles.getUpdatedAt()
+                        );
+                    });
+                });
     }
 
     private Mono<Long> executeCountQuery(String query) {
@@ -412,8 +436,8 @@ public class UserManagementService {
         String countQuery = "SELECT COUNT(*) FROM users u WHERE u.department_id = :departmentId AND u.active = true";
 
         return paginationService.executePaginatedQuery(
-            baseQuery + " AND department_id = " + departmentId,
-            countQuery,
+            baseQuery.replace(":departmentId", String.valueOf(departmentId)),
+            countQuery.replace(":departmentId", String.valueOf(departmentId)),
             pageRequest,
             ALLOWED_SORT_FIELDS,
             SEARCHABLE_FIELDS,
