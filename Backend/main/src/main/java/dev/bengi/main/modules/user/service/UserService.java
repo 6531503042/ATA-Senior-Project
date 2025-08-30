@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -50,6 +51,9 @@ public class UserService {
                         return Mono.error(new GlobalServiceException(ErrorCode.UNAUTHORIZED, "Invalid credentials"));
                     }
                     
+                    // Update last login time
+                    user.setLastLoginAt(LocalDateTime.now());
+                    
                     List<String> roles = user.getRoles().isEmpty() ? List.of("USER") : user.getRoles().stream().toList();
                     String access = jwtProvider.createToken(user.getUsername(), roles);
                     String refresh = jwtProvider.createRefreshToken(user.getUsername());
@@ -58,7 +62,8 @@ public class UserService {
                     auditService.logSuccessfulAuthentication(user.getUsername(), clientIp);
                     log.info("User {} logged in successfully from IP: {}", user.getUsername(), clientIp);
                     
-                    return Mono.just(new JwtResponse(access, refresh, user.getId(), user.getUsername(), user.getEmail(), roles));
+                    return userRepository.save(user)
+                            .map(savedUser -> new JwtResponse(access, refresh, savedUser.getId(), savedUser.getUsername(), savedUser.getEmail(), roles));
                 });
     }
 
