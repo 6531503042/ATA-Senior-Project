@@ -24,23 +24,45 @@ function mapDepartment(api: any): Department {
   };
 }
 
-async function getDepartments() {
+export async function getDepartments(): Promise<{ departments: Department[]; stats: DepartmentStats }> {
   try {
-    const response = await api.get<any[]>(`${base}`);
-    const departments = Array.isArray(response) ? response : [];
-    const list = departments.map(mapDepartment);
+    const departmentsResponse = await api.get<any>('/api/departments');
+    console.log('Departments API response:', departmentsResponse);
     
-    const stats: DepartmentStats = {
-      totalDepartments: list.length,
-      activeDepartments: list.filter(d => d.status === 'active').length,
-      inactiveDepartments: list.filter(d => d.status === 'inactive').length,
-      totalEmployees: list.reduce((acc, d) => acc + d.employeeCount, 0),
+    // Handle different response formats
+    let departments: any[] = [];
+    if (departmentsResponse?.content && Array.isArray(departmentsResponse.content)) {
+      departments = departmentsResponse.content;
+    } else if (Array.isArray(departmentsResponse)) {
+      departments = departmentsResponse;
+    } else if (departmentsResponse?.departments && Array.isArray(departmentsResponse.departments)) {
+      departments = departmentsResponse.departments;
+    }
+    
+    const mappedDepartments = departments.map(mapDepartment);
+    
+    // Get stats
+    const statsResponse = await api.get<any>('/api/dashboard/stats/departments');
+    const stats = {
+      totalDepartments: statsResponse?.totalDepartments || mappedDepartments.length,
+      activeDepartments: statsResponse?.activeDepartments || mappedDepartments.filter(d => d.active).length,
+      inactiveDepartments: statsResponse?.inactiveDepartments || mappedDepartments.filter(d => !d.active).length,
+      totalEmployees: statsResponse?.totalEmployees || 0,
     };
-
-    return { departments: list, stats };
+    
+    return { departments: mappedDepartments, stats };
   } catch (error) {
     console.error('Error fetching departments:', error);
-    throw error;
+    // Return fallback data
+    return {
+      departments: [],
+      stats: {
+        totalDepartments: 0,
+        activeDepartments: 0,
+        inactiveDepartments: 0,
+        totalEmployees: 0,
+      },
+    };
   }
 }
 

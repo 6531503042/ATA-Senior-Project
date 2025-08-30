@@ -35,7 +35,13 @@ import {
   MessageSquare,
   Calendar,
   FileText,
+  CheckCircle,
+  Clock,
+  Star,
 } from 'lucide-react';
+
+import { PageHeader } from '../../../components/ui/page-header';
+import { CardStat } from '../../../components/ui/card-stat';
 
 import { api } from '../../../libs/apiClient';
 
@@ -79,6 +85,12 @@ export default function FeedbacksPage() {
   const [selectedFeedback, setSelectedFeedback] = useState<Feedback | null>(
     null,
   );
+  const [stats, setStats] = useState({
+    totalFeedbacks: 0,
+    activeFeedbacks: 0,
+    completedFeedbacks: 0,
+    pendingFeedbacks: 0,
+  });
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -98,15 +110,46 @@ export default function FeedbacksPage() {
         projectId: projectFilter !== 'all' ? projectFilter : undefined,
       };
 
-      const response = await api.get<ApiResponse<Feedback>>(
-        '/api/feedbacks',
-        params,
-      );
-
-      setFeedbacks(response.content || []);
-      setTotalPages(response.totalPages || 1);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load feedbacks');
+      const response = await api.get<ApiResponse<Feedback>>('/api/feedbacks', params);
+      console.log('Feedbacks API response:', response);
+      
+      // Handle different response formats
+      let feedbacksList: Feedback[] = [];
+      if (response?.content && Array.isArray(response.content)) {
+        feedbacksList = response.content;
+      } else if (Array.isArray(response)) {
+        feedbacksList = response;
+      } else if (response?.feedbacks && Array.isArray(response.feedbacks)) {
+        feedbacksList = response.feedbacks;
+      }
+      
+      setFeedbacks(feedbacksList);
+      setTotalPages(response?.totalPages || 1);
+      
+      // Calculate stats
+      const totalFeedbacks = feedbacksList.length;
+      const activeFeedbacks = feedbacksList.filter(f => f.status === 'ACTIVE').length;
+      const completedFeedbacks = feedbacksList.filter(f => f.status === 'COMPLETED').length;
+      const pendingFeedbacks = feedbacksList.filter(f => f.status === 'PENDING').length;
+      
+      setStats({
+        totalFeedbacks,
+        activeFeedbacks,
+        completedFeedbacks,
+        pendingFeedbacks,
+      });
+      
+      setError(null);
+    } catch (err) {
+      console.error('Error loading feedbacks:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load feedbacks');
+      setFeedbacks([]);
+      setStats({
+        totalFeedbacks: 0,
+        activeFeedbacks: 0,
+        completedFeedbacks: 0,
+        pendingFeedbacks: 0,
+      });
     } finally {
       setLoading(false);
     }
@@ -186,87 +229,42 @@ export default function FeedbacksPage() {
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            Feedbacks Management
-          </h1>
-          <p className="text-gray-600">
-            Manage and monitor all feedback submissions
-          </p>
-        </div>
-        <Button
-          color="primary"
-          startContent={<Plus size={16} />}
-          onPress={onOpen}
-        >
-          Create Feedback
-        </Button>
-      </div>
+             <PageHeader
+         title="Feedbacks Management"
+         description="Manage and monitor all feedback submissions"
+         action={
+           <Button
+             color="primary"
+             startContent={<Plus size={16} />}
+             onPress={onOpen}
+           >
+             Create Feedback
+           </Button>
+         }
+       />
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card>
-          <CardBody className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-blue-100">
-                <MessageSquare className="w-5 h-5 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Total Feedbacks</p>
-                <p className="text-lg font-semibold">{feedbacks.length}</p>
-              </div>
-            </div>
-          </CardBody>
-        </Card>
-
-        <Card>
-          <CardBody className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-green-100">
-                <MessageSquare className="w-5 h-5 text-green-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Active</p>
-                <p className="text-lg font-semibold">
-                  {feedbacks.filter(f => f.status === 'ACTIVE').length}
-                </p>
-              </div>
-            </div>
-          </CardBody>
-        </Card>
-
-        <Card>
-          <CardBody className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-purple-100">
-                <MessageSquare className="w-5 h-5 text-purple-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Completed</p>
-                <p className="text-lg font-semibold">
-                  {feedbacks.filter(f => f.status === 'COMPLETED').length}
-                </p>
-              </div>
-            </div>
-          </CardBody>
-        </Card>
-
-        <Card>
-          <CardBody className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-yellow-100">
-                <MessageSquare className="w-5 h-5 text-yellow-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Pending</p>
-                <p className="text-lg font-semibold">
-                  {feedbacks.filter(f => f.status === 'PENDING').length}
-                </p>
-              </div>
-            </div>
-          </CardBody>
-        </Card>
+                 <CardStat
+           title="Total Feedbacks"
+           value={stats.totalFeedbacks}
+           icon={<MessageSquare className="w-5 h-5 text-blue-600" />}
+         />
+         <CardStat
+           title="Active"
+           value={stats.activeFeedbacks}
+           icon={<CheckCircle className="w-5 h-5 text-green-600" />}
+         />
+         <CardStat
+           title="Completed"
+           value={stats.completedFeedbacks}
+           icon={<Star className="w-5 h-5 text-purple-600" />}
+         />
+         <CardStat
+           title="Pending"
+           value={stats.pendingFeedbacks}
+           icon={<Clock className="w-5 h-5 text-yellow-600" />}
+         />
       </div>
 
       {/* Filters */}

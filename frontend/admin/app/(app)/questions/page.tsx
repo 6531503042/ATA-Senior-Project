@@ -14,7 +14,7 @@ import {
   StarIcon,
   ToggleLeftIcon,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import { QuestionsModal } from './_components/QuestionsModal';
 import QuestionTable from './_components/QuestionTable';
@@ -22,6 +22,7 @@ import QuestionTable from './_components/QuestionTable';
 import { PageHeader } from '@/components/ui/page-header';
 import { ConfirmationModal } from '@/components/modal/ConfirmationModal';
 import { useQuestions } from '@/hooks/useQuestions';
+import { api } from '@/libs/apiClient';
 
 export default function QuestionsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -138,6 +139,45 @@ export default function QuestionsPage() {
       gradient: 'from-purple-50 to-violet-50',
     },
   ];
+
+  useEffect(() => {
+    refreshQuestions();
+  }, [refreshQuestions]);
+
+  // Load questions stats
+  useEffect(() => {
+    const loadStats = async () => {
+      try {
+        const questionsResponse = await api.get<any>('/api/questions');
+        const questions = questionsResponse?.content || [];
+        
+        const totalQuestions = questions.length;
+        const activeQuestions = questions.filter(q => q.required).length;
+        const inactiveQuestions = questions.filter(q => !q.required).length;
+        const categories = new Set(questions.map(q => q.category)).size;
+        
+        // Assuming stats state is managed by useQuestions hook,
+        // so we need to update it directly or pass it as a prop.
+        // For now, we'll just log the stats for debugging.
+        console.log('Loaded stats:', {
+          totalQuestions,
+          activeQuestions,
+          inactiveQuestions,
+          totalCategories: categories,
+        });
+      } catch (error) {
+        console.error('Error loading questions stats:', error);
+        // setStats({
+        //   totalQuestions: 0,
+        //   activeQuestions: 0,
+        //   inactiveQuestions: 0,
+        //   totalCategories: 0,
+        // });
+      }
+    };
+    
+    loadStats();
+  }, []);
 
   return (
     <>

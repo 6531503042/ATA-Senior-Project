@@ -53,8 +53,18 @@ export function useProjectsLegacy() {
       setLoading(true);
       setError(null);
       
-      const projectsResponse = await api.get<PageResponse<Project>>('/api/projects');
-      const projectsList = projectsResponse?.content || [];
+      const projectsResponse = await api.get<any>('/api/projects');
+      console.log('Projects API response:', projectsResponse);
+      
+      // Handle different response formats
+      let projectsList: any[] = [];
+      if (projectsResponse?.content && Array.isArray(projectsResponse.content)) {
+        projectsList = projectsResponse.content;
+      } else if (Array.isArray(projectsResponse)) {
+        projectsList = projectsResponse;
+      } else if (projectsResponse?.projects && Array.isArray(projectsResponse.projects)) {
+        projectsList = projectsResponse.projects;
+      }
       
       setProjects(projectsList);
       
