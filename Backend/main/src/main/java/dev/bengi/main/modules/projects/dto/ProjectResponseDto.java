@@ -6,6 +6,7 @@ public record ProjectResponseDto(
         Long id,
         String name,
         String description,
+        String category,
         LocalDateTime startDate,
         LocalDateTime endDate,
         boolean active,

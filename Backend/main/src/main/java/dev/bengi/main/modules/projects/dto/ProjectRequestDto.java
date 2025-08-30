@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 public record ProjectRequestDto(
         @NotBlank String name,
         String description,
+        String category,
         LocalDateTime startDate,
         LocalDateTime endDate,
         boolean active,

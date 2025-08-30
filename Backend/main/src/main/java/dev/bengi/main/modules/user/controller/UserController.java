@@ -33,7 +33,7 @@ public class UserController {
     private final PaginationService paginationService;
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public Mono<ResponseEntity<PageResponse<UserResponseDto>>> listUsers(ServerWebExchange exchange) {
         var pageRequest = paginationService.parsePageRequest(exchange);
         return userManagementService.findAllUsers(pageRequest)
@@ -41,7 +41,7 @@ public class UserController {
     }
 
     @GetMapping("/stats")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public Mono<ResponseEntity<Map<String, Object>>> getUserStats() {
         return userManagementService.getUserStats()
                 .map(ResponseEntity::ok);

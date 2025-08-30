@@ -9,6 +9,7 @@ import dev.bengi.main.modules.department.service.DepartmentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
@@ -23,21 +24,25 @@ public class DepartmentController {
     private final PaginationService paginationService;
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public Mono<DepartmentResponseDto> create(@RequestBody @Valid DepartmentRequestDto req) {
         return departmentService.create(req);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public Mono<DepartmentResponseDto> update(@PathVariable Long id, @RequestBody @Valid DepartmentUpdateRequestDto req) {
         return departmentService.update(id, req);
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public Mono<DepartmentResponseDto> get(@PathVariable Long id) {
         return departmentService.getById(id);
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public Mono<ResponseEntity<PageResponse<DepartmentResponseDto>>> getAll(ServerWebExchange exchange) {
         var pageRequest = paginationService.parsePageRequest(exchange);
         return departmentService.listActive(pageRequest)
@@ -45,6 +50,7 @@ public class DepartmentController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public Mono<Void> delete(@PathVariable Long id) {
         return departmentService.delete(id);
     }
