@@ -15,7 +15,7 @@ import ProjectTable from './_components/ProjectTable';
 
 import { PageHeader } from '@/components/ui/page-header';
 import { ConfirmationModal } from '@/components/modal/ConfirmationModal';
-import { useProjectsLegacy } from '@/hooks/useProjects';
+import { useProjects } from '@/hooks/useProjects';
 
 export default function ProjectsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -24,14 +24,20 @@ export default function ProjectsPage() {
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
   const {
     projects,
-    stats,
     loading,
     error,
     addProject,
     editProject,
     removeProject,
-    refreshProjects,
-  } = useProjectsLegacy();
+  } = useProjects();
+
+  // Calculate stats from projects data
+  const stats = {
+    totalProjects: projects.length,
+    activeProjects: projects.filter(p => p.active).length,
+    completedProjects: projects.filter(p => !p.active).length,
+    totalMembers: 0, // TODO: Implement project member count
+  };
 
   const handleCreateProject = async (data: CreateProjectRequest) => {
     try {
@@ -44,7 +50,7 @@ export default function ProjectsPage() {
 
   const handleEditProject = async (data: UpdateProjectRequest) => {
     try {
-      await editProject(data);
+      await editProject(data.id, data);
       setIsModalOpen(false);
       setEditingProject(null);
     } catch (err) {
@@ -54,7 +60,7 @@ export default function ProjectsPage() {
 
   const handleDeleteProject = async (projectId: string) => {
     try {
-      await removeProject(projectId);
+      await removeProject(parseInt(projectId));
       setIsDeleteModalOpen(false);
       setProjectToDelete(null);
     } catch (err) {
@@ -199,14 +205,14 @@ export default function ProjectsPage() {
         </div>
 
         {/* Projects Table */}
-        <Card className="border-0 shadow-lg bg-white">
+        <Card className="border-0 shadow-xl overflow-hidden">
           <CardHeader className="pb-6">
             <div className="w-full">
               <h3 className="text-xl font-bold text-default-900">
                 Project List
               </h3>
               <p className="text-sm text-default-600">
-                View and manage all your projects
+                View and manage all projects
               </p>
             </div>
           </CardHeader>
@@ -220,18 +226,14 @@ export default function ProjectsPage() {
                 <div className="text-red-500">Error: {error}</div>
               </div>
             ) : (
-              <ProjectTable
-                projects={projects}
-                onDelete={(projectId: string) => {
-                  const project = projects.find((p: Project) => p.id === Number(projectId));
-
-                  if (project) {
-                    handleDelete(project);
-                  }
-                }}
-                onEdit={handleEdit}
-                onRefresh={refreshProjects}
-              />
+                      <ProjectTable
+          projects={projects}
+          onEdit={handleEdit}
+          onDelete={(projectId: string) => {
+            const project = projects.find(p => p.id.toString() === projectId);
+            if (project) handleDelete(project);
+          }}
+        />
             )}
           </CardBody>
         </Card>
@@ -239,24 +241,18 @@ export default function ProjectsPage() {
 
       <ProjectsModal
         isOpen={isModalOpen}
-        mode={editingProject ? 'edit' : 'create'}
-        project={editingProject || undefined}
         onClose={handleModalClose}
         onSubmit={handleSubmit}
+        project={editingProject || undefined}
+        mode={editingProject ? 'edit' : 'create'}
       />
 
       <ConfirmationModal
-        body={`Are you sure you want to delete "${projectToDelete?.name}"? This action cannot be undone.`}
-        cancelColor="primary"
-        cancelText="Cancel"
-        confirmColor="danger"
-        confirmText="Delete"
         isOpen={isDeleteModalOpen}
-        title="Delete Project"
         onClose={handleDeleteModalClose}
-        onConfirm={() =>
-          projectToDelete && handleDeleteProject(projectToDelete.id.toString())
-        }
+        onConfirm={() => projectToDelete && handleDeleteProject(projectToDelete.id.toString())}
+        title="Delete Project"
+        body={`Are you sure you want to delete "${projectToDelete?.name}"? This action cannot be undone.`}
       />
     </>
   );

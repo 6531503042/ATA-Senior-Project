@@ -1,204 +1,208 @@
 'use client';
 
-import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Button,
-  Input,
-  Textarea,
-  Select,
-  SelectItem,
-} from '@heroui/react';
-import { useState, useEffect } from 'react';
+import type { Department, DepartmentMember } from '@/types/department';
+import type { User } from '@/types/user';
 
-interface Department {
-  id?: string;
-  name: string;
-  manager: string;
-  status: 'active' | 'inactive';
-  description?: string;
-}
+import { Button, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Select, SelectItem, Switch } from '@heroui/react';
+import { useState, useEffect, useRef } from 'react';
+import { Building2, Users } from 'lucide-react';
 
-interface DepartmentModalProps {
+import { DepartmentMembersSelector } from './DepartmentMembersSelector';
+
+type DepartmentModalProps = {
+  department?: Department;
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: Department) => void;
-  department?: Department;
+  onSubmit: (formData: FormData, mode: 'create' | 'edit') => void;
   mode: 'create' | 'edit';
-}
+  getDepartmentMembers?: (departmentId: number) => Promise<DepartmentMember[]>;
+};
 
 export default function DepartmentModal({
+  department,
   isOpen,
   onClose,
   onSubmit,
-  department,
   mode,
+  getDepartmentMembers,
 }: DepartmentModalProps) {
-  const [formData, setFormData] = useState<Department>({
-    name: '',
-    manager: '',
-    status: 'active',
-    description: '',
-  });
+  const [loading, setLoading] = useState(false);
+  const [loadingMembers, setLoadingMembers] = useState(false);
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [active, setActive] = useState(true);
+  const [selectedMembers, setSelectedMembers] = useState<User[]>([]);
+  const [existingMembers, setExistingMembers] = useState<DepartmentMember[]>([]);
+  const formRef = useRef<HTMLFormElement>(null);
 
-  // Reset form data on open or when department changes
+  // Memoize department ID to prevent unnecessary re-renders
+  const departmentId = department?.id;
+
   useEffect(() => {
-    if (isOpen) {
-      setFormData({
-        name: department?.name || '',
-        manager: department?.manager || '',
-        status: department?.status || 'active',
-        description: department?.description || '',
-        id: department?.id,
-      });
+    if (isOpen && department) {
+      setName(department.name);
+      setDescription(department.description || '');
+      setActive(department.active);
+      setSelectedMembers([]);
+      setExistingMembers([]);
+    } else {
+      setName('');
+      setDescription('');
+      setActive(true);
+      setSelectedMembers([]);
+      setExistingMembers([]);
     }
   }, [isOpen, department]);
 
-  // Prevent body scroll & layout shift
+  // Separate useEffect for loading members to prevent unnecessary calls
   useEffect(() => {
-    if (isOpen) {
-      const scrollbarWidth =
-        window.innerWidth - document.documentElement.clientWidth;
-
-      document.body.classList.add('modal-open');
-      document.body.style.setProperty(
-        '--scrollbar-width',
-        `${scrollbarWidth}px`,
-      );
-
-      return () => {
-        document.body.classList.remove('modal-open');
-        document.body.style.removeProperty('--scrollbar-width');
+    if (mode === 'edit' && departmentId && isOpen && getDepartmentMembers) {
+      const loadMembers = async () => {
+        try {
+          setLoadingMembers(true);
+          const members = await getDepartmentMembers(departmentId);
+          if (members && Array.isArray(members)) {
+            setExistingMembers(members);
+          }
+        } catch (error) {
+          console.error('Failed to load department members:', error);
+        } finally {
+          setLoadingMembers(false);
+        }
       };
+      loadMembers();
     }
-  }, [isOpen]);
+  }, [mode, departmentId, isOpen, getDepartmentMembers]);
 
-  const handleSubmit = () => {
-    if (formData.name.trim() && formData.manager.trim()) {
-      onSubmit({
-        ...formData,
-        name: formData.name.trim(),
-        manager: formData.manager.trim(),
-        description: formData.description?.trim() || '',
-        ...(department?.id ? { id: department.id } : {}),
-      });
+  const handleSubmit = async () => {
+    if (!name.trim() || !description.trim()) return;
+
+    setLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('name', name.trim());
+      formData.append('description', description.trim());
+      formData.append('active', active.toString());
+      
+      // Add members if any are selected
+      if (selectedMembers.length > 0) {
+        const memberIds = selectedMembers
+          .filter(user => user.id && user.id !== '__SELECT_ALL__' as any)
+          .map(user => user.id.toString());
+        
+        if (memberIds.length > 0) {
+          formData.append('members', JSON.stringify(memberIds));
+        }
+      }
+
+      await onSubmit(formData, mode);
+    } catch (error) {
+      console.error('Failed to submit department:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const isFormValid = () => {
-    return formData.name.trim() !== '' && formData.manager.trim() !== '';
-  };
+  const isFormValid = name.trim() && description.trim();
 
   return (
     <Modal
-      backdrop="blur"
-      className="mx-4"
-      classNames={{
-        backdrop: 'bg-black/50 backdrop-blur-sm',
-        wrapper: 'overflow-hidden',
-        base: 'overflow-hidden',
-      }}
-      hideCloseButton={false}
-      isDismissable={false}
-      isKeyboardDismissDisabled={false}
       isOpen={isOpen}
-      motionProps={{
-        variants: {
-          enter: {
-            y: 0,
-            opacity: 1,
-            transition: { duration: 0.3, ease: 'easeOut' },
-          },
-          exit: {
-            y: -20,
-            opacity: 0,
-            transition: { duration: 0.2, ease: 'easeIn' },
-          },
-        },
-      }}
-      placement="center"
-      scrollBehavior="inside"
-      size="lg"
       onClose={onClose}
+      size="2xl"
+      scrollBehavior="inside"
+      isDismissable={false}
     >
       <ModalContent>
-        <ModalHeader className="flex flex-col gap-1 border-b border-default-200 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
-          <h2 className="text-xl font-bold text-default-900">
-            {mode === 'create' ? 'Add New Department' : 'Edit Department'}
-          </h2>
-          <p className="text-sm text-default-600">
-            {mode === 'create'
-              ? 'Add a new department to the system'
-              : 'Update department information'}
-          </p>
+        <ModalHeader className="flex flex-col gap-1">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <Building2 className="w-5 h-5 text-blue-600" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-gray-900">
+                {mode === 'create' ? 'Create Department' : 'Edit Department'}
+              </h2>
+              <p className="text-sm text-gray-600">
+                {mode === 'create' ? 'Add a new department' : 'Update department information'}
+              </p>
+            </div>
+          </div>
         </ModalHeader>
+        <ModalBody className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Input
+              isRequired
+              label="Department Name"
+              placeholder="Enter department name"
+              value={name}
+              onValueChange={setName}
+              variant="bordered"
+            />
+            <div className="flex items-center gap-3">
+              <Switch
+                isSelected={active}
+                onValueChange={setActive}
+                size="sm"
+              />
+              <span className="text-sm font-medium text-gray-700">
+                {active ? 'Active' : 'Inactive'}
+              </span>
+            </div>
+          </div>
 
-        <ModalBody className="space-y-6 py-6 overflow-y-auto">
           <Input
             isRequired
-            className="w-full"
-            label="Department Name"
-            placeholder="Enter department name"
-            size="lg"
-            value={formData.name}
-            variant="bordered"
-            onChange={e => setFormData({ ...formData, name: e.target.value })}
-          />
-          <Input
-            isRequired
-            className="w-full"
-            label="Manager Name"
-            placeholder="Enter manager name"
-            size="lg"
-            value={formData.manager}
-            variant="bordered"
-            onChange={e =>
-              setFormData({ ...formData, manager: e.target.value })
-            }
-          />
-          <Select
-            className="w-full"
-            label="Status"
-            size="lg"
-            value={formData.status}
-            variant="bordered"
-            onChange={e =>
-              setFormData({
-                ...formData,
-                status: e.target.value as 'active' | 'inactive',
-              })
-            }
-          >
-            <SelectItem key="active">Active</SelectItem>
-            <SelectItem key="inactive">Inactive</SelectItem>
-          </Select>
-          <Textarea
-            className="w-full"
             label="Description"
-            placeholder="Enter description (optional)"
-            size="lg"
-            value={formData.description}
+            placeholder="Enter department description"
+            value={description}
+            onValueChange={setDescription}
             variant="bordered"
-            onChange={e =>
-              setFormData({ ...formData, description: e.target.value })
-            }
           />
-        </ModalBody>
 
-        <ModalFooter className="border-t border-default-200 bg-gradient-to-r from-blue-50/30 to-indigo-50/30 dark:from-blue-950/10 dark:to-indigo-950/10">
-          <Button className="font-medium" variant="light" onPress={onClose}>
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Users className="w-5 h-5 text-gray-600" />
+              <span className="text-sm font-medium text-gray-700">Department Members</span>
+            </div>
+            
+            {/* Show existing members if editing */}
+            {mode === 'edit' && existingMembers.length > 0 && (
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-gray-700">
+                    Current Members ({existingMembers.length})
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {existingMembers.map((member) => (
+                    <div key={member.id} className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm">
+                      {member.username || `${member.firstName || ''} ${member.lastName || ''}`.trim()}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <DepartmentMembersSelector
+              selectedMembers={selectedMembers}
+              setSelectedMembers={setSelectedMembers}
+              allowSelectAll={true}
+              isLoadingMembers={loadingMembers}
+            />
+          </div>
+        </ModalBody>
+        <ModalFooter>
+          <Button variant="light" onPress={onClose}>
             Cancel
           </Button>
           <Button
-            className="font-semibold bg-gradient-to-r from-blue-600 to-indigo-600"
             color="primary"
-            isDisabled={!isFormValid()}
             onPress={handleSubmit}
+            isDisabled={!isFormValid || loading}
+            isLoading={loading}
           >
-            {mode === 'create' ? 'Add Department' : 'Update Department'}
+            {mode === 'create' ? 'Create' : 'Update'}
           </Button>
         </ModalFooter>
       </ModalContent>

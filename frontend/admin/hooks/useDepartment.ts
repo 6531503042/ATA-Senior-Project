@@ -1,23 +1,39 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { addToast } from '@heroui/react';
 
-import { Department } from '@/types/department';
-import { PageResponse } from '@/types/shared';
+import type { Department, DepartmentMember } from '@/types/department';
 import { apiRequest } from '@/utils/api';
 
-export function useDepartment() {
+export interface UseDepartmentReturn {
+  departments: Department[];
+  loading: boolean;
+  error: string | null;
+  fetchDepartments: () => Promise<void>;
+  createDepartment: (departmentData: FormData) => Promise<void>;
+  updateDepartment: (id: number, departmentData: FormData) => Promise<void>;
+  deleteDepartment: (id: number) => Promise<void>;
+  getDepartmentMembers: (departmentId: number) => Promise<DepartmentMember[]>;
+  clearError: () => void;
+}
+
+export function useDepartment(): UseDepartmentReturn {
   const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchDepartments = async () => {
+  /**
+   * Fetch all departments from the API
+   * @returns Promise<void>
+   */
+  const fetchDepartments = async (): Promise<void> => {
     setLoading(true);
     setError(null);
     try {
-      const res = await apiRequest<PageResponse<Department>>('/api/departments?limit=0', 'GET');
+      const res = await apiRequest<{ content: Department[] }>('/api/departments?limit=0', 'GET');
 
       if (res.data?.content) {
-        setDepartments(Array.isArray(res.data.content) ? res.data.content : []);
+        const depts = Array.isArray(res.data.content) ? res.data.content : [];
+        setDepartments(depts);
       } else {
         setDepartments([]);
       }
@@ -28,8 +44,7 @@ export function useDepartment() {
 
       setError(errorMessage);
       addToast({
-        title: 'Failed to fetch departments',
-        description: errorMessage,
+        title: 'Failed to fetch departments. Please try again.',
         color: 'danger',
       });
     } finally {
@@ -37,94 +52,138 @@ export function useDepartment() {
     }
   };
 
-  const createDepartment = async (departmentData: Partial<Department>) => {
+  /**
+   * Create a new department
+   * @param departmentData - FormData containing department information
+   * @returns Promise<void>
+   */
+  const createDepartment = async (departmentData: FormData): Promise<void> => {
+    setLoading(true);
+    setError(null);
     try {
-      setLoading(true);
       const res = await apiRequest<Department>('/api/departments', 'POST', departmentData);
 
       if (res.data) {
-        setDepartments((prev) => [...prev, res.data!]);
         addToast({
           title: 'Department created successfully!',
           color: 'success',
         });
-        return res.data;
+        
+        // Refresh departments list immediately
+        await fetchDepartments();
       }
-    } catch (err: any) {
-      const errorMessage = err.message || 'Failed to create department.';
+    } catch (err) {
+      const errorMessage = err && typeof err === 'object' && 'message' in err
+        ? (err as { message?: string }).message || 'Failed to create department.'
+        : 'Failed to create department.';
 
       setError(errorMessage);
       addToast({
-        title: 'Failed to create department',
-        description: errorMessage,
+        title: 'Failed to create department. Please try again.',
         color: 'danger',
       });
-      throw err;
+      throw err; // Re-throw to let component handle it
     } finally {
       setLoading(false);
     }
   };
 
-  const updateDepartment = async (id: number, departmentData: Partial<Department>) => {
+  /**
+   * Update an existing department
+   * @param id - Department ID
+   * @param departmentData - FormData containing updated department information
+   * @returns Promise<void>
+   */
+  const updateDepartment = async (id: number, departmentData: FormData): Promise<void> => {
+    setLoading(true);
+    setError(null);
     try {
-      setLoading(true);
       const res = await apiRequest<Department>(`/api/departments/${id}`, 'PUT', departmentData);
 
       if (res.data) {
-        setDepartments((prev) => prev.map((department) => (department.id === id ? res.data! : department)));
         addToast({
           title: 'Department updated successfully!',
           color: 'success',
         });
-        return res.data;
+        
+        // Refresh departments list immediately
+        await fetchDepartments();
       }
-    } catch (err: any) {
-      const errorMessage = err.message || 'Failed to update department.';
+    } catch (err) {
+      const errorMessage = err && typeof err === 'object' && 'message' in err
+        ? (err as { message?: string }).message || 'Failed to update department.'
+        : 'Failed to update department.';
 
       setError(errorMessage);
       addToast({
-        title: 'Failed to update department',
-        description: errorMessage,
+        title: 'Failed to update department. Please try again.',
         color: 'danger',
       });
-      throw err;
+      throw err; // Re-throw to let component handle it
     } finally {
       setLoading(false);
     }
   };
 
-  const deleteDepartment = async (id: number) => {
+  /**
+   * Delete a department
+   * @param id - Department ID
+   * @returns Promise<void>
+   */
+  const deleteDepartment = async (id: number): Promise<void> => {
+    setLoading(true);
+    setError(null);
     try {
-      setLoading(true);
       await apiRequest(`/api/departments/${id}`, 'DELETE');
 
-      setDepartments((prev) => prev.filter((department) => department.id !== id));
       addToast({
         title: 'Department deleted successfully!',
         color: 'success',
       });
-    } catch (err: any) {
-      const errorMessage = err.message || 'Failed to delete department.';
+
+      // Refresh departments list immediately
+      await fetchDepartments();
+    } catch (err) {
+      const errorMessage = err && typeof err === 'object' && 'message' in err
+        ? (err as { message?: string }).message || 'Failed to delete department.'
+        : 'Failed to delete department.';
 
       setError(errorMessage);
       addToast({
-        title: 'Failed to delete department',
-        description: errorMessage,
+        title: 'Failed to delete department. Please try again.',
         color: 'danger',
       });
-      throw err;
+      throw err; // Re-throw to let component handle it
     } finally {
       setLoading(false);
     }
   };
 
-  const getDepartmentById = async (id: number) => {
+  /**
+   * Get department members from API
+   * @param departmentId - Department ID
+   * @returns Promise<DepartmentMember[]>
+   */
+  const getDepartmentMembers = async (departmentId: number): Promise<DepartmentMember[]> => {
     try {
-      const res = await apiRequest<Department>(`/api/departments/${id}`, 'GET');
-      return res.data;
-    } catch (err: any) {
-      const errorMessage = err.message || 'Failed to fetch department.';
+      // Call real API endpoint to get department members
+      const res = await apiRequest<{ content: DepartmentMember[] }>(`/api/departments/${departmentId}/members`, 'GET');
+      
+      if (res.data?.content) {
+        return Array.isArray(res.data.content) ? res.data.content : [];
+      }
+      
+      return [];
+    } catch (err) {
+      const errorMessage = err && typeof err === 'object' && 'message' in err
+        ? (err as { message?: string }).message || 'Failed to fetch department members.'
+        : 'Failed to fetch department members.';
+
       setError(errorMessage);
+      addToast({
+        title: 'Failed to fetch department members. Please try again.',
+        color: 'danger',
+      });
       throw err;
     }
   };
@@ -143,7 +202,7 @@ export function useDepartment() {
     createDepartment,
     updateDepartment,
     deleteDepartment,
-    getDepartmentById,
+    getDepartmentMembers,
     clearError,
   };
 }

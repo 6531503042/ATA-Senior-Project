@@ -1,41 +1,31 @@
 import { useState, useEffect } from 'react';
 import { addToast } from '@heroui/react';
 
-import { User, UserStats } from '@/types/user';
-import { PageResponse } from '@/types/shared';
+import { User } from '@/types/user';
 import { apiRequest } from '@/utils/api';
 
 export function useUsers() {
   const [users, setUsers] = useState<User[]>([]);
-  const [stats, setStats] = useState<UserStats>({
-    totalUsers: 0,
-    activeUsers: 0,
-    inactiveUsers: 0,
-    totalRoles: 0,
-  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Fetch all users
   const fetchUsers = async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await apiRequest<PageResponse<User>>('/api/users?limit=0', 'GET');
+      const res = await apiRequest<{ content: User[] }>('/api/users?limit=0', 'GET');
 
       if (res.data?.content) {
         setUsers(Array.isArray(res.data.content) ? res.data.content : []);
       } else {
         setUsers([]);
       }
-    } catch (err) {
-      const errorMessage = err && typeof err === 'object' && 'message' in err
-        ? (err as { message?: string }).message || 'Failed to fetch users.'
-        : 'Failed to fetch users.';
-
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to fetch users.';
       setError(errorMessage);
       addToast({
-        title: 'Failed to fetch users',
-        description: errorMessage,
+        title: 'Failed to fetch users. Please try again.',
         color: 'danger',
       });
     } finally {
@@ -43,37 +33,61 @@ export function useUsers() {
     }
   };
 
-  const fetchUserStats = async () => {
+  // Fetch user by username
+  const fetchByUsername = async (username: string) => {
+    console.log('fetchByUsername called with:', username);
+    setLoading(true);
+    setError(null);
     try {
-      const res = await apiRequest<UserStats>('/api/users/stats', 'GET');
-      if (res.data) {
-        setStats(res.data);
-      }
-    } catch (err) {
-      console.error('Failed to fetch user stats:', err);
+      const res = await apiRequest<{ content: User[] }>(`/api/users?username=${username}`, 'GET');
+
+      console.log('fetchByUsername response:', res);
+      const users = Array.isArray(res.data?.content) ? res.data.content : [];
+      console.log('Found users:', users.length, 'users:', users);
+      
+      setUsers(users);
+      return users;
+    } catch (err: any) {
+      console.error('Error fetching users by username:', err);
+      const errorMessage = err.message || 'Failed to fetch users.';
+      setError(errorMessage);
+      addToast({
+        title: 'Failed to fetch users. Please try again.',
+        color: 'danger',
+      });
+      return [];
+    } finally {
+      setLoading(false);
     }
   };
 
+  // Create new user
   const createUser = async (userData: Partial<User>) => {
     try {
       setLoading(true);
       const res = await apiRequest<User>('/api/users', 'POST', userData);
 
       if (res.data) {
-        setUsers((prev) => [...prev, res.data!]);
-        addToast({
-          title: 'User created successfully!',
-          color: 'success',
+        await new Promise((resolve) => {
+          setUsers((prev) => {
+            const updated = [...prev, res.data as User];
+            resolve(updated);
+            return updated;
+          });
+          addToast({
+            title: 'User created successfully',
+            description: 'User created successfully',
+            color: 'success',
+          });
         });
-        return res.data;
       }
+
+      return res;
     } catch (err: any) {
       const errorMessage = err.message || 'Failed to create user.';
-
       setError(errorMessage);
       addToast({
-        title: 'Failed to create user',
-        description: errorMessage,
+        title: 'Failed to create user. Please try again.',
         color: 'danger',
       });
       throw err;
@@ -82,6 +96,7 @@ export function useUsers() {
     }
   };
 
+  // Update existing user
   const updateUser = async (id: number, userData: Partial<User>) => {
     try {
       setLoading(true);
@@ -90,18 +105,18 @@ export function useUsers() {
       if (res.data) {
         setUsers((prev) => prev.map((user) => (user.id === id ? res.data! : user)));
         addToast({
-          title: 'User updated successfully!',
+          title: 'User updated successfully',
+          description: 'User updated successfully',
           color: 'success',
         });
-        return res.data;
       }
+
+      return res;
     } catch (err: any) {
       const errorMessage = err.message || 'Failed to update user.';
-
       setError(errorMessage);
       addToast({
-        title: 'Failed to update user',
-        description: errorMessage,
+        title: 'Failed to update user. Please try again.',
         color: 'danger',
       });
       throw err;
@@ -110,6 +125,7 @@ export function useUsers() {
     }
   };
 
+  // Delete user
   const deleteUser = async (id: number) => {
     try {
       setLoading(true);
@@ -117,16 +133,15 @@ export function useUsers() {
 
       setUsers((prev) => prev.filter((user) => user.id !== id));
       addToast({
-        title: 'User deleted successfully!',
+        title: 'User deleted successfully',
+        description: 'User deleted successfully',
         color: 'success',
       });
     } catch (err: any) {
       const errorMessage = err.message || 'Failed to delete user.';
-
       setError(errorMessage);
       addToast({
-        title: 'Failed to delete user',
-        description: errorMessage,
+        title: 'Failed to delete user. Please try again.',
         color: 'danger',
       });
       throw err;
@@ -135,59 +150,19 @@ export function useUsers() {
     }
   };
 
-  const activateUser = async (id: number) => {
+  // Get user by ID
+  const getUserById = async (id: number) => {
     try {
-      setLoading(true);
-      const res = await apiRequest<User>(`/api/users/${id}/activate`, 'PUT');
-
-      if (res.data) {
-        setUsers((prev) => prev.map((user) => (user.id === id ? res.data! : user)));
-        addToast({
-          title: 'User activated successfully!',
-          color: 'success',
-        });
-        return res.data;
-      }
+      const res = await apiRequest<User>(`/api/users/${id}`, 'GET');
+      return res.data;
     } catch (err: any) {
-      const errorMessage = err.message || 'Failed to activate user.';
-
+      const errorMessage = err.message || 'Failed to fetch user.';
       setError(errorMessage);
       addToast({
-        title: 'Failed to activate user',
-        description: errorMessage,
+        title: 'Failed to fetch user. Please try again.',
         color: 'danger',
       });
       throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const deactivateUser = async (id: number) => {
-    try {
-      setLoading(true);
-      const res = await apiRequest<User>(`/api/users/${id}/deactivate`, 'PUT');
-
-      if (res.data) {
-        setUsers((prev) => prev.map((user) => (user.id === id ? res.data! : user)));
-        addToast({
-          title: 'User deactivated successfully!',
-          color: 'success',
-        });
-        return res.data;
-      }
-    } catch (err: any) {
-      const errorMessage = err.message || 'Failed to deactivate user.';
-
-      setError(errorMessage);
-      addToast({
-        title: 'Failed to deactivate user',
-        description: errorMessage,
-        color: 'danger',
-      });
-      throw err;
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -195,21 +170,22 @@ export function useUsers() {
 
   useEffect(() => {
     fetchUsers();
-    fetchUserStats();
   }, []);
 
   return {
     users,
-    stats,
     loading,
     error,
     fetchUsers,
-    fetchUserStats,
+    fetchByUsername,
     createUser,
     updateUser,
     deleteUser,
-    activateUser,
-    deactivateUser,
+    getUserById,
     clearError,
+    // Aliases for backward compatibility
+    editUser: updateUser,
+    addUser: createUser,
+    removeUser: deleteUser,
   };
 }

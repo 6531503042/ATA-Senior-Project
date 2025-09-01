@@ -1,4 +1,3 @@
-import { Key } from 'react';
 import {
   Chip,
   Button,
@@ -20,23 +19,14 @@ import {
 type Department = {
   id: string;
   name: string;
-  manager: string;
-  employeeCount: number;
+  memberCount: number;
   status: 'active' | 'inactive';
   createdAt: string;
+  description?: string;
 };
-
-export type DepartmentColumnKey =
-  | 'name'
-  | 'manager'
-  | 'employeeCount'
-  | 'status'
-  | 'createdAt'
-  | 'actions';
 
 type DepartmentCellRendererProps = {
   department: Department;
-  columnKey: Key;
   onEdit?: (department: Department) => void;
   onDelete?: (departmentId: string) => void;
   onView?: (department: Department) => void;
@@ -44,98 +34,50 @@ type DepartmentCellRendererProps = {
 
 export default function DepartmentCellRenderer({
   department,
-  columnKey,
   onEdit,
   onDelete,
   onView,
 }: DepartmentCellRendererProps) {
-  switch (columnKey) {
-    case 'name':
-      return (
-        <div className="flex items-center gap-2">
-          <div className="p-2 rounded-lg bg-default-100 text-default-600">
-            <BuildingIcon className="w-4 h-4" />
-          </div>
-          <span className="text-sm font-medium text-default-700">
-            {department.name}
-          </span>
-        </div>
-      );
-
-    case 'manager':
-      return (
-        <span className="text-sm text-default-600">
-          {department.manager || 'N/A'}
-        </span>
-      );
-
-    case 'employeeCount':
-      return (
-        <div className="flex items-center gap-1">
-          <UsersIcon className="w-4 h-4 text-default-500" />
-          <span className="text-sm">{department.employeeCount ?? 0}</span>
-        </div>
-      );
-
-    case 'status':
-      return (
-        <Chip
-          className="capitalize font-medium"
-          color={department.status === 'active' ? 'success' : 'danger'}
-          size="sm"
-          variant="flat"
-        >
-          {department.status || 'inactive'}
-        </Chip>
-      );
-
-    case 'createdAt':
-      return (
-        <div className="flex items-center gap-2">
-          <CalendarIcon className="w-4 h-4 text-default-500" />
-          <span className="text-sm text-default-600">
-            {/* {formatDate(department.createdAt || null)} */}
-          </span>
-        </div>
-      );
-
-    case 'actions':
-      return (
-        <Dropdown>
-          <DropdownTrigger>
-            <Button isIconOnly size="sm" variant="light">
-              <EllipsisVertical className="text-default-400" />
-            </Button>
-          </DropdownTrigger>
-          <DropdownMenu>
+  return (
+    <div className="flex items-center gap-2">
+      <Dropdown>
+        <DropdownTrigger>
+          <Button isIconOnly size="sm" variant="light">
+            <EllipsisVertical className="w-4 h-4" />
+          </Button>
+        </DropdownTrigger>
+        <DropdownMenu aria-label="Department actions">
+          {onView ? (
             <DropdownItem
               key="view"
-              startContent={<EyeIcon size={16} />}
-              onPress={() => onView?.(department)}
+              startContent={<EyeIcon className="w-4 h-4" />}
+              onClick={() => onView(department)}
             >
               View Details
             </DropdownItem>
+          ) : null}
+          {onEdit ? (
             <DropdownItem
               key="edit"
-              startContent={<EditIcon size={16} />}
-              onPress={() => onEdit?.(department)}
+              startContent={<EditIcon className="w-4 h-4" />}
+              onClick={() => onEdit(department)}
             >
-              Edit
+              Edit Department
             </DropdownItem>
+          ) : null}
+          {onDelete ? (
             <DropdownItem
               key="delete"
               className="text-danger"
               color="danger"
-              startContent={<TrashIcon size={16} />}
-              onPress={() => onDelete?.(department.id)}
+              startContent={<TrashIcon className="w-4 h-4" />}
+              onClick={() => onDelete(department.id)}
             >
-              Delete
+              Delete Department
             </DropdownItem>
-          </DropdownMenu>
-        </Dropdown>
-      );
-
-    default:
-      return <span>-</span>;
-  }
+          ) : null}
+        </DropdownMenu>
+      </Dropdown>
+    </div>
+  );
 }

@@ -8,8 +8,11 @@ import {
   TableColumn,
   TableHeader,
   TableRow,
+  Chip,
+  Badge,
 } from '@heroui/react';
 import { Key, useCallback, useMemo, useState } from 'react';
+import { Users } from 'lucide-react';
 
 import DepartmentCellRenderer from './DepartmentCellRenderer';
 import TopContent from './TopContent';
@@ -17,16 +20,15 @@ import TopContent from './TopContent';
 export type Department = {
   id: string;
   name: string;
-  manager: string;
-  employeeCount: number;
+  memberCount: number;
   status: 'active' | 'inactive';
   createdAt: string;
+  description?: string;
 };
 
 const COLUMNS = [
   { name: 'NAME', uid: 'name', allowsSorting: true },
-  { name: 'MANAGER', uid: 'manager', allowsSorting: true },
-  { name: 'EMPLOYEES', uid: 'employeeCount', allowsSorting: true },
+  { name: 'MEMBERS', uid: 'memberCount', allowsSorting: true },
   { name: 'STATUS', uid: 'status', allowsSorting: true },
   { name: 'CREATED AT', uid: 'createdAt', allowsSorting: true },
   { name: 'ACTIONS', uid: 'actions', allowsSorting: false },
@@ -48,6 +50,7 @@ export default function DepartmentsTable({
   onRefresh,
 }: DepartmentsTableProps) {
   const [filterValue, setFilterValue] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState<string[]>([]);
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
     column: 'name',
     direction: 'ascending',
@@ -73,13 +76,16 @@ export default function DepartmentsTable({
       filtered = filtered.filter(
         dept =>
           dept.name.toLowerCase().includes(query) ||
-          dept.manager.toLowerCase().includes(query) ||
           dept.status.toLowerCase().includes(query),
       );
     }
 
+    if (selectedStatus.length > 0) {
+      filtered = filtered.filter(dept => selectedStatus.includes(dept.status));
+    }
+
     return filtered;
-  }, [departments, filterValue]);
+  }, [departments, filterValue, selectedStatus]);
 
   const departmentItems = useMemo(() => {
     const sortedItems = [...filteredItems];
@@ -89,14 +95,9 @@ export default function DepartmentsTable({
       case 'name':
         sortedItems.sort((a, b) => a.name.localeCompare(b.name) * direction);
         break;
-      case 'manager':
+      case 'memberCount':
         sortedItems.sort(
-          (a, b) => a.manager.localeCompare(b.manager) * direction,
-        );
-        break;
-      case 'employeeCount':
-        sortedItems.sort(
-          (a, b) => (a.employeeCount - b.employeeCount) * direction,
+          (a, b) => (a.memberCount - b.memberCount) * direction,
         );
         break;
       case 'status':
@@ -105,66 +106,205 @@ export default function DepartmentsTable({
         );
         break;
       case 'createdAt':
-        sortedItems.sort((a, b) => {
-          const aDate = new Date(a.createdAt).getTime();
-          const bDate = new Date(b.createdAt).getTime();
-
-          return (aDate - bDate) * direction;
-        });
+        sortedItems.sort(
+          (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime() * direction,
+        );
+        break;
+      default:
         break;
     }
 
+    return sortedItems;
+  }, [filteredItems, sortDescriptor]);
+
+  const pages = Math.ceil(departmentItems.length / rowsPerPage);
+
+  const items = useMemo(() => {
     const start = (page - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
 
-    return sortedItems.slice(start, start + rowsPerPage);
-  }, [filteredItems, sortDescriptor, page]);
+    return departmentItems.slice(start, end);
+  }, [page, departmentItems, rowsPerPage]);
 
-  const pages = Math.ceil(filteredItems.length / rowsPerPage) || 1;
+  const onNextPage = useCallback(() => {
+    if (page < pages) {
+      setPage(page + 1);
+    }
+  }, [page, pages]);
 
-  const renderCell = useCallback(
-    (department: Department, columnKey: Key) => (
-      <DepartmentCellRenderer
-        columnKey={columnKey}
-        department={department}
-        onDelete={onDelete}
-        onEdit={onEdit}
-        onView={onView}
+  const onPreviousPage = useCallback(() => {
+    if (page > 1) {
+      setPage(page - 1);
+    }
+  }, [page]);
+
+  const onRowsPerPageChange = useCallback(() => {
+    setPage(1);
+  }, []);
+
+  const onSortChange = useCallback((descriptor: SortDescriptor) => {
+    setSortDescriptor(descriptor);
+  }, []);
+
+  const topContent = useMemo(
+    () => (
+      <TopContent
+        filterValue={filterValue}
+        onClear={handleClear}
+        onSearchChange={handleSearch}
+        selectedStatus={selectedStatus}
+        onStatusChange={setSelectedStatus}
+        onRefresh={onRefresh || (() => {})}
       />
     ),
+    [filterValue, selectedStatus, onRefresh],
+  );
+
+  const renderCell = useCallback(
+    (department: Department, columnKey: Key) => {
+      const cellValue = department[columnKey as keyof Department];
+
+      switch (columnKey) {
+        case 'name':
+          return (
+            <div className="flex flex-col gap-1">
+              <p className="text-bold text-small capitalize text-default-900">{department.name}</p>
+              {department.description && (
+                <p className="text-default-500 text-xs leading-relaxed max-w-xs">
+                  {department.description}
+                </p>
+              )}
+            </div>
+          );
+        case 'memberCount':
+          return (
+            <div className="flex items-center gap-2">
+              <div className="flex items-center justify-center w-8 h-8 bg-primary-50 rounded-full">
+                <Users className="w-4 h-4 text-primary-600" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-bold text-small text-default-900">
+                  {department.memberCount}
+                </span>
+                <span className="text-xs text-default-500">
+                  {department.memberCount === 1 ? 'member' : 'members'}
+                </span>
+              </div>
+            </div>
+          );
+        case 'status':
+          return (
+            <Chip
+              className="capitalize font-medium"
+              color={department.status === 'active' ? 'success' : 'danger'}
+              size="sm"
+              variant="flat"
+              radius="lg"
+            >
+              {department.status}
+            </Chip>
+          );
+        case 'createdAt':
+          return (
+            <div className="flex flex-col gap-1">
+              <p className="text-bold text-small text-default-900">
+                {new Date(department.createdAt).toLocaleDateString()}
+              </p>
+              <p className="text-default-500 text-xs">
+                {new Date(department.createdAt).toLocaleTimeString()}
+              </p>
+            </div>
+          );
+        case 'actions':
+          return (
+            <DepartmentCellRenderer
+              department={department}
+              onEdit={onEdit}
+              onDelete={onDelete}
+              onView={onView}
+            />
+          );
+        default:
+          return cellValue;
+      }
+    },
     [onEdit, onDelete, onView],
   );
 
   return (
-    <Table
-      aria-label="Departments Table"
-      sortDescriptor={sortDescriptor}
-      topContent={
-        <TopContent
-          filterValue={filterValue}
-          selectedStatus={[]}
-          onClear={handleClear}
-          onRefresh={onRefresh || (() => {})}
-          onSearchChange={handleSearch}
-          onStatusChange={() => {}}
-        />
-      }
-      topContentPlacement="outside"
-      onSortChange={setSortDescriptor}
-    >
-      <TableHeader columns={COLUMNS}>
-        {column => (
-          <TableColumn key={column.uid} allowsSorting={column.allowsSorting}>
-            {column.name}
-          </TableColumn>
-        )}
-      </TableHeader>
-      <TableBody emptyContent="No departments found" items={departmentItems}>
-        {(dept: Department) => (
-          <TableRow key={dept.id}>
-            {columnKey => <TableCell>{renderCell(dept, columnKey)}</TableCell>}
-          </TableRow>
-        )}
-      </TableBody>
-    </Table>
+    <div className="w-full">
+      <Table
+        aria-label="Departments table with pagination"
+        isHeaderSticky
+        bottomContent={
+          <div className="flex w-full justify-center">
+            <div className="flex w-full justify-center gap-2">
+              <button
+                className="px-3 py-2 text-sm text-default-500 bg-default-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-default-200 transition-colors"
+                disabled={page === 1}
+                onClick={onPreviousPage}
+              >
+                Previous
+              </button>
+              <div className="flex items-center gap-1">
+                {Array.from({ length: pages }, (_, i) => (
+                  <button
+                    key={i + 1}
+                    className={`px-3 py-2 text-sm rounded-lg transition-colors ${
+                      page === i + 1
+                        ? 'bg-primary text-white shadow-lg'
+                        : 'text-default-500 bg-default-100 hover:bg-default-200'
+                    }`}
+                    onClick={() => setPage(i + 1)}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+              </div>
+              <button
+                className="px-3 py-2 text-sm text-default-500 bg-default-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-default-200 transition-colors"
+                disabled={page === pages}
+                onClick={onNextPage}
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        }
+        classNames={{
+          wrapper: 'max-h-[600px]',
+          table: 'min-h-[400px]',
+          thead: 'bg-default-50',
+          th: 'text-default-600 font-semibold text-sm uppercase tracking-wider',
+          td: 'py-4',
+          tr: 'hover:bg-default-50 transition-colors',
+        }}
+        sortDescriptor={sortDescriptor}
+        topContent={topContent}
+        topContentPlacement="outside"
+        onSortChange={onSortChange}
+      >
+        <TableHeader columns={COLUMNS}>
+          {(column) => (
+            <TableColumn
+              key={column.uid}
+              align={column.uid === 'actions' ? 'center' : 'start'}
+              allowsSorting={column.allowsSorting}
+            >
+              {column.name}
+            </TableColumn>
+          )}
+        </TableHeader>
+        <TableBody emptyContent={'No departments found'} items={items}>
+          {(item) => (
+            <TableRow key={item.id}>
+              {(columnKey) => (
+                <TableCell>{renderCell(item, columnKey)}</TableCell>
+              )}
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+    </div>
   );
 }

@@ -1,10 +1,5 @@
 import { Role } from './role';
 
-export type Lang = {
-  th: string;
-  en: string;
-};
-
 export type User = {
   id: number;
   username: string;

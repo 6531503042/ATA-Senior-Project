@@ -14,25 +14,30 @@ import DepartmentModal from './_components/DepartmentModal';
 import DepartmentTable from './_components/DepartmentsTable';
 
 import { PageHeader } from '@/components/ui/page-header';
-import { useDepartments } from '@/hooks/useDepartment';
+import { useDepartment } from '@/hooks/useDepartment';
 
 export default function DepartmentsPage() {
   const {
     departments,
-    stats,
     loading,
     error,
-    addDepartment,
-    editDepartment,
-    removeDepartment,
-    refreshDepartments,
-  } = useDepartments();
+    fetchDepartments,
+    createDepartment,
+    updateDepartment,
+    deleteDepartment,
+    getDepartmentMembers,
+  } = useDepartment();
   const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
-  const [selectedDepartment, setSelectedDepartment] = useState<any | null>(
-    null,
-  );
-
+  const [selectedDepartment, setSelectedDepartment] = useState<Department | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Calculate stats from departments data
+  const stats = {
+    totalDepartments: departments.length,
+    activeDepartments: departments.filter(d => d.active).length,
+    inactiveDepartments: departments.filter(d => !d.active).length,
+    totalEmployees: departments.reduce((sum, dept) => sum + (dept.memberCount || 0), 0),
+  };
 
   const statsCards = [
     {
@@ -60,9 +65,9 @@ export default function DepartmentsPage() {
       icon: BuildingIcon,
     },
     {
-      title: 'Employees Total',
+      title: 'Total Members',
       value: stats.totalEmployees.toString(),
-      description: 'All employees in all departments',
+      description: 'All members in all departments',
       gradient: 'from-yellow-400 to-amber-500',
       bgColor: 'from-yellow-600 to-amber-700',
       icon: BuildingIcon,
@@ -86,40 +91,33 @@ export default function DepartmentsPage() {
     setSelectedDepartment(null);
   };
 
-  const handleSubmit = async (data: Department) => {
-    if (modalMode === 'create') {
-      const payload: CreateDepartmentRequest = {
-        name: data.name,
-        description: data.description || '',
-        manager: data.manager,
-        employeeCount: 0,
-        status: data.status,
-      };
-
-      await addDepartment(payload);
-    } else if (modalMode === 'edit' && selectedDepartment) {
-      const payload: UpdateDepartmentRequest = {
-        id: selectedDepartment.id,
-        name: data.name,
-        description: data.description,
-        manager: data.manager,
-        employeeCount: 0,
-        status: data.status,
-      };
-
-      await editDepartment(payload);
+  const handleSubmit = async (formData: FormData, mode: 'create' | 'edit') => {
+    try {
+      if (mode === 'create') {
+        await createDepartment(formData);
+      } else if (mode === 'edit' && selectedDepartment) {
+        await updateDepartment(selectedDepartment.id, formData);
+      }
+      handleModalClose();
+    } catch (error) {
+      console.error('Failed to submit department:', error);
+      // Error is already handled by the hook with toast notifications
     }
-    handleModalClose();
   };
 
   const handleDeleteDepartment = async (id: string) => {
-    await removeDepartment(id);
+    try {
+      await deleteDepartment(parseInt(id));
+    } catch (error) {
+      console.error('Failed to delete department:', error);
+      // Error is already handled by the hook with toast notifications
+    }
   };
 
   return (
     <>
       <PageHeader
-        description="Manage departments, managers, and employees"
+        description="Manage departments and their members"
         icon={<BuildingIcon />}
       />
 
@@ -131,7 +129,7 @@ export default function DepartmentsPage() {
               Department Management
             </h1>
             <p className="text-default-600 mt-1">
-              Manage departments, managers, and employees
+              Manage departments and their members
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
@@ -202,10 +200,17 @@ export default function DepartmentsPage() {
               </div>
             ) : (
               <DepartmentTable
-                departments={departments}
+                departments={departments.map(dept => ({
+                  id: dept.id.toString(),
+                  name: dept.name,
+                  memberCount: dept.memberCount || 0,
+                  status: dept.active ? 'active' as const : 'inactive' as const,
+                  createdAt: dept.createdAt,
+                  description: dept.description,
+                }))}
                 onDelete={handleDeleteDepartment}
                 onEdit={handleEditDepartment}
-                onRefresh={refreshDepartments}
+                onRefresh={fetchDepartments}
               />
             )}
           </CardBody>
@@ -215,9 +220,10 @@ export default function DepartmentsPage() {
       <DepartmentModal
         department={selectedDepartment || undefined}
         isOpen={isModalOpen}
-        mode={selectedDepartment ? 'edit' : 'create'}
+        mode={modalMode}
         onClose={handleModalClose}
         onSubmit={handleSubmit}
+        getDepartmentMembers={getDepartmentMembers}
       />
     </>
   );

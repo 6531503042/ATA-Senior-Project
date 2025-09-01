@@ -1,12 +1,6 @@
 'use client';
 
-import type {
-  User,
-  CreateUserRequest,
-  UpdateUserRequest,
-  UserRole,
-  UserStatus,
-} from '@/types/user';
+import type { User } from '@/types/user';
 
 import {
   Modal,
@@ -24,7 +18,7 @@ import { useState, useEffect } from 'react';
 interface UsersModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: CreateUserRequest | UpdateUserRequest) => void;
+  onSubmit: (formData: FormData, mode: 'create' | 'edit') => void;
   user?: User;
   mode: 'create' | 'edit';
 }
@@ -36,17 +30,26 @@ export function UsersModal({
   user,
   mode,
 }: UsersModalProps) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    username: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    roles: string[];
+    active: boolean;
+    password: string;
+    phone: string;
+    departmentId: number | null;
+  }>({
     username: user?.username || '',
     email: user?.email || '',
     firstName: user?.firstName || '',
     lastName: user?.lastName || '',
-    role: user?.role || ('user' as UserRole),
-    status: user?.status || ('active' as UserStatus),
+    roles: user?.roles || ['user'],
+    active: user?.active || true,
     password: '',
     phone: user?.phone || '',
-    department: user?.department || '',
-    position: user?.position || '',
+    departmentId: user?.departments?.values().next().value?.id || null,
   });
 
   // Reset form when modal opens/closes or user changes
@@ -57,12 +60,11 @@ export function UsersModal({
         email: user?.email || '',
         firstName: user?.firstName || '',
         lastName: user?.lastName || '',
-        role: user?.role || ('user' as UserRole),
-        status: user?.status || ('active' as UserStatus),
+        roles: user?.roles || ['user'],
+        active: user?.active || true,
         password: '',
         phone: user?.phone || '',
-        department: user?.department || '',
-        position: user?.position || '',
+        departmentId: user?.departments?.values().next().value?.id || null,
       });
     }
   }, [isOpen, user]);
@@ -89,36 +91,26 @@ export function UsersModal({
   }, [isOpen]);
 
   const handleSubmit = () => {
-    if (mode === 'create') {
-      const createData: CreateUserRequest = {
-        username: formData.username,
-        email: formData.email,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        role: formData.role,
-        password: formData.password,
-        phone: formData.phone,
-        department: formData.department,
-        position: formData.position,
-      };
+    if (!isFormValid()) return;
 
-      onSubmit(createData);
-    } else {
-      const updateData: UpdateUserRequest = {
-        id: user!.id,
-        username: formData.username,
-        email: formData.email,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        role: formData.role,
-        status: formData.status,
-        phone: formData.phone,
-        department: formData.department,
-        position: formData.position,
-      };
-
-      onSubmit(updateData);
+    const formDataObj = new FormData();
+    formDataObj.append('username', formData.username);
+    formDataObj.append('email', formData.email);
+    formDataObj.append('firstName', formData.firstName);
+    formDataObj.append('lastName', formData.lastName);
+    formDataObj.append('roles', JSON.stringify(formData.roles));
+    formDataObj.append('active', formData.active.toString());
+    formDataObj.append('phone', formData.phone);
+    
+    if (formData.departmentId) {
+      formDataObj.append('departmentId', formData.departmentId.toString());
     }
+
+    if (mode === 'create') {
+      formDataObj.append('password', formData.password);
+    }
+
+    onSubmit(formDataObj, mode);
   };
 
   const isFormValid = () => {
@@ -267,13 +259,15 @@ export function UsersModal({
             <Select
               isRequired
               className="w-full"
-              label="Role"
-              placeholder="Select role"
-              selectedKeys={[formData.role]}
+              label="Roles"
+              placeholder="Select roles"
+              selectedKeys={new Set(formData.roles)}
+              selectionMode="multiple"
               variant="bordered"
-              onChange={e =>
-                setFormData({ ...formData, role: e.target.value as UserRole })
-              }
+              onSelectionChange={keys => {
+                const selected = Array.from(keys) as string[];
+                setFormData({ ...formData, roles: selected });
+              }}
             >
               <SelectItem key="admin">Admin</SelectItem>
               <SelectItem key="manager">Manager</SelectItem>
@@ -287,19 +281,18 @@ export function UsersModal({
                 className="w-full"
                 label="Status"
                 placeholder="Select status"
-                selectedKeys={[formData.status]}
+                selectedKeys={[formData.active.toString()]}
                 variant="bordered"
-                onChange={e =>
+                onSelectionChange={keys => {
+                  const selected = Array.from(keys) as string[];
                   setFormData({
                     ...formData,
-                    status: e.target.value as UserStatus,
-                  })
-                }
+                    active: selected[0] === 'true',
+                  });
+                }}
               >
-                <SelectItem key="active">Active</SelectItem>
-                <SelectItem key="inactive">Inactive</SelectItem>
-                <SelectItem key="pending">Pending</SelectItem>
-                <SelectItem key="suspended">Suspended</SelectItem>
+                <SelectItem key="true">Active</SelectItem>
+                <SelectItem key="false">Inactive</SelectItem>
               </Select>
             )}
           </div>
@@ -319,28 +312,17 @@ export function UsersModal({
 
             <Input
               className="w-full"
-              label="Department"
-              placeholder="Enter department"
+              label="Department ID"
+              placeholder="Enter department ID"
               size="lg"
-              value={formData.department}
+              type="number"
+              value={formData.departmentId?.toString() || ''}
               variant="bordered"
               onChange={e =>
-                setFormData({ ...formData, department: e.target.value })
+                setFormData({ ...formData, departmentId: e.target.value ? parseInt(e.target.value) : null })
               }
             />
           </div>
-
-          <Input
-            className="w-full"
-            label="Position"
-            placeholder="Enter position/title"
-            size="lg"
-            value={formData.position}
-            variant="bordered"
-            onChange={e =>
-              setFormData({ ...formData, position: e.target.value })
-            }
-          />
         </ModalBody>
         <ModalFooter className="border-t border-default-200 bg-gradient-to-r from-blue-50/30 to-indigo-50/30 dark:from-blue-950/10 dark:to-indigo-950/10">
           <Button className="font-medium" variant="light" onPress={onClose}>

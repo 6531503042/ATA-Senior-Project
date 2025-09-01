@@ -10,16 +10,14 @@ import {
 } from '@heroui/react';
 import { SearchIcon, RefreshCwIcon, EllipsisVertical } from 'lucide-react';
 
-import { UserRole, UserStatus } from '@/types/user';
-
 type TopContentProps = {
   filterValue: string;
   onClear: () => void;
   onSearchChange: (value: string) => void;
-  selectedRole?: UserRole[];
-  onRoleChange: (role: UserRole[]) => void;
-  selectedStatus?: UserStatus[];
-  onStatusChange: (status: UserStatus[]) => void;
+  selectedRole?: string[];
+  onRoleChange: (role: string[]) => void;
+  selectedStatus?: boolean[];
+  onStatusChange: (status: boolean[]) => void;
   onRefresh: () => void;
   onAdd?: () => void;
   onEditSelected?: () => void;
@@ -47,10 +45,8 @@ export default function TopContent({
   ];
 
   const statusOptions = [
-    { key: 'active', label: 'Active' },
-    { key: 'inactive', label: 'Inactive' },
-    { key: 'pending', label: 'Pending' },
-    { key: 'suspended', label: 'Suspended' },
+    { key: true, label: 'Active' },
+    { key: false, label: 'Inactive' },
   ];
 
   return (
@@ -79,8 +75,7 @@ export default function TopContent({
             selectedKeys={selectedRole ? new Set(selectedRole) : new Set()}
             selectionMode="multiple"
             onSelectionChange={keys => {
-              const selected = Array.from(keys) as UserRole[];
-
+              const selected = Array.from(keys) as string[];
               onRoleChange(selected);
             }}
           >
@@ -93,16 +88,15 @@ export default function TopContent({
             className="w-[180px]"
             label="Status"
             placeholder="All status"
-            selectedKeys={selectedStatus ? new Set(selectedStatus) : new Set()}
+            selectedKeys={selectedStatus ? new Set(selectedStatus.map(s => s.toString())) : new Set()}
             selectionMode="multiple"
             onSelectionChange={keys => {
-              const selected = Array.from(keys) as UserStatus[];
-
+              const selected = Array.from(keys).map(k => k === 'true') as boolean[];
               onStatusChange(selected);
             }}
           >
             {statusOptions.map(status => (
-              <SelectItem key={status.key}>{status.label}</SelectItem>
+              <SelectItem key={status.key.toString()}>{status.label}</SelectItem>
             ))}
           </Select>
 
@@ -117,7 +111,7 @@ export default function TopContent({
           <Dropdown>
             <DropdownTrigger>
               <Button isIconOnly size="sm" variant="light">
-                <EllipsisVertical className="text-default-400" />
+                <EllipsisVertical className="w-4 h-4 text-default-400" />
               </Button>
             </DropdownTrigger>
             <DropdownMenu>

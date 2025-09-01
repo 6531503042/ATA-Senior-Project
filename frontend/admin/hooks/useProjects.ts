@@ -37,7 +37,7 @@ export function useProjects() {
     }
   };
 
-  const createProject = async (projectData: Partial<Project>) => {
+  const addProject = async (projectData: Partial<Project>) => {
     try {
       setLoading(true);
       const res = await apiRequest<Project>('/api/projects', 'POST', projectData);
@@ -65,7 +65,7 @@ export function useProjects() {
     }
   };
 
-  const updateProject = async (id: number, projectData: Partial<Project>) => {
+  const editProject = async (id: number, projectData: Partial<Project>) => {
     try {
       setLoading(true);
       const res = await apiRequest<Project>(`/api/projects/${id}`, 'PUT', projectData);
@@ -93,7 +93,7 @@ export function useProjects() {
     }
   };
 
-  const deleteProject = async (id: number) => {
+  const removeProject = async (id: number) => {
     try {
       setLoading(true);
       await apiRequest(`/api/projects/${id}`, 'DELETE');
@@ -177,9 +177,9 @@ export function useProjects() {
     loading,
     error,
     fetchProjects,
-    createProject,
-    updateProject,
-    deleteProject,
+    addProject,
+    editProject,
+    removeProject,
     addProjectMembers,
     removeProjectMembers,
     clearError,
