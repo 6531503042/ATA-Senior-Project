@@ -6,6 +6,7 @@ import dev.bengi.main.modules.department.dto.DepartmentRequestDto;
 import dev.bengi.main.modules.department.dto.DepartmentResponseDto;
 import dev.bengi.main.modules.department.dto.DepartmentUpdateRequestDto;
 import dev.bengi.main.modules.department.service.DepartmentService;
+import dev.bengi.main.modules.user.dto.UserResponseDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -53,6 +54,16 @@ public class DepartmentController {
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public Mono<Void> delete(@PathVariable Long id) {
         return departmentService.delete(id);
+    }
+
+    @GetMapping("/{id}/members")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    public Mono<ResponseEntity<PageResponse<UserResponseDto>>> getDepartmentMembers(
+            @PathVariable Long id, 
+            ServerWebExchange exchange) {
+        var pageRequest = paginationService.parsePageRequest(exchange);
+        return departmentService.getDepartmentMembers(id, pageRequest)
+                .map(ResponseEntity::ok);
     }
 
 }

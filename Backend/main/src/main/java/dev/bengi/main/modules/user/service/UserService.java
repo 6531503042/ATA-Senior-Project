@@ -19,6 +19,14 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.time.LocalDateTime;
+import dev.bengi.main.common.pagination.PageRequest;
+import dev.bengi.main.common.pagination.PageResponse;
+import dev.bengi.main.common.pagination.PaginationService;
+import dev.bengi.main.modules.user.dto.UserResponseDto;
+import dev.bengi.main.modules.user.dto.DepartmentSummaryDto;
+import reactor.core.publisher.Flux;
+import java.util.HashSet;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +37,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
     private final SecurityAuditService auditService;
+    private final PaginationService paginationService;
 
     public Mono<JwtResponse> login(LoginRequest login) {
         return login(login, "unknown");
@@ -127,6 +136,38 @@ public class UserService {
                     log.info("Token refreshed successfully for user: {}", user.getUsername());
                     return new JwtResponse(newAccessToken, newRefreshToken, user.getId(), user.getUsername(), user.getEmail(), roles);
                 });
+    }
+
+    public Mono<PageResponse<UserResponseDto>> getUsersByDepartmentId(Long departmentId, PageRequest pageRequest) {
+        return userRepository.findByDepartmentId(departmentId)
+                .map(this::mapToUserResponseDto)
+                .collectList()
+                .flatMap(users -> paginationService.paginateInMemory(Flux.fromIterable(users), pageRequest))
+                .doOnSuccess(d -> log.info("Found {} users for department {}", 
+                    d.getContent().size(), departmentId));
+    }
+
+    private UserResponseDto mapToUserResponseDto(User user) {
+        // Create a DepartmentSummaryDto for the user's department
+        Set<DepartmentSummaryDto> departments = new HashSet<>();
+        if (user.getDepartmentId() != null) {
+            departments.add(new DepartmentSummaryDto(user.getDepartmentId(), "Department"));
+        }
+
+        return new UserResponseDto(
+            user.getId(),
+            user.getUsername(),
+            user.getEmail(),
+            user.getFirstName(),
+            user.getLastName(),
+            user.getPhone(),
+            departments,
+            user.getRoles(),
+            user.isActive(),
+            user.getLastLoginAt(),
+            user.getCreatedAt(),
+            user.getUpdatedAt()
+        );
     }
 }
 

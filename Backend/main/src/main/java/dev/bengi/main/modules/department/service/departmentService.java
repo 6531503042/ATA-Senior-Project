@@ -10,6 +10,8 @@ import dev.bengi.main.modules.department.dto.DepartmentRequestDto;
 import dev.bengi.main.modules.department.dto.DepartmentResponseDto;
 import dev.bengi.main.modules.department.dto.DepartmentUpdateRequestDto;
 import dev.bengi.main.modules.department.model.Department;
+import dev.bengi.main.modules.user.dto.UserResponseDto;
+import dev.bengi.main.modules.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,7 @@ public class DepartmentService {
     private final DepartmentRepository departmentRepository;
     private final DepartmentMapper mapper;
     private final PaginationService paginationService;
+    private final UserService userService;
 
     @Transactional
     public Mono<DepartmentResponseDto> create(DepartmentRequestDto req) {
@@ -76,5 +79,11 @@ public class DepartmentService {
             departmentRepository.findByActive(true).map(mapper::toResponse),
             pageRequest
         );
+    }
+
+    public Mono<PageResponse<UserResponseDto>> getDepartmentMembers(Long departmentId, PageRequest pageRequest) {
+        return userService.getUsersByDepartmentId(departmentId, pageRequest)
+                .doOnSuccess(d -> log.info("Found {} members for department {}", 
+                    d.getContent().size(), departmentId));
     }
 }

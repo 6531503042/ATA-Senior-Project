@@ -4,6 +4,7 @@ import dev.bengi.main.modules.user.model.User;
 import org.springframework.data.r2dbc.repository.R2dbcRepository;
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.stereotype.Repository;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Repository
@@ -19,6 +20,9 @@ public interface UserRepository extends R2dbcRepository<User, Long> {
 
     @Query("SELECT EXISTS(SELECT 1 FROM users WHERE email = :email)")
     Mono<Boolean> existsByEmail(String email);
+
+    @Query("SELECT * FROM users WHERE department_id = :departmentId")
+    Flux<User> findByDepartmentId(Long departmentId);
 
     // Fetch user with roles (roles as names) via join; consumer can populate transient field
     @Query("SELECT u.* FROM users u WHERE u.username = :username")
