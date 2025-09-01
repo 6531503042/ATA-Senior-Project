@@ -1,117 +1,49 @@
 'use client';
 
-import { Card, CardBody, CardHeader, Chip } from '@heroui/react';
-import EmployeeFeedbackForm from '../_components/EmployeeFeedbackForm';
-import type { Question } from '@/app/types/questions';
+import { useRouter } from 'next/navigation';
+import { Card, CardHeader, CardBody, CardFooter, Button, Chip } from '@heroui/react';
+import React from 'react';
 
-export default function EmployeeDashboardPage() {
-  const projectName = 'ATA IT Feedback System';
+const mock = [
+  { id: 101, name: 'Sprint 12 Feedback', duration: 'Aug 1 – Aug 15, 2025', status: 'not_done' as const },
+  { id: 102, name: 'Quarterly Survey', duration: 'Jul 1 – Jul 31, 2025', status: 'done' as const },
+];
 
-  // Mock questions — replace with fetch/useSWR to your API
-  const questions: Question[] = [
-    {
-      id: 'q1',
-      title: 'Overall project satisfaction',
-      description: 'Rate your overall satisfaction with the project.',
-      type: 'rating',
-      category: 'project_satisfaction',
-      options: Array.from({ length: 5 }, (_, i) => ({ id: String(i + 1), text: String(i + 1), value: i + 1 })),
-      required: true,
-      order: 1,
-      isActive: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-    {
-      id: 'q2',
-      title: 'What went well this sprint?',
-      description: 'Share highlights or wins.',
-      type: 'text_based',
-      category: 'team_collaboration',
-      required: true,
-      order: 2,
-      isActive: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-    {
-      id: 'q3',
-      title: 'Primary blocker encountered',
-      description: 'Choose the main blocker you faced.',
-      type: 'single_choice',
-      category: 'work_environment',
-      options: [
-        { id: 'tools', text: 'Tools/Access' },
-        { id: 'communication', text: 'Communication' },
-        { id: 'requirements', text: 'Requirements clarity' },
-        { id: 'other', text: 'Other' },
-      ],
-      required: false,
-      order: 3,
-      isActive: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-    {
-      id: 'q4',
-      title: 'Areas to improve (choose any)',
-      description: 'Select all that apply.',
-      type: 'multiple_choice',
-      category: 'technical_skills',
-      options: [
-        { id: 'testing', text: 'Automated testing' },
-        { id: 'docs', text: 'Documentation' },
-        { id: 'devops', text: 'DevOps/CI' },
-        { id: 'ux', text: 'UX polish' },
-      ],
-      required: false,
-      order: 4,
-      isActive: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-    {
-      id: 'q5',
-      title: 'Would you recommend this process change?',
-      type: 'boolean',
-      category: 'work_environment',
-      required: false,
-      order: 5,
-      isActive: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-  ];
+export default function EmployeeDashboard() {
+  const router = useRouter();
 
   return (
-    <div className="space-y-6">
-      <Card className="border-0 shadow-lg bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50">
-        <CardHeader>
-          <div>
-            <h1 className="text-2xl font-bold text-default-900">Welcome back 👋</h1>
-            <p className="text-default-600">Please complete the assigned feedback form.</p>
-          </div>
-        </CardHeader>
-        <CardBody className="pt-0">
-          <div className="flex flex-wrap items-center gap-2 text-sm">
-            <Chip size="sm" variant="flat" color="secondary">
-              Employee
-            </Chip>
-            <Chip size="sm" variant="flat">
-              Project: {projectName}
-            </Chip>
-          </div>
-        </CardBody>
-      </Card>
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Welcome Back!</h1>
+        <p className="text-default-600 mt-2">Your assigned feedback forms</p>
+      </div>
 
-      <EmployeeFeedbackForm
-        projectName={projectName}
-        questions={questions}
-        onSubmit={(payload) => {
-          // TODO: POST to your API
-          console.log('Employee submitted:', payload);
-        }}
-      />
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        {mock.map((f) => (
+          <Card
+            key={f.id}
+            isPressable
+            onPress={() => router.push(`/feedback/${f.id}`)}
+            className="border-0 shadow-md hover:shadow-xl transition hover:-translate-y-0.5"
+          >
+            <CardHeader className="flex flex-col items-start gap-1">
+              <h3 className="text-lg font-semibold">{f.name}</h3>
+              <div className="text-sm text-default-600">{f.duration}</div>
+            </CardHeader>
+            <CardBody>
+              <Chip color={f.status === 'done' ? 'success' : 'warning'} variant="flat">
+                {f.status === 'done' ? 'Completed' : 'Pending'}
+              </Chip>
+            </CardBody>
+            <CardFooter className="justify-end">
+              <Button size="sm" onPress={(e) => { e.stopPropagation(); router.push(`/feedback/${f.id}`); }}>
+                {f.status === 'done' ? 'View' : 'Start'}
+              </Button>
+            </CardFooter>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 }
