@@ -6,141 +6,117 @@ import type {
   UpdateProjectRequest,
 } from '@/types/project';
 
-import { Button, Card, CardBody, CardHeader } from '@heroui/react';
-import { PlusIcon, FolderIcon, UsersIcon, TrendingUpIcon } from 'lucide-react';
-import { useState } from 'react';
+import React, { useState } from 'react';
+import { Card, CardBody, CardHeader, Button } from '@heroui/react';
+import { PlusIcon, FolderIcon, UsersIcon, TrendingUpIcon, FolderOpenIcon } from 'lucide-react';
 
-import { ProjectsModal } from './_components/ProjectsModal';
+import ProjectModal from './_components/ProjectModal';
 import ProjectTable from './_components/ProjectTable';
 
 import { PageHeader } from '@/components/ui/page-header';
-import { ConfirmationModal } from '@/components/modal/ConfirmationModal';
 import { useProjects } from '@/hooks/useProjects';
 
 export default function ProjectsPage() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingProject, setEditingProject] = useState<Project | null>(null);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
   const {
     projects,
     loading,
     error,
+    fetchProjects,
     addProject,
     editProject,
     removeProject,
   } = useProjects();
+  const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Calculate stats from projects data
   const stats = {
     totalProjects: projects.length,
     activeProjects: projects.filter(p => p.active).length,
-    completedProjects: projects.filter(p => !p.active).length,
-    totalMembers: 0, // TODO: Implement project member count
-  };
-
-  const handleCreateProject = async (data: CreateProjectRequest) => {
-    try {
-      await addProject(data);
-      setIsModalOpen(false);
-    } catch (err) {
-      console.error('Failed to create project:', err);
-    }
-  };
-
-  const handleEditProject = async (data: UpdateProjectRequest) => {
-    try {
-      await editProject(data.id, data);
-      setIsModalOpen(false);
-      setEditingProject(null);
-    } catch (err) {
-      console.error('Failed to update project:', err);
-    }
-  };
-
-  const handleDeleteProject = async (projectId: string) => {
-    try {
-      await removeProject(parseInt(projectId));
-      setIsDeleteModalOpen(false);
-      setProjectToDelete(null);
-    } catch (err) {
-      console.error('Failed to delete project:', err);
-    }
-  };
-
-  const handleEdit = (project: Project) => {
-    setEditingProject(project);
-    setIsModalOpen(true);
-  };
-
-  const handleDelete = (project: Project) => {
-    setProjectToDelete(project);
-    setIsDeleteModalOpen(true);
-  };
-
-  const handleModalClose = () => {
-    setIsModalOpen(false);
-    setEditingProject(null);
-  };
-
-  const handleDeleteModalClose = () => {
-    setIsDeleteModalOpen(false);
-    setProjectToDelete(null);
-  };
-
-  const handleSubmit = async (
-    data: CreateProjectRequest | UpdateProjectRequest,
-  ) => {
-    if (editingProject) {
-      await handleEditProject(data as UpdateProjectRequest);
-    } else {
-      await handleCreateProject(data as CreateProjectRequest);
-    }
+    inactiveProjects: projects.filter(p => !p.active).length,
+    totalMembers: projects.reduce((sum, proj) => sum + (proj.memberCount || 0), 0),
   };
 
   const statsCards = [
     {
       title: 'Total Projects',
       value: stats.totalProjects.toString(),
+      description: 'All active and inactive projects',
+      gradient: 'from-blue-400 to-indigo-500',
+      bgColor: 'from-blue-600 to-indigo-700',
       icon: FolderIcon,
-      color: 'text-blue-600',
-      bgColor: 'from-blue-500 to-indigo-600',
-      description: 'All projects',
-      gradient: 'from-blue-50 to-indigo-50',
     },
     {
       title: 'Active Projects',
       value: stats.activeProjects.toString(),
-      icon: TrendingUpIcon,
-      color: 'text-green-600',
-      bgColor: 'from-green-500 to-emerald-600',
-      description: 'Currently active',
-      gradient: 'from-green-50 to-emerald-50',
+      description: 'Currently active projects',
+      gradient: 'from-green-400 to-teal-500',
+      bgColor: 'from-green-600 to-teal-700',
+      icon: FolderOpenIcon,
     },
     {
-      title: 'Completed Projects',
-      value: stats.completedProjects.toString(),
+      title: 'Inactive Projects',
+      value: stats.inactiveProjects.toString(),
+      description: 'Projects currently inactive',
+      gradient: 'from-red-400 to-rose-500',
+      bgColor: 'from-red-600 to-rose-700',
       icon: FolderIcon,
-      color: 'text-purple-600',
-      bgColor: 'from-purple-500 to-violet-600',
-      description: 'Successfully completed',
-      gradient: 'from-purple-50 to-violet-50',
     },
     {
       title: 'Total Members',
       value: stats.totalMembers.toString(),
+      description: 'All members in all projects',
+      gradient: 'from-yellow-400 to-amber-500',
+      bgColor: 'from-yellow-600 to-amber-700',
       icon: UsersIcon,
-      color: 'text-orange-600',
-      bgColor: 'from-orange-500 to-amber-600',
-      description: 'Team members',
-      gradient: 'from-orange-50 to-amber-50',
     },
   ];
+
+  const handleAddProject = () => {
+    setSelectedProject(null);
+    setModalMode('create');
+    setIsModalOpen(true);
+  };
+
+  const handleEditProject = (project: any) => {
+    setSelectedProject(project);
+    setModalMode('edit');
+    setIsModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setSelectedProject(null);
+  };
+
+  const handleSubmit = async (formData: FormData, mode: 'create' | 'edit') => {
+    try {
+      if (mode === 'create') {
+        await addProject(formData);
+      } else if (mode === 'edit' && selectedProject) {
+        await editProject(selectedProject.id, formData);
+      }
+      handleModalClose();
+    } catch (error) {
+      console.error('Failed to submit project:', error);
+      // Error is already handled by the hook with toast notifications
+    }
+  };
+
+  const handleDeleteProject = async (id: string) => {
+    try {
+      await removeProject(parseInt(id));
+    } catch (error) {
+      console.error('Failed to delete project:', error);
+      // Error is already handled by the hook with toast notifications
+    }
+  };
 
   return (
     <>
       <PageHeader
-        description="Manage and track all your projects in one place"
+        description="Manage projects and track progress"
         icon={<FolderIcon />}
       />
 
@@ -149,38 +125,35 @@ export default function ProjectsPage() {
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 p-6 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-2xl border border-blue-100">
           <div>
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Projects
+              Project Management
             </h1>
             <p className="text-default-600 mt-1">
-              Manage and track all your projects in one place
+              Manage projects and track progress
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
             <Button
-              className="w-full sm:w-auto font-semibold"
+              className="w-full sm:w-auto font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-300"
               color="primary"
               startContent={<PlusIcon className="w-4 h-4" />}
               variant="shadow"
-              onPress={() => setIsModalOpen(true)}
+              onPress={handleAddProject}
             >
-              Create Project
+              Add Project
             </Button>
           </div>
         </div>
 
-        {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
-          {statsCards.map((stat, index) => (
+          {statsCards.map((stat, i) => (
             <Card
-              key={index}
+              key={i}
               className="border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] bg-gradient-to-br from-white to-gray-50 overflow-hidden group"
             >
               <CardBody className="p-6 relative">
-                {/* Background gradient overlay */}
                 <div
                   className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300`}
                 />
-
                 <div className="flex items-center justify-between relative z-10">
                   <div>
                     <p className="text-sm font-medium text-default-500 mb-1">
@@ -204,7 +177,6 @@ export default function ProjectsPage() {
           ))}
         </div>
 
-        {/* Projects Table */}
         <Card className="border-0 shadow-xl overflow-hidden">
           <CardHeader className="pb-6">
             <div className="w-full">
@@ -226,33 +198,36 @@ export default function ProjectsPage() {
                 <div className="text-red-500">Error: {error}</div>
               </div>
             ) : (
-                      <ProjectTable
-          projects={projects}
-          onEdit={handleEdit}
-          onDelete={(projectId: string) => {
-            const project = projects.find(p => p.id.toString() === projectId);
-            if (project) handleDelete(project);
-          }}
-        />
+              <ProjectTable
+                projects={projects.map(proj => ({
+                  id: proj.id.toString(),
+                  name: proj.name,
+                  description: proj.description,
+                  category: proj.category || 'N/A',
+                  memberCount: proj.memberCount || 0,
+                  status: proj.active ? 'active' as const : 'inactive' as const,
+                  startDate: proj.startDate,
+                  endDate: proj.endDate,
+                  createdAt: proj.createdAt,
+                }))}
+                onDelete={handleDeleteProject}
+                onEdit={(project) => {
+                  const originalProject = projects.find(p => p.id.toString() === project.id);
+                  if (originalProject) handleEditProject(originalProject);
+                }}
+                onRefresh={fetchProjects}
+              />
             )}
           </CardBody>
         </Card>
       </div>
 
-      <ProjectsModal
+      <ProjectModal
+        project={selectedProject || undefined}
         isOpen={isModalOpen}
+        mode={modalMode}
         onClose={handleModalClose}
         onSubmit={handleSubmit}
-        project={editingProject || undefined}
-        mode={editingProject ? 'edit' : 'create'}
-      />
-
-      <ConfirmationModal
-        isOpen={isDeleteModalOpen}
-        onClose={handleDeleteModalClose}
-        onConfirm={() => projectToDelete && handleDeleteProject(projectToDelete.id.toString())}
-        title="Delete Project"
-        body={`Are you sure you want to delete "${projectToDelete?.name}"? This action cannot be undone.`}
       />
     </>
   );

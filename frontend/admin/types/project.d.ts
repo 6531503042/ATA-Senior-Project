@@ -7,6 +7,7 @@ export type Project = {
   endDate?: string;
   active: boolean;
   departmentId?: number;
+  memberCount?: number;
   createdAt: string;
   updatedAt: string;
 };
@@ -22,23 +23,12 @@ export interface ProjectMember {
   isActive: boolean;
 }
 
-export interface Project {
-  id: number;
-  name: string;
-  description: string;
-  startDate: string;
-  endDate: string;
-  active: boolean;
-  departmentId?: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
 export interface CreateProjectRequest {
   name: string;
   description: string;
-  startDate: string;
-  endDate: string;
+  category?: string;
+  startDate?: string;
+  endDate?: string;
   departmentId?: number;
   active?: boolean;
 }
@@ -47,6 +37,7 @@ export interface UpdateProjectRequest {
   id: number;
   name?: string;
   description?: string;
+  category?: string;
   startDate?: string;
   endDate?: string;
   departmentId?: number;
@@ -106,3 +97,5 @@ export interface ProjectAuthorityOverview {
   viewers: number;
   lastActivityAt: string;
 }
+
+export type ProjectStatus = 'active' | 'inactive' | 'completed' | 'pending' | 'cancelled';

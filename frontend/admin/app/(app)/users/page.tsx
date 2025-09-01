@@ -2,11 +2,10 @@
 
 import { useState } from 'react';
 import { Card, CardBody, CardHeader, Button } from '@heroui/react';
-import { PlusIcon, UsersIcon } from 'lucide-react';
+import { PlusIcon, UsersIcon, ShieldIcon } from 'lucide-react';
 
 import { UsersModal } from './_components/UsersModal';
 import UserTable from './_components/UserTable';
-import TopContent from './_components/TopContent';
 import { ConfirmationModal } from '@/components/modal/ConfirmationModal';
 
 import { PageHeader } from '@/components/ui/page-header';
@@ -68,11 +67,12 @@ export default function UsersPage() {
           firstName: formData.get('firstName') as string,
           lastName: formData.get('lastName') as string,
           password: formData.get('password') as string,
-          phone: formData.get('phone') as string,
+          phone: formData.get('phone') as string || undefined,
           roles: JSON.parse(formData.get('roles') as string),
           active: formData.get('active') === 'true',
-          departmentId: formData.get('departmentId') ? parseInt(formData.get('departmentId') as string) : null,
+          departmentId: formData.get('departmentId') ? parseInt(formData.get('departmentId') as string) : undefined,
         };
+        console.log('Creating user with data:', userData);
         await createUser(userData);
       } else if (mode === 'edit' && selectedUser) {
         const userData = {
@@ -80,11 +80,12 @@ export default function UsersPage() {
           email: formData.get('email') as string,
           firstName: formData.get('firstName') as string,
           lastName: formData.get('lastName') as string,
-          phone: formData.get('phone') as string,
+          phone: formData.get('phone') as string || undefined,
           roles: JSON.parse(formData.get('roles') as string),
           active: formData.get('active') === 'true',
-          departmentId: formData.get('departmentId') ? parseInt(formData.get('departmentId') as string) : null,
+          departmentId: formData.get('departmentId') ? parseInt(formData.get('departmentId') as string) : undefined,
         };
+        console.log('Updating user with data:', userData);
         await updateUser(selectedUser.id, userData);
       }
       handleModalClose();
@@ -131,6 +132,51 @@ export default function UsersPage() {
   const onStatusChange = (value?: boolean[]) => {
     setSelectedStatus(value || []);
   };
+
+  // Calculate stats from users data
+  const stats = {
+    totalUsers: users.length,
+    activeUsers: users.filter(u => u.active).length,
+    inactiveUsers: users.filter(u => !u.active).length,
+    adminUsers: users.filter(u => u.roles.includes('ADMIN')).length,
+    superAdminUsers: users.filter(u => u.roles.includes('SUPER_ADMIN')).length,
+    regularUsers: users.filter(u => u.roles.includes('USER')).length,
+  };
+
+  const statsCards = [
+    {
+      title: 'Total Users',
+      value: stats.totalUsers.toString(),
+      description: 'All registered users',
+      gradient: 'from-blue-400 to-indigo-500',
+      bgColor: 'from-blue-600 to-indigo-700',
+      icon: UsersIcon,
+    },
+    {
+      title: 'Active Users',
+      value: stats.activeUsers.toString(),
+      description: 'Currently active users',
+      gradient: 'from-green-400 to-teal-500',
+      bgColor: 'from-green-600 to-teal-700',
+      icon: UsersIcon,
+    },
+    {
+      title: 'Admin Users',
+      value: stats.adminUsers.toString(),
+      description: 'Administrator accounts',
+      gradient: 'from-purple-400 to-pink-500',
+      bgColor: 'from-purple-600 to-pink-700',
+      icon: ShieldIcon,
+    },
+    {
+      title: 'Super Admin Users',
+      value: stats.superAdminUsers.toString(),
+      description: 'Super Administrator accounts',
+      gradient: 'from-red-400 to-rose-500',
+      bgColor: 'from-red-600 to-rose-700',
+      icon: ShieldIcon,
+    },
+  ];
 
   // Filter users based on search, role, and status
   const filteredUsers = users.filter((user) => {
@@ -179,6 +225,40 @@ export default function UsersPage() {
           </div>
         </div>
 
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+          {statsCards.map((stat, i) => (
+            <Card
+              key={i}
+              className="border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] bg-gradient-to-br from-white to-gray-50 overflow-hidden group"
+            >
+              <CardBody className="p-6 relative">
+                <div
+                  className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300`}
+                />
+                <div className="flex items-center justify-between relative z-10">
+                  <div>
+                    <p className="text-sm font-medium text-default-500 mb-1">
+                      {stat.title}
+                    </p>
+                    <p className="text-3xl font-bold text-default-900">
+                      {stat.value}
+                    </p>
+                    <p className="text-xs text-default-400 mt-1">
+                      {stat.description}
+                    </p>
+                  </div>
+                  <div
+                    className={`p-4 rounded-2xl bg-gradient-to-br ${stat.bgColor} text-white shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110`}
+                  >
+                    <stat.icon className="w-6 h-6" />
+                  </div>
+                </div>
+              </CardBody>
+            </Card>
+          ))}
+        </div>
+
         <Card className="border-0 shadow-xl overflow-hidden">
           <CardHeader className="pb-6">
             <div className="w-full">
@@ -191,16 +271,6 @@ export default function UsersPage() {
             </div>
           </CardHeader>
           <CardBody className="pt-0">
-            <TopContent
-              filterValue={filterValue}
-              onClear={onClear}
-              onSearchChange={onSearchChange}
-              selectedRole={selectedRole}
-              selectedStatus={selectedStatus}
-              onRoleChange={onRoleChange}
-              onStatusChange={onStatusChange}
-              onRefresh={fetchUsers}
-            />
             {loading ? (
               <div className="flex items-center justify-center py-12">
                 <div className="text-default-400">Loading users...</div>
@@ -218,6 +288,13 @@ export default function UsersPage() {
                   if (user) handleDeleteClick(user);
                 }}
                 onRefresh={fetchUsers}
+                filterValue={filterValue}
+                selectedRole={selectedRole}
+                selectedStatus={selectedStatus}
+                onSearchChange={onSearchChange}
+                onClear={onClear}
+                onRoleChange={onRoleChange}
+                onStatusChange={onStatusChange}
               />
             )}
           </CardBody>

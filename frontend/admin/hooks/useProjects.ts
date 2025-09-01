@@ -37,17 +37,19 @@ export function useProjects() {
     }
   };
 
-  const addProject = async (projectData: Partial<Project>) => {
+  const addProject = async (projectData: FormData) => {
     try {
       setLoading(true);
       const res = await apiRequest<Project>('/api/projects', 'POST', projectData);
 
       if (res.data) {
-        setProjects((prev) => [...prev, res.data!]);
         addToast({
           title: 'Project created successfully!',
           color: 'success',
         });
+        
+        // Refresh projects list immediately
+        await fetchProjects();
         return res.data;
       }
     } catch (err: any) {
@@ -65,17 +67,19 @@ export function useProjects() {
     }
   };
 
-  const editProject = async (id: number, projectData: Partial<Project>) => {
+  const editProject = async (id: number, projectData: FormData) => {
     try {
       setLoading(true);
       const res = await apiRequest<Project>(`/api/projects/${id}`, 'PUT', projectData);
 
       if (res.data) {
-        setProjects((prev) => prev.map((project) => (project.id === id ? res.data! : project)));
         addToast({
           title: 'Project updated successfully!',
           color: 'success',
         });
+        
+        // Refresh projects list immediately
+        await fetchProjects();
         return res.data;
       }
     } catch (err: any) {
@@ -98,65 +102,19 @@ export function useProjects() {
       setLoading(true);
       await apiRequest(`/api/projects/${id}`, 'DELETE');
 
-      setProjects((prev) => prev.filter((project) => project.id !== id));
       addToast({
         title: 'Project deleted successfully!',
         color: 'success',
       });
+
+      // Refresh projects list immediately
+      await fetchProjects();
     } catch (err: any) {
       const errorMessage = err.message || 'Failed to delete project.';
 
       setError(errorMessage);
       addToast({
         title: 'Failed to delete project',
-        description: errorMessage,
-        color: 'danger',
-      });
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const addProjectMembers = async (projectId: number, memberIds: number[]) => {
-    try {
-      setLoading(true);
-      await apiRequest(`/api/projects/${projectId}/members`, 'POST', { memberIds });
-
-      addToast({
-        title: 'Members added successfully!',
-        color: 'success',
-      });
-    } catch (err: any) {
-      const errorMessage = err.message || 'Failed to add members.';
-
-      setError(errorMessage);
-      addToast({
-        title: 'Failed to add members',
-        description: errorMessage,
-        color: 'danger',
-      });
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const removeProjectMembers = async (projectId: number, memberIds: number[]) => {
-    try {
-      setLoading(true);
-      await apiRequest(`/api/projects/${projectId}/members`, 'DELETE', { memberIds });
-
-      addToast({
-        title: 'Members removed successfully!',
-        color: 'success',
-      });
-    } catch (err: any) {
-      const errorMessage = err.message || 'Failed to remove members.';
-
-      setError(errorMessage);
-      addToast({
-        title: 'Failed to remove members',
         description: errorMessage,
         color: 'danger',
       });
@@ -180,8 +138,6 @@ export function useProjects() {
     addProject,
     editProject,
     removeProject,
-    addProjectMembers,
-    removeProjectMembers,
     clearError,
   };
 }

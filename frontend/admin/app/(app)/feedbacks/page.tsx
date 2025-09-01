@@ -456,40 +456,41 @@ export default function FeedbacksPage() {
             {selectedFeedback ? (
               <div className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-700">
+                  <label htmlFor="feedback-title" className="text-sm font-medium text-gray-700">
                     Title
                   </label>
-                  <p className="text-gray-900">{selectedFeedback.title}</p>
+                  <p id="feedback-title" className="text-gray-900">{selectedFeedback.title}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700">
+                  <label htmlFor="feedback-description" className="text-sm font-medium text-gray-700">
                     Description
                   </label>
-                  <p className="text-gray-900">
+                  <p id="feedback-description" className="text-gray-900">
                     {selectedFeedback.description}
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700">
+                  <label htmlFor="feedback-project" className="text-sm font-medium text-gray-700">
                     Project
                   </label>
-                  <p className="text-gray-900">
+                  <p id="feedback-project" className="text-gray-900">
                     {selectedFeedback.projectTitle}
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700">
+                  <label htmlFor="feedback-submitter" className="text-sm font-medium text-gray-700">
                     Submitter
                   </label>
-                  <p className="text-gray-900">
+                  <p id="feedback-submitter" className="text-gray-900">
                     {selectedFeedback.submitterName}
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700">
+                  <label htmlFor="feedback-status" className="text-sm font-medium text-gray-700">
                     Status
                   </label>
                   <Select
+                    id="feedback-status"
                     selectedKeys={[selectedFeedback.status]}
                     onSelectionChange={keys => {
                       const newStatus = Array.from(keys)[0] as string;
@@ -504,25 +505,25 @@ export default function FeedbacksPage() {
                 </div>
                 {selectedFeedback.rating && (
                   <div>
-                    <label className="text-sm font-medium text-gray-700">
+                    <label htmlFor="feedback-rating" className="text-sm font-medium text-gray-700">
                       Rating
                     </label>
-                    <p className="text-gray-900">{selectedFeedback.rating}/5</p>
+                    <p id="feedback-rating" className="text-gray-900">{selectedFeedback.rating}/5</p>
                   </div>
                 )}
                 <div>
-                  <label className="text-sm font-medium text-gray-700">
+                  <label htmlFor="feedback-created" className="text-sm font-medium text-gray-700">
                     Created
                   </label>
-                  <p className="text-gray-900">
+                  <p id="feedback-created" className="text-gray-900">
                     {formatDate(selectedFeedback.createdAt)}
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700">
+                  <label htmlFor="feedback-updated" className="text-sm font-medium text-gray-700">
                     Updated
                   </label>
-                  <p className="text-gray-900">
+                  <p id="feedback-updated" className="text-gray-900">
                     {formatDate(selectedFeedback.updatedAt)}
                   </p>
                 </div>

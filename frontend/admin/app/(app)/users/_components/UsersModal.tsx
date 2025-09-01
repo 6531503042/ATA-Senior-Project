@@ -14,6 +14,8 @@ import {
   SelectItem,
 } from '@heroui/react';
 import { useState, useEffect } from 'react';
+import { useDepartment } from '@/hooks/useDepartment';
+import { useRoles } from '@/hooks/useRoles';
 
 interface UsersModalProps {
   isOpen: boolean;
@@ -30,6 +32,9 @@ export function UsersModal({
   user,
   mode,
 }: UsersModalProps) {
+  const { departments } = useDepartment();
+  const { roles } = useRoles();
+  
   const [formData, setFormData] = useState<{
     username: string;
     email: string;
@@ -45,7 +50,7 @@ export function UsersModal({
     email: user?.email || '',
     firstName: user?.firstName || '',
     lastName: user?.lastName || '',
-    roles: user?.roles || ['user'],
+    roles: user?.roles || ['USER'],
     active: user?.active || true,
     password: '',
     phone: user?.phone || '',
@@ -60,7 +65,7 @@ export function UsersModal({
         email: user?.email || '',
         firstName: user?.firstName || '',
         lastName: user?.lastName || '',
-        roles: user?.roles || ['user'],
+        roles: user?.roles || ['USER'],
         active: user?.active || true,
         password: '',
         phone: user?.phone || '',
@@ -102,7 +107,7 @@ export function UsersModal({
     formDataObj.append('active', formData.active.toString());
     formDataObj.append('phone', formData.phone);
     
-    if (formData.departmentId) {
+    if (formData.departmentId && formData.departmentId > 0) {
       formDataObj.append('departmentId', formData.departmentId.toString());
     }
 
@@ -131,6 +136,19 @@ export function UsersModal({
       formData.lastName
     );
   };
+
+  const departmentOptions = [
+    { key: "0", label: "No Department" },
+    ...departments.map(dept => ({
+      key: dept.id.toString(),
+      label: dept.name
+    }))
+  ];
+
+  const roleOptions = roles.map(role => ({
+    key: role.id,
+    label: role.name
+  }));
 
   return (
     <Modal
@@ -244,11 +262,12 @@ export function UsersModal({
               isRequired
               className="w-full"
               label="Password"
-              placeholder="Enter password"
+              placeholder="Enter password (min 6 chars)"
               size="lg"
               type="password"
               value={formData.password}
               variant="bordered"
+              description="Password must be at least 6 characters long"
               onChange={e =>
                 setFormData({ ...formData, password: e.target.value })
               }
@@ -269,10 +288,11 @@ export function UsersModal({
                 setFormData({ ...formData, roles: selected });
               }}
             >
-              <SelectItem key="admin">Admin</SelectItem>
-              <SelectItem key="manager">Manager</SelectItem>
-              <SelectItem key="user">User</SelectItem>
-              <SelectItem key="guest">Guest</SelectItem>
+              {roleOptions.map(role => (
+                <SelectItem key={role.key}>
+                  {role.label}
+                </SelectItem>
+              ))}
             </Select>
 
             {mode === 'edit' && (
@@ -310,18 +330,26 @@ export function UsersModal({
               }
             />
 
-            <Input
+            <Select
               className="w-full"
-              label="Department ID"
-              placeholder="Enter department ID"
-              size="lg"
-              type="number"
-              value={formData.departmentId?.toString() || ''}
+              label="Department"
+              placeholder="Select department"
+              selectedKeys={formData.departmentId ? [formData.departmentId.toString()] : []}
               variant="bordered"
-              onChange={e =>
-                setFormData({ ...formData, departmentId: e.target.value ? parseInt(e.target.value) : null })
-              }
-            />
+              onSelectionChange={keys => {
+                const selected = Array.from(keys) as string[];
+                setFormData({
+                  ...formData,
+                  departmentId: selected.length > 0 && selected[0] !== "0" ? parseInt(selected[0]) : null,
+                });
+              }}
+            >
+              {departmentOptions.map(dept => (
+                <SelectItem key={dept.key}>
+                  {dept.label}
+                </SelectItem>
+              ))}
+            </Select>
           </div>
         </ModalBody>
         <ModalFooter className="border-t border-default-200 bg-gradient-to-r from-blue-50/30 to-indigo-50/30 dark:from-blue-950/10 dark:to-indigo-950/10">

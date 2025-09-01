@@ -1,159 +1,70 @@
-import { Key } from 'react';
-import { Avatar, AvatarGroup, Chip, Button } from '@heroui/react';
-import { CalendarIcon, TagIcon, EditIcon, TrashIcon } from 'lucide-react';
+import {
+  Button,
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+} from '@heroui/react';
+import {
+  EditIcon,
+  TrashIcon,
+  EllipsisVertical,
+} from 'lucide-react';
 
-import { Project } from '@/types/project';
-
-export type ProjectColumnKey =
-  | 'project'
-  | 'timeline'
-  | 'team'
-  | 'status'
-  | 'category'
-  | 'actions';
+export type ProjectTableItem = {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  memberCount: number;
+  status: 'active' | 'inactive';
+  startDate?: string;
+  endDate?: string;
+  createdAt: string;
+};
 
 type ProjectCellRendererProps = {
-  project: Project;
-  columnKey: Key;
-  onEdit?: (project: Project) => void;
+  project: ProjectTableItem;
+  onEdit?: (project: ProjectTableItem) => void;
   onDelete?: (projectId: string) => void;
 };
 
 export default function ProjectCellRenderer({
   project,
-  columnKey,
   onEdit,
   onDelete,
 }: ProjectCellRendererProps) {
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'success';
-      case 'completed':
-        return 'primary';
-      case 'pending':
-        return 'warning';
-      case 'cancelled':
-        return 'danger';
-      default:
-        return 'default';
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
-
-  switch (columnKey) {
-    case 'project':
-      return (
-        <div className="flex items-start gap-3 group">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
-            {project.name.charAt(0).toUpperCase()}
-          </div>
-          <div className="min-w-0 flex-1">
-            <h3 className="font-semibold text-default-900 text-sm mb-1 line-clamp-1 group-hover:text-blue-600 transition-colors">
-              {project.name}
-            </h3>
-            <p className="text-xs text-default-500 line-clamp-2 leading-relaxed">
-              {project.description}
-            </p>
-            <div className="flex items-center gap-1 mt-2">
-              <div className="p-1 rounded-md bg-gradient-to-r from-blue-50 to-indigo-50">
-                <TagIcon className="w-3 h-3 text-blue-500" />
-              </div>
-              <span className="text-xs text-blue-600 font-medium">
-                Project
-              </span>
-            </div>
-          </div>
-        </div>
-      );
-
-    case 'timeline':
-      return (
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 text-xs text-default-600">
-            <div className="p-1 rounded-md bg-gradient-to-r from-green-50 to-emerald-50">
-              <CalendarIcon className="w-3 h-3 text-green-500" />
-            </div>
-            <span className="font-medium">
-              Start: {project.startDate ? formatDate(project.startDate) : 'N/A'}
-            </span>
-          </div>
-          <div className="flex items-center gap-2 text-xs text-default-600">
-            <div className="p-1 rounded-md bg-gradient-to-r from-orange-50 to-amber-50">
-              <CalendarIcon className="w-3 h-3 text-orange-500" />
-            </div>
-            <span className="font-medium">
-              End: {project.endDate ? formatDate(project.endDate) : 'N/A'}
-            </span>
-          </div>
-        </div>
-      );
-
-    case 'team':
-      return (
-        <div className="flex items-center gap-3">
-          <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-3 py-2 rounded-lg">
-            <span className="text-xs text-gray-500">No team assigned</span>
-          </div>
-        </div>
-      );
-
-    case 'status':
-      return (
-        <Chip
-          className="font-medium capitalize shadow-md hover:shadow-lg transition-all duration-200"
-          color={getStatusColor(project.active ? 'active' : 'inactive')}
-          size="sm"
-          variant="flat"
-        >
-          {project.active ? 'Active' : 'Inactive'}
-        </Chip>
-      );
-
-    case 'category':
-      return (
-        <div className="flex items-center gap-2">
-          <div className="p-2 rounded-lg bg-gradient-to-r from-purple-50 to-violet-50 shadow-sm">
-            <TagIcon className="w-4 h-4 text-purple-500" />
-          </div>
-          <span className="text-sm font-medium text-default-700">
-            N/A
-          </span>
-        </div>
-      );
-
-    case 'actions':
-      return (
-        <div className="flex items-center gap-2">
-          <Button
-            isIconOnly
-            className="text-default-400 hover:text-blue-600 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200 shadow-sm hover:shadow-md"
-            size="sm"
-            variant="light"
-            onPress={() => onEdit?.(project)}
-          >
-            <EditIcon className="w-4 h-4" />
+  return (
+    <div className="flex items-center gap-2">
+      <Dropdown>
+        <DropdownTrigger>
+          <Button isIconOnly size="sm" variant="light">
+            <EllipsisVertical className="w-4 h-4" />
           </Button>
-          <Button
-            isIconOnly
-            className="text-default-400 hover:text-red-600 hover:bg-gradient-to-r hover:from-red-50 hover:to-pink-50 transition-all duration-200 shadow-sm hover:shadow-md"
-            size="sm"
-            variant="light"
-            onPress={() => onDelete?.(project.id.toString())}
-          >
-            <TrashIcon className="w-4 h-4" />
-          </Button>
-        </div>
-      );
-
-    default:
-      return <span>-</span>;
-  }
+        </DropdownTrigger>
+        <DropdownMenu aria-label="Project actions">
+          {onEdit ? (
+            <DropdownItem
+              key="edit"
+              startContent={<EditIcon className="w-4 h-4" />}
+              onClick={() => onEdit(project)}
+            >
+              Edit Project
+            </DropdownItem>
+          ) : null}
+          {onDelete ? (
+            <DropdownItem
+              key="delete"
+              className="text-danger"
+              color="danger"
+              startContent={<TrashIcon className="w-4 h-4" />}
+              onClick={() => onDelete(project.id)}
+            >
+              Delete Project
+            </DropdownItem>
+          ) : null}
+        </DropdownMenu>
+      </Dropdown>
+    </div>
+  );
 }

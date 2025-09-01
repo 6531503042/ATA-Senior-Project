@@ -22,7 +22,7 @@ import { User } from '@/types/user';
 
 // Utils
 function formatUserRole(role: string): string {
-  if (!role) return 'User';
+  if (!role) return 'USER';
   return role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
 }
 
@@ -40,12 +40,10 @@ function getUserRoleColor(
   switch (role?.toLowerCase()) {
     case 'admin':
       return 'danger';
-    case 'manager':
+    case 'super_admin':
       return 'warning';
     case 'user':
       return 'primary';
-    case 'guest':
-      return 'secondary';
     default:
       return 'default';
   }
@@ -148,9 +146,9 @@ export default function UserCellRenderer({
     switch (role) {
       case 'admin':
         return <ShieldIcon className="w-4 h-4" />;
-      case 'manager':
+      case 'super_admin':
+        return <ShieldIcon className="w-4 h-4" />;
       case 'user':
-      case 'guest':
       default:
         return <UserIcon className="w-4 h-4" />;
     }

@@ -95,12 +95,22 @@ export default function DepartmentModal({
         }
       }
 
+      // Add existing members that weren't removed (for edit mode)
+      if (mode === 'edit' && existingMembers.length > 0) {
+        const existingMemberIds = existingMembers.map(member => member.id.toString());
+        formData.append('existingMembers', JSON.stringify(existingMemberIds));
+      }
+
       await onSubmit(formData, mode);
     } catch (error) {
       console.error('Failed to submit department:', error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const removeExistingMember = (memberId: number) => {
+    setExistingMembers(existingMembers.filter(member => member.id !== memberId));
   };
 
   const isFormValid = name.trim() && description.trim();
@@ -176,8 +186,15 @@ export default function DepartmentModal({
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {existingMembers.map((member) => (
-                    <div key={member.id} className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm">
-                      {member.username || `${member.firstName || ''} ${member.lastName || ''}`.trim()}
+                    <div key={member.id} className="flex items-center gap-2 bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm">
+                      <span>{member.username || `${member.firstName || ''} ${member.lastName || ''}`.trim()}</span>
+                      <button
+                        type="button"
+                        onClick={() => removeExistingMember(member.id)}
+                        className="text-blue-600 hover:text-blue-800 text-xs font-bold"
+                      >
+                        ×
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -187,7 +204,7 @@ export default function DepartmentModal({
             <DepartmentMembersSelector
               selectedMembers={selectedMembers}
               setSelectedMembers={setSelectedMembers}
-              allowSelectAll={true}
+              allowSelectAll={false}
               isLoadingMembers={loadingMembers}
             />
           </div>

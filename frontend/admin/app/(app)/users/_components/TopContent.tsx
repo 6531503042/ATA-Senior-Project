@@ -9,14 +9,15 @@ import {
   DropdownItem,
 } from '@heroui/react';
 import { SearchIcon, RefreshCwIcon, EllipsisVertical } from 'lucide-react';
+import { useRoles } from '@/hooks/useRoles';
 
 type TopContentProps = {
   filterValue: string;
   onClear: () => void;
   onSearchChange: (value: string) => void;
-  selectedRole?: string[];
+  selectedRole: string[];
   onRoleChange: (role: string[]) => void;
-  selectedStatus?: boolean[];
+  selectedStatus: boolean[];
   onStatusChange: (status: boolean[]) => void;
   onRefresh: () => void;
   onAdd?: () => void;
@@ -37,12 +38,12 @@ export default function TopContent({
   onEditSelected,
   onDeleteSelected,
 }: TopContentProps) {
-  const roleOptions = [
-    { key: 'admin', label: 'Admin' },
-    { key: 'manager', label: 'Manager' },
-    { key: 'user', label: 'User' },
-    { key: 'guest', label: 'Guest' },
-  ];
+  const { roles } = useRoles();
+  
+  const roleOptions = roles.map(role => ({
+    key: role.id,
+    label: role.name
+  }));
 
   const statusOptions = [
     { key: true, label: 'Active' },
@@ -72,7 +73,7 @@ export default function TopContent({
             className="w-[180px]"
             label="Role"
             placeholder="All roles"
-            selectedKeys={selectedRole ? new Set(selectedRole) : new Set()}
+            selectedKeys={new Set(selectedRole)}
             selectionMode="multiple"
             onSelectionChange={keys => {
               const selected = Array.from(keys) as string[];
@@ -88,7 +89,7 @@ export default function TopContent({
             className="w-[180px]"
             label="Status"
             placeholder="All status"
-            selectedKeys={selectedStatus ? new Set(selectedStatus.map(s => s.toString())) : new Set()}
+            selectedKeys={new Set(selectedStatus.map(s => s.toString()))}
             selectionMode="multiple"
             onSelectionChange={keys => {
               const selected = Array.from(keys).map(k => k === 'true') as boolean[];

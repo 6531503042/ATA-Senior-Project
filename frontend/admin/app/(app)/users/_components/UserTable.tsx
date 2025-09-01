@@ -12,7 +12,7 @@ import { Key, useCallback, useMemo, useState } from 'react';
 import UserCellRenderer from './UserCellRenderer';
 import TopContent from './TopContent';
 
-import { User, UserRole, UserStatus } from '@/types/user';
+import { User } from '@/types/user';
 
 const COLUMNS = [
   { name: 'USER', uid: 'user', allowsSorting: false },
@@ -29,6 +29,13 @@ type UserTableProps = {
   onDelete?: (userId: string) => void;
   onView?: (user: User) => void;
   onRefresh?: () => void;
+  filterValue: string;
+  selectedRole: string[];
+  selectedStatus: boolean[];
+  onSearchChange: (value: string) => void;
+  onClear: () => void;
+  onRoleChange: (role: string[]) => void;
+  onStatusChange: (status: boolean[]) => void;
 };
 
 export default function UserTable({
@@ -37,36 +44,20 @@ export default function UserTable({
   onDelete,
   onView,
   onRefresh,
+  filterValue,
+  selectedRole,
+  selectedStatus,
+  onSearchChange,
+  onClear,
+  onRoleChange,
+  onStatusChange,
 }: UserTableProps) {
-  const [filterValue, setFilterValue] = useState('');
-  const [selectedRole, setSelectedRole] = useState<UserRole[]>([]);
-  const [selectedStatus, setSelectedStatus] = useState<UserStatus[]>([]);
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
     column: 'user',
     direction: 'ascending',
   });
   const [page, setPage] = useState(1);
   const rowsPerPage = 10;
-
-  const handleSearch = (value: string) => {
-    setFilterValue(value);
-    setPage(1);
-  };
-
-  const handleClear = () => {
-    setFilterValue('');
-    setPage(1);
-  };
-
-  const handleRoleChange = (role: UserRole[]) => {
-    setSelectedRole(role);
-    setPage(1);
-  };
-
-  const handleStatusChange = (status: UserStatus[]) => {
-    setSelectedStatus(status);
-    setPage(1);
-  };
 
   const filteredItems = useMemo(() => {
     let filteredUsers = [...(users ?? [])];
@@ -79,19 +70,20 @@ export default function UserTable({
           user.firstName.toLowerCase().includes(query) ||
           user.lastName.toLowerCase().includes(query) ||
           user.email.toLowerCase().includes(query) ||
-          user.department?.toLowerCase().includes(query),
+          (user.departments && Array.isArray(user.departments) && user.departments.length > 0 ? 
+            user.departments[0].name?.toLowerCase().includes(query) : false),
       );
     }
 
     if (selectedRole.length > 0) {
       filteredUsers = filteredUsers.filter(user =>
-        selectedRole.includes(user.role),
+        selectedRole.some(role => user.roles.includes(role)),
       );
     }
 
     if (selectedStatus.length > 0) {
       filteredUsers = filteredUsers.filter(user =>
-        selectedStatus.includes(user.status),
+        selectedStatus.includes(user.active),
       );
     }
 
@@ -103,22 +95,24 @@ export default function UserTable({
 
     if (sortDescriptor.column && sortDescriptor.direction) {
       sortedItems.sort((a, b) => {
-        const direction = sortDescriptor.direction === 'ascending' ? 1 : -1;
+        const direction = sortDescriptor.column === 'ascending' ? 1 : -1;
 
-        if (sortDescriptor.column === 'role')
-          return a.role.localeCompare(b.role) * direction;
-        if (sortDescriptor.column === 'status')
-          return a.status.localeCompare(b.status) * direction;
+        if (sortDescriptor.column === 'role') {
+          const aRole = a.roles && a.roles.length > 0 ? a.roles[0] : '';
+          const bRole = b.roles && b.roles.length > 0 ? b.roles[0] : '';
+          return aRole.localeCompare(bRole) * direction;
+        }
+        if (sortDescriptor.column === 'status') {
+          return (a.active === b.active ? 0 : a.active ? 1 : -1) * direction;
+        }
         if (sortDescriptor.column === 'department') {
-          const aDept = a.department || '';
-          const bDept = b.department || '';
-
+          const aDept = a.departments && a.departments.length > 0 ? a.departments[0].name || '' : '';
+          const bDept = b.departments && b.departments.length > 0 ? b.departments[0].name || '' : '';
           return aDept.localeCompare(bDept) * direction;
         }
         if (sortDescriptor.column === 'lastLogin') {
-          const aDate = a.lastLogin ? new Date(a.lastLogin).getTime() : 0;
-          const bDate = b.lastLogin ? new Date(b.lastLogin).getTime() : 0;
-
+          const aDate = a.lastLoginAt ? new Date(a.lastLoginAt).getTime() : 0;
+          const bDate = b.lastLoginAt ? new Date(b.lastLoginAt).getTime() : 0;
           return (aDate - bDate) * direction;
         }
 
@@ -148,43 +142,88 @@ export default function UserTable({
   );
 
   return (
-    <Table
-      aria-label="Users Table"
-      topContent={
-        <TopContent
-          filterValue={filterValue}
-          selectedRole={selectedRole}
-          selectedStatus={selectedStatus}
-          onClear={handleClear}
-          onRefresh={onRefresh || (() => {})}
-          onRoleChange={handleRoleChange}
-          onSearchChange={handleSearch}
-          onStatusChange={handleStatusChange}
-        />
-      }
-      topContentPlacement="outside"
-    >
-      <TableHeader columns={COLUMNS}>
-        {column => (
-          <TableColumn
-            key={column.uid}
-            align={column.uid === 'actions' ? 'center' : 'start'}
-            allowsSorting={column.allowsSorting}
-          >
-            {column.name}
-          </TableColumn>
-        )}
-      </TableHeader>
-      <TableBody
-        emptyContent={<span className="text-default-400">No users found</span>}
-        items={[...userItems]}
+    <div className="w-full">
+      <Table
+        aria-label="Users Table"
+        topContent={
+          <TopContent
+            filterValue={filterValue}
+            selectedRole={selectedRole}
+            selectedStatus={selectedStatus}
+            onClear={onClear}
+            onRefresh={onRefresh || (() => {})}
+            onRoleChange={onRoleChange}
+            onSearchChange={onSearchChange}
+            onStatusChange={onStatusChange}
+          />
+        }
+        topContentPlacement="outside"
+        classNames={{
+          wrapper: 'max-h-[600px]',
+          table: 'min-h-[400px]',
+          thead: 'bg-default-50',
+          th: 'text-default-600 font-semibold text-sm uppercase tracking-wider',
+          td: 'py-4',
+          tr: 'hover:bg-default-50 transition-colors',
+        }}
       >
-        {(user: User) => (
-          <TableRow key={user.id}>
-            {columnKey => <TableCell>{renderCell(user, columnKey)}</TableCell>}
-          </TableRow>
-        )}
-      </TableBody>
-    </Table>
+        <TableHeader columns={COLUMNS}>
+          {column => (
+            <TableColumn
+              key={column.uid}
+              align={column.uid === 'actions' ? 'center' : 'start'}
+              allowsSorting={column.allowsSorting}
+            >
+              {column.name}
+            </TableColumn>
+          )}
+        </TableHeader>
+        <TableBody
+          emptyContent={<span className="text-default-400">No users found</span>}
+          items={[...userItems]}
+        >
+          {(user: User) => (
+            <TableRow key={user.id}>
+              {columnKey => <TableCell>{renderCell(user, columnKey)}</TableCell>}
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+      
+      {/* Pagination */}
+      <div className="flex w-full justify-center py-4">
+        <div className="flex w-full justify-center gap-2">
+          <button
+            className="px-3 py-2 text-sm text-default-500 bg-default-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-default-200 transition-colors"
+            disabled={page === 1}
+            onClick={() => setPage(page - 1)}
+          >
+            Previous
+          </button>
+          <div className="flex items-center gap-1">
+            {Array.from({ length: pages }, (_, i) => (
+              <button
+                key={i + 1}
+                className={`px-3 py-2 text-sm rounded-lg transition-colors ${
+                  page === i + 1
+                    ? 'bg-primary text-white shadow-lg'
+                    : 'text-default-500 bg-default-100 hover:bg-default-200'
+                }`}
+                onClick={() => setPage(i + 1)}
+              >
+                {i + 1}
+              </button>
+            ))}
+          </div>
+          <button
+            className="px-3 py-2 text-sm text-default-500 bg-default-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-default-200 transition-colors"
+            disabled={page === pages}
+            onClick={() => setPage(page + 1)}
+          >
+            Next
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }

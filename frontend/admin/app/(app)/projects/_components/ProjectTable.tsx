@@ -1,3 +1,5 @@
+'use client';
+
 import {
   SortDescriptor,
   Table,
@@ -6,28 +8,40 @@ import {
   TableColumn,
   TableHeader,
   TableRow,
+  Chip,
 } from '@heroui/react';
 import { Key, useCallback, useMemo, useState } from 'react';
+import { Users, Calendar, Tag } from 'lucide-react';
 
 import ProjectCellRenderer from './ProjectCellRenderer';
 import TopContent from './TopContent';
-import BottomContent from './BottomContent';
 
-import { Project, ProjectStatus } from '@/types/project';
+export type ProjectTableItem = {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  memberCount: number;
+  status: 'active' | 'inactive';
+  startDate?: string;
+  endDate?: string;
+  createdAt: string;
+};
 
 const COLUMNS = [
-  { name: 'PROJECT', uid: 'project', allowsSorting: false },
-  { name: 'TIMELINE', uid: 'timeline', allowsSorting: true },
-  { name: 'TEAM', uid: 'team', allowsSorting: false },
+  { name: 'NAME', uid: 'name', allowsSorting: true },
+  { name: 'MEMBERS', uid: 'memberCount', allowsSorting: true },
   { name: 'STATUS', uid: 'status', allowsSorting: true },
   { name: 'CATEGORY', uid: 'category', allowsSorting: true },
+  { name: 'TIMELINE', uid: 'timeline', allowsSorting: true },
+  { name: 'CREATED AT', uid: 'createdAt', allowsSorting: true },
   { name: 'ACTIONS', uid: 'actions', allowsSorting: false },
 ];
 
 type ProjectTableProps = {
-  projects: Project[];
-  onEdit?: (project: Project) => void;
-  onDelete?: (projectId: string) => void;
+  projects: ProjectTableItem[];
+  onEdit?: (project: ProjectTableItem) => void;
+  onDelete?: (id: string) => void;
   onRefresh?: () => void;
 };
 
@@ -38,9 +52,9 @@ export default function ProjectTable({
   onRefresh,
 }: ProjectTableProps) {
   const [filterValue, setFilterValue] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState<ProjectStatus[]>([]);
+  const [selectedStatus, setSelectedStatus] = useState<string[]>([]);
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
-    column: 'project',
+    column: 'name',
     direction: 'ascending',
   });
   const [page, setPage] = useState(1);
@@ -56,155 +70,293 @@ export default function ProjectTable({
     setPage(1);
   };
 
-  const handleStatusChange = (status: ProjectStatus[]) => {
-    setSelectedStatus(status);
-    setPage(1);
-  };
-
   const filteredItems = useMemo(() => {
-    let filteredProjects = [...(projects ?? [])];
+    let filtered = [...(projects ?? [])];
     const query = filterValue.toLowerCase();
 
-    if (!!filterValue) {
-      filteredProjects = projects.filter(
+    if (filterValue) {
+      filtered = filtered.filter(
         project =>
           project.name.toLowerCase().includes(query) ||
           project.description.toLowerCase().includes(query) ||
-          project.category?.toLowerCase().includes(query) ||
-          project.client?.toLowerCase().includes(query) ||
-          project.location?.toLowerCase().includes(query),
+          project.category.toLowerCase().includes(query) ||
+          project.status.toLowerCase().includes(query),
       );
     }
 
-    // Filter by status
     if (selectedStatus.length > 0) {
-      filteredProjects = filteredProjects.filter(project =>
-        selectedStatus.includes(project.status),
-      );
+      filtered = filtered.filter(project => selectedStatus.includes(project.status));
     }
 
-    return filteredProjects;
+    return filtered;
   }, [projects, filterValue, selectedStatus]);
 
   const projectItems = useMemo(() => {
     const sortedItems = [...filteredItems];
+    const direction = sortDescriptor.direction === 'ascending' ? 1 : -1;
 
-    if (sortDescriptor.column && sortDescriptor.direction) {
-      sortedItems.sort((a, b) => {
-        const direction = sortDescriptor.direction === 'ascending' ? 1 : -1;
-
-        if (sortDescriptor.column === 'status') {
-          return a.status.localeCompare(b.status) * direction;
-        }
-
-        if (sortDescriptor.column === 'category') {
-          const aCategory = a.category || '';
-          const bCategory = b.category || '';
-
-          return aCategory.localeCompare(bCategory) * direction;
-        }
-
-        if (sortDescriptor.column === 'timeline') {
-          const aDate = new Date(a.timeline.startDate).getTime();
-          const bDate = new Date(b.timeline.startDate).getTime();
-
-          return (aDate - bDate) * direction;
-        }
-
-        return 0;
-      });
+    switch (sortDescriptor.column) {
+      case 'name':
+        sortedItems.sort((a, b) => a.name.localeCompare(b.name) * direction);
+        break;
+      case 'memberCount':
+        sortedItems.sort(
+          (a, b) => (a.memberCount - b.memberCount) * direction,
+        );
+        break;
+      case 'status':
+        sortedItems.sort(
+          (a, b) => a.status.localeCompare(b.status) * direction,
+        );
+        break;
+      case 'category':
+        sortedItems.sort(
+          (a, b) => a.category.localeCompare(b.category) * direction,
+        );
+        break;
+      case 'timeline':
+        sortedItems.sort(
+          (a, b) => {
+            const aDate = new Date(a.startDate || '').getTime();
+            const bDate = new Date(b.startDate || '').getTime();
+            return (aDate - bDate) * direction;
+          },
+        );
+        break;
+      case 'createdAt':
+        sortedItems.sort(
+          (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime() * direction,
+        );
+        break;
+      default:
+        break;
     }
 
+    return sortedItems;
+  }, [filteredItems, sortDescriptor]);
+
+  const pages = Math.ceil(projectItems.length / rowsPerPage);
+
+  const items = useMemo(() => {
     const start = (page - 1) * rowsPerPage;
     const end = start + rowsPerPage;
 
-    return sortedItems.slice(start, end);
-  }, [page, filteredItems, sortDescriptor]);
+    return projectItems.slice(start, end);
+  }, [page, projectItems, rowsPerPage]);
 
-  const pages = Math.ceil(filteredItems.length / rowsPerPage) || 1;
+  const onNextPage = useCallback(() => {
+    if (page < pages) {
+      setPage(page + 1);
+    }
+  }, [page, pages]);
+
+  const onPreviousPage = useCallback(() => {
+    if (page > 1) {
+      setPage(page - 1);
+    }
+  }, [page]);
+
+  const onRowsPerPageChange = useCallback(() => {
+    setPage(1);
+  }, []);
+
+  const onSortChange = useCallback((descriptor: SortDescriptor) => {
+    setSortDescriptor(descriptor);
+  }, []);
+
+  const topContent = useMemo(
+    () => (
+      <TopContent
+        filterValue={filterValue}
+        onClear={handleClear}
+        onSearchChange={handleSearch}
+        selectedStatus={selectedStatus}
+        onStatusChange={setSelectedStatus}
+        onRefresh={onRefresh || (() => {})}
+      />
+    ),
+    [filterValue, selectedStatus, onRefresh],
+  );
 
   const renderCell = useCallback(
-    (project: Project, columnKey: Key) => {
-      return (
-        <ProjectCellRenderer
-          columnKey={columnKey}
-          project={project}
-          onDelete={onDelete}
-          onEdit={onEdit}
-        />
-      );
+    (project: ProjectTableItem, columnKey: Key) => {
+      const cellValue = project[columnKey as keyof ProjectTableItem];
+
+      switch (columnKey) {
+        case 'name':
+          return (
+            <div className="flex items-start gap-3 group">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
+                {project.name.charAt(0).toUpperCase()}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-bold text-small capitalize text-default-900 group-hover:text-blue-600 transition-colors">
+                  {project.name}
+                </p>
+                {project.description && (
+                  <p className="text-default-500 text-xs leading-relaxed max-w-xs">
+                    {project.description}
+                  </p>
+                )}
+              </div>
+            </div>
+          );
+        case 'memberCount':
+          return (
+            <div className="flex items-center gap-2">
+              <div className="flex items-center justify-center w-8 h-8 bg-primary-50 rounded-full">
+                <Users className="w-4 h-4 text-primary-600" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-bold text-small text-default-900">
+                  {project.memberCount}
+                </span>
+                <span className="text-xs text-default-500">
+                  {project.memberCount === 1 ? 'member' : 'members'}
+                </span>
+              </div>
+            </div>
+          );
+        case 'status':
+          return (
+            <Chip
+              className="capitalize font-medium"
+              color={project.status === 'active' ? 'success' : 'danger'}
+              size="sm"
+              variant="flat"
+              radius="lg"
+            >
+              {project.status}
+            </Chip>
+          );
+        case 'category':
+          return (
+            <div className="flex items-center gap-2">
+              <div className="flex items-center justify-center w-8 h-8 bg-purple-50 rounded-full">
+                <Tag className="w-4 h-4 text-purple-600" />
+              </div>
+              <span className="text-bold text-small text-default-900">
+                {project.category || 'N/A'}
+              </span>
+            </div>
+          );
+        case 'timeline':
+          return (
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-1">
+                <Calendar className="w-3 h-3 text-green-500" />
+                <span className="text-xs text-default-600">
+                  Start: {project.startDate ? new Date(project.startDate).toLocaleDateString() : 'N/A'}
+                </span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Calendar className="w-3 h-3 text-orange-500" />
+                <span className="text-xs text-default-600">
+                  End: {project.endDate ? new Date(project.endDate).toLocaleDateString() : 'N/A'}
+                </span>
+              </div>
+            </div>
+          );
+        case 'createdAt':
+          return (
+            <div className="flex flex-col gap-1">
+              <p className="text-bold text-small text-default-900">
+                {new Date(project.createdAt).toLocaleDateString()}
+              </p>
+              <p className="text-default-500 text-xs">
+                {new Date(project.createdAt).toLocaleTimeString()}
+              </p>
+            </div>
+          );
+        case 'actions':
+          return (
+            <ProjectCellRenderer
+              project={project}
+              onEdit={onEdit}
+              onDelete={onDelete}
+            />
+          );
+        default:
+          return cellValue;
+      }
     },
     [onEdit, onDelete],
   );
 
   return (
-    <Table
-      isHeaderSticky
-      aria-label="Projects Table"
-      bottomContent={
-        <BottomContent
-          currentPage={page}
-          page={page}
-          pages={pages}
-          setPage={setPage}
-          totalProjects={filteredItems.length}
-        />
-      }
-      bottomContentPlacement="outside"
-      classNames={{
-        wrapper: 'shadow-none',
-        table: 'min-h-[400px]',
-        thead: 'bg-white sticky top-0 z-10 shadow-sm',
-        th: 'text-default-700 font-semibold text-xs uppercase tracking-wide',
-        tr: 'hover:bg-default-50 transition-colors',
-        td: 'py-4',
-      }}
-      sortDescriptor={sortDescriptor}
-      topContent={
-        <TopContent
-          filterValue={filterValue}
-          selectedStatus={selectedStatus}
-          onClear={handleClear}
-          onRefresh={onRefresh || (() => {})}
-          onSearchChange={handleSearch}
-          onStatusChange={handleStatusChange}
-        />
-      }
-      topContentPlacement="outside"
-      onSortChange={setSortDescriptor}
-    >
-      <TableHeader columns={COLUMNS}>
-        {column => (
-          <TableColumn
-            key={column.uid}
-            align={column.uid === 'actions' ? 'center' : 'start'}
-            allowsSorting={column.allowsSorting}
-          >
-            {column.name}
-          </TableColumn>
-        )}
-      </TableHeader>
-      <TableBody
-        emptyContent={
-          <div className="flex flex-col items-center justify-center py-8">
-            <span className="text-default-400">No projects found</span>
+    <div className="w-full">
+      <Table
+        aria-label="Projects table with pagination"
+        isHeaderSticky
+        bottomContent={
+          <div className="flex w-full justify-center">
+            <div className="flex w-full justify-center gap-2">
+              <button
+                className="px-3 py-2 text-sm text-default-500 bg-default-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-default-200 transition-colors"
+                disabled={page === 1}
+                onClick={onPreviousPage}
+              >
+                Previous
+              </button>
+              <div className="flex items-center gap-1">
+                {Array.from({ length: pages }, (_, i) => (
+                  <button
+                    key={i + 1}
+                    className={`px-3 py-2 text-sm rounded-lg transition-colors ${
+                      page === i + 1
+                        ? 'bg-primary text-white shadow-lg'
+                        : 'text-default-500 bg-default-100 hover:bg-default-200'
+                    }`}
+                    onClick={() => setPage(i + 1)}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+              </div>
+              <button
+                className="px-3 py-2 text-sm text-default-500 bg-default-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-default-200 transition-colors"
+                disabled={page === pages}
+                onClick={onNextPage}
+              >
+                Next
+              </button>
+            </div>
           </div>
         }
-        items={[...projectItems]}
+        classNames={{
+          wrapper: 'max-h-[600px]',
+          table: 'min-h-[400px]',
+          thead: 'bg-default-50',
+          th: 'text-default-600 font-semibold text-sm uppercase tracking-wider',
+          td: 'py-4',
+          tr: 'hover:bg-default-50 transition-colors',
+        }}
+        sortDescriptor={sortDescriptor}
+        topContent={topContent}
+        topContentPlacement="outside"
+        onSortChange={onSortChange}
       >
-        {(project: Project) => (
-          <TableRow
-            key={project.id}
-            className="hover:bg-default-50 transition-colors"
-          >
-            {columnKey => (
-              <TableCell className={`${columnKey.toString()} py-4`}>
-                {renderCell(project, columnKey)}
-              </TableCell>
-            )}
-          </TableRow>
-        )}
-      </TableBody>
-    </Table>
+        <TableHeader columns={COLUMNS}>
+          {(column) => (
+            <TableColumn
+              key={column.uid}
+              align={column.uid === 'actions' ? 'center' : 'start'}
+              allowsSorting={column.allowsSorting}
+            >
+              {column.name}
+            </TableColumn>
+          )}
+        </TableHeader>
+        <TableBody emptyContent={'No projects found'} items={items}>
+          {(item) => (
+            <TableRow key={item.id}>
+              {(columnKey) => (
+                <TableCell>{renderCell(item, columnKey)}</TableCell>
+              )}
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+    </div>
   );
 }
