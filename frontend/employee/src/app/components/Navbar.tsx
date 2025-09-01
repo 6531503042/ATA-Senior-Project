@@ -10,8 +10,6 @@ type NavbarProps = {
 
 const links = [
   { label: 'Dashboard', href: '/dashboard' },
-  { label: 'Status', href: '/status' },
-  { label: 'Analysis', href: '/analysis' },
 ];
 
 function isRouteActive(pathname: string, href: string) {
