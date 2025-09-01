@@ -1,264 +1,187 @@
-import type {
-  Project,
-  CreateProjectRequest,
-  UpdateProjectRequest,
-  ProjectMembersRequestDto,
-} from '../types/project';
-import type { PageResponse } from '../types/pagination';
+import { useState, useEffect } from 'react';
+import { addToast } from '@heroui/react';
 
-import { useCallback, useEffect, useState } from 'react';
+import { Project } from '@/types/project';
+import { PageResponse } from '@/types/shared';
+import { apiRequest } from '@/utils/api';
 
-import { api } from '../libs/apiClient';
-
-export function useProjects(params?: Record<string, any>) {
-  const [data, setData] = useState<PageResponse<Project> | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+export function useProjects() {
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchList = useCallback(async () => {
+  const fetchProjects = async () => {
     setLoading(true);
+    setError(null);
     try {
-      const res = await api.get<PageResponse<Project>>('/api/projects', params);
+      const res = await apiRequest<PageResponse<Project>>('/api/projects?limit=0', 'GET');
 
-      setData(res);
-      setError(null);
-    } catch (e: any) {
-      setError(e?.message || 'Failed to load projects');
+      if (res.data?.content) {
+        setProjects(Array.isArray(res.data.content) ? res.data.content : []);
+      } else {
+        setProjects([]);
+      }
+    } catch (err) {
+      const errorMessage = err && typeof err === 'object' && 'message' in err
+        ? (err as { message?: string }).message || 'Failed to fetch projects.'
+        : 'Failed to fetch projects.';
+
+      setError(errorMessage);
+      addToast({
+        title: 'Failed to fetch projects',
+        description: errorMessage,
+        color: 'danger',
+      });
     } finally {
       setLoading(false);
     }
-  }, [params]);
+  };
 
-  useEffect(() => {
-    fetchList();
-  }, [fetchList]);
-
-  return { data, loading, error, refresh: fetchList };
-}
-
-// Legacy hook for backward compatibility
-export function useProjectsLegacy() {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [stats, setStats] = useState({
-    totalProjects: 0,
-    activeProjects: 0,
-    completedProjects: 0,
-    totalMembers: 0,
-  });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchProjects = useCallback(async () => {
+  const createProject = async (projectData: Partial<Project>) => {
     try {
       setLoading(true);
-      setError(null);
-      
-      const projectsResponse = await api.get<any>('/api/projects');
-      console.log('Projects API response:', projectsResponse);
-      
-      // Handle different response formats
-      let projectsList: any[] = [];
-      if (projectsResponse?.content && Array.isArray(projectsResponse.content)) {
-        projectsList = projectsResponse.content;
-      } else if (Array.isArray(projectsResponse)) {
-        projectsList = projectsResponse;
-      } else if (projectsResponse?.projects && Array.isArray(projectsResponse.projects)) {
-        projectsList = projectsResponse.projects;
+      const res = await apiRequest<Project>('/api/projects', 'POST', projectData);
+
+      if (res.data) {
+        setProjects((prev) => [...prev, res.data!]);
+        addToast({
+          title: 'Project created successfully!',
+          color: 'success',
+        });
+        return res.data;
       }
-      
-      setProjects(projectsList);
-      
-      const totalProjects = projectsList.length;
-      const activeProjects = projectsList.filter(p => p.active).length;
-      const completedProjects = projectsList.filter(p => !p.active).length;
-      const totalMembers = projectsList.reduce((acc, p) => acc + 0, 0); // TODO: Add memberCount to Project type
-      
-      setStats({
-        totalProjects,
-        activeProjects,
-        completedProjects,
-        totalMembers,
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to create project.';
+
+      setError(errorMessage);
+      addToast({
+        title: 'Failed to create project',
+        description: errorMessage,
+        color: 'danger',
       });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch projects');
-      // Set fallback data when API fails
-      setProjects([]);
-      setStats({
-        totalProjects: 0,
-        activeProjects: 0,
-        completedProjects: 0,
-        totalMembers: 0,
-      });
+      throw err;
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
-  const addProject = useCallback(async (data: CreateProjectRequest) => {
+  const updateProject = async (id: number, projectData: Partial<Project>) => {
     try {
-      const response = await api.post<Project>('/api/projects', data);
-      setProjects(prev => [response, ...prev]);
-      return response;
-    } catch (error) {
-      console.error('Error creating project:', error);
-      throw error;
-    }
-  }, []);
+      setLoading(true);
+      const res = await apiRequest<Project>(`/api/projects/${id}`, 'PUT', projectData);
 
-  const editProject = useCallback(async (data: UpdateProjectRequest) => {
+      if (res.data) {
+        setProjects((prev) => prev.map((project) => (project.id === id ? res.data! : project)));
+        addToast({
+          title: 'Project updated successfully!',
+          color: 'success',
+        });
+        return res.data;
+      }
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to update project.';
+
+      setError(errorMessage);
+      addToast({
+        title: 'Failed to update project',
+        description: errorMessage,
+        color: 'danger',
+      });
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteProject = async (id: number) => {
     try {
-      const response = await api.put<Project>(`/api/projects/${data.id}`, data);
-      setProjects(prev => prev.map(p => p.id === data.id ? response : p));
-      return response;
-    } catch (error) {
-      console.error('Error updating project:', error);
-      throw error;
-    }
-  }, []);
+      setLoading(true);
+      await apiRequest(`/api/projects/${id}`, 'DELETE');
 
-  const removeProject = useCallback(async (projectId: string) => {
+      setProjects((prev) => prev.filter((project) => project.id !== id));
+      addToast({
+        title: 'Project deleted successfully!',
+        color: 'success',
+      });
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to delete project.';
+
+      setError(errorMessage);
+      addToast({
+        title: 'Failed to delete project',
+        description: errorMessage,
+        color: 'danger',
+      });
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const addProjectMembers = async (projectId: number, memberIds: number[]) => {
     try {
-      await api.delete(`/api/projects/${projectId}`);
-      setProjects(prev => prev.filter(p => p.id !== Number(projectId)));
-    } catch (error) {
-      console.error('Error deleting project:', error);
-      throw error;
-    }
-  }, []);
+      setLoading(true);
+      await apiRequest(`/api/projects/${projectId}/members`, 'POST', { memberIds });
 
-  const refreshProjects = useCallback(async () => {
-    await fetchProjects();
-  }, [fetchProjects]);
+      addToast({
+        title: 'Members added successfully!',
+        color: 'success',
+      });
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to add members.';
+
+      setError(errorMessage);
+      addToast({
+        title: 'Failed to add members',
+        description: errorMessage,
+        color: 'danger',
+      });
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const removeProjectMembers = async (projectId: number, memberIds: number[]) => {
+    try {
+      setLoading(true);
+      await apiRequest(`/api/projects/${projectId}/members`, 'DELETE', { memberIds });
+
+      addToast({
+        title: 'Members removed successfully!',
+        color: 'success',
+      });
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to remove members.';
+
+      setError(errorMessage);
+      addToast({
+        title: 'Failed to remove members',
+        description: errorMessage,
+        color: 'danger',
+      });
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const clearError = () => setError(null);
 
   useEffect(() => {
     fetchProjects();
-  }, [fetchProjects]);
+  }, []);
 
   return {
     projects,
-    stats,
     loading,
     error,
-    addProject,
-    editProject,
-    removeProject,
-    refreshProjects,
+    fetchProjects,
+    createProject,
+    updateProject,
+    deleteProject,
+    addProjectMembers,
+    removeProjectMembers,
+    clearError,
   };
-}
-
-export function useProjectStats() {
-  const [stats, setStats] = useState({
-    totalProjects: 0,
-    activeProjects: 0,
-    completedProjects: 0,
-    totalMembers: 0,
-  });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchStats = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      // For now, we'll calculate stats from the projects list
-      const projectsResponse = await api.get<PageResponse<Project>>('/api/projects');
-      const projects = projectsResponse?.content || [];
-      
-      const totalProjects = projects.length;
-      const activeProjects = projects.filter(p => p.active).length;
-      const completedProjects = projects.filter(p => !p.active).length;
-      const totalMembers = projects.reduce((acc, p) => acc + 0, 0); // TODO: Add memberCount to Project type
-      
-      setStats({
-        totalProjects,
-        activeProjects,
-        completedProjects,
-        totalMembers,
-      });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch project stats');
-      // Set default values on error
-      setStats({
-        totalProjects: 0,
-        activeProjects: 0,
-        completedProjects: 0,
-        totalMembers: 0,
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchStats();
-  }, [fetchStats]);
-
-  return { stats, loading, error, refresh: fetchStats };
-}
-
-export function useProject(id?: number) {
-  const [data, setData] = useState<Project | null>(null);
-  const [loading, setLoading] = useState<boolean>(!!id);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let mounted = true;
-
-    if (!id) return;
-    setLoading(true);
-    api
-      .get<Project>(`/api/projects/${id}`)
-      .then(res => {
-        if (!mounted) return;
-        setData(res);
-        setError(null);
-      })
-      .catch((e: any) => {
-        if (!mounted) return;
-        setError(e?.message || 'Failed to load project');
-      })
-      .finally(() => {
-        if (!mounted) return;
-        setLoading(false);
-      });
-
-    return () => {
-      mounted = false;
-    };
-  }, [id]);
-
-  return { data, loading, error };
-}
-
-export async function createProject(body: CreateProjectRequest) {
-  return api.post<Project>('/api/projects', body);
-}
-
-export async function updateProject(id: number, body: UpdateProjectRequest) {
-  return api.put<Project>(`/api/projects/${id}`, body);
-}
-
-export async function deleteProject(id: number) {
-  return api.delete<void>(`/api/projects/${id}`);
-}
-
-export async function addProjectMembers(
-  projectId: number,
-  memberIds: number[],
-) {
-  const body: ProjectMembersRequestDto = { memberIds };
-
-  return api.post<void>(`/api/projects/${projectId}/members`, body);
-}
-
-export async function removeProjectMembers(
-  projectId: number,
-  memberIds: number[],
-) {
-  const body: ProjectMembersRequestDto = { memberIds };
-
-  return api.delete<void>(`/api/projects/${projectId}/members`, {
-    data: body,
-  });
 }

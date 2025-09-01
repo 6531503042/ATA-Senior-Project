@@ -1,133 +1,159 @@
-import type {
-  Question,
-  CreateQuestionRequest,
-  UpdateQuestionRequest,
-} from '../types/question';
-import type { PageResponse } from '../types/pagination';
+import { useState, useEffect } from 'react';
+import { addToast } from '@heroui/react';
 
-import { useCallback, useEffect, useState } from 'react';
+import { Question } from '@/types/question';
+import { PageResponse } from '@/types/shared';
+import { apiRequest } from '@/utils/api';
 
-import { api } from '../libs/apiClient';
-
-export function useQuestions(params?: Record<string, any>) {
-  const [data, setData] = useState<PageResponse<Question> | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+export function useQuestions() {
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchList = useCallback(async () => {
+  const fetchQuestions = async () => {
     setLoading(true);
+    setError(null);
     try {
-      const res = await api.get<any>('/api/questions', params);
-      console.log('Questions API response:', res);
-      
-      // Handle different response formats
-      let questions: any[] = [];
-      if (res?.content && Array.isArray(res.content)) {
-        questions = res.content;
-      } else if (Array.isArray(res)) {
-        questions = res;
-      } else if (res?.questions && Array.isArray(res.questions)) {
-        questions = res.questions;
-      }
-      
-      // Create a proper PageResponse format
-      const pageResponse: PageResponse<Question> = {
-        content: questions,
-        pageInfo: res?.pageInfo || {
-          page: 0,
-          limit: 10,
-          sortBy: 'id',
-          sortDir: 'asc',
-          search: null,
-        },
-        totalElements: res?.totalElements || questions.length,
-        totalPages: res?.totalPages || 1,
-        first: res?.first || true,
-        last: res?.last || true,
-        hasNext: res?.hasNext || false,
-        hasPrevious: res?.hasPrevious || false,
-        nextCursor: res?.nextCursor || null,
-        previousCursor: res?.previousCursor || null,
-      };
+      const res = await apiRequest<PageResponse<Question>>('/api/questions?limit=0', 'GET');
 
-      setData(pageResponse);
-      setError(null);
-    } catch (e: any) {
-      console.error('Error fetching questions:', e);
-      setError(e?.message || 'Failed to load questions');
-      // Set fallback data
-      setData({
-        content: [],
-        pageInfo: {
-          page: 0,
-          limit: 10,
-          sortBy: 'id',
-          sortDir: 'asc',
-          search: null,
-        },
-        totalElements: 0,
-        totalPages: 1,
-        first: true,
-        last: true,
-        hasNext: false,
-        hasPrevious: false,
-        nextCursor: null,
-        previousCursor: null,
+      if (res.data?.content) {
+        setQuestions(Array.isArray(res.data.content) ? res.data.content : []);
+      } else {
+        setQuestions([]);
+      }
+    } catch (err) {
+      const errorMessage = err && typeof err === 'object' && 'message' in err
+        ? (err as { message?: string }).message || 'Failed to fetch questions.'
+        : 'Failed to fetch questions.';
+
+      setError(errorMessage);
+      addToast({
+        title: 'Failed to fetch questions',
+        description: errorMessage,
+        color: 'danger',
       });
     } finally {
       setLoading(false);
     }
-  }, [params]);
+  };
 
-  useEffect(() => {
-    fetchList();
-  }, [fetchList]);
+  const createQuestion = async (questionData: Partial<Question>) => {
+    try {
+      setLoading(true);
+      const res = await apiRequest<Question>('/api/questions', 'POST', questionData);
 
-  return { data, loading, error, refresh: fetchList };
-}
+      if (res.data) {
+        setQuestions((prev) => [...prev, res.data!]);
+        addToast({
+          title: 'Question created successfully!',
+          color: 'success',
+        });
+        return res.data;
+      }
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to create question.';
 
-export function useQuestion(id?: number) {
-  const [data, setData] = useState<Question | null>(null);
-  const [loading, setLoading] = useState<boolean>(!!id);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let mounted = true;
-
-    if (!id) return;
-    setLoading(true);
-    api
-      .get<Question>(`/api/questions/${id}`)
-      .then(res => {
-        if (!mounted) return;
-        setData(res);
-        setError(null);
-      })
-      .catch((e: any) => {
-        if (!mounted) return;
-        setError(e?.message || 'Failed to load question');
-      })
-      .finally(() => {
-        if (!mounted) return;
-        setLoading(false);
+      setError(errorMessage);
+      addToast({
+        title: 'Failed to create question',
+        description: errorMessage,
+        color: 'danger',
       });
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    return () => {
-      mounted = false;
-    };
-  }, [id]);
+  const updateQuestion = async (id: number, questionData: Partial<Question>) => {
+    try {
+      setLoading(true);
+      const res = await apiRequest<Question>(`/api/questions/${id}`, 'PUT', questionData);
 
-  return { data, loading, error };
-}
+      if (res.data) {
+        setQuestions((prev) => prev.map((question) => (question.id === id ? res.data! : question)));
+        addToast({
+          title: 'Question updated successfully!',
+          color: 'success',
+        });
+        return res.data;
+      }
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to update question.';
 
-export async function createQuestion(body: CreateQuestionRequest) {
-  return api.post<Question>('/api/questions', body);
-}
+      setError(errorMessage);
+      addToast({
+        title: 'Failed to update question',
+        description: errorMessage,
+        color: 'danger',
+      });
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
 
-export async function updateQuestion(id: number, body: UpdateQuestionRequest) {
-  return api.put<Question>(`/api/questions/${id}`, body);
-}
+  const deleteQuestion = async (id: number) => {
+    try {
+      setLoading(true);
+      await apiRequest(`/api/questions/${id}`, 'DELETE');
 
-export async function deleteQuestion(id: number) {
-  return api.delete<void>(`/api/questions/${id}`);
+      setQuestions((prev) => prev.filter((question) => question.id !== id));
+      addToast({
+        title: 'Question deleted successfully!',
+        color: 'success',
+      });
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to delete question.';
+
+      setError(errorMessage);
+      addToast({
+        title: 'Failed to delete question',
+        description: errorMessage,
+        color: 'danger',
+      });
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getQuestionTypes = async () => {
+    try {
+      const res = await apiRequest<string[]>('/api/questions/types', 'GET');
+      return res.data || [];
+    } catch (err: any) {
+      console.error('Failed to fetch question types:', err);
+      return [];
+    }
+  };
+
+  const getQuestionCategories = async () => {
+    try {
+      const res = await apiRequest<string[]>('/api/questions/categories', 'GET');
+      return res.data || [];
+    } catch (err: any) {
+      console.error('Failed to fetch question categories:', err);
+      return [];
+    }
+  };
+
+  const clearError = () => setError(null);
+
+  useEffect(() => {
+    fetchQuestions();
+  }, []);
+
+  return {
+    questions,
+    loading,
+    error,
+    fetchQuestions,
+    createQuestion,
+    updateQuestion,
+    deleteQuestion,
+    getQuestionTypes,
+    getQuestionCategories,
+    clearError,
+  };
 }

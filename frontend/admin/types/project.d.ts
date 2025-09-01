@@ -1,4 +1,15 @@
-export type ProjectStatus = 'active' | 'inactive';
+export type Project = {
+  id: number;
+  name: string;
+  description: string;
+  category: string;
+  startDate?: string;
+  endDate?: string;
+  active: boolean;
+  departmentId?: number;
+  createdAt: string;
+  updatedAt: string;
+};
 
 export interface ProjectMember {
   id: number;

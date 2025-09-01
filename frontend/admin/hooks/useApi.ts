@@ -1,184 +1,177 @@
-import type { ApiError } from '@/types/api';
+import { useState } from "react";
 
-import { useState, useCallback, useEffect, useRef } from 'react';
-
-import { api } from '@/libs/apiClient';
-
-interface UseApiOptions {
-  onSuccess?: (data: any) => void;
-  onError?: (error: ApiError) => void;
+interface RequestOptions extends RequestInit {
+  headers?: HeadersInit;
 }
 
-interface UseApiReturn<T> {
-  data: T | null;
-  loading: boolean;
-  error: ApiError | null;
-  execute: (endpoint: string, options?: any) => Promise<T>;
-  reset: () => void;
+interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  message?: string;
 }
 
-export function useApi<T = any>(options: UseApiOptions = {}): UseApiReturn<T> {
-  const [data, setData] = useState<T | null>(null);
+// General API Hook
+export const useApi = () => {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<ApiError | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const execute = useCallback(
-    async (endpoint: string, requestOptions: any = {}) => {
-      try {
-        setLoading(true);
-        setError(null);
+  const request = async <T, B = unknown>(
+    endpoint: string,
+    method: string = "GET",
+    body?: B,
+    options: RequestOptions = {}
+  ): Promise<ApiResponse<T>> => {
+    try {
+      setLoading(true);
+      setError(null);
 
-        const { method = 'GET', body, params, ...opts } = requestOptions;
+      const url = `${process.env.NEXT_PUBLIC_API_URL}${endpoint}`;  // Using NEXT_PUBLIC_API_URL
 
-        let result: T;
+      console.log(`Making ${method} request to ${url}`, { body, options });
 
-        switch (method.toUpperCase()) {
-          case 'GET':
-            result = await api.get<T>(endpoint, params, opts);
-            break;
-          case 'POST':
-            result = await api.post<T>(endpoint, body, opts);
-            break;
-          case 'PUT':
-            result = await api.put<T>(endpoint, body, opts);
-            break;
-          case 'PATCH':
-            result = await api.patch<T>(endpoint, body, opts);
-            break;
-          case 'DELETE':
-            result = await api.delete<T>(endpoint, opts);
-            break;
-          default:
-            throw new Error(`Unsupported HTTP method: ${method}`);
+      const headers: HeadersInit = {};
+
+      if (["POST", "PUT", "PATCH"].includes(method) && body) {
+        if (body instanceof FormData) {
+          // Browser will automatically set the boundary for FormData
+        } else {
+          headers["Content-Type"] = "application/json";
         }
-
-        setData(result);
-        options.onSuccess?.(result);
-
-        return result;
-      } catch (err) {
-        const apiError = err as ApiError;
-
-        setError(apiError);
-        options.onError?.(apiError);
-        throw apiError;
-      } finally {
-        setLoading(false);
       }
-    },
-    [options],
-  );
 
-  const reset = useCallback(() => {
-    setData(null);
-    setError(null);
-    setLoading(false);
-  }, []);
+      if (options.headers) {
+        Object.assign(headers, options.headers);
+      }
 
-  return {
-    data,
-    loading,
-    error,
-    execute,
-    reset,
-  };
-}
+      const requestOptions: RequestInit = {
+        method,
+        headers,
+        credentials: "include",
+        ...options,
+      };
 
-// Specialized hooks for common operations
-export function useGet<T = any>(
-  endpoint: string,
-  options: UseApiOptions & {
-    autoFetch?: boolean;
-    params?: Record<string, any>;
-    enabled?: boolean; // new: guard condition
-  } = {},
-) {
-  const { autoFetch = false, params, enabled = true, ...apiOptions } = options;
-  const { data, loading, error, execute, reset } = useApi<T>(apiOptions);
+      if (body && !["GET", "DELETE"].includes(method)) {
+        requestOptions.body = body instanceof FormData ? body : JSON.stringify(body);
+      }
 
-  // Prevent duplicate fetches in React StrictMode (dev)
-  const didAutoFetchRef = useRef(false);
+      console.log("Request options:", requestOptions);
 
-  const fetch = useCallback(() => {
-    return execute(endpoint, { method: 'GET', params });
-  }, [execute, endpoint, params]);
+      const response = await fetch(url, requestOptions);
 
-  // Auto-fetch on mount if enabled (guarded, once)
-  useEffect(() => {
-    if (autoFetch && enabled && !didAutoFetchRef.current) {
-      didAutoFetchRef.current = true;
-      fetch();
+      console.log("Response status:", response.status);
+
+      if (response.status === 204) {
+        return { success: true };
+      }
+
+      const data = await response.json();
+
+      console.log("Response data:", data);
+
+      if (!response.ok) {
+        const errorMessage = data.message || `HTTP error! status: ${response.status}`;
+
+        console.error("API Error:", { status: response.status, message: errorMessage, data });
+        throw new Error(errorMessage);
+      }
+
+      return {
+        success: true,
+        data: data.data || data,
+      };
+    } catch (error) {
+      console.error("Request error:", error);
+      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+
+      setError(errorMessage);
+      throw error;
+    } finally {
+      setLoading(false);
     }
-  }, [autoFetch, enabled, fetch]);
-
-  return {
-    data,
-    loading,
-    error,
-    refetch: fetch,
-    reset,
-  } as const;
-}
-
-export function usePost<T = any>(
-  endpoint: string,
-  options: UseApiOptions = {},
-) {
-  const { data, loading, error, execute, reset } = useApi<T>(options);
-
-  const post = useCallback(
-    (body?: any, requestOptions?: any) => {
-      return execute(endpoint, { method: 'POST', body, ...requestOptions });
-    },
-    [execute, endpoint],
-  );
-
-  return {
-    data,
-    loading,
-    error,
-    post,
-    reset,
   };
-}
 
-export function usePut<T = any>(endpoint: string, options: UseApiOptions = {}) {
-  const { data, loading, error, execute, reset } = useApi<T>(options);
+  return { request, loading, error };
+};
 
-  const put = useCallback(
-    (body?: any, requestOptions?: any) => {
-      return execute(endpoint, { method: 'PUT', body, ...requestOptions });
-    },
-    [execute, endpoint],
-  );
+// สำหรับ Golang ไว้ใช้กับ Golang Hook เท่านั้น
+export const useGolangApi = () => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  return {
-    data,
-    loading,
-    error,
-    put,
-    reset,
+  const request = async <T, B = unknown>(
+    endpoint: string,
+    method: string = "GET",
+    body?: B,
+    options: RequestOptions = {}
+  ): Promise<ApiResponse<T>> => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const url = `${process.env.NEXT_PUBLIC_API_URL}${endpoint}`;
+ 
+      console.log(`Making ${method} request to ${url}`, { body, options });
+
+      const headers: HeadersInit = {};
+
+      if (["POST", "PUT", "PATCH"].includes(method) && body) {
+        if (body instanceof FormData) {
+          // Browser will automatically set the boundary for FormData
+        } else {
+          headers["Content-Type"] = "application/json";
+        }
+      }
+
+      if (options.headers) {
+        Object.assign(headers, options.headers);
+      }
+
+      const requestOptions: RequestInit = {
+        method,
+        headers,
+        credentials: "include",
+        ...options,
+      };
+
+      if (body && !["GET", "DELETE"].includes(method)) {
+        requestOptions.body = body instanceof FormData ? body : JSON.stringify(body);
+      }
+
+      console.log("Request options:", requestOptions);
+
+      const response = await fetch(url, requestOptions);
+
+      console.log("Response status:", response.status);
+
+      if (response.status === 204) {
+        return { success: true };
+      }
+
+      const data = await response.json();
+
+      console.log("Response data:", data);
+
+      if (!response.ok) {
+        const errorMessage = data.message || `HTTP error! status: ${response.status}`;
+
+        console.error("API Error:", { status: response.status, message: errorMessage, data });
+        throw new Error(errorMessage);
+      }
+
+      return {
+        success: true,
+        data: data.data || data,
+      };
+    } catch (error) {
+      console.error("Request error:", error);
+      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+
+      setError(errorMessage);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   };
-}
 
-export function useDelete<T = any>(
-  endpoint: string,
-  options: UseApiOptions = {},
-) {
-  const { data, loading, error, execute, reset } = useApi<T>(options);
-
-  const deleteResource = useCallback(
-    (requestOptions?: any) => {
-      return execute(endpoint, { method: 'DELETE', ...requestOptions });
-    },
-    [execute, endpoint],
-  );
-
-  return {
-    data,
-    loading,
-    error,
-    delete: deleteResource,
-    reset,
-  };
-}
+  return { request, loading, error };
+};

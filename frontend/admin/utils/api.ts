@@ -1,6 +1,4 @@
-'use server';
-
-import { cookies } from 'next/headers';
+import { getToken } from './storage';
 
 export interface ApiResponse<T> {
   statusCode: number;
@@ -8,66 +6,160 @@ export interface ApiResponse<T> {
   data: T | null;
 }
 
-// General API Request function
 export async function apiRequest<T>(
   endpoint: string,
-  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' = 'GET',
+  method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE" = "GET",
   body?: object | FormData,
-  options: RequestInit = {},
+  options: RequestInit = {}
 ): Promise<ApiResponse<T>> {
   try {
-    const token = (await cookies()).get('accessToken')?.value;
-    const isFormData =
-      typeof FormData !== 'undefined' && body instanceof FormData;
+    const url = `${process.env.NEXT_PUBLIC_API_URL}${endpoint}`;
 
-    const headers: HeadersInit = {
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      // Only set Content-Type for JSON. DO NOT set it for FormData!
-      ...(!isFormData && body ? { 'Content-Type': 'application/json' } : {}),
-      ...(options.headers || {}),
+    console.log(`Making ${method} request to ${url}`, { body, options });
+
+    const headers: HeadersInit = {};
+
+    // Add JWT token to headers
+    const token = getToken('accessToken');
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    if (["POST", "PUT", "PATCH"].includes(method) && body) {
+      if (body instanceof FormData) {
+        // Browser will automatically set the boundary for FormData
+      } else {
+        headers["Content-Type"] = "application/json";
+      }
+    }
+
+    if (options.headers) {
+      Object.assign(headers, options.headers);
+    }
+
+    const requestOptions: RequestInit = {
+      method,
+      headers,
+      ...options,
     };
 
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}${endpoint}`,
-      {
-        method,
-        headers,
-        credentials: 'include',
-        body: body
-          ? isFormData
-            ? (body as FormData)
-            : JSON.stringify(body)
-          : undefined,
-        ...options,
-      },
-    );
+    if (body && !["GET", "DELETE"].includes(method)) {
+      requestOptions.body = body instanceof FormData ? body : JSON.stringify(body);
+    }
 
-    const responseData = await response.json();
+    console.log("Request options:", requestOptions);
 
-    if (responseData.statusCode && responseData.message && responseData.data) {
+    const response = await fetch(url, requestOptions);
+
+    console.log("Response status:", response.status);
+
+    if (response.status === 204) {
       return {
-        data: responseData.data,
-        statusCode: responseData.statusCode,
-        message: responseData.message,
-      };
-    } else if (response.ok) {
-      return {
-        data: responseData,
-        statusCode: response.status,
-        message: null,
+        statusCode: 204,
+        message: "No content",
+        data: null,
       };
     }
 
+    const data = await response.json();
+
+    console.log("Response data:", data);
+
+    if (!response.ok) {
+      const errorMessage = data.message || `HTTP error! status: ${response.status}`;
+
+      console.error("API Error:", { status: response.status, message: errorMessage, data });
+      throw new Error(errorMessage);
+    }
+
     return {
-      data: null,
       statusCode: response.status,
-      message: responseData.message || 'Request failed',
+      message: data.message || "Success",
+      data: data.data || data,
     };
-  } catch (err) {
+  } catch (error) {
+    console.error("Request error:", error);
+    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+
+    throw error;
+  }
+}
+
+export async function apiGolangRequest<T>(
+  endpoint: string,
+  method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE" = "GET",
+  body?: object | FormData,
+  options: RequestInit = {}
+): Promise<ApiResponse<T>> {
+  try {
+    const url = `${process.env.NEXT_PUBLIC_GOLANG_API_URL}${endpoint}`;
+
+    console.log(`Making ${method} request to ${url}`, { body, options });
+
+    const headers: HeadersInit = {};
+
+    // Add JWT token to headers
+    const token = getToken('accessToken');
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    if (["POST", "PUT", "PATCH"].includes(method) && body) {
+      if (body instanceof FormData) {
+        // Browser will automatically set the boundary for FormData
+      } else {
+        headers["Content-Type"] = "application/json";
+      }
+    }
+
+    if (options.headers) {
+      Object.assign(headers, options.headers);
+    }
+
+    const requestOptions: RequestInit = {
+      method,
+      headers,
+      ...options,
+    };
+
+    if (body && !["GET", "DELETE"].includes(method)) {
+      requestOptions.body = body instanceof FormData ? body : JSON.stringify(body);
+    }
+
+    console.log("Request options:", requestOptions);
+
+    const response = await fetch(url, requestOptions);
+
+    console.log("Response status:", response.status);
+
+    if (response.status === 204) {
+      return {
+        statusCode: 204,
+        message: "No content",
+        data: null,
+      };
+    }
+
+    const data = await response.json();
+
+    console.log("Response data:", data);
+
+    if (!response.ok) {
+      const errorMessage = data.message || `HTTP error! status: ${response.status}`;
+
+      console.error("API Error:", { status: response.status, message: errorMessage, data });
+      throw new Error(errorMessage);
+    }
+
     return {
-      data: null,
-      statusCode: 500,
-      message: (err as Error).message,
+      statusCode: response.status,
+      message: data.message || "Success",
+      data: data.data || data,
     };
+  } catch (error) {
+    console.error("Request error:", error);
+    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+
+    throw error;
   }
 }

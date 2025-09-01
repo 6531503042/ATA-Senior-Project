@@ -22,37 +22,39 @@ import { RecentFeedbacks } from './_components/RecentFeedbacks';
 
 import { CardStat } from '@/components/ui/card-stat';
 import { PageHeader } from '@/components/ui/page-header';
-import { useDashboardData } from '@/hooks/useDashboard';
 import { useAuthContext } from '@/contexts/AuthContext';
+import { useDashboardData } from '@/hooks/useDashboard';
 
 export default function DashboardPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  // Real data hooks
+  // Proper authentication context usage
+  const { user, signOut, loading: authLoading } = useAuthContext();
+
+  // Use the comprehensive dashboard data hook
   const {
     dashboard,
     enhanced,
     activityFeed,
-    loading: dataLoading,
-    error: dataError,
-    refresh,
+    quickActions,
+    notifications,
+    realTimeMetrics,
+    systemHealth,
+    loading: dashboardLoading,
+    error: dashboardError,
+    refresh: refreshDashboard,
   } = useDashboardData();
-
-  // Proper authentication context usage
-  const { user, signOut, loading: authLoading } = useAuthContext();
 
   const handleRefresh = () => {
     setLoading(true);
-    try {
-      refresh();
-    } finally {
-      setTimeout(() => setLoading(false), 600);
-    }
+    refreshDashboard();
+    // Reset loading after a short delay
+    setTimeout(() => setLoading(false), 1000);
   };
 
   // Show loading state while auth is being determined
-  if (authLoading || loading || dataLoading) {
+  if (authLoading || dashboardLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-transparent">
         <div className="text-center">
@@ -97,7 +99,7 @@ export default function DashboardPage() {
         right={
           <Button
             color="primary"
-            isLoading={loading}
+            isLoading={loading || dashboardLoading}
             size="sm"
             startContent={<RefreshCw size={16} />}
             variant="flat"
@@ -108,11 +110,9 @@ export default function DashboardPage() {
         }
       />
 
-      {/* Two-column responsive layout: main + right sidebar */}
-
-      {/* Quick Stats Section - now using real API data */}
+      {/* Quick Stats Section - using DashboardStats component */}
       <div className="mb-6">
-        <DashboardStats loading={dataLoading} />
+        <DashboardStats loading={dashboardLoading} />
       </div>
 
       {/* Main + Sidebar */}
@@ -130,27 +130,25 @@ export default function DashboardPage() {
             <div className="w-full">
               <DashboardOverview
                 data={dashboard?.overview || null}
-                loading={dataLoading}
+                loading={dashboardLoading}
               />
             </div>
           </CardStat>
 
           {/* Chart Section */}
-          {dashboard?.chartData && (
-            <CardStat
-              colors="green-100"
-              defaultOpen={true}
-              icon={<TrendingUp className="w-4 h-4" />}
-              label="Analytics Chart"
-            >
-              <div className="w-full">
-                <DashboardChart
-                  data={dashboard.chartData}
-                  loading={dataLoading}
-                />
-              </div>
-            </CardStat>
-          )}
+          <CardStat
+            colors="green-100"
+            defaultOpen={true}
+            icon={<TrendingUp className="w-4 h-4" />}
+            label="Analytics Chart"
+          >
+            <div className="w-full">
+              <DashboardChart
+                data={dashboard?.chartData || null}
+                loading={dashboardLoading}
+              />
+            </div>
+          </CardStat>
 
           {/* Metrics Section */}
           <CardStat
@@ -160,9 +158,9 @@ export default function DashboardPage() {
           >
             <div className="w-full">
               <DashboardMetrics
-                dashboard={dashboard || null}
-                enhanced={enhanced || null}
-                loading={dataLoading}
+                dashboard={dashboard}
+                enhanced={enhanced}
+                loading={dashboardLoading}
               />
             </div>
           </CardStat>
@@ -190,7 +188,7 @@ export default function DashboardPage() {
           >
             <div className="w-full">
               <RecentProjects
-                loading={dataLoading}
+                loading={dashboardLoading}
                 projects={dashboard?.recentProjects || []}
               />
             </div>
@@ -205,7 +203,7 @@ export default function DashboardPage() {
             <div className="w-full">
               <RecentFeedbacks
                 feedbacks={dashboard?.recentFeedbacks || []}
-                loading={dataLoading}
+                loading={dashboardLoading}
               />
             </div>
           </CardStat>
@@ -217,21 +215,21 @@ export default function DashboardPage() {
             label="Recent Activity"
           >
             <div className="w-full">
-              <RecentActivity activities={activityFeed} loading={dataLoading} />
+              <RecentActivity activities={activityFeed} loading={dashboardLoading} />
             </div>
           </CardStat>
         </div>
       </div>
 
       {/* Error Display */}
-      {(error || dataError) && (
+      {(error || dashboardError) && (
         <Card className="mt-6 bg-red-50 border border-red-200">
           <CardBody className="p-6">
             <p className="text-red-600 font-medium">
               Error loading dashboard data
             </p>
             <p className="text-red-500 text-sm mt-1">
-              {(error || dataError)?.message as any}
+              {error?.message || dashboardError}
             </p>
             <Button
               className="mt-4"

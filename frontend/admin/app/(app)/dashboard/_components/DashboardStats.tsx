@@ -14,7 +14,8 @@ import {
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
-import { api } from '@/libs/apiClient';
+import { apiRequest } from '@/utils/api';
+import useAuthStore from '@/hooks/useAuth';
 
 interface StatData {
   totalUsers?: number;
@@ -35,29 +36,45 @@ export function DashboardStats({ loading = false }: DashboardStatsProps) {
   const [statsData, setStatsData] = useState<StatData>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const auth = useAuthStore();
 
   useEffect(() => {
     const fetchStats = async () => {
+      // Check if user is authenticated
+      if (!auth.isLoggedIn()) {
+        console.log('User not authenticated, skipping API calls');
+        setError('Authentication required');
+        setIsLoading(false);
+        return;
+      }
+
       try {
         setIsLoading(true);
         setError(null);
 
         // Fetch all stats in parallel
         const [
-          usersStats,
-          departmentsStats,
-          questionsStats,
-          feedbacksStats,
-          submissionsStats,
-          projectsStats,
+          usersResponse,
+          departmentsResponse,
+          questionsResponse,
+          feedbacksResponse,
+          submissionsResponse,
+          projectsResponse,
         ] = await Promise.all([
-          api.get<StatData>('/api/dashboard/stats/users'),
-          api.get<StatData>('/api/dashboard/stats/departments'),
-          api.get<StatData>('/api/dashboard/stats/questions'),
-          api.get<StatData>('/api/dashboard/stats/feedbacks'),
-          api.get<StatData>('/api/dashboard/stats/submissions'),
-          api.get<StatData>('/api/dashboard/stats/projects'),
+          apiRequest<StatData>('/api/dashboard/stats/users', 'GET'),
+          apiRequest<StatData>('/api/dashboard/stats/departments', 'GET'),
+          apiRequest<StatData>('/api/dashboard/stats/questions', 'GET'),
+          apiRequest<StatData>('/api/dashboard/stats/feedbacks', 'GET'),
+          apiRequest<StatData>('/api/dashboard/stats/submissions', 'GET'),
+          apiRequest<StatData>('/api/dashboard/stats/projects', 'GET'),
         ]);
+
+        const usersStats = usersResponse.data || {};
+        const departmentsStats = departmentsResponse.data || {};
+        const questionsStats = questionsResponse.data || {};
+        const feedbacksStats = feedbacksResponse.data || {};
+        const submissionsStats = submissionsResponse.data || {};
+        const projectsStats = projectsResponse.data || {};
 
         setStatsData({
           totalUsers: usersStats.totalUsers || 0,
@@ -98,7 +115,7 @@ export function DashboardStats({ loading = false }: DashboardStatsProps) {
     };
 
     fetchStats();
-  }, []);
+  }, [auth]);
 
   const statsConfig = [
     {
@@ -165,19 +182,14 @@ export function DashboardStats({ loading = false }: DashboardStatsProps) {
 
   if (loading || isLoading) {
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {[...Array(6)].map((_, index) => (
-          <Card
-            key={index}
-            className="shadow-xl border-0 rounded-2xl bg-gradient-to-br from-gray-50 to-white"
-          >
-            <CardBody className="p-5">
+          <Card key={index} className="shadow-sm">
+            <CardBody className="p-6">
               <div className="space-y-3">
-                <Skeleton className="w-12 h-12 rounded-xl" />
-                <div className="space-y-2">
-                  <Skeleton className="w-3/4 h-5 rounded" />
-                  <Skeleton className="w-1/2 h-7 rounded" />
-                </div>
+                <Skeleton className="w-12 h-12 rounded-full" />
+                <Skeleton className="w-3/4 h-4 rounded" />
+                <Skeleton className="w-1/2 h-8 rounded" />
               </div>
             </CardBody>
           </Card>
@@ -188,88 +200,43 @@ export function DashboardStats({ loading = false }: DashboardStatsProps) {
 
   if (error) {
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
-        {statsConfig.map((stat, index) => {
-          const Icon = stat.icon;
-
-          return (
-            <Card
-              key={index}
-              className="bg-white shadow-xl border-0 rounded-2xl hover:shadow-2xl hover:-translate-y-0.5 transition-all duration-200 cursor-pointer ring-1 ring-default-200/60"
-            >
-              <CardBody className="p-5">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`w-12 h-12 bg-gradient-to-r ${stat.gradient} rounded-xl shadow-md flex items-center justify-center`}
-                    >
-                      <Icon className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-default-600">
-                        {stat.title}
-                      </p>
-                      <p className="text-3xl font-extrabold text-default-900 leading-tight">
-                        {stat.value.toLocaleString()}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1 bg-default-100/80 px-2.5 py-1.5 rounded-full border border-default-200">
-                    {stat.trendUp ? (
-                      <ArrowUpRight className="w-4 h-4 text-green-500" />
-                    ) : (
-                      <ArrowDownRight className="w-4 h-4 text-red-500" />
-                    )}
-                    <span
-                      className={`text-xs font-semibold ${stat.trendUp ? 'text-green-600' : 'text-red-600'}`}
-                    >
-                      {stat.trend}
-                    </span>
-                  </div>
-                </div>
-              </CardBody>
-            </Card>
-          );
-        })}
-      </div>
+      <Card className="shadow-sm">
+        <CardBody className="p-6 text-center">
+          <p className="text-red-600 mb-4">Error loading dashboard stats</p>
+          <p className="text-sm text-gray-600">{error}</p>
+        </CardBody>
+      </Card>
     );
   }
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
-      {statsConfig.map((stat, index) => {
-        const Icon = stat.icon;
-        const StatCard = (
-          <Card
-            key={index}
-            isPressable
-            className="bg-white shadow-xl border-0 rounded-2xl hover:shadow-2xl hover:-translate-y-0.5 transition-all duration-200 cursor-pointer ring-1 ring-default-200/60"
-          >
-            <CardBody className="p-5">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {statsConfig.map((stat, index) => (
+        <Link key={index} href={stat.href}>
+          <Card className="shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
+            <CardBody className="p-6">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`w-12 h-12 bg-gradient-to-r ${stat.gradient} rounded-xl shadow-md flex items-center justify-center`}
-                  >
-                    <Icon className="w-6 h-6 text-white" />
+                <div className="flex items-center space-x-4">
+                  <div className={`p-3 rounded-lg bg-gradient-to-r ${stat.gradient}`}>
+                    <stat.icon className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-default-600">
-                      {stat.title}
-                    </p>
-                    <p className="text-3xl font-extrabold text-default-900 leading-tight">
+                    <p className="text-sm font-medium text-gray-600">{stat.title}</p>
+                    <p className={`text-2xl font-bold ${stat.textColor}`}>
                       {stat.value.toLocaleString()}
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-1 bg-default-100/80 px-2.5 py-1.5 rounded-full border border-default-200">
+                <div className="flex items-center space-x-2">
                   {stat.trendUp ? (
                     <ArrowUpRight className="w-4 h-4 text-green-500" />
                   ) : (
                     <ArrowDownRight className="w-4 h-4 text-red-500" />
                   )}
                   <span
-                    className={`text-xs font-semibold ${stat.trendUp ? 'text-green-600' : 'text-red-600'}`}
+                    className={`text-sm font-medium ${
+                      stat.trendUp ? 'text-green-600' : 'text-red-600'
+                    }`}
                   >
                     {stat.trend}
                   </span>
@@ -277,16 +244,8 @@ export function DashboardStats({ loading = false }: DashboardStatsProps) {
               </div>
             </CardBody>
           </Card>
-        );
-
-        return stat.href ? (
-          <Link key={index} href={stat.href}>
-            {StatCard}
-          </Link>
-        ) : (
-          StatCard
-        );
-      })}
+        </Link>
+      ))}
     </div>
   );
 }

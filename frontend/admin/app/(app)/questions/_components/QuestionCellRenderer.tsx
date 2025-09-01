@@ -10,12 +10,66 @@ import {
 } from 'lucide-react';
 
 import { Question } from '@/types/question';
-import {
-  formatQuestionType,
-  formatCategory,
-  getQuestionTypeColor,
-  getCategoryColor,
-} from '@/services/questionService';
+
+// Question utility functions
+function formatQuestionType(type: string): string {
+  if (!type) return 'Unknown';
+  
+  switch (type.toLowerCase()) {
+    case 'single_choice':
+      return 'Single Choice';
+    case 'multiple_choice':
+      return 'Multiple Choice';
+    case 'text_based':
+      return 'Text Based';
+    case 'rating':
+      return 'Rating';
+    case 'boolean':
+      return 'Boolean';
+    default:
+      return type.charAt(0).toUpperCase() + type.slice(1).toLowerCase();
+  }
+}
+
+function formatCategory(category: string): string {
+  if (!category) return 'General';
+  
+  return category.charAt(0).toUpperCase() + category.slice(1).toLowerCase();
+}
+
+function getQuestionTypeColor(type: string): 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'danger' {
+  switch (type?.toLowerCase()) {
+    case 'single_choice':
+      return 'primary';
+    case 'multiple_choice':
+      return 'secondary';
+    case 'text_based':
+      return 'success';
+    case 'rating':
+      return 'warning';
+    case 'boolean':
+      return 'danger';
+    default:
+      return 'default';
+  }
+}
+
+function getCategoryColor(category: string): 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'danger' {
+  switch (category?.toLowerCase()) {
+    case 'general':
+      return 'default';
+    case 'technical':
+      return 'primary';
+    case 'feedback':
+      return 'success';
+    case 'survey':
+      return 'warning';
+    case 'assessment':
+      return 'danger';
+    default:
+      return 'secondary';
+  }
+}
 
 export type QuestionColumnKey =
   | 'question'
@@ -98,14 +152,11 @@ export default function QuestionCellRenderer({
     case 'type':
       return (
         <div className="flex items-center gap-2">
-          <div className="p-2 rounded-lg shadow-sm">
-            {getTypeIcon(question.type)}
-          </div>
           <Chip
-            className="font-medium capitalize shadow-sm"
-            color={getQuestionTypeColor(question.type) as any}
             size="sm"
+            color={getQuestionTypeColor(question.type)}
             variant="flat"
+            className="text-xs"
           >
             {formatQuestionType(question.type)}
           </Chip>
@@ -115,14 +166,11 @@ export default function QuestionCellRenderer({
     case 'category':
       return (
         <div className="flex items-center gap-2">
-          <div className="p-2 rounded-lg shadow-sm">
-            <MessageSquareIcon className="w-4 h-4 text-blue-500" />
-          </div>
           <Chip
-            className="font-medium capitalize shadow-sm"
-            color={getCategoryColor(question.category) as any}
             size="sm"
+            color={getCategoryColor(question.category)}
             variant="flat"
+            className="text-xs"
           >
             {formatCategory(question.category)}
           </Chip>
@@ -131,56 +179,53 @@ export default function QuestionCellRenderer({
 
     case 'required':
       return (
-        <div className="flex items-center gap-2">
-          <Checkbox
-            isReadOnly
-            color="primary"
-            isSelected={question.required}
-            size="sm"
-          />
-          <span className="text-sm font-medium text-default-700">
-            {question.required ? 'Required' : 'Optional'}
-          </span>
-        </div>
+        <Checkbox
+          isSelected={question.required}
+          isReadOnly
+          size="sm"
+        />
       );
 
     case 'status':
       return (
         <Chip
-          className="font-medium capitalize shadow-sm"
-          color={question.isActive ? 'success' : 'default'}
           size="sm"
+          color={question.active ? 'success' : 'danger'}
           variant="flat"
+          className="text-xs"
         >
-          {question.isActive ? 'Active' : 'Inactive'}
+          {question.active ? 'Active' : 'Inactive'}
         </Chip>
       );
 
     case 'actions':
       return (
         <div className="flex items-center gap-2">
-          <Button
-            isIconOnly
-            className="text-default-400 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 shadow-sm hover:shadow-md"
-            size="sm"
-            variant="light"
-            onPress={() => onEdit?.(question)}
-          >
-            <EditIcon className="w-4 h-4" />
-          </Button>
-          <Button
-            isIconOnly
-            className="text-default-400 hover:text-red-600 hover:bg-red-50 transition-all duration-200 shadow-sm hover:shadow-md"
-            size="sm"
-            variant="light"
-            onPress={() => onDelete?.(question.id)}
-          >
-            <TrashIcon className="w-4 h-4" />
-          </Button>
+          {onEdit && (
+            <Button
+              isIconOnly
+              size="sm"
+              variant="light"
+              onPress={() => onEdit(question)}
+            >
+              <EditIcon className="w-4 h-4" />
+            </Button>
+          )}
+          {onDelete && (
+            <Button
+              isIconOnly
+              size="sm"
+              variant="light"
+              color="danger"
+              onPress={() => onDelete(question.id.toString())}
+            >
+              <TrashIcon className="w-4 h-4" />
+            </Button>
+          )}
         </div>
       );
 
     default:
-      return <span>-</span>;
+      return null;
   }
 }

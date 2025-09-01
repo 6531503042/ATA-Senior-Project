@@ -1,11 +1,11 @@
-export interface Department {
+export type Department = {
   id: number;
   name: string;
   description: string;
   active: boolean;
   createdAt: string;
   updatedAt: string;
-}
+};
 
 export interface DepartmentStats {
   totalDepartments: number;

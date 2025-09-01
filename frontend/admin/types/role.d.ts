@@ -1,12 +1,20 @@
 // Role Types for Backend API Integration
 
-export interface Role {
-  id: number;
+export type Role = {
+  _id: string;
   name: string;
-  description: string;
-  createdAt: string;
-  updatedAt: string;
-}
+  permissions?: string[];
+  metadataSchema?: MetadataSchema;
+  metadata?: any;
+};
+
+export type MetadataSchema = {
+  [key: string]: {
+    type: string;
+    label: string;
+    required: boolean;
+  };
+};
 
 export interface CreateRoleRequest {
   name: string;

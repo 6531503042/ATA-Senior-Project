@@ -1,46 +1,29 @@
-export type QuestionType =
-  | 'MULTIPLE_CHOICE'
-  | 'SINGLE_CHOICE'
-  | 'TEXT_BASED'
-  | 'RATING'
-  | 'SENTIMENT';
+export type QuestionType = 'MULTIPLE_CHOICE' | 'SINGLE_CHOICE' | 'TEXT_BASED' | 'RATING' | 'SENTIMENT';
 
-export type QuestionCategory =
-  | 'WORK_ENVIRONMENT'
-  | 'WORK_LIFE_BALANCE'
-  | 'TEAM_COLLABORATION'
-  | 'PROJECT_MANAGEMENT'
-  | 'PROJECT_SATISFACTION'
-  | 'TECHNICAL_SKILLS'
-  | 'COMMUNICATION'
-  | 'LEADERSHIP'
-  | 'INNOVATION'
-  | 'PERSONAL_GROWTH'
-  | 'GENERAL';
+export type QuestionCategory = 'WORK_ENVIRONMENT' | 'WORK_LIFE_BALANCE' | 'TEAM_COLLABORATION' | 'PROJECT_MANAGEMENT' | 'PROJECT_SATISFACTION' | 'TECHNICAL_SKILLS' | 'COMMUNICATION' | 'LEADERSHIP' | 'INNOVATION' | 'PERSONAL_GROWTH' | 'GENERAL';
 
-export interface Question {
+export type Question = {
   id: number;
   text: string;
   description?: string;
   questionType: QuestionType;
-  category: QuestionCategory;
+  category?: QuestionCategory;
   required: boolean;
   validationRules?: string;
   createdAt: string;
   updatedAt: string;
-}
+};
 
 export interface CreateQuestionRequest {
   text: string;
   description?: string;
   questionType: QuestionType;
-  category: QuestionCategory;
+  category?: QuestionCategory;
   required: boolean;
   validationRules?: string;
 }
 
 export interface UpdateQuestionRequest {
-  id: number;
   text?: string;
   description?: string;
   questionType?: QuestionType;

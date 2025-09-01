@@ -6,7 +6,48 @@ import DetailsPanel from './_components/DetailsPanel';
 import Header from './_components/Header';
 import SubmissionList from './_components/SubmissionList';
 
-import { getSubmissionsByFeedback } from '@/services/submissionService';
+import { apiRequest } from '@/utils/api';
+
+export interface Submission {
+  id: string;
+  feedbackId: string;
+  userId: string;
+  answers: any[];
+  submittedAt: string;
+  status: string;
+}
+
+export interface SubmissionsResponse {
+  items: Submission[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+async function getSubmissionsByFeedback(feedbackId: string): Promise<SubmissionsResponse> {
+  try {
+    const response = await apiRequest<SubmissionsResponse>(`/api/feedbacks/${feedbackId}/submissions`, 'GET');
+    
+    if (response.data) {
+      return response.data;
+    }
+    
+    return {
+      items: [],
+      total: 0,
+      page: 1,
+      limit: 10,
+    };
+  } catch (error) {
+    console.error('Error fetching submissions:', error);
+    return {
+      items: [],
+      total: 0,
+      page: 1,
+      limit: 10,
+    };
+  }
+}
 
 export default function SubmissionDetailPage({
   params,
@@ -16,7 +57,7 @@ export default function SubmissionDetailPage({
   const resolved = use(params);
   const feedbackId = resolved.feedbackId as string;
 
-  const [items, setItems] = useState<any[]>([]);
+  const [items, setItems] = useState<Submission[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   useEffect(() => {

@@ -6,12 +6,12 @@ import { Card, CardBody, CardHeader, Skeleton } from '@heroui/react';
 import { BarChart3, TrendingUp } from 'lucide-react';
 
 interface DashboardChartProps {
-  data: ChartData;
+  data: ChartData | null;
   loading?: boolean;
 }
 
 export function DashboardChart({ data, loading = false }: DashboardChartProps) {
-  if (loading) {
+  if (loading || !data) {
     return (
       <Card className="shadow-sm h-full">
         <CardHeader className="pb-4">
@@ -103,28 +103,34 @@ export function DashboardChart({ data, loading = false }: DashboardChartProps) {
               </div>
             </div>
 
-            {/* Chart Legend */}
-            <div className="flex flex-wrap gap-4 pt-3 border-t border-gray-100">
-              {data.datasets.map((dataset, index) => (
-                <div key={index} className="flex items-center gap-2">
-                  <div
-                    className="w-3 h-3 rounded-full"
-                    style={{
-                      backgroundColor: dataset.backgroundColor || '#3B82F6',
-                    }}
-                  />
-                  <span className="text-sm text-gray-600">{dataset.label}</span>
+            {/* Summary Stats */}
+            <div className="grid grid-cols-3 gap-4 pt-4">
+              <div className="text-center p-4 bg-blue-50 rounded-lg">
+                <div className="text-2xl font-bold text-blue-600">
+                  {data.datasets[0]?.data.reduce((a, b) => a + b, 0) || 0}
                 </div>
-              ))}
+                <div className="text-sm text-blue-600">Total</div>
+              </div>
+              <div className="text-center p-4 bg-green-50 rounded-lg">
+                <div className="text-2xl font-bold text-green-600">
+                  {Math.max(...(data.datasets[0]?.data || [0]))}
+                </div>
+                <div className="text-sm text-green-600">Peak</div>
+              </div>
+              <div className="text-center p-4 bg-purple-50 rounded-lg">
+                <div className="text-2xl font-bold text-purple-600">
+                  {Math.round(
+                    (data.datasets[0]?.data.reduce((a, b) => a + b, 0) || 0) /
+                      (data.datasets[0]?.data.length || 1),
+                  )}
+                </div>
+                <div className="text-sm text-purple-600">Average</div>
+              </div>
             </div>
           </div>
         ) : (
-          <div className="text-center py-12">
-            <BarChart3 className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-600 font-medium">No chart data available</p>
-            <p className="text-sm text-gray-500 mt-1">
-              Data will appear here when available
-            </p>
+          <div className="text-center py-8 text-gray-500">
+            No chart data available
           </div>
         )}
       </CardBody>

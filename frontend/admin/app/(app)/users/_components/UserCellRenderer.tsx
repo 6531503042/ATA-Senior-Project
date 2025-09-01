@@ -19,13 +19,72 @@ import {
 } from 'lucide-react';
 
 import { User } from '@/types/user';
-import {
-  formatUserRole,
-  formatUserStatus,
-  getUserRoleColor,
-  getUserStatusColor,
-  formatDate,
-} from '@/services/userService';
+
+// User utility functions
+function formatUserRole(role: string): string {
+  if (!role) return 'User';
+  
+  return role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
+}
+
+function formatUserStatus(status: string | boolean): string {
+  if (typeof status === 'boolean') {
+    return status ? 'Active' : 'Inactive';
+  }
+  
+  if (!status) return 'Inactive';
+  
+  return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+}
+
+function getUserRoleColor(role: string): 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'danger' {
+  switch (role?.toLowerCase()) {
+    case 'admin':
+      return 'danger';
+    case 'manager':
+      return 'warning';
+    case 'user':
+      return 'primary';
+    case 'guest':
+      return 'secondary';
+    default:
+      return 'default';
+  }
+}
+
+function getUserStatusColor(status: string | boolean): 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'danger' {
+  if (typeof status === 'boolean') {
+    return status ? 'success' : 'danger';
+  }
+  
+  switch (status?.toLowerCase()) {
+    case 'active':
+      return 'success';
+    case 'inactive':
+      return 'danger';
+    case 'pending':
+      return 'warning';
+    case 'suspended':
+      return 'danger';
+    default:
+      return 'default';
+  }
+}
+
+function formatDate(dateString: string | null | undefined): string {
+  if (!dateString) return 'N/A';
+  
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  } catch (error) {
+    return 'Invalid Date';
+  }
+}
 
 export type UserColumnKey =
   | 'user'
@@ -52,7 +111,7 @@ export default function UserCellRenderer({
 }: UserCellRendererProps) {
   // Helper functions to get role and status with fallbacks
   const getUserRole = () => {
-    if (user.role) return user.role;
+    if (user.roles) return user.roles;
     if (user.roles && user.roles.length > 0) {
       return user.roles[0].toLowerCase();
     }
@@ -100,111 +159,111 @@ export default function UserCellRenderer({
             {user.firstName} {user.lastName}
           </h3>
           <p className="text-xs text-default-500 line-clamp-1">
-            @{user.username}
+            {user.email}
           </p>
-          <p className="text-xs text-default-400 line-clamp-1">{user.email}</p>
-          {user.position && (
-            <span className="mt-1.5 w-fit text-[11px] text-default-600 bg-default-100 px-2 py-1 rounded-md">
-              {user.position}
-            </span>
-          )}
         </div>
       );
 
     case 'role':
       const role = getUserRole();
-
       return (
         <div className="flex items-center gap-2">
-          <div className="p-2 rounded-lg bg-default-100 text-default-600">
-            {getRoleIcon(role)}
-          </div>
+          {getRoleIcon(role)}
           <Chip
-            className="font-medium capitalize"
-            color={getUserRoleColor(role as any) as any}
             size="sm"
+            color={getUserRoleColor(role)}
             variant="flat"
+            className="text-xs"
           >
-            {formatUserRole(role as any)}
+            {formatUserRole(role)}
           </Chip>
         </div>
       );
 
     case 'status':
       const status = getUserStatus();
-
       return (
         <Chip
-          className="font-medium capitalize"
-          color={getUserStatusColor(status as any) as any}
           size="sm"
+          color={getUserStatusColor(status)}
           variant="flat"
+          className="text-xs"
         >
-          {formatUserStatus(status as any)}
+          {formatUserStatus(status)}
         </Chip>
       );
 
     case 'department':
       return (
         <div className="flex items-center gap-2">
-          <div className="p-2 rounded-lg bg-default-100 text-default-600">
-            <BuildingIcon className="w-4 h-4" />
-          </div>
-          <span className="text-sm font-medium text-default-700">
+          <BuildingIcon className="w-4 h-4 text-default-400" />
+          <span className="text-sm text-default-600">
             {getUserDepartment()}
           </span>
         </div>
       );
 
     case 'lastLogin':
+      const lastLogin = getUserLastLogin();
       return (
         <div className="flex items-center gap-2">
-          <div className="p-2 rounded-lg bg-default-100 text-default-600">
-            <ClockIcon className="w-4 h-4" />
-          </div>
+          <ClockIcon className="w-4 h-4 text-default-400" />
           <span className="text-sm text-default-600">
-            {formatDate(getUserLastLogin())}
+            {formatDate(lastLogin)}
           </span>
         </div>
       );
 
     case 'actions':
       return (
-        <Dropdown>
-          <DropdownTrigger>
-            <Button isIconOnly size="sm" variant="light">
-              <EllipsisVertical className="text-default-400" />
+        <div className="flex items-center gap-2">
+          {onView && (
+            <Button
+              isIconOnly
+              size="sm"
+              variant="light"
+              onPress={() => onView(user)}
+            >
+              <EyeIcon className="w-4 h-4" />
             </Button>
-          </DropdownTrigger>
-          <DropdownMenu>
-            <DropdownItem
-              key="view"
-              startContent={<EyeIcon size={16} />}
-              onPress={() => onView?.(user)}
+          )}
+          {onEdit && (
+            <Button
+              isIconOnly
+              size="sm"
+              variant="light"
+              onPress={() => onEdit(user)}
             >
-              View Details
-            </DropdownItem>
-            <DropdownItem
-              key="edit"
-              startContent={<EditIcon size={16} />}
-              onPress={() => onEdit?.(user)}
-            >
-              Edit
-            </DropdownItem>
-            <DropdownItem
-              key="delete"
-              className="text-danger"
-              color="danger"
-              startContent={<TrashIcon size={16} />}
-              onPress={() => onDelete?.(user.id.toString())}
-            >
-              Delete
-            </DropdownItem>
-          </DropdownMenu>
-        </Dropdown>
+              <EditIcon className="w-4 h-4" />
+            </Button>
+          )}
+          {onDelete && (
+            <Dropdown>
+              <DropdownTrigger>
+                <Button
+                  isIconOnly
+                  size="sm"
+                  variant="light"
+                >
+                  <EllipsisVertical className="w-4 h-4" />
+                </Button>
+              </DropdownTrigger>
+              <DropdownMenu>
+                <DropdownItem
+                  key="delete"
+                  color="danger"
+                  startContent={<TrashIcon className="w-4 h-4" />}
+                  onPress={() => onDelete(user.id.toString())}
+                >
+                  Delete
+                </DropdownItem>
+              </DropdownMenu>
+            </Dropdown>
+          )}
+        </div>
       );
 
     default:
-      return <span>-</span>;
+      return null;
   }
 }
