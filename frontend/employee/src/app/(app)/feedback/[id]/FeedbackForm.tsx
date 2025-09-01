@@ -2,25 +2,28 @@
 
 import React, { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { AlertCircle, BarChart, CheckCircle2, ChevronLeft, ChevronRight, ClipboardList, Clock, MessageSquare, User2 } from 'lucide-react';
+import {
+  AlertCircle,
+  BarChart,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  ClipboardList,
+  Clock,
+  MessageSquare,
+  User2,
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 import { useAlertDialog } from '@components/ui/alert-dialog'; // provider-backed alerts
 import { Button } from '@components/ui/button';               // your button styles
-import { cn } from '@/app/lib/utils';                              // class combiner
+import { cn } from '@/app/lib/utils';                         // class combiner
 
-// Feedback UI blocks from your components bundle
-import {
-  // FeedbackHeader,            // optional
-  // FeedbackProgress,          // optional
-  // FeedbackStepper,           // optional
-  // SatisfactionDashboard,     // optional
-  QuestionCard,
-  FeedbackOverallComments,
-} from './components';
+// ✅ keep your original Overall Comments component (unchanged look)
+import { FeedbackOverallComments } from './components';
 
 // -----------------------------
-// Local fallbacks / types
+// Local types & mocks
 // -----------------------------
 type QType = 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'TEXT_BASED' | 'SENTIMENT';
 
@@ -46,12 +49,8 @@ interface FeedbackFormProps {
   id: string;
 }
 
-// -----------------------------
-// DESIGN MODE (no backend/auth)
-// -----------------------------
 const DESIGN_MODE = true;
 
-/** Mock a feedback set so the page renders without backend */
 const mockFeedback: FeedbackSubmission = {
   id: 1001,
   title: 'Quarterly Satisfaction Survey',
@@ -109,18 +108,13 @@ const mockFeedback: FeedbackSubmission = {
 const MAX_TEXT_LENGTH = 255;
 
 // -----------------------------
-// Adapter: FeedbackQuestion -> QuestionCard expected shape
-// Your QuestionCard expects: { id, content, category, answerType, validationRule, options? }
+// Adapter -> fallback QuestionCard prop shape
 // -----------------------------
 type AdaptedQuestion = {
   id: string;
   content: string;
   category: string;
-  answerType:
-    | 'single'         // SINGLE_CHOICE
-    | 'multiple'       // MULTIPLE_CHOICE
-    | 'text'           // TEXT_BASED
-    | 'sentiment';     // SENTIMENT (rating-like)
+  answerType: 'single' | 'multiple' | 'text' | 'sentiment';
   validationRule: { required?: boolean };
   options?: { id: string; label: string }[];
   description?: string;
@@ -144,13 +138,139 @@ function adaptToQuestionCard(q: FeedbackQuestion): AdaptedQuestion {
     id: String(q.id),
     content: q.text,
     description: q.description,
-    category: 'general', // you can map real categories later
+    category: 'general',
     answerType: mapType(q.type),
     validationRule: { required: q.required },
     options: q.answers?.map((a) => ({ id: a.value, label: a.text })),
   };
 }
 
+// -----------------------------
+// ✅ Typed fallback QuestionCard (no `any`)
+// -----------------------------
+type FallbackQuestionCardProps = {
+  question: AdaptedQuestion;
+  currentAnswer: string | string[];
+  onAnswerChange: (val: string | string[]) => void;
+  questionNumber: number;
+  totalQuestions: number;
+};
+
+function QuestionCard({
+  question,
+  currentAnswer,
+  onAnswerChange,
+}: FallbackQuestionCardProps) {
+  const isMultiple = question.answerType === 'multiple';
+  const isSingle = question.answerType === 'single' || question.answerType === 'sentiment';
+  const isText = question.answerType === 'text';
+
+  const selected = (val: string): boolean =>
+    Array.isArray(currentAnswer) ? currentAnswer.includes(val) : currentAnswer === val;
+
+  const toggleMulti = (val: string) => {
+    const arr = Array.isArray(currentAnswer) ? [...currentAnswer] : [];
+    const idx = arr.indexOf(val);
+    if (idx >= 0) arr.splice(idx, 1);
+    else arr.push(val);
+    onAnswerChange(arr);
+  };
+
+  return (
+    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      <h3 className="font-medium text-gray-900">{question.content}</h3>
+      {question.description && (
+        <p className="text-sm text-gray-500 mt-1">{question.description}</p>
+      )}
+
+      {/* Single choice */}
+      {isSingle && question.options && (
+        <div className="mt-5 grid gap-2">
+          {question.options.map((opt) => (
+            <label
+              key={opt.id}
+              className={`flex items-center gap-3 rounded-xl border p-3 cursor-pointer transition
+                ${selected(opt.id) ? 'border-violet-300 bg-violet-50' : 'border-gray-200 hover:bg-gray-50'}
+              `}
+            >
+              <input
+                type="radio"
+                name={`q-${question.id}`}
+                className="h-4 w-4 text-violet-600"
+                checked={selected(opt.id)}
+                onChange={() => onAnswerChange(opt.id)}
+              />
+              <span className="text-sm text-gray-800">{opt.label}</span>
+            </label>
+          ))}
+        </div>
+      )}
+
+      {/* Multiple choice */}
+      {isMultiple && question.options && (
+        <div className="mt-5 grid gap-2">
+          {question.options.map((opt) => (
+            <label
+              key={opt.id}
+              className={`flex items-center gap-3 rounded-xl border p-3 cursor-pointer transition
+                ${selected(opt.id) ? 'border-violet-300 bg-violet-50' : 'border-gray-200 hover:bg-gray-50'}
+              `}
+            >
+              <input
+                type="checkbox"
+                className="h-4 w-4 text-violet-600"
+                checked={selected(opt.id)}
+                onChange={() => toggleMulti(opt.id)}
+              />
+              <span className="text-sm text-gray-800">{opt.label}</span>
+            </label>
+          ))}
+        </div>
+      )}
+
+      {/* Text */}
+      {isText && (
+        <div className="mt-5">
+          <textarea
+            rows={5}
+            value={(currentAnswer as string) || ''}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+              onAnswerChange(e.target.value)
+            }
+            maxLength={MAX_TEXT_LENGTH}
+            placeholder="Type your answer…"
+            className="w-full rounded-xl border border-gray-200 bg-white p-3 text-sm outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
+          />
+          <div className="mt-1 text-right text-xs text-gray-500">
+            {String(((currentAnswer as string) ?? '').length)} / {MAX_TEXT_LENGTH}
+          </div>
+        </div>
+      )}
+
+      {/* Sentiment as 1–5 pills (if options are provided, we map those) */}
+      {question.answerType === 'sentiment' && !question.options && (
+        <div className="mt-5 flex gap-2">
+          {['1', '2', '3', '4', '5'].map((val) => (
+            <button
+              key={val}
+              type="button"
+              onClick={() => onAnswerChange(val)}
+              className={`px-4 py-2 rounded-lg border text-sm transition
+                ${selected(val) ? 'border-violet-400 bg-violet-50 text-violet-700' : 'border-gray-200 hover:bg-gray-50'}
+              `}
+            >
+              {val}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// -----------------------------
+// Component
+// -----------------------------
 export default function FeedbackForm({ id }: FeedbackFormProps) {
   const router = useRouter();
   const { showAlert } = useAlertDialog();
@@ -173,16 +293,12 @@ export default function FeedbackForm({ id }: FeedbackFormProps) {
     setPrivacyLevel('PUBLIC');
 
     if (DESIGN_MODE) {
-      // simulate async
       const t = setTimeout(() => {
-        // if you want to route by id, you can pick different mock by id
         setFeedback({ ...mockFeedback, id: Number(id) || mockFeedback.id });
         setLoading(false);
       }, 400);
       return () => clearTimeout(t);
     }
-
-    // (When you wire the backend, fetch here and remove DESIGN_MODE block)
   }, [id]);
 
   const canProceed =
@@ -193,13 +309,12 @@ export default function FeedbackForm({ id }: FeedbackFormProps) {
             (!feedback.questions[currentStep].required ||
               (answers[feedback.questions[currentStep].id] &&
                 (!Array.isArray(answers[feedback.questions[currentStep].id]) ||
-                  (answers[feedback.questions[currentStep].id] as string[]).length > 0))),
+                  (answers[feedback.questions[currentStep].id] as string[]).length > 0)))
         );
 
   const handleSubmit = async () => {
     if (!feedback) return;
 
-    // Basic validation while designing
     const tooLong = Object.entries(answers).find(([qid, val]) => {
       const q = feedback.questions.find((x) => x.id === Number(qid));
       return q?.type === 'TEXT_BASED' && typeof val === 'string' && val.length > MAX_TEXT_LENGTH;
@@ -228,7 +343,6 @@ export default function FeedbackForm({ id }: FeedbackFormProps) {
     }
 
     setSubmitting(true);
-    // In design mode, just pretend it worked.
     setTimeout(() => {
       setSubmitting(false);
       showAlert({
@@ -336,7 +450,7 @@ export default function FeedbackForm({ id }: FeedbackFormProps) {
                     isCurrent
                       ? 'bg-violet-50 text-violet-700 shadow-md border border-violet-200'
                       : 'bg-white border border-gray-100 shadow-sm',
-                    isCompleted ? 'text-gray-900' : 'text-gray-500',
+                    isCompleted ? 'text-gray-900' : 'text-gray-500'
                   )}
                 >
                   <div
@@ -346,17 +460,27 @@ export default function FeedbackForm({ id }: FeedbackFormProps) {
                         ? 'bg-violet-100 text-violet-700'
                         : isCompleted
                         ? 'bg-emerald-100 text-emerald-700'
-                        : 'bg-gray-100 text-gray-500',
+                        : 'bg-gray-100 text-gray-500'
                     )}
                   >
-                    {isCompleted ? <CheckCircle2 className="w-5 h-5" /> : <span className="text-sm font-medium">{i + 1}</span>}
+                    {isCompleted ? (
+                      <CheckCircle2 className="w-5 h-5" />
+                    ) : (
+                      <span className="text-sm font-medium">{i + 1}</span>
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium truncate">Question {i + 1}</span>
-                      {q.required && <span className="shrink-0 text-xs px-2 py-0.5 rounded-full bg-red-50 text-red-500 font-medium">Required</span>}
+                      {q.required && (
+                        <span className="shrink-0 text-xs px-2 py-0.5 rounded-full bg-red-50 text-red-500 font-medium">
+                          Required
+                        </span>
+                      )}
                     </div>
-                    <p className="text-xs text-gray-500 truncate mt-1">{q.description || 'No description'}</p>
+                    <p className="text-xs text-gray-500 truncate mt-1">
+                      {q.description || 'No description'}
+                    </p>
                   </div>
                 </motion.button>
               );
@@ -374,7 +498,7 @@ export default function FeedbackForm({ id }: FeedbackFormProps) {
                 currentStep === feedback.questions.length
                   ? 'bg-violet-50 text-violet-700 shadow-md border border-violet-200'
                   : 'bg-white border border-gray-100 shadow-sm',
-                overallComments.trim().length > 0 ? 'text-gray-900' : 'text-gray-500',
+                overallComments.trim().length > 0 ? 'text-gray-900' : 'text-gray-500'
               )}
             >
               <div
@@ -384,7 +508,7 @@ export default function FeedbackForm({ id }: FeedbackFormProps) {
                     ? 'bg-violet-100 text-violet-700'
                     : overallComments.trim().length > 0
                     ? 'bg-emerald-100 text-emerald-700'
-                    : 'bg-gray-100 text-gray-500',
+                    : 'bg-gray-100 text-gray-500'
                 )}
               >
                 <MessageSquare className="w-5 h-5" />
@@ -415,16 +539,19 @@ export default function FeedbackForm({ id }: FeedbackFormProps) {
                   </div>
                   <div>
                     <h2 className="text-sm font-medium text-gray-500">
-                      {currentStep < feedback.questions.length
-                        ? <>Question {currentStep + 1} of {feedback.questions.length}</>
-                        : 'Overall Comments'}
+                      {currentStep < feedback.questions.length ? (
+                        <>Question {currentStep + 1} of {feedback.questions.length}</>
+                      ) : (
+                        'Overall Comments'
+                      )}
                     </h2>
-                    {currentStep < feedback.questions.length && feedback.questions[currentStep]?.required && (
-                      <div className="flex items-center gap-1 text-red-500 text-sm">
-                        <AlertCircle className="h-4 w-4" />
-                        <span>Required</span>
-                      </div>
-                    )}
+                    {currentStep < feedback.questions.length &&
+                      feedback.questions[currentStep]?.required && (
+                        <div className="flex items-center gap-1 text-red-500 text-sm">
+                          <AlertCircle className="h-4 w-4" />
+                          <span>Required</span>
+                        </div>
+                      )}
                   </div>
                 </div>
 
@@ -435,7 +562,10 @@ export default function FeedbackForm({ id }: FeedbackFormProps) {
                       question={adaptToQuestionCard(feedback.questions[currentStep])}
                       currentAnswer={answers[feedback.questions[currentStep].id] || ''}
                       onAnswerChange={(val) =>
-                        setAnswers((prev) => ({ ...prev, [feedback.questions[currentStep].id]: val }))
+                        setAnswers((prev) => ({
+                          ...prev,
+                          [feedback.questions[currentStep].id]: val,
+                        }))
                       }
                       questionNumber={currentStep + 1}
                       totalQuestions={feedback.questions.length}
@@ -488,7 +618,9 @@ export default function FeedbackForm({ id }: FeedbackFormProps) {
                     className="gap-2 bg-gradient-to-r from-violet-600 to-violet-700 hover:from-violet-700 hover:to-violet-800 text-white shadow-sm"
                   >
                     <span>
-                      {currentStep === feedback.questions.length - 1 ? 'Final Step' : 'Next Question'}
+                      {currentStep === feedback.questions.length - 1
+                        ? 'Final Step'
+                        : 'Next Question'}
                     </span>
                     <ChevronRight className="h-4 w-4" />
                   </Button>
