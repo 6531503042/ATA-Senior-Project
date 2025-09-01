@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import FeedbackForm from './FeedbackForm';
+import React from 'react';
 
 export default function FeedbackPage({ params }: { params: { id: string } }) {
   return (

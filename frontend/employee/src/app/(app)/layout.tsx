@@ -1,5 +1,7 @@
 'use client';
 
+import React from "react";
+
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   // use your own Navbar/Theme Providers here later if you want
   return (
