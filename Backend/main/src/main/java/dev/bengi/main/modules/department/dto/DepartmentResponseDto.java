@@ -8,5 +8,6 @@ public record DepartmentResponseDto(
         String description,
         boolean active,
         LocalDateTime createdAt,
-        LocalDateTime updatedAt
+        LocalDateTime updatedAt,
+        Long memberCount
 ) {}

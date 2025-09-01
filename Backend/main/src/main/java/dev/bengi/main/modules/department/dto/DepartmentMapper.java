@@ -16,5 +16,6 @@ public interface DepartmentMapper {
     void updateEntity(@MappingTarget Department target, DepartmentUpdateRequestDto req);
 
     // Entity -> Response
+    @Mapping(target = "memberCount", constant = "0L")
     DepartmentResponseDto toResponse(Department entity);
 }

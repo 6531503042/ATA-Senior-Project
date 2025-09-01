@@ -15,6 +15,7 @@ public interface ProjectMapper {
 
     void updateEntity(@MappingTarget Project target, ProjectUpdateRequestDto req);
 
+    @Mapping(target = "memberCount", constant = "0L")
     ProjectResponseDto toResponse(Project entity);
 }
 

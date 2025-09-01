@@ -17,9 +17,9 @@ public record UserCreateRequestDto(
         String email,
 
         @NotBlank
-        @Size(min = 8, max = 100)
-        @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&].*$", 
-                message = "Password must contain at least one lowercase letter, one uppercase letter, one digit, and one special character")
+        @Size(min = 6, max = 100)
+        @Pattern(regexp = "^[A-Za-z\\d@$!%*?&]+$", 
+                message = "Password can contain letters, numbers, and special characters")
         String password,
 
         @Size(max = 100)

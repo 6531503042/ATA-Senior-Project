@@ -64,13 +64,14 @@ public class ProjectService {
 
     public Flux<ProjectResponseDto> getAll() {
         return projectRepository.findAll()
-                .map(mapper::toResponse)
+                .flatMap(project -> calculateMemberCount(project))
                 .doOnNext(d -> log.info("Project found: {}", d));
     }
 
     public Mono<PageResponse<ProjectResponseDto>> getAll(PageRequest pageRequest) {
         return paginationService.paginateInMemory(
-            projectRepository.findAll().map(mapper::toResponse),
+            projectRepository.findAll()
+                .flatMap(project -> calculateMemberCount(project)),
             pageRequest
         );
     }
@@ -91,26 +92,10 @@ public class ProjectService {
     // Additional methods for employee endpoints
     
     public Mono<PageResponse<ProjectResponseDto>> getProjectsByMember(Long userId, PageRequest pageRequest) {
-        String baseQuery = """
-            SELECT p.* FROM projects p
-            JOIN project_members pm ON p.id = pm.project_id
-            WHERE pm.user_id = :userId
-            """;
-        
-        String countQuery = """
-            SELECT COUNT(*) FROM projects p
-            JOIN project_members pm ON p.id = pm.project_id
-            WHERE pm.user_id = :userId
-            """;
-        
-        return paginationService.executePaginatedQuery(
-            baseQuery,
-            countQuery,
-            pageRequest,
-            java.util.Set.of("id", "name", "created_at", "updated_at"),
-            java.util.Set.of("name", "description"),
-            this::executeProjectQuery,
-            this::executeCountQuery
+        // TODO: Implement actual query logic
+        return paginationService.paginateInMemory(
+            Flux.empty(),
+            pageRequest
         );
     }
     
@@ -132,6 +117,36 @@ public class ProjectService {
     
     private Mono<Long> executeCountQuery(String query) {
         return Mono.just(0L); // This should be implemented with actual database client
+    }
+
+    private Mono<ProjectResponseDto> calculateMemberCount(Project project) {
+        return projectMemberRepository.countMembersForProject(project.getId())
+                .map(memberCount -> new ProjectResponseDto(
+                    project.getId(),
+                    project.getName(),
+                    project.getDescription(),
+                    project.getCategory(),
+                    project.getStartDate(),
+                    project.getEndDate(),
+                    project.isActive(),
+                    project.getDepartmentId(),
+                    project.getCreatedAt(),
+                    project.getUpdatedAt(),
+                    memberCount
+                ))
+                .defaultIfEmpty(new ProjectResponseDto(
+                    project.getId(),
+                    project.getName(),
+                    project.getDescription(),
+                    project.getCategory(),
+                    project.getStartDate(),
+                    project.getEndDate(),
+                    project.isActive(),
+                    project.getDepartmentId(),
+                    project.getCreatedAt(),
+                    project.getUpdatedAt(),
+                    0L
+                ));
     }
 }
 

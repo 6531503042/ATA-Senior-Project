@@ -66,17 +66,19 @@ public class DepartmentService {
 
     public Flux<DepartmentResponseDto> getAll() {
         return departmentRepository.findAll()
-                .map(mapper::toResponse)
+                .flatMap(dept -> calculateMemberCount(dept))
                 .doOnNext(d -> log.info("Department found: {}", d));
     }
 
     public Flux<DepartmentResponseDto> listActive() {
-        return departmentRepository.findByActive(true).map(mapper::toResponse);
+        return departmentRepository.findByActive(true)
+                .flatMap(dept -> calculateMemberCount(dept));
     }
 
     public Mono<PageResponse<DepartmentResponseDto>> listActive(PageRequest pageRequest) {
         return paginationService.paginateInMemory(
-            departmentRepository.findByActive(true).map(mapper::toResponse),
+            departmentRepository.findByActive(true)
+                .flatMap(dept -> calculateMemberCount(dept)),
             pageRequest
         );
     }
@@ -85,5 +87,30 @@ public class DepartmentService {
         return userService.getUsersByDepartmentId(departmentId, pageRequest)
                 .doOnSuccess(d -> log.info("Found {} members for department {}", 
                     d.getContent().size(), departmentId));
+    }
+
+    private Mono<DepartmentResponseDto> calculateMemberCount(Department dept) {
+        return userService.getUsersByDepartmentId(dept.getId(), PageRequest.unlimited())
+                .map(pageResponse -> {
+                    long memberCount = pageResponse.getContent().size();
+                    return new DepartmentResponseDto(
+                        dept.getId(),
+                        dept.getName(),
+                        dept.getDescription(),
+                        dept.isActive(),
+                        dept.getCreatedAt(),
+                        dept.getUpdatedAt(),
+                        memberCount
+                    );
+                })
+                .defaultIfEmpty(new DepartmentResponseDto(
+                    dept.getId(),
+                    dept.getName(),
+                    dept.getDescription(),
+                    dept.isActive(),
+                    dept.getCreatedAt(),
+                    dept.getUpdatedAt(),
+                    0L
+                ));
     }
 }
