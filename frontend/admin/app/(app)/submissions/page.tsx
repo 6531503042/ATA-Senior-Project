@@ -14,7 +14,8 @@ import { useSubmissions } from "@/hooks/useSubmissions";
 import type { SubmissionItem } from "@/types/submission";
 import { useMemo, useState } from "react";
 import { Tabs, Tab, Card, CardBody } from "@heroui/react";
-import { Loader2 } from "lucide-react";
+import { FileTextIcon, Loader2 } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 
 export default function SubmissionsPage() {
   const {
@@ -60,10 +61,20 @@ export default function SubmissionsPage() {
   }, [sentimentCounts]);
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-semibold">Submissions</h1>
-        <p className="text-default-500 text-sm">Review and manage feedback submissions</p>
+    <>
+  <PageHeader
+    description="Review and manage feedback submissions"
+    icon={<FileTextIcon />}
+  />
+    <div className="space-y-2">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 p-6 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-2xl border border-blue-100">
+        <div>
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            Submissions
+          </h1>
+          <p className="text-default-600 mt-1">Review and manage feedback submissions</p>
+        </div>
       </div>
 
       <div className="space-y-4">
@@ -149,6 +160,7 @@ export default function SubmissionsPage() {
         </div>
       )}
     </div>
+    </>
   );
 }
 
