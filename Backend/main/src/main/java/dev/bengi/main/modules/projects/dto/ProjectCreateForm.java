@@ -8,7 +8,6 @@ public class ProjectCreateForm {
     private String startDate;
     private String endDate;
     private boolean active = true;
-    private String departmentId;
     private List<String> members;
 
     // Default constructor
@@ -53,14 +52,6 @@ public class ProjectCreateForm {
 
     public void setActive(boolean active) {
         this.active = active;
-    }
-
-    public String getDepartmentId() {
-        return departmentId;
-    }
-
-    public void setDepartmentId(String departmentId) {
-        this.departmentId = departmentId;
     }
 
     public List<String> getMembers() {

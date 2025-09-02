@@ -8,7 +8,6 @@ public class ProjectUpdateForm {
     private String startDate;
     private String endDate;
     private boolean active = true;
-    private String departmentId;
     private List<String> members;
     private List<String> existingMembers;
 
@@ -54,14 +53,6 @@ public class ProjectUpdateForm {
 
     public void setActive(boolean active) {
         this.active = active;
-    }
-
-    public String getDepartmentId() {
-        return departmentId;
-    }
-
-    public void setDepartmentId(String departmentId) {
-        this.departmentId = departmentId;
     }
 
     public List<String> getMembers() {

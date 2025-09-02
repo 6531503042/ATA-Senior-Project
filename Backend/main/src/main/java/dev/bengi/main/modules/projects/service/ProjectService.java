@@ -32,8 +32,17 @@ public class ProjectService {
     public Mono<ProjectResponseDto> create(ProjectRequestDto req) {
         Project entity = mapper.toEntity(req);
         return projectRepository.save(entity)
-                .map(mapper::toResponse)
-                .doOnSuccess(d -> log.info("Project created: {}", d));
+                .flatMap(savedProject -> {
+                    // Handle members if provided
+                    if (req.members() != null && !req.members().isEmpty()) {
+                        log.info("Adding {} members to project {}", req.members().size(), savedProject.getId());
+                        return addMembers(savedProject.getId(), req.members())
+                                .then(Mono.just(savedProject));
+                    }
+                    return Mono.just(savedProject);
+                })
+                .flatMap(this::calculateMemberCount)
+                .doOnSuccess(d -> log.info("Project created with {} members: {}", d.memberCount(), d));
     }
 
     @Transactional
@@ -103,9 +112,15 @@ public class ProjectService {
 
     // Members management
     public Mono<Void> addMembers(Long projectId, java.util.List<Long> memberIds) {
+        log.info("Adding {} members to project {}: {}", memberIds.size(), projectId, memberIds);
         return reactor.core.publisher.Flux.fromIterable(memberIds)
-                .flatMap(userId -> projectMemberRepository.addMember(projectId, userId))
-                .then();
+                .flatMap(userId -> {
+                    log.info("Adding user {} to project {}", userId, projectId);
+                    return projectMemberRepository.addMember(projectId, userId);
+                })
+                .then()
+                .doOnSuccess(v -> log.info("Successfully added {} members to project {}", memberIds.size(), projectId))
+                .doOnError(e -> log.error("Failed to add members to project {}: {}", projectId, e.getMessage()));
     }
 
     public Mono<Void> removeMembers(Long projectId, java.util.List<Long> memberIds) {
@@ -145,19 +160,22 @@ public class ProjectService {
     }
 
     private Mono<ProjectResponseDto> calculateMemberCount(Project project) {
+        log.info("Calculating member count for project {}: {}", project.getId(), project.getName());
         return projectMemberRepository.countMembersForProject(project.getId())
-                .map(memberCount -> new ProjectResponseDto(
-                    project.getId(),
-                    project.getName(),
-                    project.getDescription(),
-                    project.getStartDate(),
-                    project.getEndDate(),
-                    project.isActive(),
-                    project.getDepartmentId(),
-                    project.getCreatedAt(),
-                    project.getUpdatedAt(),
-                    memberCount
-                ))
+                .map(memberCount -> {
+                    log.info("Project {} has {} members", project.getId(), memberCount);
+                    return new ProjectResponseDto(
+                        project.getId(),
+                        project.getName(),
+                        project.getDescription(),
+                        project.getStartDate(),
+                        project.getEndDate(),
+                        project.isActive(),
+                        project.getCreatedAt(),
+                        project.getUpdatedAt(),
+                        memberCount
+                    );
+                })
                 .defaultIfEmpty(new ProjectResponseDto(
                     project.getId(),
                     project.getName(),
@@ -165,7 +183,6 @@ public class ProjectService {
                     project.getStartDate(),
                     project.getEndDate(),
                     project.isActive(),
-                    project.getDepartmentId(),
                     project.getCreatedAt(),
                     project.getUpdatedAt(),
                     0L

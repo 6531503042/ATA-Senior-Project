@@ -11,7 +11,6 @@ public record ProjectRequestDto(
         LocalDateTime startDate,
         LocalDateTime endDate,
         boolean active,
-        Long departmentId,
         List<Long> members
 ) {}
 

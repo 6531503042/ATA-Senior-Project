@@ -23,8 +23,6 @@ public class Project {
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private boolean active;
-    @Column("department_id")
-    private Long departmentId;
     @CreatedDate
     @Column("created_at")
     private LocalDateTime createdAt;

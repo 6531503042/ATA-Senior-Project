@@ -9,6 +9,7 @@ import dev.bengi.main.modules.projects.dto.ProjectCreateForm;
 import dev.bengi.main.modules.projects.dto.ProjectUpdateForm;
 import dev.bengi.main.modules.projects.service.ProjectService;
 import dev.bengi.main.modules.projects.dto.ProjectMembersRequestDto;
+import lombok.extern.slf4j.Slf4j;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,6 +23,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 @RestController
 @RequestMapping("/api/projects")
 @RequiredArgsConstructor
+@Slf4j
 public class ProjectController {
 
     private final ProjectService projectService;
@@ -31,6 +33,14 @@ public class ProjectController {
     @PreAuthorize("hasRole('ADMIN')")
     public Mono<ResponseEntity<ProjectResponseDto>> create(@ModelAttribute ProjectCreateForm form) {
         
+        log.info("=== PROJECT CREATE REQUEST ===");
+        log.info("Name: {}", form.getName());
+        log.info("Description: {}", form.getDescription());
+        log.info("Start Date: {}", form.getStartDate());
+        log.info("End Date: {}", form.getEndDate());
+        log.info("Active: {}", form.isActive());
+        log.info("Members: {}", form.getMembers());
+        
         ProjectRequestDto req = new ProjectRequestDto(
             form.getName(),
             form.getDescription(),
@@ -39,13 +49,16 @@ public class ProjectController {
             form.getEndDate() != null && !form.getEndDate().isEmpty() ? 
                 java.time.LocalDateTime.parse(form.getEndDate() + "T00:00:00") : null,
             form.isActive(),
-            form.getDepartmentId() != null && !form.getDepartmentId().isEmpty() ? 
-                Long.parseLong(form.getDepartmentId()) : null,
             form.getMembers() != null ? form.getMembers().stream().map(Long::parseLong).toList() : java.util.List.of()
         );
         
+        log.info("Created ProjectRequestDto: {}", req);
+        
         return projectService.create(req)
-                .map(d -> ResponseEntity.status(HttpStatus.CREATED).body(d));
+                .map(d -> {
+                    log.info("Project created successfully: {}", d);
+                    return ResponseEntity.status(HttpStatus.CREATED).body(d);
+                });
     }
 
     @PutMapping("/{id}")
@@ -61,8 +74,6 @@ public class ProjectController {
             form.getEndDate() != null && !form.getEndDate().isEmpty() ? 
                 java.time.LocalDateTime.parse(form.getEndDate() + "T00:00:00") : null,
             form.isActive(),
-            form.getDepartmentId() != null && !form.getDepartmentId().isEmpty() ? 
-                Long.parseLong(form.getDepartmentId()) : null,
             form.getMembers() != null ? form.getMembers().stream().map(Long::parseLong).toList() : java.util.List.of(),
             form.getExistingMembers() != null ? form.getExistingMembers().stream().map(Long::parseLong).toList() : java.util.List.of()
         );

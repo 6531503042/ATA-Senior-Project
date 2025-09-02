@@ -9,7 +9,6 @@ public record ProjectResponseDto(
         LocalDateTime startDate,
         LocalDateTime endDate,
         boolean active,
-        Long departmentId,
         LocalDateTime createdAt,
         LocalDateTime updatedAt,
         Long memberCount
