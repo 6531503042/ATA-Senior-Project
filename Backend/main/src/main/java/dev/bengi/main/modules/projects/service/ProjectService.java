@@ -44,7 +44,32 @@ public class ProjectService {
                     mapper.updateEntity(e, req);
                     return projectRepository.save(e);
                 })
-                .map(mapper::toResponse)
+                .flatMap(savedProject -> {
+                    // Handle members update
+                    if (req.members() != null && !req.members().isEmpty()) {
+                        return addMembers(savedProject.getId(), req.members())
+                                .then(Mono.just(savedProject));
+                    }
+                    
+                    if (req.existingMembers() != null && !req.existingMembers().isEmpty()) {
+                        // Remove members not in existingMembers list
+                        return projectMemberRepository.findUserIdsByProjectId(savedProject.getId())
+                                .collectList()
+                                .flatMap(currentMembers -> {
+                                    java.util.List<Long> toRemove = currentMembers.stream()
+                                            .filter(memberId -> !req.existingMembers().contains(memberId))
+                                            .toList();
+                                    if (!toRemove.isEmpty()) {
+                                        return removeMembers(savedProject.getId(), toRemove)
+                                                .then(Mono.just(savedProject));
+                                    }
+                                    return Mono.just(savedProject);
+                                });
+                    }
+                    
+                    return Mono.just(savedProject);
+                })
+                .flatMap(this::calculateMemberCount)
                 .doOnSuccess(d -> log.info("Project updated: {}", d));
     }
 
@@ -125,7 +150,6 @@ public class ProjectService {
                     project.getId(),
                     project.getName(),
                     project.getDescription(),
-                    project.getCategory(),
                     project.getStartDate(),
                     project.getEndDate(),
                     project.isActive(),
@@ -138,7 +162,6 @@ public class ProjectService {
                     project.getId(),
                     project.getName(),
                     project.getDescription(),
-                    project.getCategory(),
                     project.getStartDate(),
                     project.getEndDate(),
                     project.isActive(),

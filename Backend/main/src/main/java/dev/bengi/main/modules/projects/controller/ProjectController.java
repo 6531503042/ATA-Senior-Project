@@ -5,6 +5,8 @@ import dev.bengi.main.common.pagination.PaginationService;
 import dev.bengi.main.modules.projects.dto.ProjectRequestDto;
 import dev.bengi.main.modules.projects.dto.ProjectResponseDto;
 import dev.bengi.main.modules.projects.dto.ProjectUpdateRequestDto;
+import dev.bengi.main.modules.projects.dto.ProjectCreateForm;
+import dev.bengi.main.modules.projects.dto.ProjectUpdateForm;
 import dev.bengi.main.modules.projects.service.ProjectService;
 import dev.bengi.main.modules.projects.dto.ProjectMembersRequestDto;
 import jakarta.validation.Valid;
@@ -27,7 +29,21 @@ public class ProjectController {
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public Mono<ResponseEntity<ProjectResponseDto>> create(@RequestBody @Valid ProjectRequestDto req) {
+    public Mono<ResponseEntity<ProjectResponseDto>> create(@ModelAttribute ProjectCreateForm form) {
+        
+        ProjectRequestDto req = new ProjectRequestDto(
+            form.getName(),
+            form.getDescription(),
+            form.getStartDate() != null && !form.getStartDate().isEmpty() ? 
+                java.time.LocalDateTime.parse(form.getStartDate() + "T00:00:00") : null,
+            form.getEndDate() != null && !form.getEndDate().isEmpty() ? 
+                java.time.LocalDateTime.parse(form.getEndDate() + "T00:00:00") : null,
+            form.isActive(),
+            form.getDepartmentId() != null && !form.getDepartmentId().isEmpty() ? 
+                Long.parseLong(form.getDepartmentId()) : null,
+            form.getMembers() != null ? form.getMembers().stream().map(Long::parseLong).toList() : java.util.List.of()
+        );
+        
         return projectService.create(req)
                 .map(d -> ResponseEntity.status(HttpStatus.CREATED).body(d));
     }
@@ -35,7 +51,22 @@ public class ProjectController {
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public Mono<ResponseEntity<ProjectResponseDto>> update(@PathVariable Long id,
-                                                           @RequestBody @Valid ProjectUpdateRequestDto req) {
+                                                           @ModelAttribute ProjectUpdateForm form) {
+        
+        ProjectUpdateRequestDto req = new ProjectUpdateRequestDto(
+            form.getName(),
+            form.getDescription(),
+            form.getStartDate() != null && !form.getStartDate().isEmpty() ? 
+                java.time.LocalDateTime.parse(form.getStartDate() + "T00:00:00") : null,
+            form.getEndDate() != null && !form.getEndDate().isEmpty() ? 
+                java.time.LocalDateTime.parse(form.getEndDate() + "T00:00:00") : null,
+            form.isActive(),
+            form.getDepartmentId() != null && !form.getDepartmentId().isEmpty() ? 
+                Long.parseLong(form.getDepartmentId()) : null,
+            form.getMembers() != null ? form.getMembers().stream().map(Long::parseLong).toList() : java.util.List.of(),
+            form.getExistingMembers() != null ? form.getExistingMembers().stream().map(Long::parseLong).toList() : java.util.List.of()
+        );
+        
         return projectService.update(id, req)
                 .map(ResponseEntity::ok);
     }

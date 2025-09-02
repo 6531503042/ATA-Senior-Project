@@ -3,15 +3,16 @@ package dev.bengi.main.modules.projects.dto;
 import jakarta.validation.constraints.NotBlank;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record ProjectRequestDto(
         @NotBlank String name,
         String description,
-        String category,
         LocalDateTime startDate,
         LocalDateTime endDate,
         boolean active,
-        Long departmentId
+        Long departmentId,
+        List<Long> members
 ) {}
 
 
