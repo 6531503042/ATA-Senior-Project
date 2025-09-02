@@ -207,14 +207,22 @@ export default function FeedbacksPage() {
       <div className="space-y-8">
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 p-6 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-2xl border border-blue-100">
-                        <div>
+          <div>
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               Feedback Surveys
             </h1>
             <p className="text-default-600 mt-1">
               Manage feedback surveys with scope-based visibility and time-based access control
-                          </p>
-                        </div>
+            </p>
+      </div>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
+              className="w-full sm:w-auto font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
+              onClick={handleAddFeedback}
+            >
+              Create Survey
+            </button>
+          </div>
         </div>
 
         {/* Stats Cards */}
@@ -267,7 +275,6 @@ export default function FeedbacksPage() {
               onVisibilityFilterChange={() => {}}
               projects={projects}
               departments={[]}
-              onCreateClick={handleAddFeedback}
             />
           </CardBody>
         </Card>

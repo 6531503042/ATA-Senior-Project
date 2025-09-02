@@ -19,7 +19,7 @@ interface TopContentProps {
   onVisibilityFilterChange: (value: string) => void;
   projects: Project[];
   departments: Department[];
-  onCreateClick: () => void;
+  onCreateClick?: () => void;
 }
 
 export default function TopContent({
@@ -48,13 +48,15 @@ export default function TopContent({
           onValueChange={onSearchChange}
           variant="bordered"
         />
-        <Button
-          color="primary"
-          startContent={<Plus className="w-4 h-4" />}
-          onPress={onCreateClick}
-        >
-          Create Survey
-        </Button>
+        {onCreateClick && (
+          <Button
+            color="primary"
+            startContent={<Plus className="w-4 h-4" />}
+            onPress={onCreateClick}
+          >
+            Create Survey
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
