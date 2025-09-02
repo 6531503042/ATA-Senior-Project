@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { addToast } from '@heroui/react';
 
 import { Project } from '@/types/project';
@@ -10,7 +10,7 @@ export function useProjects() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchProjects = async () => {
+  const fetchProjects = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -35,7 +35,7 @@ export function useProjects() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const addProject = async (projectData: FormData) => {
     try {
@@ -128,7 +128,7 @@ export function useProjects() {
 
   useEffect(() => {
     fetchProjects();
-  }, []);
+  }, []); // Empty dependency array to run only once
 
   return {
     projects,

@@ -1,14 +1,12 @@
 import { Input, Select, SelectItem, Button } from '@heroui/react';
 import { SearchIcon, RefreshCwIcon } from 'lucide-react';
 
-import { ProjectStatus } from '@/types/project';
-
 type TopContentProps = {
   filterValue: string;
   onClear: () => void;
   onSearchChange: (value: string) => void;
-  selectedStatus?: ProjectStatus[];
-  onStatusChange: (status: ProjectStatus[]) => void;
+  selectedStatus?: string[];
+  onStatusChange: (status: string[]) => void;
   onRefresh: () => void;
 };
 
@@ -16,15 +14,13 @@ export default function TopContent({
   filterValue,
   onClear,
   onSearchChange,
-  selectedStatus,
+  selectedStatus = [],
   onStatusChange,
   onRefresh,
 }: TopContentProps) {
   const statusOptions = [
-    { key: 'pending', label: 'Pending' },
     { key: 'active', label: 'Active' },
-    { key: 'completed', label: 'Completed' },
-    { key: 'cancelled', label: 'Cancelled' },
+    { key: 'inactive', label: 'Inactive' },
   ];
 
   return (
@@ -44,11 +40,10 @@ export default function TopContent({
           className="w-full sm:max-w-[200px]"
           label="Status"
           placeholder="Filter by status"
-          selectedKeys={selectedStatus ? new Set(selectedStatus) : new Set()}
+          selectedKeys={new Set(selectedStatus)}
           selectionMode="multiple"
           onSelectionChange={keys => {
-            const selected = Array.from(keys) as ProjectStatus[];
-
+            const selected = Array.from(keys) as string[];
             onStatusChange(selected);
           }}
         >

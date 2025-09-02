@@ -20,7 +20,6 @@ export type ProjectTableItem = {
   id: string;
   name: string;
   description: string;
-  category: string;
   memberCount: number;
   status: 'active' | 'inactive';
   startDate?: string;
@@ -32,7 +31,6 @@ const COLUMNS = [
   { name: 'NAME', uid: 'name', allowsSorting: true },
   { name: 'MEMBERS', uid: 'memberCount', allowsSorting: true },
   { name: 'STATUS', uid: 'status', allowsSorting: true },
-  { name: 'CATEGORY', uid: 'category', allowsSorting: true },
   { name: 'TIMELINE', uid: 'timeline', allowsSorting: true },
   { name: 'CREATED AT', uid: 'createdAt', allowsSorting: true },
   { name: 'ACTIONS', uid: 'actions', allowsSorting: false },
@@ -79,7 +77,6 @@ export default function ProjectTable({
         project =>
           project.name.toLowerCase().includes(query) ||
           project.description.toLowerCase().includes(query) ||
-          project.category.toLowerCase().includes(query) ||
           project.status.toLowerCase().includes(query),
       );
     }
@@ -107,11 +104,6 @@ export default function ProjectTable({
       case 'status':
         sortedItems.sort(
           (a, b) => a.status.localeCompare(b.status) * direction,
-        );
-        break;
-      case 'category':
-        sortedItems.sort(
-          (a, b) => a.category.localeCompare(b.category) * direction,
         );
         break;
       case 'timeline':
@@ -228,17 +220,6 @@ export default function ProjectTable({
             >
               {project.status}
             </Chip>
-          );
-        case 'category':
-          return (
-            <div className="flex items-center gap-2">
-              <div className="flex items-center justify-center w-8 h-8 bg-purple-50 rounded-full">
-                <Tag className="w-4 h-4 text-purple-600" />
-              </div>
-              <span className="text-bold text-small text-default-900">
-                {project.category || 'N/A'}
-              </span>
-            </div>
           );
         case 'timeline':
           return (

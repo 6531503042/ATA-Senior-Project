@@ -1,20 +1,20 @@
 'use client';
 
-import type {
-  Project,
-  CreateProjectRequest,
-  UpdateProjectRequest,
-} from '@/types/project';
+import type { Project } from '@/types/project';
+import type { Department } from '@/types/department';
+import type { User } from '@/types/user';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardBody, CardHeader, Button } from '@heroui/react';
-import { PlusIcon, FolderIcon, UsersIcon, TrendingUpIcon, FolderOpenIcon } from 'lucide-react';
+import { PlusIcon, FolderIcon } from 'lucide-react';
 
 import ProjectModal from './_components/ProjectModal';
 import ProjectTable from './_components/ProjectTable';
 
 import { PageHeader } from '@/components/ui/page-header';
 import { useProjects } from '@/hooks/useProjects';
+import { useDepartment } from '@/hooks/useDepartment';
+import { useUsers } from '@/hooks/useUsers';
 
 export default function ProjectsPage() {
   const {
@@ -26,6 +26,17 @@ export default function ProjectsPage() {
     editProject,
     removeProject,
   } = useProjects();
+
+  const {
+    departments,
+    fetchDepartments,
+  } = useDepartment();
+
+  const {
+    users,
+    fetchUsers,
+  } = useUsers();
+
   const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -53,7 +64,7 @@ export default function ProjectsPage() {
       description: 'Currently active projects',
       gradient: 'from-green-400 to-teal-500',
       bgColor: 'from-green-600 to-teal-700',
-      icon: FolderOpenIcon,
+      icon: FolderIcon,
     },
     {
       title: 'Inactive Projects',
@@ -69,9 +80,15 @@ export default function ProjectsPage() {
       description: 'All members in all projects',
       gradient: 'from-yellow-400 to-amber-500',
       bgColor: 'from-yellow-600 to-amber-700',
-      icon: UsersIcon,
+      icon: FolderIcon,
     },
   ];
+
+  useEffect(() => {
+    fetchProjects();
+    fetchDepartments();
+    fetchUsers();
+  }, []); // Run only once on component mount
 
   const handleAddProject = () => {
     setSelectedProject(null);
@@ -79,7 +96,7 @@ export default function ProjectsPage() {
     setIsModalOpen(true);
   };
 
-  const handleEditProject = (project: any) => {
+  const handleEditProject = (project: Project) => {
     setSelectedProject(project);
     setModalMode('edit');
     setIsModalOpen(true);
@@ -113,10 +130,16 @@ export default function ProjectsPage() {
     }
   };
 
+  const getProjectMembers = async (projectId: number): Promise<User[]> => {
+    // This would typically call an API to get project members
+    // For now, return empty array - you can implement this later
+    return [];
+  };
+
   return (
     <>
       <PageHeader
-        description="Manage projects and track progress"
+        description="Manage projects and their members"
         icon={<FolderIcon />}
       />
 
@@ -128,7 +151,7 @@ export default function ProjectsPage() {
               Project Management
             </h1>
             <p className="text-default-600 mt-1">
-              Manage projects and track progress
+              Manage projects and their members
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
@@ -203,7 +226,6 @@ export default function ProjectsPage() {
                   id: proj.id.toString(),
                   name: proj.name,
                   description: proj.description,
-                  category: proj.category || 'N/A',
                   memberCount: proj.memberCount || 0,
                   status: proj.active ? 'active' as const : 'inactive' as const,
                   startDate: proj.startDate,
@@ -228,6 +250,9 @@ export default function ProjectsPage() {
         mode={modalMode}
         onClose={handleModalClose}
         onSubmit={handleSubmit}
+        departments={departments}
+        users={users}
+        getProjectMembers={getProjectMembers}
       />
     </>
   );
