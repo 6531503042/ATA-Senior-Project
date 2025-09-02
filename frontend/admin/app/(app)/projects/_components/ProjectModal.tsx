@@ -36,82 +36,124 @@ export default function ProjectModal({
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [active, setActive] = useState(true);
-  const [selectedDepartmentId, setSelectedDepartmentId] = useState<string>('');
-  const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
-  const [existingMembers, setExistingMembers] = useState<User[]>([]);
-  const [filterDepartmentId, setFilterDepartmentId] = useState<string>('');
+           const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
+         const [existingMembers, setExistingMembers] = useState<User[]>([]);
+         const [filterDepartmentId, setFilterDepartmentId] = useState<string>('');
   const formRef = useRef<HTMLFormElement>(null);
 
-  useEffect(() => {
-    if (isOpen && project) {
-      setName(project.name);
-      setDescription(project.description || '');
-      setStartDate(project.startDate ? project.startDate.split('T')[0] : '');
-      setEndDate(project.endDate ? project.endDate.split('T')[0] : '');
-      setActive(project.active);
-      setSelectedDepartmentId(project.departmentId?.toString() || '');
-      
-      // Load existing members if editing
-      if (mode === 'edit' && getProjectMembers) {
-        getProjectMembers(project.id).then(setExistingMembers);
-      }
-    } else {
-      setName('');
-      setDescription('');
-      setStartDate('');
-      setEndDate('');
-      setActive(true);
-      setSelectedDepartmentId('');
-      setSelectedMembers([]);
-      setExistingMembers([]);
-      setFilterDepartmentId('');
-    }
-  }, [isOpen, project?.id, mode]); // Removed getProjectMembers from dependencies
+           useEffect(() => {
+           console.log('=== PROJECT MODAL USEFFECT ===');
+           console.log('isOpen:', isOpen);
+           console.log('project:', project);
+           console.log('mode:', mode);
+           
+           if (isOpen && project) {
+             console.log('Setting project data:', {
+               name: project.name,
+               description: project.description,
+               startDate: project.startDate,
+               endDate: project.endDate,
+               active: project.active
+             });
+             
+             setName(project.name);
+             setDescription(project.description || '');
+             setStartDate(project.startDate ? project.startDate.split('T')[0] : '');
+             setEndDate(project.endDate ? project.endDate.split('T')[0] : '');
+             setActive(project.active);
 
-  const handleSubmit = async () => {
-    if (!name.trim() || !description.trim()) return;
+             // Load existing members if editing
+             if (mode === 'edit' && getProjectMembers) {
+               console.log('Loading existing members for project:', project.id);
+               getProjectMembers(project.id).then(members => {
+                 console.log('Loaded existing members:', members);
+                 setExistingMembers(members);
+               });
+             }
+           } else {
+             console.log('Resetting form data');
+             setName('');
+             setDescription('');
+             setStartDate('');
+             setEndDate('');
+             setActive(true);
+             setSelectedMembers([]);
+             setExistingMembers([]);
+             setFilterDepartmentId('');
+           }
+         }, [isOpen, project?.id, mode]); // Removed getProjectMembers from dependencies
 
-    setLoading(true);
-    try {
-      const formData = new FormData();
-      formData.append('name', name.trim());
-      formData.append('description', description.trim());
-      formData.append('startDate', startDate);
-      formData.append('endDate', endDate);
-      formData.append('active', active.toString());
-      
-      if (selectedDepartmentId) {
-        formData.append('departmentId', selectedDepartmentId);
-      }
-      
-      // Add selected members
-      selectedMembers.forEach(memberId => {
-        formData.append('members', memberId);
-      });
-      
-      // Add existing members (for edit mode)
-      existingMembers.forEach(member => {
-        formData.append('existingMembers', member.id.toString());
-      });
+           const handleSubmit = async () => {
+           if (!name.trim() || !description.trim()) return;
 
-      await onSubmit(formData, mode);
-    } catch (error) {
-      console.error('Failed to submit project:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+           setLoading(true);
+           try {
+             const formData = new FormData();
+             formData.append('name', name.trim());
+             formData.append('description', description.trim());
+             formData.append('startDate', startDate);
+             formData.append('endDate', endDate);
+             formData.append('active', active.toString());
+
+             // Add selected members
+             if (selectedMembers.length > 0) {
+               selectedMembers.forEach(memberId => {
+                 formData.append('members', memberId);
+               });
+             }
+
+             // Add existing members (for edit mode)
+             if (existingMembers.length > 0) {
+               existingMembers.forEach(member => {
+                 formData.append('existingMembers', member.id.toString());
+               });
+             }
+
+             // Log FormData contents
+             console.log('=== PROJECT MODAL SUBMISSION ===');
+             console.log('Mode:', mode);
+             console.log('Name:', name.trim());
+             console.log('Description:', description.trim());
+             console.log('Start Date:', startDate);
+             console.log('End Date:', endDate);
+             console.log('Active:', active);
+             console.log('Selected Members:', selectedMembers);
+             console.log('Existing Members:', existingMembers.map(m => m.id));
+             
+             // Log FormData entries
+             console.log('=== FORMDATA CONTENTS ===');
+             const entries = Array.from(formData.entries());
+             entries.forEach(([key, value]) => {
+               console.log(`${key}:`, value);
+             });
+             console.log('=== END FORMDATA ===');
+
+             await onSubmit(formData, mode);
+           } catch (error) {
+             console.error('Failed to submit project:', error);
+           } finally {
+             setLoading(false);
+           }
+         };
 
   const removeExistingMember = (memberId: number) => {
     setExistingMembers(prev => prev.filter(member => member.id !== memberId));
   };
 
-  // Filter users by selected department
-  const filteredUsers = useMemo(() => {
-    return filterDepartmentId && filterDepartmentId !== 'all'
-      ? users.filter(user => user.departments.some(dept => dept.id.toString() === filterDepartmentId))
-      : users;
-  }, [filterDepartmentId, users]);
+           // Filter users by selected department
+         const filteredUsers = useMemo(() => {
+           const filtered = filterDepartmentId && filterDepartmentId !== 'all'
+             ? users.filter(user => user.departments.some(dept => dept.id.toString() === filterDepartmentId))
+             : users;
+           
+           console.log('=== FILTERED USERS UPDATE ===');
+           console.log('Filter department ID:', filterDepartmentId);
+           console.log('Total users:', users.length);
+           console.log('Filtered users:', filtered.length);
+           console.log('Filtered user IDs:', filtered.map(u => u.id));
+           
+           return filtered;
+         }, [filterDepartmentId, users]);
 
   const isFormValid = name.trim() && description.trim();
 
@@ -161,25 +203,7 @@ export default function ProjectModal({
             minRows={3}
           />
 
-          {/* <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                               <Select
-                     label="Department"
-                     placeholder="Select a department"
-                     selectedKeys={selectedDepartmentId ? [selectedDepartmentId] : []}
-                     onSelectionChange={(keys) => {
-                       const selected = Array.from(keys)[0] as string;
-                       setSelectedDepartmentId(selected);
-                     }}
-                     variant="bordered"
-                     aria-label="Select project department"
-                   >
-              {departments.map((dept) => (
-                <SelectItem key={dept.id.toString()}>
-                  {dept.name}
-                </SelectItem>
-              ))}
-            </Select>
-          </div> */}
+          {/*  */}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input
@@ -226,58 +250,89 @@ export default function ProjectModal({
             </div>
           )}
 
-          {/* Add New Members */}
-          <div className="space-y-3">
-            <label className="text-sm font-medium text-gray-700">
-              Add Members
-            </label>
-            
-            {/* Department Filter for Members */}
-            <Select
-              label="Filter by Department"
-              placeholder="All departments"
-              selectedKeys={filterDepartmentId ? [filterDepartmentId] : []}
-              onSelectionChange={(keys) => {
-                const selected = Array.from(keys)[0] as string;
-                setFilterDepartmentId(selected);
-                setSelectedMembers([]); // Clear selected members when filter changes
-              }}
-              variant="bordered"
-              aria-label="Filter members by department"
-            >
-              <SelectItem key="all">All Departments</SelectItem>
-              <React.Fragment>
-                {departments.map((dept) => (
-                  <SelectItem key={dept.id.toString()}>
-                    {dept.name}
-                  </SelectItem>
-                ))}
-              </React.Fragment>
-            </Select>
+          {/* Member Management */}
+          <div className="space-y-4">
+            <div className="border-t pt-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Member Management</h3>
+              
+              {/* Department Filter for Members */}
+              <div className="space-y-3">
+                <label className="text-sm font-medium text-gray-700">
+                  Filter Members by Department
+                </label>
+                                 <Select
+                   placeholder="All departments"
+                   selectedKeys={filterDepartmentId ? [filterDepartmentId] : []}
+                   onSelectionChange={(keys) => {
+                     const selected = Array.from(keys)[0] as string;
+                     console.log('=== DEPARTMENT FILTER CHANGE ===');
+                     console.log('Previous filter:', filterDepartmentId);
+                     console.log('New filter:', selected);
+                     console.log('Keys received:', Array.from(keys));
+                     setFilterDepartmentId(selected);
+                     setSelectedMembers([]); // Clear selected members when filter changes
+                   }}
+                   variant="bordered"
+                   aria-label="Filter members by department"
+                   className="max-w-xs"
+                 >
+                  <SelectItem key="all">All Departments</SelectItem>
+                  <React.Fragment>
+                    {departments.map((dept) => (
+                      <SelectItem key={dept.id.toString()}>
+                        {dept.name}
+                      </SelectItem>
+                    ))}
+                  </React.Fragment>
+                </Select>
+              </div>
 
-            <Select
-              placeholder="Select members to add"
-              selectedKeys={selectedMembers}
-              onSelectionChange={(keys) => {
-                setSelectedMembers(Array.from(keys) as string[]);
-              }}
-              selectionMode="multiple"
-              variant="bordered"
-              aria-label="Select project members"
-            >
-              {filteredUsers
-                .filter(user => !existingMembers.some(member => member.id === user.id))
-                .map((user) => (
-                  <SelectItem key={user.id.toString()} textValue={`${user.firstName} ${user.lastName}`}>
-                    {user.firstName} {user.lastName} 
-                    {user.departments.length > 0 && (
-                      <span className="text-gray-500 ml-2">
-                        ({user.departments.map(d => d.name).join(', ')})
-                      </span>
-                    )}
-                  </SelectItem>
-                ))}
-            </Select>
+              {/* Member Selection */}
+              <div className="space-y-3 mt-4">
+                <label className="text-sm font-medium text-gray-700">
+                  Select Members to Add
+                </label>
+                                 <Select
+                   placeholder="Choose members from filtered department"
+                   selectedKeys={selectedMembers}
+                   onSelectionChange={(keys) => {
+                     const newMembers = Array.from(keys) as string[];
+                     console.log('=== MEMBER SELECTION CHANGE ===');
+                     console.log('Previous members:', selectedMembers);
+                     console.log('New members:', newMembers);
+                     console.log('Keys received:', Array.from(keys));
+                     setSelectedMembers(newMembers);
+                   }}
+                   selectionMode="multiple"
+                   variant="bordered"
+                   aria-label="Select project members"
+                   className="w-full"
+                 >
+                  {filteredUsers
+                    .filter(user => !existingMembers.some(member => member.id === user.id))
+                    .map((user) => (
+                      <SelectItem key={user.id.toString()} textValue={`${user.firstName} ${user.lastName}`}>
+                        <div className="flex items-center justify-between w-full">
+                          <span>{user.firstName} {user.lastName}</span>
+                          {user.departments.length > 0 && (
+                            <span className="text-xs text-gray-500 ml-2">
+                              {user.departments.map(d => d.name).join(', ')}
+                            </span>
+                          )}
+                        </div>
+                      </SelectItem>
+                    ))}
+                </Select>
+                
+                {selectedMembers.length > 0 && (
+                  <div className="mt-2 p-3 bg-blue-50 rounded-lg">
+                    <p className="text-sm text-blue-700">
+                      Selected: {selectedMembers.length} member(s)
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
           <div className="flex items-center gap-3">
