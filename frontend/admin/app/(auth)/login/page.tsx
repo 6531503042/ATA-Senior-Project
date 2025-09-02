@@ -17,7 +17,6 @@ import {
   Eye,
   Lock,
   AlertCircle,
-  BadgeCheck,
   LogIn,
   KeyRound,
 } from 'lucide-react';
@@ -40,7 +39,6 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!loading && error) {
-      // focus first field with error on auth error
       const el = document.querySelector<HTMLInputElement>('[data-field="username"]');
       el?.focus();
     }
@@ -50,8 +48,8 @@ export default function LoginPage() {
 
   const validate = () => {
     const errs: { username?: string; password?: string } = {};
-    if (!username.trim()) errs.username = 'Please enter your username.';
-    if (!password) errs.password = 'Please enter your password.';
+    if (!username.trim()) errs.username = 'Enter your username.';
+    if (!password) errs.password = 'Enter your password.';
     if (password && password.length < 6) errs.password = 'Password must be at least 6 characters.';
     setFieldErrors(errs);
     return Object.keys(errs).length === 0;
@@ -69,7 +67,6 @@ export default function LoginPage() {
     try {
       const success = await signIn(username.trim(), password);
       if (success) {
-        // optionally persist minimal remember-me flag
         if (remember) localStorage.setItem('rememberMe', '1');
         else localStorage.removeItem('rememberMe');
         router.push(redirect);
@@ -80,7 +77,6 @@ export default function LoginPage() {
   };
 
   const strength = useMemo(() => {
-    // Lightweight hint — not a security meter
     let score = 0;
     if (password.length >= 8) score++;
     if (/[A-Z]/.test(password)) score++;
@@ -91,40 +87,40 @@ export default function LoginPage() {
   }, [password]);
 
   return (
-    <div className="min-h-screen grid grid-cols-1 md:grid-cols-2 bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-zinc-900 dark:via-zinc-950 dark:to-indigo-950">
-      {/* Left: Hero / Brand panel */}
-      <div className="hidden md:flex flex-col justify-between p-10">
+    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-gradient-to-br from-gray-50 via-white to-indigo-50 dark:from-zinc-900 dark:via-zinc-950 dark:to-indigo-950">
+      {/* Left side: simple brand area (hidden on small screens) */}
+      <div className="hidden lg:flex flex-col justify-between p-10">
         <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-xl bg-indigo-600/90 text-white grid place-items-center shadow-md">
+          <div className="h-9 w-9 rounded-xl bg-indigo-600 text-white grid place-items-center shadow-sm">
             <KeyRound size={18} />
           </div>
-          <span className="text-xl font-semibold text-gray-900 dark:text-gray-100">YourApp</span>
+          <span className="text-lg font-semibold text-gray-900 dark:text-gray-100">Admin</span>
         </div>
 
         <div className="max-w-md">
-          <h1 className="text-4xl font-extrabold leading-tight text-gray-900 dark:text-gray-100">
-            Welcome back 👋
+          <h1 className="text-3xl font-bold leading-tight text-gray-900 dark:text-gray-100">
+            Sign in to continue
           </h1>
-          <p className="mt-4 text-gray-600 dark:text-gray-300">
-            Sign in to your dashboard to manage users, track activity, and keep your projects moving.
+          <p className="mt-3 text-gray-600 dark:text-gray-300">
+            Access your admin tools and manage your workspace.
           </p>
         </div>
 
-        <p className="text-xs text-gray-500 dark:text-gray-400">© {new Date().getFullYear()} Your Company. All rights reserved.</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400">© {new Date().getFullYear()} — Admin Console</p>
       </div>
 
-      {/* Right: Auth card */}
+      {/* Right side: form */}
       <div className="flex items-center justify-center p-6 md:p-10">
         <form
           onSubmit={onSubmit}
-          className="w-full max-w-md bg-white/80 dark:bg-zinc-900/70 backdrop-blur rounded-2xl shadow-xl p-6 md:p-8 border border-white/60 dark:border-white/10"
+          className="w-full max-w-md bg-white/95 dark:bg-zinc-900/80 rounded-2xl shadow-xl p-6 md:p-8 border border-gray-100 dark:border-white/10"
           aria-labelledby="login-title"
         >
           <div className="text-center">
             <h2 id="login-title" className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100">
-              Sign in
+              Admin Login
             </h2>
-            <p className="mt-1 text-gray-600 dark:text-gray-400">Use your account credentials to continue</p>
+            <p className="mt-1 text-gray-600 dark:text-gray-400">Use your credentials to sign in</p>
           </div>
 
           <div className="mt-8 space-y-5">
@@ -132,7 +128,7 @@ export default function LoginPage() {
               <Input
                 isRequired
                 label="Username"
-                placeholder="your.username"
+                placeholder="username"
                 size="lg"
                 variant="bordered"
                 value={username}
@@ -142,6 +138,8 @@ export default function LoginPage() {
                 isInvalid={!!fieldErrors.username}
                 startContent={<User className="text-xl text-gray-400 flex-shrink-0" />}
                 aria-describedby={fieldErrors.username ? 'username-error' : undefined}
+                autoFocus
+                autoComplete="username"
               />
               {fieldErrors.username && (
                 <p id="username-error" className="mt-1 text-sm text-red-600">{fieldErrors.username}</p>
@@ -163,7 +161,7 @@ export default function LoginPage() {
                 endContent={
                   <button
                     type="button"
-                    onClick={() => setIsVisible(v => !v)}
+                    onClick={toggleVisibility}
                     className="focus:outline-none"
                     aria-label={isVisible ? 'Hide password' : 'Show password'}
                   >
@@ -176,6 +174,7 @@ export default function LoginPage() {
                   fieldErrors.password ? 'password-error' : null,
                   capsLock ? 'capslock-hint' : null,
                 ].filter(Boolean).join(' ')}
+                autoComplete="current-password"
               />
               <div className="mt-1 flex items-center gap-2 min-h-6">
                 {fieldErrors.password && (
@@ -188,13 +187,12 @@ export default function LoginPage() {
                 )}
               </div>
 
-              {/* Password hint */}
               {password && (
                 <div className="mt-2 flex items-center justify-between">
                   <Chip size="sm" variant="flat" color={strength.score >= 3 ? 'success' : strength.score === 2 ? 'warning' : 'danger'}>
                     {strength.label || 'Weak'}
                   </Chip>
-                  <p className="text-xs text-gray-500">Use 8+ chars with mix of letters, numbers & symbols.</p>
+                  <p className="text-xs text-gray-500">Use 8+ characters with a mix of types.</p>
                 </div>
               )}
             </div>
