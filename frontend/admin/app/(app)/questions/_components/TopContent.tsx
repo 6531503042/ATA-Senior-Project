@@ -1,16 +1,14 @@
 import { Input, Select, SelectItem, Button } from '@heroui/react';
 import { SearchIcon, RefreshCwIcon } from 'lucide-react';
 
-import { QuestionType, QuestionCategory } from '@/types/question';
-
 type TopContentProps = {
   filterValue: string;
   onClear: () => void;
   onSearchChange: (value: string) => void;
-  selectedType?: QuestionType[];
-  onTypeChange: (type: QuestionType[]) => void;
-  selectedCategory?: QuestionCategory[];
-  onCategoryChange: (category: QuestionCategory[]) => void;
+  selectedType?: string[];
+  onTypeChange: (type: string[]) => void;
+  selectedCategory?: string[];
+  onCategoryChange: (category: string[]) => void;
   onRefresh: () => void;
 };
 
@@ -25,11 +23,10 @@ export default function TopContent({
   onRefresh,
 }: TopContentProps) {
   const typeOptions = [
-    { key: 'single_choice', label: 'Single Choice' },
-    { key: 'multiple_choice', label: 'Multiple Choice' },
-    { key: 'text_based', label: 'Text Based' },
-    { key: 'rating', label: 'Rating' },
-    { key: 'boolean', label: 'Boolean' },
+    { key: 'TEXT', label: 'Text Based' },
+    { key: 'MULTIPLE_CHOICE', label: 'Multiple Choice' },
+    { key: 'RATING', label: 'Rating' },
+    { key: 'BOOLEAN', label: 'Boolean' },
   ];
 
   const categoryOptions = [
@@ -63,8 +60,7 @@ export default function TopContent({
           selectedKeys={selectedType ? new Set(selectedType) : new Set()}
           selectionMode="multiple"
           onSelectionChange={keys => {
-            const selected = Array.from(keys) as QuestionType[];
-
+            const selected = Array.from(keys) as string[];
             onTypeChange(selected);
           }}
         >
@@ -82,8 +78,7 @@ export default function TopContent({
           }
           selectionMode="multiple"
           onSelectionChange={keys => {
-            const selected = Array.from(keys) as QuestionCategory[];
-
+            const selected = Array.from(keys) as string[];
             onCategoryChange(selected);
           }}
         >

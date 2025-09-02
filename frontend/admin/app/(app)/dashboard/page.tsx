@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { Button, Card, CardBody } from '@heroui/react';
+import { useEffect, useMemo, useState } from 'react';
+import { Button, Card, CardBody, Spinner } from '@heroui/react';
 import {
   RefreshCw,
   LayoutDashboard,
@@ -25,9 +25,19 @@ import { PageHeader } from '@/components/ui/page-header';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useDashboardData } from '@/hooks/useDashboard';
 
+/**
+ * NOTES ON RESPONSIVENESS
+ * - Container: max width + responsive horizontal padding
+ * - Grid: mobile-first single column → 12-col at xl; balanced gaps per breakpoint
+ * - Sticky utilities: header/action bar stickiness on small screens
+ * - Min-width fixes: min-w-0 on grid children to prevent overflow
+ * - Chart: responsive heights via utility classes
+ * - Button: auto-switch to icon-only on very small screens
+ * - Reduced motion: respect prefers-reduced-motion for spinners
+ */
+
 export default function DashboardPage() {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
 
   // Proper authentication context usage
   const { user, signOut, loading: authLoading } = useAuthContext();
@@ -46,44 +56,66 @@ export default function DashboardPage() {
     refresh: refreshDashboard,
   } = useDashboardData();
 
+  // Consolidated error object
+  const error = useMemo(() => dashboardError, [dashboardError]);
+
   const handleRefresh = () => {
     setLoading(true);
     refreshDashboard();
     // Reset loading after a short delay
-    setTimeout(() => setLoading(false), 1000);
+    setTimeout(() => setLoading(false), 900);
   };
 
-  // Show loading state while auth is being determined
+  // Respect prefers-reduced-motion for spinners
+  const [reducedMotion, setReducedMotion] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setReducedMotion(mq.matches);
+    const onChange = (e: MediaQueryListEvent) => setReducedMotion(e.matches);
+    mq.addEventListener?.('change', onChange);
+    return () => mq.removeEventListener?.('change', onChange);
+  }, []);
+
+  // Loading state while auth/dashboard fetching
   if (authLoading || dashboardLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-transparent">
+      <div className="flex items-center justify-center min-h-dvh bg-transparent px-4">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 mx-auto mb-6" />
-          <h2 className="text-xl font-semibold text-default-800 mb-2">
-            Loading Dashboard
+          {reducedMotion ? (
+            <div className="h-12 w-12 mx-auto mb-4 rounded-full border-2 border-default-200" />
+          ) : (
+            <Spinner size="lg" className="mb-4" />
+          )}
+          <h2 className="text-lg sm:text-xl font-semibold text-default-800 mb-1">
+            Loading dashboard
           </h2>
-          <p className="text-default-600">
-            Please wait while we fetch your data...
+          <p className="text-default-600 text-sm sm:text-base">
+            Fetching your latest metrics…
           </p>
         </div>
       </div>
     );
   }
 
-  // Show error if no authenticated user
+  // Guard unauthenticated state
   if (!user) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-transparent">
-        <Card className="max-w-md">
+      <div className="flex items-center justify-center min-h-dvh bg-transparent px-4">
+        <Card className="w-full max-w-md">
           <CardBody className="p-6 text-center">
             <h2 className="text-xl font-semibold text-red-600 mb-2">
-              Authentication Required
+              Authentication required
             </h2>
             <p className="text-default-600 mb-4">
               You need to be logged in to access the dashboard.
             </p>
-            <Button color="primary" variant="flat" onPress={() => signOut()}>
-              Go to Login
+            <Button
+              color="primary"
+              variant="flat"
+              onPress={() => signOut()}
+              className="w-full sm:w-auto"
+            >
+              Go to login
             </Button>
           </CardBody>
         </Card>
@@ -92,157 +124,179 @@ export default function DashboardPage() {
   }
 
   return (
-    <>
-      <PageHeader
-        description="System overview — quickly access key modules, recent activity, and system statistics."
-        icon={<LayoutDashboard />}
-        right={
-          <Button
-            color="primary"
-            isLoading={loading || dashboardLoading}
-            size="sm"
-            startContent={<RefreshCw size={16} />}
-            variant="flat"
-            onPress={handleRefresh}
-          >
-            Refresh
-          </Button>
-        }
-      />
-
-      {/* Quick Stats Section - using DashboardStats component */}
-      <div className="mb-6">
-        <DashboardStats loading={dashboardLoading} />
-      </div>
-
-      {/* Main + Sidebar */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Main column */}
-        <div className="lg:col-span-9 space-y-6">
-          {/* Overview Section */}
-          <CardStat
-            colors="blue-100"
-            defaultOpen={true}
-            icon={<TrendingUp className="w-4 h-4" />}
-            isClosable={false}
-            label="System Overview"
-          >
-            <div className="w-full">
-              <DashboardOverview
-                data={dashboard?.overview || null}
-                loading={dashboardLoading}
-              />
-            </div>
-          </CardStat>
-
-          {/* Chart Section */}
-          <CardStat
-            colors="green-100"
-            defaultOpen={true}
-            icon={<TrendingUp className="w-4 h-4" />}
-            label="Analytics Chart"
-          >
-            <div className="w-full">
-              <DashboardChart
-                data={dashboard?.chartData || null}
-                loading={dashboardLoading}
-              />
-            </div>
-          </CardStat>
-
-          {/* Metrics Section */}
-          <CardStat
-            colors="purple-100"
-            icon={<TrendingUp className="w-4 h-4" />}
-            label="Performance Metrics"
-          >
-            <div className="w-full">
-              <DashboardMetrics
-                dashboard={dashboard}
-                enhanced={enhanced}
-                loading={dashboardLoading}
-              />
-            </div>
-          </CardStat>
-        </div>
-
-        {/* Right sidebar */}
-        <div className="lg:col-span-3 space-y-4">
-          <CardStat
-            colors="cyan-100"
-            defaultOpen={true}
-            icon={<TrendingUp className="w-4 h-4" />}
-            isClosable={false}
-            label="Quick Actions"
-          >
-            <div className="w-full">
-              <QuickCreate layout="compact" showRefresh={false} />
-            </div>
-          </CardStat>
-
-          <CardStat
-            colors="orange-100"
-            defaultOpen={true}
-            icon={<Users className="w-4 h-4" />}
-            label="Recent Projects"
-          >
-            <div className="w-full">
-              <RecentProjects
-                loading={dashboardLoading}
-                projects={dashboard?.recentProjects || []}
-              />
-            </div>
-          </CardStat>
-
-          <CardStat
-            colors="red-100"
-            defaultOpen={true}
-            icon={<MessageSquare className="w-4 h-4" />}
-            label="Recent Feedbacks"
-          >
-            <div className="w-full">
-              <RecentFeedbacks
-                feedbacks={dashboard?.recentFeedbacks || []}
-                loading={dashboardLoading}
-              />
-            </div>
-          </CardStat>
-
-          <CardStat
-            colors="indigo-100"
-            defaultOpen={true}
-            icon={<FileText className="w-4 h-4" />}
-            label="Recent Activity"
-          >
-            <div className="w-full">
-              <RecentActivity activities={activityFeed} loading={dashboardLoading} />
-            </div>
-          </CardStat>
+    <div className="w-full">
+      {/* Sticky page header on mobile for quick actions */}
+      <div className="sticky top-0 z-30 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-default-100">
+        <div className="container mx-auto max-w-[1400px] px-3 sm:px-4 lg:px-6">
+          <PageHeader
+            description="System overview — quickly access key modules, recent activity, and statistics."
+            icon={<LayoutDashboard />}
+            right={
+              <div className="flex items-center gap-2">
+                {/* Compact refresh on xs, full on sm+ */}
+                <Button
+                  color="primary"
+                  isLoading={loading || dashboardLoading}
+                  size="sm"
+                  variant="flat"
+                  onPress={handleRefresh}
+                  aria-label="Refresh dashboard"
+                  className="min-w-0"
+                  startContent={
+                    <RefreshCw size={16} className="shrink-0" />
+                  }
+                >
+                  <span className="hidden xs:inline">Refresh</span>
+                </Button>
+              </div>
+            }
+          />
         </div>
       </div>
 
-      {/* Error Display */}
-      {(error || dashboardError) && (
-        <Card className="mt-6 bg-red-50 border border-red-200">
-          <CardBody className="p-6">
-            <p className="text-red-600 font-medium">
-              Error loading dashboard data
-            </p>
-            <p className="text-red-500 text-sm mt-1">
-              {error?.message || dashboardError}
-            </p>
-            <Button
-              className="mt-4"
-              color="danger"
-              size="sm"
-              variant="flat"
-              onPress={handleRefresh}
+      <main className="container mx-auto max-w-[1400px] px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
+        {/* Quick Stats Section */}
+        <section className="mb-4 sm:mb-6">
+          <DashboardStats loading={dashboardLoading} />
+        </section>
+
+        {/* Main Content Grid */}
+        <section
+          className="grid grid-cols-1 xl:grid-cols-12 gap-4 sm:gap-5 lg:gap-6"
+          aria-label="Dashboard content"
+        >
+          {/* Main column */}
+          <div className="xl:col-span-9 space-y-4 sm:space-y-5 lg:space-y-6 min-w-0">
+            {/* Overview */}
+            <CardStat
+              colors="blue-100"
+              defaultOpen={true}
+              icon={<TrendingUp className="w-4 h-4" />}
+              isClosable={false}
+              label="System Overview"
             >
-              Try Again
-            </Button>
-          </CardBody>
-        </Card>
-      )}
-    </>
+              <div className="w-full min-w-0">
+                <DashboardOverview
+                  data={dashboard?.overview || null}
+                  loading={dashboardLoading}
+                />
+              </div>
+            </CardStat>
+
+            {/* Chart */}
+            <CardStat
+              colors="green-100"
+              defaultOpen={true}
+              icon={<TrendingUp className="w-4 h-4" />}
+              label="Analytics Chart"
+            >
+              {/* Responsive height for charts */}
+              <div className="w-full min-w-0 h-64 sm:h-72 md:h-80 lg:h-96">
+                <DashboardChart
+                  data={dashboard?.chartData || null}
+                  loading={dashboardLoading}
+                />
+              </div>
+            </CardStat>
+
+            {/* Metrics */}
+            <CardStat
+              colors="purple-100"
+              icon={<TrendingUp className="w-4 h-4" />}
+              label="Performance Metrics"
+            >
+              <div className="w-full min-w-0">
+                <DashboardMetrics
+                  dashboard={dashboard}
+                  enhanced={enhanced}
+                  loading={dashboardLoading}
+                />
+              </div>
+            </CardStat>
+          </div>
+
+          {/* Right sidebar — stacks under main on <xl */}
+          <aside className="xl:col-span-3 space-y-4 min-w-0">
+            <CardStat
+              colors="cyan-100"
+              defaultOpen={true}
+              icon={<TrendingUp className="w-4 h-4" />}
+              isClosable={false}
+              label="Quick Actions"
+            >
+              <div className="w-full">
+                <QuickCreate layout="compact" showRefresh={false} />
+              </div>
+            </CardStat>
+
+            <CardStat
+              colors="orange-100"
+              defaultOpen={true}
+              icon={<Users className="w-4 h-4" />}
+              label="Recent Projects"
+            >
+              <div className="w-full min-w-0">
+                <RecentProjects
+                  loading={dashboardLoading}
+                  projects={dashboard?.recentProjects || []}
+                />
+              </div>
+            </CardStat>
+
+            <CardStat
+              colors="red-100"
+              defaultOpen={true}
+              icon={<MessageSquare className="w-4 h-4" />}
+              label="Recent Feedbacks"
+            >
+              <div className="w-full min-w-0">
+                <RecentFeedbacks
+                  feedbacks={dashboard?.recentFeedbacks || []}
+                  loading={dashboardLoading}
+                />
+              </div>
+            </CardStat>
+
+            <CardStat
+              colors="indigo-100"
+              defaultOpen={true}
+              icon={<FileText className="w-4 h-4" />}
+              label="Recent Activity"
+            >
+              <div className="w-full min-w-0">
+                <RecentActivity
+                  activities={activityFeed}
+                  loading={dashboardLoading}
+                />
+              </div>
+            </CardStat>
+          </aside>
+        </section>
+
+        {/* Error Display */}
+        {error && (
+          <Card className="mt-4 sm:mt-6 bg-red-50 border border-red-200">
+            <CardBody className="p-4 sm:p-6">
+              <p className="text-red-600 font-medium text-sm sm:text-base">
+                Error loading dashboard data
+              </p>
+              <p className="text-red-500 text-xs sm:text-sm mt-1 break-words">
+                {String(error)}
+              </p>
+              <div className="mt-3 sm:mt-4 flex flex-wrap gap-2">
+                <Button
+                  color="danger"
+                  size="sm"
+                  variant="flat"
+                  onPress={handleRefresh}
+                >
+                  Try Again
+                </Button>
+              </div>
+            </CardBody>
+          </Card>
+        )}
+      </main>
+    </div>
   );
 }

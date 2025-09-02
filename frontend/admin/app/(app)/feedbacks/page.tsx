@@ -13,61 +13,12 @@ import { PageHeader } from '@/components/ui/page-header';
 import { useFeedback } from '@/hooks/useFeedback';
 import { useProjects } from '@/hooks/useProjects';
 import { useUsers } from '@/hooks/useUsers';
+import { useQuestions } from '@/hooks/useQuestions';
 
 import FeedbackModal from './_components/FeedbackModal';
 import FeedbackTable from './_components/FeedbackTable';
 import TopContent from './_components/TopContent';
 import FeedbackDetailModal from './_components/FeedbackDetailModal';
-
-// Mock questions for development
-const mockQuestions: Question[] = [
-  {
-    id: 1,
-    text: "How would you rate the overall team collaboration?",
-    type: "RATING",
-    required: true,
-    order: 1,
-    category: "Collaboration",
-    createdAt: "2024-01-01T00:00:00Z",
-    updatedAt: "2024-01-01T00:00:00Z",
-  },
-  {
-    id: 2,
-    text: "What aspects of the project management process worked well?",
-    type: "TEXT",
-    required: true,
-    order: 2,
-    category: "Project Management",
-    createdAt: "2024-01-01T00:00:00Z",
-    updatedAt: "2024-01-01T00:00:00Z",
-  },
-  {
-    id: 3,
-    text: "Would you recommend this project approach to other teams?",
-    type: "BOOLEAN",
-    required: false,
-    order: 3,
-    category: "Recommendation",
-    createdAt: "2024-01-01T00:00:00Z",
-    updatedAt: "2024-01-01T00:00:00Z",
-  },
-  {
-    id: 4,
-    text: "Which tools were most helpful for your productivity?",
-    type: "MULTIPLE_CHOICE",
-    required: true,
-    order: 4,
-    category: "Tools",
-    options: [
-      { id: 1, text: "Slack", value: "slack", order: 1 },
-      { id: 2, text: "Jira", value: "jira", order: 2 },
-      { id: 3, text: "GitHub", value: "github", order: 3 },
-      { id: 4, text: "Figma", value: "figma", order: 4 },
-    ],
-    createdAt: "2024-01-01T00:00:00Z",
-    updatedAt: "2024-01-01T00:00:00Z",
-  },
-];
 
 export default function FeedbacksPage() {
   const {
@@ -83,6 +34,10 @@ export default function FeedbacksPage() {
 
   const { projects } = useProjects();
   const { users } = useUsers();
+  const { questions, loading: questionsLoading, error: questionsError, fetchQuestions } = useQuestions();
+
+  // Use questions from API only - no fallback
+  const availableQuestions = questions;
 
   const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
   const [selectedFeedback, setSelectedFeedback] = useState<Feedback | null>(null);
@@ -139,7 +94,7 @@ export default function FeedbacksPage() {
   useEffect(() => {
     const filters = {
       search: searchTerm,
-      status: statusFilter !== 'all' ? statusFilter : undefined,
+        status: statusFilter !== 'all' ? statusFilter : undefined,
       projectId: projectFilter !== 'all' ? parseInt(projectFilter) : undefined,
       page: 1,
       limit: 100,
@@ -243,7 +198,7 @@ export default function FeedbacksPage() {
 
   return (
     <>
-      <PageHeader
+             <PageHeader
         title="Feedback Surveys Management"
         description="Manage and monitor all feedback surveys with scope and visibility control"
         icon={<MessageSquare />}
@@ -252,14 +207,14 @@ export default function FeedbacksPage() {
       <div className="space-y-8">
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 p-6 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-2xl border border-blue-100">
-          <div>
+                        <div>
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               Feedback Surveys
             </h1>
             <p className="text-default-600 mt-1">
               Manage feedback surveys with scope-based visibility and time-based access control
-            </p>
-          </div>
+                          </p>
+                        </div>
         </div>
 
         {/* Stats Cards */}
@@ -274,7 +229,7 @@ export default function FeedbacksPage() {
                   className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300`}
                 />
                 <div className="flex items-center justify-between relative z-10">
-                  <div>
+                <div>
                     <p className="text-sm font-medium text-default-500 mb-1">
                       {stat.title}
                     </p>
@@ -283,8 +238,8 @@ export default function FeedbacksPage() {
                     </p>
                     <p className="text-xs text-default-400 mt-1">
                       {stat.description}
-                    </p>
-                  </div>
+                  </p>
+                </div>
                   <div
                     className={`p-4 rounded-2xl bg-gradient-to-br ${stat.bgColor} text-white shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110`}
                   >
@@ -326,8 +281,8 @@ export default function FeedbacksPage() {
               </h3>
               <p className="text-sm text-default-600">
                 View and manage all feedback surveys with their scope and visibility settings
-              </p>
-            </div>
+                  </p>
+                </div>
           </CardHeader>
           <CardBody className="pt-0">
             {loading ? (
@@ -359,17 +314,54 @@ export default function FeedbacksPage() {
       </div>
 
       {/* Feedback Modal */}
-      <FeedbackModal
-        feedback={selectedFeedback || undefined}
-        isOpen={isModalOpen}
-        mode={modalMode}
-        onClose={handleModalClose}
-        onSubmit={handleSubmit}
-        projects={projects}
-        questions={mockQuestions}
-        departments={[]}
-        users={users}
-      />
+              <FeedbackModal
+          feedback={selectedFeedback || undefined}
+          isOpen={isModalOpen}
+          mode={modalMode}
+          onClose={handleModalClose}
+          onSubmit={handleSubmit}
+          projects={projects}
+          questions={availableQuestions}
+          departments={[]}
+          users={users}
+        />
+
+              {/* Questions Status Display */}
+        {questionsLoading && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+            <p className="text-blue-800 text-sm">
+              <strong>Loading questions...</strong> Please wait while we fetch available questions from the backend.
+            </p>
+          </div>
+        )}
+
+        {questionsError && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+            <p className="text-red-800 text-sm">
+              <strong>Questions API Error:</strong> {questionsError}
+            </p>
+            <p className="text-red-700 text-sm mt-1">
+              Cannot create feedback surveys without questions. Please check the backend API.
+            </p>
+            <button 
+              onClick={fetchQuestions}
+              className="mt-2 text-red-600 hover:text-red-800 underline text-sm"
+            >
+              Retry loading questions
+            </button>
+          </div>
+        )}
+
+        {!questionsLoading && !questionsError && questions.length === 0 && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+            <p className="text-yellow-800 text-sm">
+              <strong>No Questions Available:</strong> No questions found in the database.
+            </p>
+            <p className="text-yellow-700 text-sm mt-1">
+              Please create some questions first before creating feedback surveys.
+            </p>
+    </div>
+        )}
 
       {/* Feedback Detail Modal */}
       <FeedbackDetailModal

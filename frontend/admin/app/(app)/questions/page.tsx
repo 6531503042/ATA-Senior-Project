@@ -22,7 +22,6 @@ import QuestionTable from './_components/QuestionTable';
 import { PageHeader } from '@/components/ui/page-header';
 import { ConfirmationModal } from '@/components/modal/ConfirmationModal';
 import { useQuestions } from '@/hooks/useQuestions';
-import { api } from '@/libs/apiClient';
 
 export default function QuestionsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -33,18 +32,25 @@ export default function QuestionsPage() {
   );
   const {
     questions,
-    stats,
     loading,
     error,
-    addQuestion,
-    editQuestion,
-    removeQuestion,
-    refreshQuestions,
+    createQuestion,
+    updateQuestion,
+    deleteQuestion,
+    fetchQuestions,
   } = useQuestions();
+
+  // Calculate stats from questions array
+  const stats = {
+    totalQuestions: questions.length,
+    activeQuestions: questions.filter(q => q.required).length,
+    inactiveQuestions: questions.filter(q => !q.required).length,
+    totalCategories: new Set(questions.map(q => q.category).filter(Boolean)).size,
+  };
 
   const handleCreateQuestion = async (data: CreateQuestionRequest) => {
     try {
-      await addQuestion(data);
+      await createQuestion(data);
       setIsModalOpen(false);
     } catch (err) {
       console.error('Failed to create question:', err);
@@ -53,7 +59,9 @@ export default function QuestionsPage() {
 
   const handleEditQuestion = async (data: UpdateQuestionRequest) => {
     try {
-      await editQuestion(data);
+      if (editingQuestion) {
+        await updateQuestion(editingQuestion.id, data);
+      }
       setIsModalOpen(false);
       setEditingQuestion(null);
     } catch (err) {
@@ -63,7 +71,7 @@ export default function QuestionsPage() {
 
   const handleDeleteQuestion = async (questionId: string) => {
     try {
-      await removeQuestion(questionId);
+      await deleteQuestion(parseInt(questionId));
       setIsDeleteModalOpen(false);
       setQuestionToDelete(null);
     } catch (err) {
@@ -141,43 +149,15 @@ export default function QuestionsPage() {
   ];
 
   useEffect(() => {
-    refreshQuestions();
-  }, [refreshQuestions]);
+    fetchQuestions();
+  }, [fetchQuestions]);
 
-  // Load questions stats
+  // Auto-load questions when component mounts
   useEffect(() => {
-    const loadStats = async () => {
-      try {
-        const questionsResponse = await api.get<any>('/api/questions');
-        const questions = questionsResponse?.content || [];
-        
-        const totalQuestions = questions.length;
-        const activeQuestions = questions.filter(q => q.required).length;
-        const inactiveQuestions = questions.filter(q => !q.required).length;
-        const categories = new Set(questions.map(q => q.category)).size;
-        
-        // Assuming stats state is managed by useQuestions hook,
-        // so we need to update it directly or pass it as a prop.
-        // For now, we'll just log the stats for debugging.
-        console.log('Loaded stats:', {
-          totalQuestions,
-          activeQuestions,
-          inactiveQuestions,
-          totalCategories: categories,
-        });
-      } catch (error) {
-        console.error('Error loading questions stats:', error);
-        // setStats({
-        //   totalQuestions: 0,
-        //   activeQuestions: 0,
-        //   inactiveQuestions: 0,
-        //   totalCategories: 0,
-        // });
-      }
-    };
-    
-    loadStats();
-  }, []);
+    if (questions.length === 0 && !loading) {
+      fetchQuestions();
+    }
+  }, [questions.length, loading, fetchQuestions]);
 
   return (
     <>
@@ -271,14 +251,13 @@ export default function QuestionsPage() {
               <QuestionTable
                 questions={questions}
                 onDelete={(questionId: string) => {
-                  const question = questions.find(q => q.id === questionId);
-
+                  const question = questions.find(q => q.id.toString() === questionId);
                   if (question) {
                     handleDelete(question);
                   }
                 }}
                 onEdit={handleEdit}
-                onRefresh={refreshQuestions}
+                onRefresh={fetchQuestions}
               />
             )}
           </CardBody>
@@ -294,7 +273,7 @@ export default function QuestionsPage() {
       />
 
       <ConfirmationModal
-        body={`Are you sure you want to delete "${questionToDelete?.title}"? This action cannot be undone.`}
+        body={`Are you sure you want to delete "${questionToDelete?.text}"? This action cannot be undone.`}
         cancelColor="primary"
         cancelText="Cancel"
         confirmColor="danger"
@@ -303,7 +282,7 @@ export default function QuestionsPage() {
         title="Delete Question"
         onClose={handleDeleteModalClose}
         onConfirm={() =>
-          questionToDelete && handleDeleteQuestion(questionToDelete.id)
+          questionToDelete && handleDeleteQuestion(questionToDelete.id.toString())
         }
       />
     </>

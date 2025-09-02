@@ -13,8 +13,18 @@ export function useQuestions() {
     setLoading(true);
     setError(null);
     try {
-      const res = await apiRequest<Question[]>('/api/questions', 'GET');
-      setQuestions(Array.isArray(res.data) ? res.data : []);
+      const res = await apiRequest<{content: Question[], totalElements: number, totalPages: number} | Question[]>('/api/questions', 'GET');
+      
+      // Handle both paginated and direct array responses
+      if (res.data && typeof res.data === 'object' && 'content' in res.data) {
+        // Paginated response
+        setQuestions(Array.isArray(res.data.content) ? res.data.content : []);
+      } else if (Array.isArray(res.data)) {
+        // Direct array response
+        setQuestions(res.data);
+      } else {
+        setQuestions([]);
+      }
     } catch (err) {
       const errorMessage = err && typeof err === 'object' && 'message' in err
         ? (err as { message?: string }).message || 'Failed to fetch questions.'
@@ -30,6 +40,11 @@ export function useQuestions() {
       setLoading(false);
     }
   }, []);
+
+  // Auto-fetch questions when hook is initialized
+  useEffect(() => {
+    fetchQuestions();
+  }, [fetchQuestions]);
 
   const createQuestion = async (questionData: CreateQuestionRequest) => {
     try {

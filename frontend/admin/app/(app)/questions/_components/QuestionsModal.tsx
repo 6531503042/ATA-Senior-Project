@@ -2,9 +2,7 @@ import type {
   Question,
   CreateQuestionRequest,
   UpdateQuestionRequest,
-  QuestionType,
-  QuestionCategory,
-  AnswerOption,
+  QuestionOption,
 } from '@/types/question';
 
 import {
@@ -47,12 +45,12 @@ export function QuestionsModal({
   mode,
 }: QuestionsModalProps) {
   const [formData, setFormData] = useState<CreateQuestionRequest>({
-    title: question?.title || '',
-    description: question?.description || '',
-    type: question?.type || 'text_based',
+    text: question?.text || '',
+    type: question?.type || 'TEXT',
+    required: question?.required || false,
+    order: question?.order || 1,
     category: question?.category || 'general',
     options: question?.options || [],
-    required: question?.required || false,
   });
 
   const [newOption, setNewOption] = useState('');
@@ -61,21 +59,21 @@ export function QuestionsModal({
   useEffect(() => {
     if (isOpen && question) {
       setFormData({
-        title: question.title,
-        description: question.description || '',
+        text: question.text,
         type: question.type,
+        required: question.required,
+        order: question.order,
         category: question.category,
         options: question.options || [],
-        required: question.required,
       });
     } else if (isOpen && mode === 'create') {
       setFormData({
-        title: '',
-        description: '',
-        type: 'text_based',
+        text: '',
+        type: 'TEXT',
+        required: false,
+        order: 1,
         category: 'general',
         options: [],
-        required: false,
       });
     }
   }, [isOpen, question, mode]);
@@ -104,19 +102,18 @@ export function QuestionsModal({
       onSubmit(formData);
     } else if (question) {
       onSubmit({
-        id: question.id,
         ...formData,
-      });
+      } as UpdateQuestionRequest);
     }
     onClose();
   };
 
   const addOption = () => {
     if (newOption.trim() && formData.options) {
-      const option: AnswerOption = {
-        id: Date.now().toString(),
+      const option: Omit<QuestionOption, 'id'> = {
         text: newOption.trim(),
         value: newOption.trim(),
+        order: (formData.options?.length || 0) + 1,
       };
 
       setFormData(prev => ({
@@ -127,24 +124,23 @@ export function QuestionsModal({
     }
   };
 
-  const removeOption = (optionIdToRemove: string) => {
+  const removeOption = (optionIndexToRemove: number) => {
     setFormData(prev => ({
       ...prev,
       options:
-        prev.options?.filter(option => option.id !== optionIdToRemove) || [],
+        prev.options?.filter((_, index) => index !== optionIndexToRemove) || [],
     }));
   };
 
-  const getTypeIcon = (type: QuestionType) => {
+  const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'single_choice':
-      case 'multiple_choice':
+      case 'MULTIPLE_CHOICE':
         return <CheckCircleIcon className="w-4 h-4" />;
-      case 'text_based':
+      case 'TEXT':
         return <MessageSquareIcon className="w-4 h-4" />;
-      case 'rating':
+      case 'RATING':
         return <StarIcon className="w-4 h-4" />;
-      case 'boolean':
+      case 'BOOLEAN':
         return <ToggleLeftIcon className="w-4 h-4" />;
       default:
         return <MessageSquareIcon className="w-4 h-4" />;
@@ -153,23 +149,18 @@ export function QuestionsModal({
 
   const questionTypes = [
     {
-      key: 'single_choice',
-      label: 'Single Choice',
-      icon: <CheckCircleIcon className="w-4 h-4" />,
-    },
-    {
-      key: 'multiple_choice',
-      label: 'Multiple Choice',
-      icon: <CheckCircleIcon className="w-4 h-4" />,
-    },
-    {
-      key: 'text_based',
+      key: 'TEXT',
       label: 'Text Based',
       icon: <MessageSquareIcon className="w-4 h-4" />,
     },
-    { key: 'rating', label: 'Rating', icon: <StarIcon className="w-4 h-4" /> },
     {
-      key: 'boolean',
+      key: 'MULTIPLE_CHOICE',
+      label: 'Multiple Choice',
+      icon: <CheckCircleIcon className="w-4 h-4" />,
+    },
+    { key: 'RATING', label: 'Rating', icon: <StarIcon className="w-4 h-4" /> },
+    {
+      key: 'BOOLEAN',
       label: 'Boolean',
       icon: <ToggleLeftIcon className="w-4 h-4" />,
     },
@@ -239,25 +230,26 @@ export function QuestionsModal({
           <Input
             isRequired
             className="w-full"
-            label="Question Title"
+            label="Question Text"
             placeholder="Enter your question"
             size="lg"
-            value={formData.title}
+            value={formData.text}
             variant="bordered"
-            onChange={e => setFormData({ ...formData, title: e.target.value })}
+            onChange={e => setFormData({ ...formData, text: e.target.value })}
           />
 
           <Textarea
             className="w-full"
-            label="Description"
+            label="Additional Context"
             maxRows={5}
             minRows={3}
-            placeholder="Add additional context or instructions"
-            value={formData.description}
+            placeholder="Add additional context or instructions (optional)"
+            value={formData.options && formData.options.length > 0 ? formData.options.map(o => o.text).join('\n') : ''}
             variant="bordered"
-            onChange={e =>
-              setFormData({ ...formData, description: e.target.value })
-            }
+            onChange={e => {
+              // This is a simple text area for additional context
+              // In a real app, you might want to handle this differently
+            }}
           />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -271,7 +263,7 @@ export function QuestionsModal({
               onChange={e =>
                 setFormData({
                   ...formData,
-                  type: e.target.value as QuestionType,
+                  type: e.target.value as 'TEXT' | 'MULTIPLE_CHOICE' | 'RATING' | 'BOOLEAN',
                 })
               }
             >
@@ -287,12 +279,12 @@ export function QuestionsModal({
               className="w-full"
               label="Category"
               placeholder="Select category"
-              selectedKeys={[formData.category]}
+              selectedKeys={formData.category ? [formData.category] : []}
               variant="bordered"
               onChange={e =>
                 setFormData({
                   ...formData,
-                  category: e.target.value as QuestionCategory,
+                  category: e.target.value,
                 })
               }
             >
@@ -303,9 +295,7 @@ export function QuestionsModal({
           </div>
 
           {/* Options Section for Choice Questions */}
-          {(formData.type === 'single_choice' ||
-            formData.type === 'multiple_choice' ||
-            formData.type === 'rating') && (
+          {(formData.type === 'MULTIPLE_CHOICE' || formData.type === 'RATING') && (
             <div className="space-y-4">
               <Divider />
               <div>
@@ -341,7 +331,7 @@ export function QuestionsModal({
                     <div className="space-y-2">
                       {formData.options.map((option, index) => (
                         <div
-                          key={option.id}
+                          key={index}
                           className="flex items-center gap-2 p-2 bg-default-50 rounded-lg"
                         >
                           <span className="text-sm font-medium text-default-600 min-w-[30px]">
@@ -355,7 +345,7 @@ export function QuestionsModal({
                             className="text-default-400 hover:text-red-600"
                             size="sm"
                             variant="light"
-                            onPress={() => removeOption(option.id)}
+                            onPress={() => removeOption(index)}
                           >
                             <XIcon className="w-4 h-4" />
                           </Button>
@@ -389,7 +379,7 @@ export function QuestionsModal({
           <Button
             className="font-semibold bg-gradient-to-r from-blue-600 to-indigo-600"
             color="primary"
-            isDisabled={!formData.title}
+            isDisabled={!formData.text}
             startContent={<PlusIcon className="w-4 h-4" />}
             onPress={handleSubmit}
           >

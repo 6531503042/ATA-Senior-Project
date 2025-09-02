@@ -13,7 +13,7 @@ import QuestionCellRenderer from './QuestionCellRenderer';
 import TopContent from './TopContent';
 import BottomContent from './BottomContent';
 
-import { Question, QuestionType, QuestionCategory } from '@/types/question';
+import { Question } from '@/types/question';
 
 const COLUMNS = [
   { name: 'QUESTION', uid: 'question', allowsSorting: false },
@@ -38,10 +38,8 @@ export default function QuestionTable({
   onRefresh,
 }: QuestionTableProps) {
   const [filterValue, setFilterValue] = useState('');
-  const [selectedType, setSelectedType] = useState<QuestionType[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<QuestionCategory[]>(
-    [],
-  );
+  const [selectedType, setSelectedType] = useState<string[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string[]>([]);
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
     column: 'question',
     direction: 'ascending',
@@ -59,12 +57,12 @@ export default function QuestionTable({
     setPage(1);
   };
 
-  const handleTypeChange = (type: QuestionType[]) => {
+  const handleTypeChange = (type: string[]) => {
     setSelectedType(type);
     setPage(1);
   };
 
-  const handleCategoryChange = (category: QuestionCategory[]) => {
+  const handleCategoryChange = (category: string[]) => {
     setSelectedCategory(category);
     setPage(1);
   };
@@ -76,9 +74,8 @@ export default function QuestionTable({
     if (!!filterValue) {
       filteredQuestions = questions.filter(
         question =>
-          question.title.toLowerCase().includes(query) ||
-          question.description?.toLowerCase().includes(query) ||
-          question.category.toLowerCase().includes(query),
+          question.text.toLowerCase().includes(query) ||
+          question.category?.toLowerCase().includes(query),
       );
     }
 
@@ -92,7 +89,7 @@ export default function QuestionTable({
     // Filter by category
     if (selectedCategory.length > 0) {
       filteredQuestions = filteredQuestions.filter(question =>
-        selectedCategory.includes(question.category),
+        question.category && selectedCategory.includes(question.category),
       );
     }
 
@@ -111,7 +108,9 @@ export default function QuestionTable({
         }
 
         if (sortDescriptor.column === 'category') {
-          return a.category.localeCompare(b.category) * direction;
+          const categoryA = a.category || '';
+          const categoryB = b.category || '';
+          return categoryA.localeCompare(categoryB) * direction;
         }
 
         if (sortDescriptor.column === 'required') {
@@ -122,7 +121,7 @@ export default function QuestionTable({
 
         if (sortDescriptor.column === 'status') {
           return (
-            (a.isActive === b.isActive ? 0 : a.isActive ? 1 : -1) * direction
+            (a.required === b.required ? 0 : a.required ? 1 : -1) * direction
           );
         }
 

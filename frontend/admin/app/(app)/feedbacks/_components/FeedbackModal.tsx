@@ -37,7 +37,7 @@ export default function FeedbackModal({
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
-  const [selectedQuestions, setSelectedQuestions] = useState<string[]>([]);
+  const [selectedQuestions, setSelectedQuestions] = useState<number[]>([]);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [allowAnonymous, setAllowAnonymous] = useState(true);
@@ -51,14 +51,14 @@ export default function FeedbackModal({
       setTitle(feedback.title);
       setDescription(feedback.description);
       setSelectedProjectId(feedback.projectId.toString());
-      setSelectedQuestions(feedback.questionIds.map(id => id.toString()));
+      setSelectedQuestions(feedback.questionIds || []);
       setStartDate(feedback.startDate);
       setEndDate(feedback.endDate);
       setAllowAnonymous(feedback.allowAnonymous);
       setIsDepartmentWide(feedback.isDepartmentWide);
       setSelectedDepartmentId(feedback.departmentId);
-      setSelectedUserIds(feedback.targetUserIds.map(id => id.toString()));
-      setSelectedDepartmentIds(feedback.targetDepartmentIds);
+      setSelectedUserIds(feedback.targetUserIds?.map(id => id.toString()) || []);
+      setSelectedDepartmentIds(feedback.targetDepartmentIds || []);
     } else {
       setTitle('');
       setDescription('');
@@ -99,42 +99,35 @@ export default function FeedbackModal({
   }, [selectedDepartmentId, isDepartmentWide, users]);
 
   const handleSubmit = async () => {
-    if (!title.trim() || !description.trim() || !selectedProjectId || selectedQuestions.length === 0 || !startDate || !endDate) return;
+    if (!isFormValid()) return;
 
     setLoading(true);
     try {
       const formData = new FormData();
-      formData.append('title', title.trim());
-      formData.append('description', description.trim());
+      formData.append('title', title);
+      formData.append('description', description);
       formData.append('projectId', selectedProjectId);
+      
+      // Append question IDs as numbers
+      selectedQuestions.forEach(questionId => {
+        formData.append('questionIds', questionId.toString());
+      });
+      
       formData.append('startDate', startDate);
       formData.append('endDate', endDate);
       formData.append('allowAnonymous', allowAnonymous.toString());
       formData.append('isDepartmentWide', isDepartmentWide.toString());
       formData.append('departmentId', selectedDepartmentId);
-
-      // Add selected questions
-      selectedQuestions.forEach(questionId => {
-        formData.append('questionIds', questionId);
-      });
-
-      // Add target users and departments based on scope
-      if (isDepartmentWide && selectedDepartmentId) {
-        formData.append('targetDepartmentIds', selectedDepartmentId);
-      } else if (selectedProjectId) {
-        // Add users from selected project
-        availableUsers.forEach(user => {
-          formData.append('targetUserIds', user.id.toString());
-        });
-      }
-
-      // Add custom selected users if any
+      
       selectedUserIds.forEach(userId => {
         formData.append('targetUserIds', userId);
       });
+      
+      selectedDepartmentIds.forEach(deptId => {
+        formData.append('targetDepartmentIds', deptId);
+      });
 
       await onSubmit(formData, mode);
-      onClose();
     } catch (error) {
       console.error('Failed to submit feedback:', error);
     } finally {
@@ -142,7 +135,16 @@ export default function FeedbackModal({
     }
   };
 
-  const isFormValid = title.trim() && description.trim() && selectedProjectId && selectedQuestions.length > 0 && startDate && endDate;
+  const isFormValid = () => {
+    return (
+      title.trim() !== '' &&
+      description.trim() !== '' &&
+      selectedProjectId !== '' &&
+      selectedQuestions.length > 0 &&
+      startDate !== '' &&
+      endDate !== ''
+    );
+  };
 
   const getVisibilityStatus = () => {
     if (!startDate || !endDate) return { status: 'NOT_SET', text: 'Visibility not set', color: 'default' };
@@ -157,6 +159,14 @@ export default function FeedbackModal({
   };
 
   const visibilityStatus = getVisibilityStatus();
+
+  const handleQuestionToggle = (questionId: number) => {
+    setSelectedQuestions(prev => 
+      prev.includes(questionId)
+        ? prev.filter(id => id !== questionId)
+        : [...prev, questionId]
+    );
+  };
 
   return (
     <Modal
@@ -346,14 +356,8 @@ export default function FeedbackModal({
               {questions.map((question) => (
                 <div key={question.id} className="flex items-center gap-3 p-3 border rounded-lg">
                   <Checkbox
-                    isSelected={selectedQuestions.includes(question.id.toString())}
-                    onValueChange={(selected) => {
-                      if (selected) {
-                        setSelectedQuestions(prev => [...prev, question.id.toString()]);
-                      } else {
-                        setSelectedQuestions(prev => prev.filter(id => id !== question.id.toString()));
-                      }
-                    }}
+                    isSelected={selectedQuestions.includes(question.id)}
+                    onValueChange={() => handleQuestionToggle(question.id)}
                   />
                   <div className="flex-1">
                     <p className="font-medium text-gray-900">{question.text}</p>
@@ -422,7 +426,7 @@ export default function FeedbackModal({
           <Button
             color="primary"
             onPress={handleSubmit}
-            isDisabled={!isFormValid || loading}
+            isDisabled={!isFormValid() || loading}
             isLoading={loading}
           >
             {mode === 'create' ? 'Create Survey' : 'Update Survey'}

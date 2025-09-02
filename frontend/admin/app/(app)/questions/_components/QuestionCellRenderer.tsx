@@ -15,16 +15,14 @@ import { Question } from '@/types/question';
 function formatQuestionType(type: string): string {
   if (!type) return 'Unknown';
   
-  switch (type.toLowerCase()) {
-    case 'single_choice':
-      return 'Single Choice';
-    case 'multiple_choice':
+  switch (type.toUpperCase()) {
+    case 'MULTIPLE_CHOICE':
       return 'Multiple Choice';
-    case 'text_based':
+    case 'TEXT':
       return 'Text Based';
-    case 'rating':
+    case 'RATING':
       return 'Rating';
-    case 'boolean':
+    case 'BOOLEAN':
       return 'Boolean';
     default:
       return type.charAt(0).toUpperCase() + type.slice(1).toLowerCase();
@@ -38,16 +36,14 @@ function formatCategory(category: string): string {
 }
 
 function getQuestionTypeColor(type: string): 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'danger' {
-  switch (type?.toLowerCase()) {
-    case 'single_choice':
+  switch (type?.toUpperCase()) {
+    case 'MULTIPLE_CHOICE':
       return 'primary';
-    case 'multiple_choice':
-      return 'secondary';
-    case 'text_based':
+    case 'TEXT':
       return 'success';
-    case 'rating':
+    case 'RATING':
       return 'warning';
-    case 'boolean':
+    case 'BOOLEAN':
       return 'danger';
     default:
       return 'default';
@@ -94,15 +90,13 @@ export default function QuestionCellRenderer({
 }: QuestionCellRendererProps) {
   const getTypeIcon = (type: Question['type']) => {
     switch (type) {
-      case 'single_choice':
+      case 'MULTIPLE_CHOICE':
         return <CheckCircleIcon className="w-4 h-4" />;
-      case 'multiple_choice':
-        return <CheckCircleIcon className="w-4 h-4" />;
-      case 'text_based':
+      case 'TEXT':
         return <MessageSquareIcon className="w-4 h-4" />;
-      case 'rating':
+      case 'RATING':
         return <StarIcon className="w-4 h-4" />;
-      case 'boolean':
+      case 'BOOLEAN':
         return <ToggleLeftIcon className="w-4 h-4" />;
       default:
         return <MessageSquareIcon className="w-4 h-4" />;
@@ -118,20 +112,15 @@ export default function QuestionCellRenderer({
           </div>
           <div className="min-w-0 flex-1">
             <h3 className="font-semibold text-default-900 text-sm mb-1 line-clamp-1 group-hover:text-blue-600 transition-colors">
-              {question.title}
+              {question.text}
             </h3>
-            {question.description && (
-              <p className="text-xs text-default-500 line-clamp-2 leading-relaxed">
-                {question.description}
-              </p>
-            )}
             {question.options && question.options.length > 0 && (
               <div className="mt-2">
                 <p className="text-xs text-default-400 mb-1">Options:</p>
                 <div className="flex flex-wrap gap-1">
                   {question.options.slice(0, 3).map((option, index) => (
                     <span
-                      key={option.id}
+                      key={index}
                       className="text-xs bg-default-100 px-2 py-1 rounded-md"
                     >
                       {option.text}
@@ -168,11 +157,11 @@ export default function QuestionCellRenderer({
         <div className="flex items-center gap-2">
           <Chip
             size="sm"
-            color={getCategoryColor(question.category)}
+            color={getCategoryColor(question.category || 'general')}
             variant="flat"
             className="text-xs"
           >
-            {formatCategory(question.category)}
+            {formatCategory(question.category || 'general')}
           </Chip>
         </div>
       );
@@ -190,11 +179,11 @@ export default function QuestionCellRenderer({
       return (
         <Chip
           size="sm"
-          color={question.active ? 'success' : 'danger'}
+          color={question.required ? 'success' : 'default'}
           variant="flat"
           className="text-xs"
         >
-          {question.active ? 'Active' : 'Inactive'}
+          {question.required ? 'Required' : 'Optional'}
         </Chip>
       );
 
