@@ -81,7 +81,7 @@ export default function FeedbackModal({
       if (project) {
         // Return users that are members of the selected project
         return users.filter(user => 
-          user.projects?.some(p => p.id.toString() === selectedProjectId)
+          user.projects?.some(p => p?.id.toString() === selectedProjectId)
         );
       }
     }
