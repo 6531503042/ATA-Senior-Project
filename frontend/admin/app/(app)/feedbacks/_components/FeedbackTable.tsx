@@ -51,6 +51,40 @@ export default function FeedbackTable({
     }
   };
 
+  const getStatusBadgeStyle = (status: string) => {
+    switch (status) {
+      case 'ACTIVE':
+        return {
+          bg: 'bg-green-100 dark:bg-green-900/20',
+          text: 'text-green-700 dark:text-green-400',
+          dot: 'bg-green-500',
+          label: 'Active',
+        };
+      case 'COMPLETED':
+        return {
+          bg: 'bg-blue-100 dark:bg-blue-900/20',
+          text: 'text-blue-700 dark:text-blue-400',
+          dot: 'bg-blue-500',
+          label: 'Completed',
+        };
+      case 'PENDING':
+        return {
+          bg: 'bg-amber-100 dark:bg-amber-900/20',
+          text: 'text-amber-700 dark:text-amber-400',
+          dot: 'bg-amber-500',
+          label: 'Pending',
+        };
+      case 'DRAFT':
+      default:
+        return {
+          bg: 'bg-gray-100 dark:bg-gray-800',
+          text: 'text-gray-700 dark:text-gray-300',
+          dot: 'bg-gray-400',
+          label: 'Draft',
+        };
+    }
+  };
+
   const getVisibilityStatus = (startDate: string, endDate: string) => {
     if (!startDate || !endDate) return { status: 'NOT_SET', text: 'Not set', color: 'default' };
     
@@ -122,16 +156,17 @@ export default function FeedbackTable({
             <div className="p-1.5 bg-gradient-to-br from-green-100 to-teal-100 rounded-md">
               <Clock className="w-3 h-3 text-green-600" />
             </div>
-            <div className="flex flex-col">
+            <div className="flex items-center gap-2">
               <Chip
                 color={visibilityStatus.color as any}
                 size="sm"
                 variant="flat"
-                className="text-xs"
+                radius="full"
+                className="text-[11px] h-6 px-2 whitespace-nowrap"
               >
                 {visibilityStatus.text}
               </Chip>
-              <span className="text-xs text-gray-500 mt-1">
+              <span className="text-xs text-gray-500">
                 {feedback.startDate ? formatDate(feedback.startDate) : 'Not set'}
               </span>
             </div>
@@ -166,16 +201,13 @@ export default function FeedbackTable({
           </div>
         );
       case 'status':
+        const s = getStatusBadgeStyle(feedback.status);
         return (
-          <div className="py-2">
-            <Chip
-              color={getStatusColor(feedback.status) as any}
-              size="sm"
-              variant="flat"
-              className="font-medium"
-            >
-              {feedback.status}
-            </Chip>
+          <div className="py-2 flex justify-center">
+            <span className={`inline-flex items-center gap-2 rounded-full px-3 h-6 text-[11px] font-medium ${s.bg} ${s.text}`}>
+              <span className={`h-2 w-2 rounded-full ${s.dot}`} />
+              {s.label}
+            </span>
           </div>
         );
       case 'created':
@@ -225,7 +257,7 @@ export default function FeedbackTable({
                 </DropdownItem>
                 <DropdownItem
                   key="status"
-                  startContent={<Chip size="sm" color={getStatusColor(feedback.status) as any} />}
+                  startContent={<span className={`inline-flex h-2 w-2 rounded-full ${getStatusBadgeStyle(feedback.status).dot}`} />}
                   className="text-purple-600"
                 >
                   <DropdownMenu aria-label="Change status">
@@ -246,7 +278,7 @@ export default function FeedbackTable({
                     <DropdownItem
                       key="pending"
                       onPress={() => onStatusChange(feedback.id, 'PENDING')}
-                      className="text-yellow-600"
+                      className="text-amber-600"
                     >
                       Set Pending
                     </DropdownItem>

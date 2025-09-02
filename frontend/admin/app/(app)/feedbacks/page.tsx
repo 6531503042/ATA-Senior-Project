@@ -214,14 +214,6 @@ export default function FeedbacksPage() {
             <p className="text-default-600 mt-1">
               Manage feedback surveys with scope-based visibility and time-based access control
             </p>
-            {/* <div className="flex flex-col sm:flex-row gap-3">
-            <button
-              className="w-full sm:w-auto font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
-              onClick={handleAddFeedback}
-            >
-              Create Survey
-            </button>
-          </div> */}
       </div>
           <div className="flex flex-col sm:flex-row gap-3">
             <button
