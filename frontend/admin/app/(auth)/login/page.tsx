@@ -22,7 +22,7 @@ import {
   KeyRound,
 } from 'lucide-react';
 
-import useAuthStore from '@/hooks/useAuth';
+import useAuthStore from '@/stores/authStore';
 
 export default function LoginPage() {
   const { signIn, loading, error, clearError } = useAuthStore();

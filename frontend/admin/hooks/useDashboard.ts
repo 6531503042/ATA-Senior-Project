@@ -13,7 +13,7 @@ import { addToast } from '@heroui/react';
 
 import { apiRequest } from '@/utils/api';
 import { getToken } from '@/utils/storage';
-import useAuthStore from '@/hooks/useAuth';
+import useAuthStore from '@/stores/authStore';
 
 // Mock data for fallback when API fails
 const mockDashboardData: DashboardStats = {

@@ -15,7 +15,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 import { apiRequest } from '@/utils/api';
-import useAuthStore from '@/hooks/useAuth';
+import useAuthStore from '@/stores/authStore';
 
 interface StatData {
   totalUsers?: number;

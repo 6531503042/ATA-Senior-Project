@@ -1,21 +1,15 @@
-'use client';
-
-import type {
-  AuthStore,
-  JwtResponse,
-  LoginRequest,
-  TokenValidationResponse,
-} from '@/types/auth';
+import type { AuthStore, LoginRequest } from '@/types/auth';
 import type { User } from '@/types/user';
 
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { addToast } from '@heroui/react';
 
-import { api } from '@/libs/apiClient';
 import { getToken, saveToken, removeToken } from '@/utils/storage';
+import { isTokenExpired, isTokenExpiringSoon } from '@/utils/token';
+import { login, logout, refresh, validate } from '@/services/authService';
 
-const useAuth = create<AuthStore>()(
+const useAuthStore = create<AuthStore>()(
   persist(
     (set, get) => ({
       loading: false,
@@ -28,25 +22,18 @@ const useAuth = create<AuthStore>()(
           console.log('Attempting login for user:', username);
 
           const loginRequest: LoginRequest = { username, password };
-
-          const response = await api.post<JwtResponse>(
-            '/api/auth/login',
-            loginRequest,
-            { auth: false },
-          );
+          const response = await login(loginRequest);
 
           console.log('Login response received:', response);
 
-          // Save tokens
           saveToken('accessToken', response.accessToken);
           saveToken('refreshToken', response.refreshToken);
 
-          // Create user object from response
           const user: User = {
             id: response.userId,
             username: response.username,
-            firstName: response.username, // Backend doesn't provide firstName, using username
-            lastName: '', // Backend doesn't provide lastName
+            firstName: response.username,
+            lastName: '',
             email: response.email,
             roles: response.roles,
             active: true,
@@ -99,17 +86,13 @@ const useAuth = create<AuthStore>()(
 
       signOut: async () => {
         try {
-          // Call logout endpoint (optional for mock auth)
-          await api.post<void>('/api/auth/logout');
+          await logout();
         } catch (err) {
-          // Continue with logout even if API call fails
           console.warn('Logout API call failed:', err);
         }
 
-        // Clear local state
         set({ user: null, error: null });
 
-        // Remove tokens
         removeToken('accessToken');
         removeToken('refreshToken');
 
@@ -132,22 +115,13 @@ const useAuth = create<AuthStore>()(
           }
 
           console.log('Attempting to refresh token...');
-          const response = await api.post<JwtResponse>(
-            '/api/auth/refresh-token',
-            {},
-            {
-              headers: { 'Refresh-Token': refreshToken },
-              auth: false,
-            },
-          );
+          const response = await refresh(refreshToken);
 
-          // Save new tokens
           saveToken('accessToken', response.accessToken);
           saveToken('refreshToken', response.refreshToken);
 
           console.log('Token refreshed successfully');
 
-          // Get updated user profile if needed
           if (response.userId) {
             const user: User = {
               id: response.userId,
@@ -169,7 +143,6 @@ const useAuth = create<AuthStore>()(
         } catch (err) {
           console.error('Token refresh failed:', err);
 
-          // Token refresh failed, clear everything
           set({ user: null, error: 'Session expired. Please log in again.' });
           removeToken('accessToken');
           removeToken('refreshToken');
@@ -200,25 +173,21 @@ const useAuth = create<AuthStore>()(
           return false;
         }
 
-        // Check if token will expire soon (within 5 minutes)
         if (isTokenExpiringSoon(accessToken)) {
           console.log('Token expiring soon, refreshing...');
 
           return await get().refreshToken();
         }
 
-        // Check if token is already expired
         if (isTokenExpired(accessToken)) {
           console.log('Token expired, refreshing...');
 
           return await get().refreshToken();
         }
 
-        // Only validate with backend occasionally (not on every check)
-        // This reduces unnecessary API calls
         const lastValidation = getToken('lastValidation');
         const now = Date.now();
-        const validationInterval = 10 * 60 * 1000; // 10 minutes
+        const validationInterval = 10 * 60 * 1000;
 
         if (
           !lastValidation ||
@@ -226,8 +195,7 @@ const useAuth = create<AuthStore>()(
         ) {
           try {
             console.log('Performing token validation with backend...');
-            const validation =
-              await api.get<TokenValidationResponse>('/api/auth/validate');
+            const validation = await validate();
 
             saveToken('lastValidation', now.toString());
 
@@ -237,7 +205,7 @@ const useAuth = create<AuthStore>()(
               return await get().refreshToken();
             }
           } catch (err) {
-            console.log('Token validation error, attempting refresh...');
+            console.log('Token validation error, attempting refresh...', err);
 
             return await get().refreshToken();
           }
@@ -255,47 +223,9 @@ const useAuth = create<AuthStore>()(
       storage: createJSONStorage(() => localStorage),
       partialize: state => ({
         user: state.user,
-        // Don't persist loading and error states
       }),
     },
   ),
 );
 
-/**
- * Helper to check if JWT is expired
- */
-function isTokenExpired(token: string): boolean {
-  try {
-    const [, payloadBase64] = token.split('.');
-    const payload = JSON.parse(atob(payloadBase64));
-    const exp = payload.exp;
-    const currentTime = Math.floor(Date.now() / 1000);
-
-    return exp < currentTime;
-  } catch (err) {
-    console.warn('Error parsing token:', err);
-
-    return true;
-  }
-}
-
-/**
- * Helper to check if JWT will expire soon (within 5 minutes)
- */
-function isTokenExpiringSoon(token: string): boolean {
-  try {
-    const [, payloadBase64] = token.split('.');
-    const payload = JSON.parse(atob(payloadBase64));
-    const exp = payload.exp;
-    const currentTime = Math.floor(Date.now() / 1000);
-    const fiveMinutes = 5 * 60; // 5 minutes in seconds
-
-    return exp < currentTime + fiveMinutes;
-  } catch (err) {
-    console.warn('Error parsing token:', err);
-
-    return true;
-  }
-}
-
-export default useAuth;
+export default useAuthStore;
