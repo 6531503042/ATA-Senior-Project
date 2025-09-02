@@ -1,35 +1,44 @@
-export type QuestionType = 'MULTIPLE_CHOICE' | 'SINGLE_CHOICE' | 'TEXT_BASED' | 'RATING' | 'SENTIMENT';
-
-export type QuestionCategory = 'WORK_ENVIRONMENT' | 'WORK_LIFE_BALANCE' | 'TEAM_COLLABORATION' | 'PROJECT_MANAGEMENT' | 'PROJECT_SATISFACTION' | 'TECHNICAL_SKILLS' | 'COMMUNICATION' | 'LEADERSHIP' | 'INNOVATION' | 'PERSONAL_GROWTH' | 'GENERAL';
-
-export type Question = {
+export interface Question {
   id: number;
   text: string;
-  description?: string;
-  questionType: QuestionType;
-  category?: QuestionCategory;
+  type: 'TEXT' | 'MULTIPLE_CHOICE' | 'RATING' | 'BOOLEAN';
   required: boolean;
-  validationRules?: string;
+  order: number;
+  category?: string;
+  options?: QuestionOption[];
   createdAt: string;
   updatedAt: string;
-};
+}
+
+export interface QuestionOption {
+  id: number;
+  text: string;
+  value: string;
+  order: number;
+}
 
 export interface CreateQuestionRequest {
   text: string;
-  description?: string;
-  questionType: QuestionType;
-  category?: QuestionCategory;
+  type: 'TEXT' | 'MULTIPLE_CHOICE' | 'RATING' | 'BOOLEAN';
   required: boolean;
-  validationRules?: string;
+  order: number;
+  category?: string;
+  options?: Omit<QuestionOption, 'id'>[];
 }
 
 export interface UpdateQuestionRequest {
   text?: string;
-  description?: string;
-  questionType?: QuestionType;
-  category?: QuestionCategory;
+  type?: 'TEXT' | 'MULTIPLE_CHOICE' | 'RATING' | 'BOOLEAN';
   required?: boolean;
-  validationRules?: string;
+  order?: number;
+  category?: string;
+  options?: Omit<QuestionOption, 'id'>[];
+}
+
+export interface QuestionCategory {
+  id: string;
+  name: string;
+  description?: string;
 }
 
 export interface QuestionStats {

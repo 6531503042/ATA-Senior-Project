@@ -1,0 +1,333 @@
+'use client';
+
+import type { Feedback } from '@/types/feedback';
+
+import {
+  Table,
+  TableHeader,
+  TableColumn,
+  TableBody,
+  TableRow,
+  TableCell,
+  Chip,
+  Avatar,
+  Button,
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+  Card,
+  CardBody,
+} from '@heroui/react';
+import { MoreVertical, Eye, Edit, Trash2, MessageSquare, Calendar, FileText, Users, Clock, Building } from 'lucide-react';
+
+interface FeedbackTableProps {
+  feedbacks: Feedback[];
+  onView: (feedback: Feedback) => void;
+  onEdit: (feedback: Feedback) => void;
+  onDelete: (id: number) => void;
+  onStatusChange: (id: number, status: string) => void;
+}
+
+export default function FeedbackTable({
+  feedbacks,
+  onView,
+  onEdit,
+  onDelete,
+  onStatusChange,
+}: FeedbackTableProps) {
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'ACTIVE':
+        return 'success';
+      case 'COMPLETED':
+        return 'primary';
+      case 'PENDING':
+        return 'warning';
+      case 'DRAFT':
+        return 'default';
+      default:
+        return 'default';
+    }
+  };
+
+  const getVisibilityStatus = (startDate: string, endDate: string) => {
+    if (!startDate || !endDate) return { status: 'NOT_SET', text: 'Not set', color: 'default' };
+    
+    const now = new Date();
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    
+    if (now < start) return { status: 'PENDING', text: 'Not visible yet', color: 'warning' };
+    if (now > end) return { status: 'EXPIRED', text: 'Expired', color: 'danger' };
+    return { status: 'ACTIVE', text: 'Currently visible', color: 'success' };
+  };
+
+  const getScopeText = (feedback: Feedback) => {
+    if (feedback.isDepartmentWide && feedback.departmentName) {
+      return `Department: ${feedback.departmentName}`;
+    }
+    if (feedback.projectName) {
+      return `Project: ${feedback.projectName}`;
+    }
+    return 'Custom scope';
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  const renderCell = (feedback: Feedback, columnKey: React.Key) => {
+    switch (columnKey) {
+      case 'feedback':
+        return (
+          <div className="flex flex-col gap-2 py-2">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-lg">
+                <MessageSquare className="w-4 h-4 text-blue-600" />
+              </div>
+              <div className="flex flex-col">
+                <p className="font-semibold text-gray-900 text-sm">{feedback.title}</p>
+                <p className="text-xs text-gray-500 truncate max-w-xs">
+                  {feedback.description}
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+      case 'scope':
+        return (
+          <div className="flex items-center gap-2 py-2">
+            <div className="p-1.5 bg-gradient-to-br from-purple-100 to-pink-100 rounded-md">
+              <Building className="w-3 h-3 text-purple-600" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm font-medium text-gray-700">{getScopeText(feedback)}</span>
+              <span className="text-xs text-gray-500">
+                {feedback.isDepartmentWide ? 'Department-wide' : 'Project-specific'}
+              </span>
+            </div>
+          </div>
+        );
+      case 'visibility':
+        const visibilityStatus = getVisibilityStatus(feedback.startDate, feedback.endDate);
+        return (
+          <div className="flex items-center gap-2 py-2">
+            <div className="p-1.5 bg-gradient-to-br from-green-100 to-teal-100 rounded-md">
+              <Clock className="w-3 h-3 text-green-600" />
+            </div>
+            <div className="flex flex-col">
+              <Chip
+                color={visibilityStatus.color as any}
+                size="sm"
+                variant="flat"
+                className="text-xs"
+              >
+                {visibilityStatus.text}
+              </Chip>
+              <span className="text-xs text-gray-500 mt-1">
+                {feedback.startDate ? formatDate(feedback.startDate) : 'Not set'}
+              </span>
+            </div>
+          </div>
+        );
+      case 'questions':
+        return (
+          <div className="flex items-center gap-2 py-2">
+            <div className="p-1.5 bg-gradient-to-br from-orange-100 to-red-100 rounded-md">
+              <FileText className="w-3 h-3 text-orange-600" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm font-semibold text-gray-700">
+                {feedback.questionIds?.length || 0}
+              </span>
+              <span className="text-xs text-gray-500">questions</span>
+            </div>
+          </div>
+        );
+      case 'submissions':
+        return (
+          <div className="flex items-center gap-2 py-2">
+            <div className="p-1.5 bg-gradient-to-br from-cyan-100 to-blue-100 rounded-md">
+              <Users className="w-3 h-3 text-cyan-600" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm font-semibold text-gray-700">
+                {feedback.submissionCount || 0}
+              </span>
+              <span className="text-xs text-gray-500">responses</span>
+            </div>
+          </div>
+        );
+      case 'status':
+        return (
+          <div className="py-2">
+            <Chip
+              color={getStatusColor(feedback.status) as any}
+              size="sm"
+              variant="flat"
+              className="font-medium"
+            >
+              {feedback.status}
+            </Chip>
+          </div>
+        );
+      case 'created':
+        return (
+          <div className="flex items-center gap-2 py-2">
+            <div className="p-1.5 bg-gradient-to-br from-gray-100 to-slate-100 rounded-md">
+              <Calendar className="w-3 h-3 text-gray-600" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm text-gray-700">{formatDate(feedback.createdAt)}</span>
+              <span className="text-xs text-gray-500">
+                {feedback.allowAnonymous ? 'Anonymous allowed' : 'Named only'}
+              </span>
+            </div>
+          </div>
+        );
+      case 'actions':
+        return (
+          <div className="py-2">
+            <Dropdown>
+              <DropdownTrigger>
+                <Button 
+                  isIconOnly 
+                  size="sm" 
+                  variant="light"
+                  className="hover:bg-gray-100 transition-colors"
+                >
+                  <MoreVertical className="w-4 h-4" />
+                </Button>
+              </DropdownTrigger>
+              <DropdownMenu aria-label="Feedback actions">
+                <DropdownItem
+                  key="view"
+                  startContent={<Eye className="w-4 h-4" />}
+                  onPress={() => onView(feedback)}
+                  className="text-blue-600"
+                >
+                  View Details
+                </DropdownItem>
+                <DropdownItem
+                  key="edit"
+                  startContent={<Edit className="w-4 h-4" />}
+                  onPress={() => onEdit(feedback)}
+                  className="text-green-600"
+                >
+                  Edit Survey
+                </DropdownItem>
+                <DropdownItem
+                  key="status"
+                  startContent={<Chip size="sm" color={getStatusColor(feedback.status) as any} />}
+                  className="text-purple-600"
+                >
+                  <DropdownMenu aria-label="Change status">
+                    <DropdownItem
+                      key="active"
+                      onPress={() => onStatusChange(feedback.id, 'ACTIVE')}
+                      className="text-green-600"
+                    >
+                      Set Active
+                    </DropdownItem>
+                    <DropdownItem
+                      key="completed"
+                      onPress={() => onStatusChange(feedback.id, 'COMPLETED')}
+                      className="text-blue-600"
+                    >
+                      Set Completed
+                    </DropdownItem>
+                    <DropdownItem
+                      key="pending"
+                      onPress={() => onStatusChange(feedback.id, 'PENDING')}
+                      className="text-yellow-600"
+                    >
+                      Set Pending
+                    </DropdownItem>
+                    <DropdownItem
+                      key="draft"
+                      onPress={() => onStatusChange(feedback.id, 'DRAFT')}
+                      className="text-gray-600"
+                    >
+                      Set Draft
+                    </DropdownItem>
+                  </DropdownMenu>
+                </DropdownItem>
+                <DropdownItem
+                  key="delete"
+                  className="text-danger"
+                  color="danger"
+                  startContent={<Trash2 className="w-4 h-4" />}
+                  onPress={() => onDelete(feedback.id)}
+                >
+                  Delete Survey
+                </DropdownItem>
+              </DropdownMenu>
+            </Dropdown>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
+  if (feedbacks.length === 0) {
+    return (
+      <Card className="border-2 border-dashed border-gray-200 bg-gray-50">
+        <CardBody className="py-12">
+          <div className="text-center">
+            <MessageSquare className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-600 mb-2">No feedback surveys yet</h3>
+            <p className="text-gray-500">Create your first feedback survey to get started</p>
+          </div>
+        </CardBody>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <Table 
+        aria-label="Feedback surveys table"
+        className="min-w-full"
+        classNames={{
+          wrapper: "bg-transparent shadow-none",
+          th: "bg-gray-50 text-gray-700 font-semibold text-sm border-b border-gray-200",
+          td: "border-b border-gray-100 group-hover:bg-gray-50 transition-colors",
+          tr: "hover:bg-gray-50 transition-colors",
+        }}
+      >
+        <TableHeader>
+          <TableColumn key="feedback" className="text-left">SURVEY</TableColumn>
+          <TableColumn key="scope" className="text-left">SCOPE</TableColumn>
+          <TableColumn key="visibility" className="text-left">VISIBILITY</TableColumn>
+          <TableColumn key="questions" className="text-center">QUESTIONS</TableColumn>
+          <TableColumn key="submissions" className="text-center">RESPONSES</TableColumn>
+          <TableColumn key="status" className="text-center">STATUS</TableColumn>
+          <TableColumn key="created" className="text-left">CREATED</TableColumn>
+          <TableColumn key="actions" className="text-center">ACTIONS</TableColumn>
+        </TableHeader>
+        <TableBody>
+          {feedbacks.map((feedback) => (
+            <TableRow 
+              key={feedback.id}
+              className="cursor-pointer hover:bg-gray-50 transition-colors"
+            >
+              {(columnKey) => (
+                <TableCell className="py-4">
+                  {renderCell(feedback, columnKey)}
+                </TableCell>
+              )}
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
