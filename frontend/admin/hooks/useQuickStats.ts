@@ -51,18 +51,7 @@ export function useQuickStats() {
     } catch (err) {
       console.error('Failed to load quick stats:', err);
       const apiError = err as ApiError;
-
       setError(apiError);
-
-      // Set fallback stats
-      setStats({
-        totalUsers: 0,
-        totalDepartments: 0,
-        totalQuestions: 0,
-        totalFeedbacks: 0,
-        totalSubmissions: 0,
-        totalProjects: 0,
-      });
     } finally {
       setLoading(false);
     }

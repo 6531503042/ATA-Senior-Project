@@ -104,8 +104,13 @@ class ApiClient {
 
         // Handle 401/403 errors gracefully for unauthenticated requests
         if (res.status === 401 || res.status === 403) {
-          console.log(`[API] Auth error for ${opts.method || 'GET'} ${url} - returning fallback data`);
-          return {} as T; // Return empty object as fallback
+          console.log(`[API] Auth error for ${opts.method || 'GET'} ${url}`);
+          const authError: ApiError = {
+            message: 'Authentication required',
+            code: `HTTP_${res.status}`,
+            timestamp: new Date().toISOString(),
+          };
+          throw authError;
         }
 
         const error: ApiError = {

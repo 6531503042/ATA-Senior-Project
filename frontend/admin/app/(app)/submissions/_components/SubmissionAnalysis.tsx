@@ -15,7 +15,7 @@ type Props = {
 };
 
 export default function SubmissionAnalysis({
-  summary = 'AI-powered insights summary (mock)',
+  summary = 'AI-powered insights summary',
 }: Props) {
   return (
     <Card
@@ -39,36 +39,25 @@ export default function SubmissionAnalysis({
           <Metric
             icon={<Users className="w-4 h-4" />}
             label="Engagement"
-            value={74}
+            value={0}
           />
           <Metric
             icon={<TrendingUp className="w-4 h-4" />}
             label="Performance"
-            value={82}
+            value={0}
           />
           <Metric
             icon={<Brain className="w-4 h-4" />}
             label="Consistency"
-            value={68}
+            value={0}
           />
         </div>
 
         <div className="space-y-3">
           <h4 className="text-sm font-medium">Highlights</h4>
-          <ul className="text-sm text-default-600 space-y-2">
-            <li className="flex items-start gap-2">
-              <span className="mt-1 h-1.5 w-1.5 rounded-full bg-violet-500" />{' '}
-              Positive sentiment increasing week-over-week.
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="mt-1 h-1.5 w-1.5 rounded-full bg-emerald-500" />{' '}
-              Response rate remains stable above 85%.
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="mt-1 h-1.5 w-1.5 rounded-full bg-amber-500" />{' '}
-              Action items identified for onboarding questions.
-            </li>
-          </ul>
+          <div className="text-sm text-default-500 text-center py-4">
+            No analysis data available
+          </div>
         </div>
       </CardBody>
     </Card>

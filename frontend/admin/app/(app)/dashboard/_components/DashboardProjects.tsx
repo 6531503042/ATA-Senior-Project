@@ -80,7 +80,6 @@ export function DashboardProjects({ projects }: DashboardProjectsProps) {
             className="group relative flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 rounded-xl border border-default-200 hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all duration-300 cursor-pointer bg-white dark:bg-default-50"
           >
             <Avatar
-              showFallback
               className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-semibold shadow-md"
               name={getInitials(project.title)}
             >

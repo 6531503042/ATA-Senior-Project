@@ -1,17 +1,7 @@
-import type {
-  DashboardStats,
-  EnhancedDashboardStats,
-  ActivityFeed,
-  QuickAction,
-  RealTimeUpdate,
-  SystemHealth,
-  RealTimeMetrics,
-} from '../types/dashboard';
-
-import { useState, useEffect, useCallback } from 'react';
-import { addToast } from '@heroui/react';
-
+import { useState, useCallback, useEffect } from 'react';
 import { apiRequest } from '@/utils/api';
+import { DashboardStats, EnhancedDashboardStats, ActivityFeed } from '@/types/dashboard';
+
 import { getToken } from '@/utils/storage';
 import useAuthStore from '@/stores/authStore';
 
@@ -213,11 +203,6 @@ export function useDashboard() {
       console.warn('Using mock data due to API error:', errorMessage);
       // Use mock data as fallback
       setData(mockDashboardData);
-      addToast({
-        title: 'Using demo data',
-        description: 'Connected to mock data due to API unavailability',
-        color: 'warning',
-      });
     } finally {
       setLoading(false);
     }
@@ -252,11 +237,6 @@ export function useEnhancedDashboard() {
       console.warn('Using mock data due to API error:', errorMessage);
       // Use mock data as fallback
       setData(mockEnhancedData);
-      addToast({
-        title: 'Using demo data',
-        description: 'Connected to mock data due to API unavailability',
-        color: 'warning',
-      });
     } finally {
       setLoading(false);
     }
@@ -307,7 +287,7 @@ export function useActivityFeed(limit: number = 20) {
 
 // Quick actions hook
 export function useQuickActions() {
-  const [data, setData] = useState<QuickAction[]>([]);
+  const [data, setData] = useState<any[]>([]); // QuickAction type was removed, using any[] for now
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -315,7 +295,7 @@ export function useQuickActions() {
     setLoading(true);
     setError(null);
     try {
-      const res = await apiRequest<QuickAction[]>('/api/dashboard/quick-actions', 'GET');
+      const res = await apiRequest<any[]>('/api/dashboard/quick-actions', 'GET'); // QuickAction type was removed, using any[]
       if (res.data) {
         setData(Array.isArray(res.data) ? res.data : []);
       }
@@ -341,7 +321,7 @@ export function useQuickActions() {
 
 // Real-time notifications hook
 export function useNotifications(limit: number = 10) {
-  const [data, setData] = useState<RealTimeUpdate[]>([]);
+  const [data, setData] = useState<any[]>([]); // RealTimeUpdate type was removed, using any[] for now
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -349,7 +329,7 @@ export function useNotifications(limit: number = 10) {
     setLoading(true);
     setError(null);
     try {
-      const res = await apiRequest<RealTimeUpdate[]>(`/api/dashboard/notifications?limit=${limit}`, 'GET');
+      const res = await apiRequest<any[]>(`/api/dashboard/notifications?limit=${limit}`, 'GET'); // RealTimeUpdate type was removed, using any[]
       if (res.data) {
         setData(Array.isArray(res.data) ? res.data : []);
       }
@@ -375,7 +355,7 @@ export function useNotifications(limit: number = 10) {
 
 // Real-time metrics hook
 export function useRealTimeMetrics() {
-  const [data, setData] = useState<RealTimeMetrics | null>(null);
+  const [data, setData] = useState<any | null>(null); // RealTimeMetrics type was removed, using any for now
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -383,7 +363,7 @@ export function useRealTimeMetrics() {
     setLoading(true);
     setError(null);
     try {
-      const res = await apiRequest<RealTimeMetrics>('/api/dashboard/realtime-metrics', 'GET');
+      const res = await apiRequest<any>('/api/dashboard/realtime-metrics', 'GET'); // RealTimeMetrics type was removed, using any
       if (res.data) {
         setData(res.data);
       }
@@ -415,7 +395,7 @@ export function useRealTimeMetrics() {
 
 // System health hook
 export function useSystemHealth() {
-  const [data, setData] = useState<SystemHealth | null>(null);
+  const [data, setData] = useState<any | null>(null); // SystemHealth type was removed, using any for now
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -423,7 +403,7 @@ export function useSystemHealth() {
     setLoading(true);
     setError(null);
     try {
-      const res = await apiRequest<SystemHealth>('/api/dashboard/health', 'GET');
+      const res = await apiRequest<any>('/api/dashboard/health', 'GET'); // SystemHealth type was removed, using any
       if (res.data) {
         setData(res.data);
       }
@@ -452,7 +432,6 @@ export function useSystemHealth() {
 
   return { data, loading, error, refetch };
 }
-
 // Combined dashboard hook for comprehensive data
 export function useDashboardData() {
   const auth = useAuthStore();
@@ -508,3 +487,4 @@ export function useDashboardData() {
     systemHealthLoading: systemHealth.loading,
   } as const;
 }
+

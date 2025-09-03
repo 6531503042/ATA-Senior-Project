@@ -42,22 +42,8 @@ export function DashboardStats({ loading = false }: DashboardStatsProps) {
     const fetchStats = async () => {
       // Check if user is authenticated
       if (!auth.isLoggedIn()) {
-        console.log('User not authenticated, using mock data');
-        // Use mock data when not authenticated
-        setStatsData({
-          totalUsers: 28,
-          totalDepartments: 4,
-          totalQuestions: 15,
-          totalFeedbacks: 23,
-          totalSubmissions: 45,
-          totalProjects: 12,
-          usersGrowth: '+8%',
-          departmentsGrowth: '+0%',
-          questionsGrowth: '+15%',
-          feedbacksGrowth: '+23%',
-          submissionsGrowth: '+23%',
-          projectsGrowth: '+15%',
-        });
+        console.log('User not authenticated');
+        setError('Please log in to view dashboard stats');
         setIsLoading(false);
         return;
       }
@@ -107,22 +93,6 @@ export function DashboardStats({ loading = false }: DashboardStatsProps) {
       } catch (err: any) {
         console.error('Error fetching dashboard stats:', err);
         setError(err.message || 'Failed to load dashboard stats');
-
-        // Set fallback mock data
-        setStatsData({
-          totalUsers: 28,
-          totalDepartments: 4,
-          totalQuestions: 15,
-          totalFeedbacks: 23,
-          totalSubmissions: 45,
-          totalProjects: 12,
-          usersGrowth: '+8%',
-          departmentsGrowth: '+0%',
-          questionsGrowth: '+15%',
-          feedbacksGrowth: '+23%',
-          submissionsGrowth: '+23%',
-          projectsGrowth: '+15%',
-        });
       } finally {
         setIsLoading(false);
       }
@@ -216,7 +186,7 @@ export function DashboardStats({ loading = false }: DashboardStatsProps) {
     return (
       <Card className="shadow-sm">
         <CardBody className="p-6 text-center">
-          <p className="text-orange-600 mb-4">Using demo data</p>
+          <div className="text-red-500 mb-4">Error loading dashboard stats</div>
           <p className="text-sm text-gray-600">{error}</p>
         </CardBody>
       </Card>

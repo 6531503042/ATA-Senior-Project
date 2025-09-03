@@ -24,22 +24,12 @@ export const useRoles = () => {
       if (res.data && Array.isArray(res.data)) {
         setRoles(res.data);
       } else {
-                     // Fallback to default roles if backend doesn't have roles endpoint
-             setRoles([
-               { id: 'ADMIN', name: 'Admin', description: 'Administrator role' },
-               { id: 'USER', name: 'User', description: 'Regular user role' },
-               { id: 'SUPER_ADMIN', name: 'Super Admin', description: 'Super administrator role' },
-             ]);
+        setRoles([]);
       }
     } catch (err: any) {
-      console.warn('Failed to fetch roles from backend, using default roles:', err.message);
-      
-             // Fallback to default roles
-       setRoles([
-         { id: 'ADMIN', name: 'Admin', description: 'Administrator role' },
-         { id: 'USER', name: 'User', description: 'Regular user role' },
-         { id: 'SUPER_ADMIN', name: 'Super Admin', description: 'Super administrator role' },
-       ]);
+      console.error('Failed to fetch roles from backend:', err.message);
+      setError('Failed to load roles');
+      setRoles([]);
     } finally {
       setLoading(false);
     }
