@@ -1,15 +1,16 @@
 package dev.bengi.main.modules.question.dto;
 
 import dev.bengi.main.modules.question.enums.QuestionType;
-import dev.bengi.main.modules.question.enums.QuestionCategory;
+import java.util.List;
 
 public record QuestionUpdateRequestDto(
         String text,
         String description,
         QuestionType questionType,
-        QuestionCategory category,
+        String category,
         Boolean required,
-        String validationRules
+        String validationRules,
+        List<QuestionOptionDto> options
 ) {}
 
 

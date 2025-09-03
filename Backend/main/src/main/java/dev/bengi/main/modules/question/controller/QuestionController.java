@@ -50,13 +50,13 @@ public class QuestionController {
     }
 
     @GetMapping("/types")
-    public Mono<ResponseEntity<java.util.List<QuestionType>>> types() {
-        return Mono.just(ResponseEntity.ok(java.util.Arrays.asList(QuestionType.values())));
+    public Mono<ResponseEntity<java.util.List<String>>> types() {
+        return Mono.just(ResponseEntity.ok(java.util.Arrays.stream(QuestionType.values()).map(Enum::name).toList()));
     }
 
     @GetMapping("/categories")
-    public Mono<ResponseEntity<java.util.List<QuestionCategory>>> categories() {
-        return Mono.just(ResponseEntity.ok(java.util.Arrays.asList(QuestionCategory.values())));
+    public Mono<ResponseEntity<java.util.List<String>>> categories() {
+        return Mono.just(ResponseEntity.ok(java.util.Arrays.stream(QuestionCategory.values()).map(Enum::name).toList()));
     }
 
     @DeleteMapping("/{id}")

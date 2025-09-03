@@ -25,21 +25,7 @@ public interface QuestionMapper {
     @Mapping(target = "choices", ignore = true)
     void updateEntity(@MappingTarget Question target, QuestionUpdateRequestDto req);
 
-    QuestionResponseDto toResponse(Question entity);
-    
-    @AfterMapping
-    default void setCategoryFromEnum(@MappingTarget Question target, QuestionRequestDto req) {
-        if (req.category() != null) {
-            target.setCategoryString(req.category().name());
-        }
-    }
-    
-    @AfterMapping
-    default void setCategoryFromEnumUpdate(@MappingTarget Question target, QuestionUpdateRequestDto req) {
-        if (req.category() != null) {
-            target.setCategoryString(req.category().name());
-        }
-    }
+    // Avoid automatic bean mapping to DTO with lists; responses are assembled in the service
 }
 
 
