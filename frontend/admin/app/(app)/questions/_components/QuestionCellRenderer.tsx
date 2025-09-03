@@ -12,27 +12,47 @@ import {
 import { Question } from '@/types/question';
 
 // Question utility functions
+function typeEmoji(type: string): string {
+  switch ((type || '').toUpperCase()) {
+    case 'MULTIPLE_CHOICE':
+      return '🧩';
+    case 'TEXT':
+      return '💬';
+    case 'RATING':
+      return '⭐️';
+    case 'BOOLEAN':
+      return '🔘';
+    default:
+      return '❓';
+  }
+}
+
 function formatQuestionType(type: string): string {
   if (!type) return 'Unknown';
-  
-  switch (type.toUpperCase()) {
-    case 'MULTIPLE_CHOICE':
-      return 'Multiple Choice';
-    case 'TEXT':
-      return 'Text Based';
-    case 'RATING':
-      return 'Rating';
-    case 'BOOLEAN':
-      return 'Boolean';
-    default:
-      return type.charAt(0).toUpperCase() + type.slice(1).toLowerCase();
-  }
+  const pretty = (() => {
+    switch (type.toUpperCase()) {
+      case 'MULTIPLE_CHOICE':
+        return 'Multiple Choice';
+      case 'TEXT':
+        return 'Text';
+      case 'RATING':
+        return 'Rating';
+      case 'BOOLEAN':
+        return 'Boolean';
+      default:
+        return type.charAt(0).toUpperCase() + type.slice(1).toLowerCase();
+    }
+  })();
+  return `${typeEmoji(type)} ${pretty}`;
 }
 
 function formatCategory(category: string): string {
   if (!category) return 'General';
-  
-  return category.charAt(0).toUpperCase() + category.slice(1).toLowerCase();
+  const pretty = category
+    .replace(/[_-]/g, ' ')
+    .toLowerCase()
+    .replace(/\b\w/g, c => c.toUpperCase());
+  return `🏷️ ${pretty}`;
 }
 
 function getQuestionTypeColor(type: string): 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'danger' {
@@ -146,6 +166,7 @@ export default function QuestionCellRenderer({
             color={getQuestionTypeColor(question.type)}
             variant="flat"
             className="text-xs"
+            radius="full"
           >
             {formatQuestionType(question.type)}
           </Chip>
@@ -160,6 +181,7 @@ export default function QuestionCellRenderer({
             color={getCategoryColor(question.category || 'general')}
             variant="flat"
             className="text-xs"
+            radius="full"
           >
             {formatCategory(question.category || 'general')}
           </Chip>
@@ -182,8 +204,9 @@ export default function QuestionCellRenderer({
           color={question.required ? 'success' : 'default'}
           variant="flat"
           className="text-xs"
+          radius="full"
         >
-          {question.required ? 'Required' : 'Optional'}
+          {question.required ? '✅ Required' : 'Optional'}
         </Chip>
       );
 

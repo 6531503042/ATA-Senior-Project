@@ -34,7 +34,6 @@ export default function FeedbackModal({
   departments = [],
   users = [],
 }: FeedbackModalProps) {
-  if (!isOpen) return null;
   const [loading, setLoading] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -49,8 +48,10 @@ export default function FeedbackModal({
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   const [selectedDepartmentIds, setSelectedDepartmentIds] = useState<string[]>([]);
 
+  if (!isOpen) return null;
+
   useEffect(() => {
-    if (isOpen && feedback) {
+    if (feedback) {
       setTitle(feedback.title);
       setDescription(feedback.description);
       setSelectedProjectId(feedback.projectId.toString());

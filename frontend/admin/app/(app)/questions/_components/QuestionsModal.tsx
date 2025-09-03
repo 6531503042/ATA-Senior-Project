@@ -28,6 +28,7 @@ import {
   StarIcon,
   ToggleLeftIcon,
 } from 'lucide-react';
+import { useQuestionMeta } from '@/hooks/useQuestionMeta';
 
 interface QuestionsModalProps {
   isOpen: boolean;
@@ -44,6 +45,8 @@ export function QuestionsModal({
   question,
   mode,
 }: QuestionsModalProps) {
+  if (!isOpen) return null;
+  
   const [formData, setFormData] = useState<CreateQuestionRequest>({
     text: question?.text || '',
     type: question?.type || 'TEXT',
@@ -147,35 +150,60 @@ export function QuestionsModal({
     }
   };
 
-  const questionTypes = [
-    {
-      key: 'TEXT',
-      label: 'Text Based',
-      icon: <MessageSquareIcon className="w-4 h-4" />,
-    },
-    {
-      key: 'MULTIPLE_CHOICE',
-      label: 'Multiple Choice',
-      icon: <CheckCircleIcon className="w-4 h-4" />,
-    },
-    { key: 'RATING', label: 'Rating', icon: <StarIcon className="w-4 h-4" /> },
-    {
-      key: 'BOOLEAN',
-      label: 'Boolean',
-      icon: <ToggleLeftIcon className="w-4 h-4" />,
-    },
-  ];
+  // Dynamic question metadata (types/categories) with fallbacks and emoji labels
+  const { meta } = useQuestionMeta();
+  
+  const typeEmoji = (key: string) => {
+    switch ((key || '').toUpperCase()) {
+      case 'TEXT':
+        return '💬';
+      case 'MULTIPLE_CHOICE':
+        return '🧩';
+      case 'RATING':
+        return '⭐️';
+      case 'BOOLEAN':
+        return '🔘';
+      default:
+        return '❓';
+    }
+  };
 
-  const categories = [
-    { key: 'project_satisfaction', label: 'Project Satisfaction' },
-    { key: 'technical_skills', label: 'Technical Skills' },
-    { key: 'communication', label: 'Communication' },
-    { key: 'leadership', label: 'Leadership' },
-    { key: 'work_environment', label: 'Work Environment' },
-    { key: 'work_life_balance', label: 'Work Life Balance' },
-    { key: 'team_collaboration', label: 'Team Collaboration' },
-    { key: 'general', label: 'General' },
-  ];
+  const categoryEmoji = (key: string) => {
+    const k = (key || '').toLowerCase();
+    if (k.includes('project')) return '📦';
+    if (k.includes('technical') || k.includes('skill')) return '🛠️';
+    if (k.includes('communication')) return '🗣️';
+    if (k.includes('leadership')) return '👑';
+    if (k.includes('environment')) return '🏢';
+    if (k.includes('balance')) return '⚖️';
+    if (k.includes('team')) return '🤝';
+    if (k.includes('general')) return '🏷️';
+    return '🏷️';
+  };
+
+  const handleTypeChange = (nextType: 'TEXT' | 'MULTIPLE_CHOICE' | 'RATING' | 'BOOLEAN') => {
+    setFormData(prev => {
+      let nextOptions: CreateQuestionRequest['options'] = prev.options;
+
+      if (nextType === 'MULTIPLE_CHOICE') {
+        if (!prev.options || prev.options.length === 0) {
+          nextOptions = [
+            { text: 'Option 1', value: 'Option 1', order: 1 },
+            { text: 'Option 2', value: 'Option 2', order: 2 },
+          ];
+        }
+      } else if (nextType === 'BOOLEAN') {
+        nextOptions = [
+          { text: 'Yes', value: 'YES', order: 1 },
+          { text: 'No', value: 'NO', order: 2 },
+        ];
+      } else {
+        nextOptions = [];
+      }
+
+      return { ...prev, type: nextType, options: nextOptions };
+    });
+  };
 
   return (
     <Modal
@@ -260,16 +288,14 @@ export function QuestionsModal({
               placeholder="Select question type"
               selectedKeys={[formData.type]}
               variant="bordered"
-              onChange={e =>
-                setFormData({
-                  ...formData,
-                  type: e.target.value as 'TEXT' | 'MULTIPLE_CHOICE' | 'RATING' | 'BOOLEAN',
-                })
-              }
+              onChange={e => handleTypeChange(e.target.value as 'TEXT' | 'MULTIPLE_CHOICE' | 'RATING' | 'BOOLEAN')}
             >
-              {questionTypes.map(type => (
-                <SelectItem key={type.key} startContent={type.icon}>
-                  {type.label}
+              {meta.types.map(type => (
+                <SelectItem key={type.key} textValue={type.label}>
+                  <span className="flex items-center gap-2">
+                    <span className="text-sm">{typeEmoji(type.key)}</span>
+                    <span>{type.label}</span>
+                  </span>
                 </SelectItem>
               ))}
             </Select>
@@ -288,44 +314,51 @@ export function QuestionsModal({
                 })
               }
             >
-              {categories.map(category => (
-                <SelectItem key={category.key}>{category.label}</SelectItem>
+              {meta.categories.map(category => (
+                <SelectItem key={category.key} textValue={category.label}>
+                  <span className="flex items-center gap-2">
+                    <span className="text-sm">{categoryEmoji(category.key)}</span>
+                    <span>{category.label}</span>
+                  </span>
+                </SelectItem>
               ))}
             </Select>
           </div>
 
           {/* Options Section for Choice Questions */}
-          {(formData.type === 'MULTIPLE_CHOICE' || formData.type === 'RATING') && (
+          {(formData.type === 'MULTIPLE_CHOICE' || formData.type === 'BOOLEAN') && (
             <div className="space-y-4">
               <Divider />
               <div>
                 <h3 className="text-sm font-medium text-default-700 mb-3">
-                  Answer Options
+                  {formData.type === 'BOOLEAN' ? 'Boolean Options' : 'Answer Options'}
                 </h3>
                 <div className="space-y-3">
-                  <div className="flex gap-2">
-                    <Input
-                      className="flex-1"
-                      placeholder="Add an option"
-                      value={newOption}
-                      variant="bordered"
-                      onChange={e => setNewOption(e.target.value)}
-                      onKeyPress={e => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          addOption();
-                        }
-                      }}
-                    />
-                    <Button
-                      isDisabled={!newOption.trim()}
-                      startContent={<PlusIcon className="w-4 h-4" />}
-                      variant="bordered"
-                      onPress={addOption}
-                    >
-                      Add
-                    </Button>
-                  </div>
+                  {formData.type === 'MULTIPLE_CHOICE' && (
+                    <div className="flex gap-2">
+                      <Input
+                        className="flex-1"
+                        placeholder="Add an option"
+                        value={newOption}
+                        variant="bordered"
+                        onChange={e => setNewOption(e.target.value)}
+                        onKeyPress={e => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            addOption();
+                          }
+                        }}
+                      />
+                      <Button
+                        isDisabled={!newOption.trim()}
+                        startContent={<PlusIcon className="w-4 h-4" />}
+                        variant="bordered"
+                        onPress={addOption}
+                      >
+                        Add
+                      </Button>
+                    </div>
+                  )}
 
                   {formData.options && formData.options.length > 0 && (
                     <div className="space-y-2">
@@ -337,18 +370,31 @@ export function QuestionsModal({
                           <span className="text-sm font-medium text-default-600 min-w-[30px]">
                             {index + 1}.
                           </span>
-                          <span className="text-sm text-default-700 flex-1">
-                            {option.text}
-                          </span>
-                          <Button
-                            isIconOnly
-                            className="text-default-400 hover:text-red-600"
+                          <Input
+                            className="flex-1"
                             size="sm"
-                            variant="light"
-                            onPress={() => removeOption(index)}
-                          >
-                            <XIcon className="w-4 h-4" />
-                          </Button>
+                            value={option.text}
+                            variant="bordered"
+                            onChange={e => {
+                              const text = e.target.value;
+                              setFormData(prev => {
+                                const next = [...(prev.options || [])];
+                                next[index] = { ...next[index], text, value: text } as any;
+                                return { ...prev, options: next };
+                              });
+                            }}
+                          />
+                          {formData.type === 'MULTIPLE_CHOICE' && (
+                            <Button
+                              isIconOnly
+                              className="text-default-400 hover:text-red-600"
+                              size="sm"
+                              variant="light"
+                              onPress={() => removeOption(index)}
+                            >
+                              <XIcon className="w-4 h-4" />
+                            </Button>
+                          )}
                         </div>
                       ))}
                     </div>

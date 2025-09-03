@@ -272,8 +272,16 @@ export default function UsersPage() {
           </CardHeader>
           <CardBody className="pt-0">
             {loading ? (
-              <div className="flex items-center justify-center py-12">
-                <div className="text-default-400">Loading users...</div>
+              <div className="py-6">
+                <div className="space-y-3">
+                  <div className="h-6 bg-default-100 rounded w-1/3" />
+                  <div className="h-4 bg-default-100 rounded w-1/2" />
+                </div>
+                <div className="mt-4 space-y-2">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} className="h-12 bg-default-100 rounded" />
+                  ))}
+                </div>
               </div>
             ) : error ? (
               <div className="flex items-center justify-center py-12">

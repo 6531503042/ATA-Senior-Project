@@ -38,7 +38,7 @@ export function useQuestionMeta() {
     setError(null);
     try {
       // Try a combined endpoint first
-      const combined = await apiRequest<any>('/api/questions/meta', 'GET');
+      const combined = await apiRequest<any>('/api/questions/meta', 'GET').catch(() => null);
       if (combined?.data) {
         const types = normalizeTypes(combined.data.types);
         const categories = normalizeCategories(combined.data.categories);
