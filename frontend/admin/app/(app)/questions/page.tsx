@@ -6,13 +6,17 @@ import type {
   UpdateQuestionRequest,
 } from '@/types/question';
 
-import { Button, Card, CardBody, CardHeader } from '@heroui/react';
+import { Button, Card, CardBody, CardHeader, Chip } from '@heroui/react';
 import {
   PlusIcon,
   MessageSquareIcon,
   CheckCircleIcon,
-  StarIcon,
+
   ToggleLeftIcon,
+
+  UsersIcon,
+  ShapesIcon,
+
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
@@ -43,9 +47,13 @@ export default function QuestionsPage() {
   // Calculate stats from questions array
   const stats = {
     totalQuestions: questions.length,
-    activeQuestions: questions.filter(q => q.required).length,
-    inactiveQuestions: questions.filter(q => !q.required).length,
+    requiredQuestions: questions.filter(q => q.required).length,
+    optionalQuestions: questions.filter(q => !q.required).length,
     totalCategories: new Set(questions.map(q => q.category).filter(Boolean)).size,
+    multipleChoiceQuestions: questions.filter(q => q.type === 'MULTIPLE_CHOICE').length,
+    ratingQuestions: questions.filter(q => q.type === 'RATING').length,
+    booleanQuestions: questions.filter(q => q.type === 'BOOLEAN').length,
+    textQuestions: questions.filter(q => q.type === 'TEXT').length,
   };
 
   const handleCreateQuestion = async (data: CreateQuestionRequest) => {
@@ -116,35 +124,41 @@ export default function QuestionsPage() {
       icon: MessageSquareIcon,
       color: 'text-blue-600',
       bgColor: 'from-blue-500 to-indigo-600',
-      description: 'All questions',
+      description: 'All questions in system',
       gradient: 'from-blue-50 to-indigo-50',
+      trend: '+12%',
+      trendColor: 'text-green-600',
     },
     {
-      title: 'Active Questions',
-      value: stats.activeQuestions.toString(),
+      title: 'Required Questions',
+      value: stats.requiredQuestions.toString(),
       icon: CheckCircleIcon,
       color: 'text-green-600',
       bgColor: 'from-green-500 to-emerald-600',
-      description: 'Currently active',
+      description: 'Mandatory questions',
       gradient: 'from-green-50 to-emerald-50',
+      trend: '+5%',
+      trendColor: 'text-green-600',
     },
     {
-      title: 'Inactive Questions',
-      value: stats.inactiveQuestions.toString(),
-      icon: StarIcon,
-      color: 'text-orange-600',
-      bgColor: 'from-orange-500 to-amber-600',
-      description: 'Currently inactive',
-      gradient: 'from-orange-50 to-amber-50',
+      title: 'Question Types',
+      value: `${stats.multipleChoiceQuestions + stats.ratingQuestions + stats.booleanQuestions + stats.textQuestions}`,
+      icon: ToggleLeftIcon,
+      color: 'text-purple-600',
+      bgColor: 'from-purple-500 to-violet-600',
+      description: 'Different question formats',
+      gradient: 'from-purple-50 to-violet-50',
+      trend: '4 types',
+      trendColor: 'text-purple-600',
     },
     {
       title: 'Categories',
       value: stats.totalCategories.toString(),
-      icon: ToggleLeftIcon,
-      color: 'text-purple-600',
-      bgColor: 'from-purple-500 to-violet-600',
+      icon: ShapesIcon,
+      color: 'text-orange-600',
+      bgColor: 'from-orange-500 to-amber-600',
       description: 'Question categories',
-      gradient: 'from-purple-50 to-violet-50',
+      gradient: 'from-orange-50 to-amber-50',
     },
   ];
 
@@ -216,9 +230,9 @@ export default function QuestionsPage() {
                     </p>
                   </div>
                   <div
-                    className={`p-4 rounded-2xl bg-gradient-to-br ${stat.bgColor} text-white shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110`}
+                    className={`p-4 rounded-2xl bg-gradient-to-br ${stat.bgColor} text-white shadow-lg group-hover:shadow-xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-3`}
                   >
-                    <stat.icon className="w-6 h-6" />
+                    <stat.icon className="w-7 h-7" />
                   </div>
                 </div>
               </CardBody>

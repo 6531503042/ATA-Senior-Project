@@ -301,18 +301,15 @@ export function QuestionsModal({
             </Select>
 
             <Select
-              isRequired
-              className="w-full"
-              label="Category"
-              placeholder="Select category"
               selectedKeys={formData.category ? [formData.category] : []}
-              variant="bordered"
-              onChange={e =>
-                setFormData({
-                  ...formData,
-                  category: e.target.value,
-                })
-              }
+              onSelectionChange={(keys) => {
+                const selected = Array.from(keys)[0] as string;
+                setFormData(prev => ({ ...prev, category: selected }));
+              }}
+              placeholder="Select category"
+              classNames={{
+                trigger: "border-2 border-default-200 hover:border-default-300 focus-within:border-primary-500 transition-colors duration-200",
+              }}
             >
               {meta.categories.map(category => (
                 <SelectItem key={category.key} textValue={category.label}>

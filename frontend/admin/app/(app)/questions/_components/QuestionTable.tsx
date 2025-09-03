@@ -6,6 +6,7 @@ import {
   TableColumn,
   TableHeader,
   TableRow,
+  Chip,
 } from '@heroui/react';
 import { Key, useCallback, useMemo, useState } from 'react';
 
@@ -23,6 +24,20 @@ const COLUMNS = [
   { name: 'STATUS', uid: 'status', allowsSorting: true },
   { name: 'ACTIONS', uid: 'actions', allowsSorting: false },
 ];
+
+const questionTypeColors = {
+  TEXT: 'default',
+  MULTIPLE_CHOICE: 'primary',
+  RATING: 'warning',
+  BOOLEAN: 'success',
+} as const;
+
+const questionTypeIcons = {
+  TEXT: '📝',
+  MULTIPLE_CHOICE: '☑️',
+  RATING: '⭐',
+  BOOLEAN: '✅',
+} as const;
 
 type QuestionTableProps = {
   questions: Question[];

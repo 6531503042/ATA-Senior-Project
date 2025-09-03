@@ -1,106 +1,46 @@
+import { Chip, Button, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from '@heroui/react';
 import { Key } from 'react';
-import { Chip, Button, Checkbox } from '@heroui/react';
-import {
-  EditIcon,
-  TrashIcon,
-  MessageSquareIcon,
+import { 
+  EditIcon, 
+  TrashIcon, 
+  MoreVerticalIcon, 
+  EyeIcon,
   CheckCircleIcon,
+  XCircleIcon,
   StarIcon,
   ToggleLeftIcon,
+  MessageSquareIcon,
 } from 'lucide-react';
 
 import { Question } from '@/types/question';
 
-// Question utility functions
-function typeEmoji(type: string): string {
-  switch ((type || '').toUpperCase()) {
-    case 'MULTIPLE_CHOICE':
-      return '🧩';
-    case 'TEXT':
-      return '💬';
-    case 'RATING':
-      return '⭐️';
-    case 'BOOLEAN':
-      return '🔘';
-    default:
-      return '❓';
-  }
-}
+const questionTypeColors = {
+  TEXT: 'default',
+  MULTIPLE_CHOICE: 'primary',
+  RATING: 'warning',
+  BOOLEAN: 'success',
+} as const;
 
-function formatQuestionType(type: string): string {
-  if (!type) return 'Unknown';
-  const pretty = (() => {
-    switch (type.toUpperCase()) {
-      case 'MULTIPLE_CHOICE':
-        return 'Multiple Choice';
-      case 'TEXT':
-        return 'Text';
-      case 'RATING':
-        return 'Rating';
-      case 'BOOLEAN':
-        return 'Boolean';
-      default:
-        return type.charAt(0).toUpperCase() + type.slice(1).toLowerCase();
-    }
-  })();
-  return `${typeEmoji(type)} ${pretty}`;
-}
+const questionTypeIcons = {
+  TEXT: '📝',
+  MULTIPLE_CHOICE: '☑️',
+  RATING: '⭐',
+  BOOLEAN: '✅',
+} as const;
 
-function formatCategory(category: string): string {
-  if (!category) return 'General';
-  const pretty = category
-    .replace(/[_-]/g, ' ')
-    .toLowerCase()
-    .replace(/\b\w/g, c => c.toUpperCase());
-  return `🏷️ ${pretty}`;
-}
+const questionTypeLabels = {
+  TEXT: 'Text Input',
+  MULTIPLE_CHOICE: 'Multiple Choice',
+  RATING: 'Rating Scale',
+  BOOLEAN: 'Yes/No',
+} as const;
 
-function getQuestionTypeColor(type: string): 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'danger' {
-  switch (type?.toUpperCase()) {
-    case 'MULTIPLE_CHOICE':
-      return 'primary';
-    case 'TEXT':
-      return 'success';
-    case 'RATING':
-      return 'warning';
-    case 'BOOLEAN':
-      return 'danger';
-    default:
-      return 'default';
-  }
-}
-
-function getCategoryColor(category: string): 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'danger' {
-  switch (category?.toLowerCase()) {
-    case 'general':
-      return 'default';
-    case 'technical':
-      return 'primary';
-    case 'feedback':
-      return 'success';
-    case 'survey':
-      return 'warning';
-    case 'assessment':
-      return 'danger';
-    default:
-      return 'secondary';
-  }
-}
-
-export type QuestionColumnKey =
-  | 'question'
-  | 'type'
-  | 'category'
-  | 'required'
-  | 'status'
-  | 'actions';
-
-type QuestionCellRendererProps = {
+interface QuestionCellRendererProps {
   question: Question;
   columnKey: Key;
   onEdit?: (question: Question) => void;
   onDelete?: (questionId: string) => void;
-};
+}
 
 export default function QuestionCellRenderer({
   question,
@@ -108,136 +48,203 @@ export default function QuestionCellRenderer({
   onEdit,
   onDelete,
 }: QuestionCellRendererProps) {
-  const getTypeIcon = (type: Question['type']) => {
-    switch (type) {
-      case 'MULTIPLE_CHOICE':
-        return <CheckCircleIcon className="w-4 h-4" />;
-      case 'TEXT':
-        return <MessageSquareIcon className="w-4 h-4" />;
-      case 'RATING':
-        return <StarIcon className="w-4 h-4" />;
-      case 'BOOLEAN':
-        return <ToggleLeftIcon className="w-4 h-4" />;
-      default:
-        return <MessageSquareIcon className="w-4 h-4" />;
-    }
-  };
+  const cellValue = question[columnKey as keyof Question];
 
   switch (columnKey) {
     case 'question':
       return (
-        <div className="flex items-start gap-3 group">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
-            {getTypeIcon(question.type)}
-          </div>
-          <div className="min-w-0 flex-1">
-            <h3 className="font-semibold text-default-900 text-sm mb-1 line-clamp-1 group-hover:text-blue-600 transition-colors">
-              {question.text}
-            </h3>
-            {question.options && question.options.length > 0 && (
-              <div className="mt-2">
-                <p className="text-xs text-default-400 mb-1">Options:</p>
-                <div className="flex flex-wrap gap-1">
-                  {question.options.slice(0, 3).map((option, index) => (
-                    <span
-                      key={index}
-                      className="text-xs bg-default-100 px-2 py-1 rounded-md"
-                    >
-                      {option.text}
-                    </span>
-                  ))}
-                  {question.options.length > 3 && (
-                    <span className="text-xs text-default-400">
-                      +{question.options.length - 3} more
-                    </span>
-                  )}
+        <div className="max-w-xs space-y-2">
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-lg flex items-center justify-center">
+              <MessageSquareIcon className="w-4 h-4 text-blue-600" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-default-900 line-clamp-2 leading-relaxed">
+                {question.text}
+              </p>
+              {question.options && question.options.length > 0 && (
+                <div className="flex items-center gap-2 mt-2">
+                  <Chip size="sm" variant="flat" color="secondary" className="text-xs">
+                    {question.options.length} options
+                  </Chip>
+                  <span className="text-xs text-default-400">
+                    Order: {question.order || 1}
+                  </span>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       );
 
     case 'type':
       return (
-        <div className="flex items-center gap-2">
-          <Chip
-            size="sm"
-            color={getQuestionTypeColor(question.type)}
-            variant="flat"
-            className="text-xs"
-            radius="full"
-          >
-            {formatQuestionType(question.type)}
-          </Chip>
+        <div className="flex items-center gap-3">
+          <div className="flex-shrink-0">
+            <span className="text-2xl" role="img" aria-label={`${question.type} question type`}>
+              {questionTypeIcons[question.type as keyof typeof questionTypeIcons]}
+            </span>
+          </div>
+          <div className="flex flex-col gap-1">
+            <Chip
+              size="sm"
+              variant="flat"
+              color={questionTypeColors[question.type as keyof typeof questionTypeColors]}
+              className="capitalize font-medium"
+            >
+              {questionTypeLabels[question.type as keyof typeof questionTypeLabels]}
+            </Chip>
+            <span className="text-xs text-default-500 capitalize">
+              {question.type.replace('_', ' ').toLowerCase()}
+            </span>
+          </div>
         </div>
       );
 
     case 'category':
       return (
         <div className="flex items-center gap-2">
+          <div className="w-2 h-2 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full" />
           <Chip
             size="sm"
-            color={getCategoryColor(question.category || 'general')}
             variant="flat"
-            className="text-xs"
-            radius="full"
+            color="secondary"
+            className="capitalize font-medium"
           >
-            {formatCategory(question.category || 'general')}
+            {question.category || 'General'}
           </Chip>
         </div>
       );
 
     case 'required':
       return (
-        <Checkbox
-          isSelected={question.required}
-          isReadOnly
-          size="sm"
-        />
+        <div className="flex items-center gap-2">
+          {question.required ? (
+            <div className="flex items-center gap-2">
+              <CheckCircleIcon className="w-4 h-4 text-green-600" />
+              <Chip
+                size="sm"
+                variant="flat"
+                color="success"
+                className="font-medium"
+              >
+                Required
+              </Chip>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <XCircleIcon className="w-4 h-4 text-default-400" />
+              <Chip
+                size="sm"
+                variant="flat"
+                color="default"
+                className="font-medium"
+              >
+                Optional
+              </Chip>
+            </div>
+          )}
+        </div>
       );
 
     case 'status':
       return (
-        <Chip
-          size="sm"
-          color={question.required ? 'success' : 'default'}
-          variant="flat"
-          className="text-xs"
-          radius="full"
-        >
-          {question.required ? '✅ Required' : 'Optional'}
-        </Chip>
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+          <Chip
+            size="sm"
+            variant="flat"
+            color="success"
+            className="font-medium"
+          >
+            Active
+          </Chip>
+        </div>
       );
 
     case 'actions':
       return (
         <div className="flex items-center gap-2">
-          {onEdit && (
-            <Button
-              isIconOnly
-              size="sm"
-              variant="light"
-              onPress={() => onEdit(question)}
-            >
-              <EditIcon className="w-4 h-4" />
-            </Button>
-          )}
-          {onDelete && (
-            <Button
-              isIconOnly
-              size="sm"
-              variant="light"
-              color="danger"
-              onPress={() => onDelete(question.id.toString())}
-            >
-              <TrashIcon className="w-4 h-4" />
-            </Button>
-          )}
+          <Button
+            isIconOnly
+            size="sm"
+            variant="light"
+            color="primary"
+            onPress={() => onEdit?.(question)}
+            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 transition-all duration-200"
+            title="Edit question"
+          >
+            <EditIcon className="w-4 h-4" />
+          </Button>
+          
+          <Button
+            isIconOnly
+            size="sm"
+            variant="light"
+            color="danger"
+            onPress={() => onDelete?.(question.id.toString())}
+            className="text-red-600 hover:text-red-700 hover:bg-red-50 transition-all duration-200"
+            title="Delete question"
+          >
+            <TrashIcon className="w-4 h-4" />
+          </Button>
+          
+          <Dropdown>
+            <DropdownTrigger>
+              <Button
+                isIconOnly
+                size="sm"
+                variant="light"
+                className="text-default-600 hover:text-default-700 hover:bg-default-50 transition-all duration-200"
+                title="More options"
+              >
+                <MoreVerticalIcon className="w-4 h-4" />
+              </Button>
+            </DropdownTrigger>
+            <DropdownMenu aria-label="Question actions">
+              <DropdownItem
+                key="view"
+                startContent={<EyeIcon className="w-4 h-4" />}
+                onPress={() => {}}
+                className="text-default-600"
+              >
+                View Details
+              </DropdownItem>
+              <DropdownItem
+                key="edit"
+                startContent={<EditIcon className="w-4 h-4" />}
+                onPress={() => onEdit?.(question)}
+                className="text-blue-600"
+              >
+                Edit Question
+              </DropdownItem>
+              <DropdownItem
+                key="duplicate"
+                startContent={<ToggleLeftIcon className="w-4 h-4" />}
+                onPress={() => {}}
+                className="text-purple-600"
+              >
+                Duplicate
+              </DropdownItem>
+              <DropdownItem
+                key="delete"
+                className="text-danger"
+                color="danger"
+                startContent={<TrashIcon className="w-4 h-4" />}
+                onPress={() => onDelete?.(question.id.toString())}
+              >
+                Delete Question
+              </DropdownItem>
+            </DropdownMenu>
+          </Dropdown>
         </div>
       );
 
     default:
-      return null;
+      return (
+        <span className="text-sm text-default-600">
+          {String(cellValue || '')}
+        </span>
+      );
   }
 }
