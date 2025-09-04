@@ -15,9 +15,24 @@ import Link from 'next/link';
 
 type Status = 'not_done' | 'done';
 
-const mock: Array<{ id: number; name: string; duration: string; status: Status }> = [
-  { id: 101, name: 'Sprint 12 Feedback', duration: 'Aug 1 – Aug 15, 2025', status: 'not_done' },
-  { id: 102, name: 'Quarterly Survey', duration: 'Jul 1 – Jul 31, 2025', status: 'done' },
+const mock: Array<{
+  id: number;
+  name: string;
+  duration: string;
+  status: Status;
+}> = [
+  {
+    id: 101,
+    name: 'Sprint 12 Feedback',
+    duration: 'Aug 1 – Aug 15, 2025',
+    status: 'not_done',
+  },
+  {
+    id: 102,
+    name: 'Quarterly Survey',
+    duration: 'Jul 1 – Jul 31, 2025',
+    status: 'done',
+  },
 ];
 
 export default function EmployeeDashboard() {
@@ -49,7 +64,7 @@ export default function EmployeeDashboard() {
               {/* Decorative gradient bar on top */}
               <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-violet-500 to-indigo-500" />
 
-              <CardHeader className="flex flex-col items-start gap-2 pt-6">
+              <CardHeader className="flex flex-col items-start gap-2 pt-6 px-5">
                 <h3 className="text-lg font-semibold group-hover:text-violet-700 transition-colors">
                   {f.name}
                 </h3>
@@ -59,7 +74,7 @@ export default function EmployeeDashboard() {
                 </div>
               </CardHeader>
 
-              <CardBody className="pt-2 w-max">
+              <CardBody className="pt-2 w-max px-5">
                 <Chip
                   variant="flat"
                   startContent={<Clock className="w-4 h-4 text-red-600" />}
