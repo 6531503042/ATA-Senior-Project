@@ -1,0 +1,26 @@
+{
+  "name": "ata-scripts",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "ATA Senior Project management scripts",
+  "main": "ata.js",
+  "scripts": {
+    "dev": "node ata.js dev",
+    "install": "node ata.js install",
+    "build": "node ata.js build",
+    "clean": "node ata.js clean",
+    "docker": "node ata.js docker"
+  },
+  "dependencies": {
+    "inquirer": "^9.2.12",
+    "cross-spawn": "^7.0.3"
+  },
+  "keywords": [
+    "ata",
+    "scripts",
+    "docker",
+    "development"
+  ],
+  "author": "ATA Team",
+  "license": "MIT"
+}
