@@ -6,17 +6,20 @@ import type {
   UpdateQuestionRequest,
 } from '@/types/question';
 
-import { Button, Card, CardBody, CardHeader, Chip } from '@heroui/react';
+import { Button, Card, CardBody, CardHeader, Chip, Progress } from '@heroui/react';
 import {
   PlusIcon,
   MessageSquareIcon,
   CheckCircleIcon,
-
   ToggleLeftIcon,
-
   UsersIcon,
   ShapesIcon,
-
+  TrendingUpIcon,
+  ClockIcon,
+  StarIcon,
+  FileTextIcon,
+  ListIcon,
+  ToggleLeftIcon as ToggleIcon,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
@@ -44,7 +47,7 @@ export default function QuestionsPage() {
     fetchQuestions,
   } = useQuestions();
 
-  // Calculate stats from questions array
+  // Calculate enhanced stats from questions array
   const stats = {
     totalQuestions: questions.length,
     requiredQuestions: questions.filter(q => q.required).length,
@@ -54,6 +57,17 @@ export default function QuestionsPage() {
     ratingQuestions: questions.filter(q => q.type === 'RATING').length,
     booleanQuestions: questions.filter(q => q.type === 'BOOLEAN').length,
     textQuestions: questions.filter(q => q.type === 'TEXT').length,
+  };
+
+  // Calculate percentages and trends
+  const percentages = {
+    requiredPercentage: stats.totalQuestions > 0 ? (stats.requiredQuestions / stats.totalQuestions) * 100 : 0,
+    typeDistribution: {
+      multipleChoice: stats.totalQuestions > 0 ? (stats.multipleChoiceQuestions / stats.totalQuestions) * 100 : 0,
+      rating: stats.totalQuestions > 0 ? (stats.ratingQuestions / stats.totalQuestions) * 100 : 0,
+      boolean: stats.totalQuestions > 0 ? (stats.booleanQuestions / stats.totalQuestions) * 100 : 0,
+      text: stats.totalQuestions > 0 ? (stats.textQuestions / stats.totalQuestions) * 100 : 0,
+    }
   };
 
   const handleCreateQuestion = async (data: CreateQuestionRequest) => {
@@ -128,6 +142,8 @@ export default function QuestionsPage() {
       gradient: 'from-blue-50 to-indigo-50',
       trend: '+12%',
       trendColor: 'text-green-600',
+      progress: 100,
+      progressColor: 'from-blue-500 to-indigo-500',
     },
     {
       title: 'Required Questions',
@@ -139,6 +155,8 @@ export default function QuestionsPage() {
       gradient: 'from-green-50 to-emerald-50',
       trend: '+5%',
       trendColor: 'text-green-600',
+      progress: percentages.requiredPercentage,
+      progressColor: 'from-green-500 to-emerald-500',
     },
     {
       title: 'Question Types',
@@ -150,6 +168,8 @@ export default function QuestionsPage() {
       gradient: 'from-purple-50 to-violet-50',
       trend: '4 types',
       trendColor: 'text-purple-600',
+      progress: 100,
+      progressColor: 'from-purple-500 to-violet-500',
     },
     {
       title: 'Categories',
@@ -159,6 +179,47 @@ export default function QuestionsPage() {
       bgColor: 'from-orange-500 to-amber-600',
       description: 'Question categories',
       gradient: 'from-orange-50 to-amber-50',
+      progress: 100,
+      progressColor: 'from-orange-500 to-amber-500',
+    },
+  ];
+
+  const typeDistributionCards = [
+    {
+      title: 'Multiple Choice',
+      value: stats.multipleChoiceQuestions.toString(),
+      icon: ListIcon,
+      color: 'text-purple-600',
+      bgColor: 'from-purple-100 to-violet-100',
+      percentage: percentages.typeDistribution.multipleChoice,
+      description: 'Select from options',
+    },
+    {
+      title: 'Rating Scale',
+      value: stats.ratingQuestions.toString(),
+      icon: StarIcon,
+      color: 'text-amber-600',
+      bgColor: 'from-amber-100 to-orange-100',
+      percentage: percentages.typeDistribution.rating,
+      description: 'Numeric rating',
+    },
+    {
+      title: 'Yes/No',
+      value: stats.booleanQuestions.toString(),
+      icon: ToggleIcon,
+      color: 'text-emerald-600',
+      bgColor: 'from-emerald-100 to-green-100',
+      percentage: percentages.typeDistribution.boolean,
+      description: 'Boolean choice',
+    },
+    {
+      title: 'Text Input',
+      value: stats.textQuestions.toString(),
+      icon: FileTextIcon,
+      color: 'text-blue-600',
+      bgColor: 'from-blue-100 to-indigo-100',
+      percentage: percentages.typeDistribution.text,
+      description: 'Free text response',
     },
   ];
 
@@ -184,11 +245,11 @@ export default function QuestionsPage() {
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 p-6 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-2xl border border-blue-100">
           <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              Questions
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              Questions Management
             </h1>
             <p className="text-default-600 mt-1">
-              Manage and customize your feedback questions
+              Create, edit, and manage your feedback questions with advanced analytics
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
@@ -204,7 +265,7 @@ export default function QuestionsPage() {
           </div>
         </div>
 
-        {/* Stats Cards */}
+        {/* Main Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
           {statsCards.map((stat, index) => (
             <Card
@@ -217,7 +278,7 @@ export default function QuestionsPage() {
                   className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300`}
                 />
 
-                <div className="flex items-center justify-between relative z-10">
+                <div className="flex items-center justify-between relative z-10 mb-4">
                   <div>
                     <p className="text-sm font-medium text-default-500 mb-1">
                       {stat.title}
@@ -225,9 +286,12 @@ export default function QuestionsPage() {
                     <p className="text-3xl font-bold text-default-900">
                       {stat.value}
                     </p>
-                    <p className="text-xs text-default-400 mt-1">
-                      {stat.description}
-                    </p>
+                    {stat.trend && (
+                      <p className={`text-xs font-medium ${stat.trendColor} mt-1 flex items-center gap-1`}>
+                        <TrendingUpIcon className="w-3 h-3" />
+                        {stat.trend}
+                      </p>
+                    )}
                   </div>
                   <div
                     className={`p-4 rounded-2xl bg-gradient-to-br ${stat.bgColor} text-white shadow-lg group-hover:shadow-xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-3`}
@@ -235,10 +299,78 @@ export default function QuestionsPage() {
                     <stat.icon className="w-7 h-7" />
                   </div>
                 </div>
+
+                {/* Progress bar */}
+                <div className="relative z-10">
+                  <div className="flex items-center justify-between text-xs text-default-500 mb-2">
+                    <span>{stat.description}</span>
+                    <span>{stat.progress.toFixed(1)}%</span>
+                  </div>
+                  <Progress
+                    value={stat.progress}
+                    className="w-full"
+                    color="primary"
+                    size="sm"
+                    classNames={{
+                      track: "bg-default-100",
+                      indicator: `bg-gradient-to-r ${stat.progressColor}`,
+                    }}
+                  />
+                </div>
               </CardBody>
             </Card>
           ))}
         </div>
+
+        {/* Question Type Distribution */}
+        <Card className="border-0 shadow-xl overflow-hidden">
+          <CardHeader className="pb-6">
+            <div className="w-full">
+              <h3 className="text-xl font-bold text-default-900">
+                Question Type Distribution
+              </h3>
+              <p className="text-sm text-default-600">
+                Overview of different question types in your system
+              </p>
+            </div>
+          </CardHeader>
+          <CardBody className="pt-0">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {typeDistributionCards.map((type, index) => (
+                <div
+                  key={index}
+                  className="p-4 rounded-xl border border-default-200 hover:border-default-300 transition-all duration-200 hover:shadow-md"
+                >
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${type.bgColor} flex items-center justify-center`}>
+                      <type.icon className={`w-5 h-5 ${type.color}`} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-default-900">{type.title}</p>
+                      <p className="text-xs text-default-500">{type.description}</p>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-2xl font-bold text-default-900">{type.value}</span>
+                      <span className="text-sm font-medium text-default-600">{type.percentage.toFixed(1)}%</span>
+                    </div>
+                    <Progress
+                      value={type.percentage}
+                      className="w-full"
+                      size="sm"
+                      color="primary"
+                      classNames={{
+                        track: "bg-default-100",
+                        indicator: `bg-gradient-to-r ${type.bgColor.replace('100', '500')}`,
+                      }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardBody>
+        </Card>
 
         {/* Questions Table */}
         <Card className="border-0 shadow-xl overflow-hidden">
@@ -248,26 +380,32 @@ export default function QuestionsPage() {
                 Question List
               </h3>
               <p className="text-sm text-default-600">
-                View and manage all your questions
+                View and manage all your questions with advanced filtering and sorting
               </p>
             </div>
           </CardHeader>
           <CardBody className="pt-0">
             {loading ? (
-              <div className="py-6">
-                <div className="space-y-3">
-                  <div className="h-6 bg-default-100 rounded w-1/3" />
-                  <div className="h-4 bg-default-100 rounded w-1/2" />
-                </div>
-                <div className="mt-4 space-y-2">
-                  {Array.from({ length: 6 }).map((_, i) => (
-                    <div key={i} className="h-12 bg-default-100 rounded" />
-                  ))}
+              <div className="py-12">
+                <div className="flex flex-col items-center justify-center space-y-4">
+                  <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center animate-pulse">
+                    <MessageSquareIcon className="w-8 h-8 text-blue-600" />
+                  </div>
+                  <div className="text-center">
+                    <div className="text-lg font-medium text-default-600 mb-2">Loading questions...</div>
+                    <div className="text-sm text-default-400">Please wait while we fetch your data</div>
+                  </div>
                 </div>
               </div>
             ) : error ? (
               <div className="flex items-center justify-center py-12">
-                <div className="text-red-500">Error: {error}</div>
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-gradient-to-br from-red-100 to-pink-100 rounded-full flex items-center justify-center mb-4">
+                    <MessageSquareIcon className="w-8 h-8 text-red-600" />
+                  </div>
+                  <div className="text-red-500 text-lg font-medium mb-2">Error loading questions</div>
+                  <div className="text-red-400 text-sm">{error}</div>
+                </div>
               </div>
             ) : (
               <QuestionTable

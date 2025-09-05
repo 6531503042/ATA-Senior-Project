@@ -14,6 +14,10 @@ import {
   RefreshCwIcon,
   XIcon,
   SettingsIcon,
+  FileTextIcon,
+  ListIcon,
+  StarIcon,
+  ToggleLeftIcon,
 } from 'lucide-react';
 
 interface TopContentProps {
@@ -38,10 +42,42 @@ export default function TopContent({
   onRefresh,
 }: TopContentProps) {
   const questionTypes = [
-    { key: 'TEXT', label: 'Text Input', icon: '📝', color: 'default' },
-    { key: 'MULTIPLE_CHOICE', label: 'Multiple Choice', icon: '☑️', color: 'primary' },
-    { key: 'RATING', label: 'Rating Scale', icon: '⭐', color: 'warning' },
-    { key: 'BOOLEAN', label: 'Yes/No', icon: '✅', color: 'success' },
+    { 
+      key: 'TEXT', 
+      label: 'Text Input', 
+      icon: FileTextIcon, 
+      color: 'default',
+      description: 'Free text response',
+      bgColor: 'from-blue-50 to-indigo-50',
+      textColor: 'text-blue-700',
+    },
+    { 
+      key: 'MULTIPLE_CHOICE', 
+      label: 'Multiple Choice', 
+      icon: ListIcon, 
+      color: 'primary',
+      description: 'Select from options',
+      bgColor: 'from-purple-50 to-violet-50',
+      textColor: 'text-purple-700',
+    },
+    { 
+      key: 'RATING', 
+      label: 'Rating Scale', 
+      icon: StarIcon, 
+      color: 'warning',
+      description: 'Numeric rating',
+      bgColor: 'from-amber-50 to-orange-50',
+      textColor: 'text-amber-700',
+    },
+    { 
+      key: 'BOOLEAN', 
+      label: 'Yes/No', 
+      icon: ToggleLeftIcon, 
+      color: 'success',
+      description: 'Boolean choice',
+      bgColor: 'from-emerald-50 to-green-50',
+      textColor: 'text-emerald-700',
+    },
   ];
 
   const handleTypeSelection = (keys: string[]) => {
@@ -105,22 +141,23 @@ export default function TopContent({
               </Button>
             </DropdownTrigger>
             <DropdownMenu
-              disallowEmptySelection
-              aria-label="Question type filter"
-              closeOnSelect={false}
-              selectedKeys={selectedType}
+              aria-label="Question types"
               selectionMode="multiple"
+              selectedKeys={selectedType}
               onSelectionChange={handleTypeSelection}
-              classNames={{
-                content: "min-w-[200px]",
-              }}
+              className="w-64"
             >
               {questionTypes.map((type) => (
-                <DropdownItem key={type.key} className="gap-3">
-                  <span className="text-lg" role="img" aria-label={type.label}>
-                    {type.icon}
-                  </span>
-                  <span className="capitalize">{type.label}</span>
+                <DropdownItem key={type.key} className="py-3">
+                  <div className="flex items-center gap-3 w-full">
+                    <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${type.bgColor} flex items-center justify-center flex-shrink-0`}>
+                      <type.icon className={`w-4 h-4 ${type.textColor}`} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-default-900">{type.label}</div>
+                      <div className="text-xs text-default-500">{type.description}</div>
+                    </div>
+                  </div>
                 </DropdownItem>
               ))}
             </DropdownMenu>
@@ -148,31 +185,39 @@ export default function TopContent({
               </Button>
             </DropdownTrigger>
             <DropdownMenu
-              disallowEmptySelection
-              aria-label="Question category filter"
-              closeOnSelect={false}
-              selectedKeys={selectedCategory}
+              aria-label="Question categories"
               selectionMode="multiple"
+              selectedKeys={selectedCategory}
               onSelectionChange={handleCategorySelection}
-              classNames={{
-                content: "min-w-[200px]",
-              }}
             >
-              {['General', 'Technical', 'Feedback', 'Survey', 'Assessment'].map((category) => (
-                <DropdownItem key={category} className="capitalize">
-                  {category}
-                </DropdownItem>
-              ))}
+              <DropdownItem key="general">General</DropdownItem>
+              <DropdownItem key="feedback">Feedback</DropdownItem>
+              <DropdownItem key="satisfaction">Satisfaction</DropdownItem>
+              <DropdownItem key="performance">Performance</DropdownItem>
+              <DropdownItem key="workplace">Workplace</DropdownItem>
             </DropdownMenu>
           </Dropdown>
 
+          {/* Clear Filters */}
+          {hasActiveFilters && (
+            <Button
+              variant="flat"
+              color="default"
+              startContent={<XIcon className="w-4 h-4" />}
+              onPress={clearAllFilters}
+              className="bg-red-50 text-red-700 hover:bg-red-100 border-red-200"
+            >
+              Clear All
+            </Button>
+          )}
+
           {/* Refresh Button */}
           <Button
-            color="primary"
             variant="flat"
+            color="primary"
             startContent={<RefreshCwIcon className="w-4 h-4" />}
             onPress={onRefresh}
-            className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700 transition-all duration-200"
+            className="bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200"
           >
             Refresh
           </Button>
@@ -181,89 +226,48 @@ export default function TopContent({
 
       {/* Active Filters Display */}
       {hasActiveFilters && (
-        <div className="flex flex-wrap items-center gap-3 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
-          <div className="flex items-center gap-2">
-            <SettingsIcon className="w-4 h-4 text-blue-600" />
-            <span className="text-sm font-medium text-blue-700">Active Filters:</span>
-          </div>
+        <div className="flex flex-wrap gap-2 items-center">
+          <span className="text-sm font-medium text-default-600">Active filters:</span>
           
           {filterValue && (
             <Chip
-              size="sm"
               variant="flat"
               color="primary"
-              onClose={() => onClear()}
+              onClose={() => onSearchChange('')}
               className="bg-blue-100 text-blue-700"
             >
               Search: "{filterValue}"
             </Chip>
           )}
           
-          {selectedType.map((type) => (
-            <Chip
-              key={type}
-              size="sm"
-              variant="flat"
-              color="primary"
-              onClose={() => onTypeChange(selectedType.filter(t => t !== type))}
-              className="bg-primary-100 text-primary-700"
-            >
-              Type: {type.replace('_', ' ')}
-            </Chip>
-          ))}
+          {selectedType.map((type) => {
+            const typeInfo = questionTypes.find(t => t.key === type);
+            return (
+              <Chip
+                key={type}
+                variant="flat"
+                color="primary"
+                onClose={() => onTypeChange(selectedType.filter(t => t !== type))}
+                className="bg-purple-100 text-purple-700"
+              >
+                Type: {typeInfo?.label || type}
+              </Chip>
+            );
+          })}
           
           {selectedCategory.map((category) => (
             <Chip
               key={category}
-              size="sm"
               variant="flat"
               color="secondary"
               onClose={() => onCategoryChange(selectedCategory.filter(c => c !== category))}
-              className="bg-secondary-100 text-secondary-700"
+              className="bg-orange-100 text-orange-700"
             >
               Category: {category}
             </Chip>
           ))}
-          
-          <Button
-            size="sm"
-            variant="light"
-            color="danger"
-            startContent={<XIcon className="w-4 h-4" />}
-            onPress={clearAllFilters}
-            className="ml-2"
-          >
-            Clear All
-          </Button>
         </div>
       )}
-
-      {/* Filter Summary */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-sm text-default-500">
-        <div className="flex items-center gap-4">
-          {filterValue && (
-            <span>Search results for "{filterValue}"</span>
-          )}
-          {selectedType.length > 0 && (
-            <span>{selectedType.length} type(s) selected</span>
-          )}
-          {selectedCategory.length > 0 && (
-            <span>{selectedCategory.length} category(ies) selected</span>
-          )}
-        </div>
-        
-        {hasActiveFilters && (
-          <Button
-            size="sm"
-            variant="light"
-            color="default"
-            onPress={clearAllFilters}
-            className="text-default-500 hover:text-default-700"
-          >
-            Reset Filters
-          </Button>
-        )}
-      </div>
     </div>
   );
 }
