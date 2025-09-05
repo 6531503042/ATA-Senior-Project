@@ -1,9 +1,10 @@
 services:
+  # Database Services
   postgres:
     image: postgres:16
     container_name: ata-it-postgres
     environment:
-      POSTGRES_DB: ata
+      POSTGRES_DB: senior
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
@@ -15,6 +16,9 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - ata-network
+
   redis:
     image: redis:latest
     container_name: ata-it-redis
@@ -28,7 +32,72 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
+    networks:
+      - ata-network
+
+  # Backend Service
+  backend:
+    build:
+      context: ./backend/main
+      dockerfile: Dockerfile
+    container_name: ata-it-backend
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_R2DBC_URL: r2dbc:postgresql://postgres:5432/senior
+      SPRING_R2DBC_USERNAME: postgres
+      SPRING_R2DBC_PASSWORD: postgres
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/senior
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - ata-network
+    restart: unless-stopped
+
+  # Admin Frontend Service
+  admin-frontend:
+    build:
+      context: ./frontend/admin
+      dockerfile: Dockerfile
+    container_name: ata-it-admin
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: http://localhost:8080
+    depends_on:
+      - backend
+    networks:
+      - ata-network
+    restart: unless-stopped
+
+  # Employee Frontend Service
+  employee-frontend:
+    build:
+      context: ./frontend/employee
+      dockerfile: Dockerfile
+    container_name: ata-it-employee
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: http://localhost:8080
+    depends_on:
+      - backend
+    networks:
+      - ata-network
+    restart: unless-stopped
 
 volumes:
   pg-data:
   redis-data:
+
+networks:
+  ata-network:
+    driver: bridge

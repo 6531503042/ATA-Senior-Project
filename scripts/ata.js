@@ -28,6 +28,11 @@ switch (command) {
       await module.runCleanCommand();
       break;
     }
+    case 'docker': {
+      const module = await import('./commands/docker.js');
+      await module.runDockerCommand();
+      break;
+    }
     default:
       console.log(`❌ Unknown command: ${command}`);
       console.log('\n💡 Available commands:');
@@ -35,5 +40,6 @@ switch (command) {
       console.log('   • ata install - Install all dependencies');
       console.log('   • ata build   - Build all projects');
       console.log('   • ata clean   - Clean build artifacts');
+      console.log('   • ata docker  - Docker operations');
       console.log('\n📖 Usage: ata <command>');
   }

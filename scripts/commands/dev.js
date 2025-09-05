@@ -10,6 +10,7 @@ export async function runDevCommand() {
             message: 'Select a service to start:',
             choices: [
                 { name: '🐳 Docker Compose (All Services)', value: 'docker'},
+                { name: '🔧 Docker Build & Start', value: 'docker-build'},
                 { name: '☕ Spring Boot Backend (WebFlux)', value: 'backend'},
                 { name: '⚛️  Admin Frontend (Next.js)', value: 'admin' },
                 { name: '👤 Employee Frontend (Next.js)', value: 'employee' },
@@ -27,6 +28,25 @@ export async function runDevCommand() {
             spawn('docker', ['compose', 'up', '-d'], { 
                 stdio: 'inherit',
                 cwd: projectRoot 
+            });
+            break;
+            
+        case 'docker-build':
+            console.log('🔧 Building and starting Docker services...');
+            console.log('Building images...');
+            spawn('docker', ['compose', 'build'], { 
+                stdio: 'inherit',
+                cwd: projectRoot 
+            }).on('close', (code) => {
+                if (code === 0) {
+                    console.log('✅ Build successful! Starting services...');
+                    spawn('docker', ['compose', 'up', '-d'], { 
+                        stdio: 'inherit',
+                        cwd: projectRoot 
+                    });
+                } else {
+                    console.log('❌ Build failed!');
+                }
             });
             break;
             
