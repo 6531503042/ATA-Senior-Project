@@ -265,49 +265,14 @@ export default function ProjectTable({
   );
 
   return (
-    <div className="w-full">
+    <div className="w-full h-[600px] flex flex-col">
       <Table
         aria-label="Projects table with pagination"
         isHeaderSticky
-        bottomContent={
-          <div className="flex w-full justify-center">
-            <div className="flex w-full justify-center gap-2">
-              <button
-                className="px-3 py-2 text-sm text-default-500 bg-default-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-default-200 transition-colors"
-                disabled={page === 1}
-                onClick={onPreviousPage}
-              >
-                Previous
-              </button>
-              <div className="flex items-center gap-1">
-                {Array.from({ length: pages }, (_, i) => (
-                  <button
-                    key={i + 1}
-                    className={`px-3 py-2 text-sm rounded-lg transition-colors ${
-                      page === i + 1
-                        ? 'bg-primary text-white shadow-lg'
-                        : 'text-default-500 bg-default-100 hover:bg-default-200'
-                    }`}
-                    onClick={() => setPage(i + 1)}
-                  >
-                    {i + 1}
-                  </button>
-                ))}
-              </div>
-              <button
-                className="px-3 py-2 text-sm text-default-500 bg-default-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-default-200 transition-colors"
-                disabled={page === pages}
-                onClick={onNextPage}
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        }
         classNames={{
-          wrapper: 'max-h-[600px]',
-          table: 'min-h-[400px]',
-          thead: 'bg-default-50',
+          wrapper: 'flex-1 overflow-auto',
+          table: 'h-full',
+          thead: 'bg-default-50 sticky top-0 z-10',
           th: 'text-default-600 font-semibold text-sm uppercase tracking-wider',
           td: 'py-4',
           tr: 'hover:bg-default-50 transition-colors',
@@ -338,6 +303,41 @@ export default function ProjectTable({
           )}
         </TableBody>
       </Table>
+
+      {/* Fixed Pagination at Bottom */}
+      <div className="flex w-full justify-center py-4 border-t border-default-200 bg-white">
+        <div className="flex items-center gap-2">
+          <button
+            className="px-3 py-2 text-sm text-default-500 bg-default-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-default-200 transition-colors"
+            disabled={page === 1}
+            onClick={onPreviousPage}
+          >
+            Previous
+          </button>
+          <div className="flex items-center gap-1">
+            {Array.from({ length: pages }, (_, i) => (
+              <button
+                key={i + 1}
+                className={`px-3 py-2 text-sm rounded-lg transition-colors ${
+                  page === i + 1
+                    ? 'bg-primary text-white shadow-lg'
+                    : 'text-default-500 bg-default-100 hover:bg-default-200'
+                }`}
+                onClick={() => setPage(i + 1)}
+              >
+                {i + 1}
+              </button>
+            ))}
+          </div>
+          <button
+            className="px-3 py-2 text-sm text-default-500 bg-default-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-default-200 transition-colors"
+            disabled={page === pages}
+            onClick={onNextPage}
+          >
+            Next
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

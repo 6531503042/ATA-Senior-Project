@@ -275,6 +275,16 @@ export default function FeedbacksPage() {
               onVisibilityFilterChange={() => {}}
               projects={projects}
               departments={[]}
+              onRefresh={() => {
+                const filters = {
+                  search: searchTerm,
+                  status: statusFilter !== 'all' ? statusFilter : undefined,
+                  projectId: projectFilter !== 'all' ? parseInt(projectFilter) : undefined,
+                  page: 1,
+                  limit: 100,
+                };
+                fetchFeedbacks(filters);
+              }}
             />
           </CardBody>
         </Card>
