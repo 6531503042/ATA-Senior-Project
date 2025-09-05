@@ -15,7 +15,9 @@ import {
   ClockIcon,
   BuildingIcon,
   EyeIcon,
-  EllipsisVertical,
+  MoreVerticalIcon,
+  CopyIcon,
+  ArchiveIcon,
 } from 'lucide-react';
 
 import { User } from '@/types/user';
@@ -206,36 +208,87 @@ export default function UserCellRenderer({
 
     case 'actions':
       return (
-        <div className="flex items-center gap-2">
-          {onView && (
-            <Button isIconOnly size="sm" variant="light" onPress={() => onView(user)}>
-              <EyeIcon className="w-4 h-4" />
-            </Button>
-          )}
-          {onEdit && (
-            <Button isIconOnly size="sm" variant="light" onPress={() => onEdit(user)}>
-              <EditIcon className="w-4 h-4" />
-            </Button>
-          )}
-          {onDelete && (
-            <Dropdown>
-              <DropdownTrigger>
-                <Button isIconOnly size="sm" variant="light" aria-label="More actions">
-                  <EllipsisVertical className="w-4 h-4" />
-                </Button>
-              </DropdownTrigger>
-              <DropdownMenu>
-                <DropdownItem
-                  key="delete"
-                  color="danger"
-                  startContent={<TrashIcon className="w-4 h-4" />}
-                  onPress={() => onDelete(String((user as any).id))}
-                >
-                  Delete
-                </DropdownItem>
-              </DropdownMenu>
-            </Dropdown>
-          )}
+        <div className="flex items-center gap-2 justify-center">
+          <Button
+            isIconOnly
+            size="sm"
+            variant="light"
+            color="primary"
+            onPress={() => onEdit?.(user)}
+            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 transition-all duration-200"
+            title="Edit user"
+          >
+            <EditIcon className="w-4 h-4" />
+          </Button>
+          
+          <Button
+            isIconOnly
+            size="sm"
+            variant="light"
+            color="danger"
+            onPress={() => onDelete?.(user.id.toString())}
+            className="text-red-600 hover:text-red-700 hover:bg-red-50 transition-all duration-200"
+            title="Delete user"
+          >
+            <TrashIcon className="w-4 h-4" />
+          </Button>
+          
+          <Dropdown>
+            <DropdownTrigger>
+              <Button
+                isIconOnly
+                size="sm"
+                variant="light"
+                className="text-default-600 hover:text-default-700 hover:bg-default-50 transition-all duration-200"
+                title="More options"
+              >
+                <MoreVerticalIcon className="w-4 h-4" />
+              </Button>
+            </DropdownTrigger>
+            <DropdownMenu aria-label="User actions">
+              <DropdownItem
+                key="view"
+                startContent={<EyeIcon className="w-4 h-4" />}
+                onPress={() => onView?.(user)}
+                className="text-default-600"
+              >
+                View Details
+              </DropdownItem>
+              <DropdownItem
+                key="edit"
+                startContent={<EditIcon className="w-4 h-4" />}
+                onPress={() => onEdit?.(user)}
+                className="text-blue-600"
+              >
+                Edit User
+              </DropdownItem>
+              <DropdownItem
+                key="duplicate"
+                startContent={<CopyIcon className="w-4 h-4" />}
+                onPress={() => {}}
+                className="text-purple-600"
+              >
+                Duplicate
+              </DropdownItem>
+              <DropdownItem
+                key="archive"
+                startContent={<ArchiveIcon className="w-4 h-4" />}
+                onPress={() => {}}
+                className="text-orange-600"
+              >
+                Archive
+              </DropdownItem>
+              <DropdownItem
+                key="delete"
+                className="text-danger"
+                color="danger"
+                startContent={<TrashIcon className="w-4 h-4" />}
+                onPress={() => onDelete?.(user.id.toString())}
+              >
+                Delete User
+              </DropdownItem>
+            </DropdownMenu>
+          </Dropdown>
         </div>
       );
 

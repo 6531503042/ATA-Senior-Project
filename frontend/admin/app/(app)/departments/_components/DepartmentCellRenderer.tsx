@@ -12,8 +12,10 @@ import {
   BuildingIcon,
   UsersIcon,
   CalendarIcon,
-  EllipsisVertical,
+  MoreVerticalIcon,
   EyeIcon,
+  CopyIcon,
+  ArchiveIcon,
 } from 'lucide-react';
 
 type Department = {
@@ -39,43 +41,85 @@ export default function DepartmentCellRenderer({
   onView,
 }: DepartmentCellRendererProps) {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 justify-center">
+      <Button
+        isIconOnly
+        size="sm"
+        variant="light"
+        color="primary"
+        onPress={() => onEdit?.(department)}
+        className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 transition-all duration-200"
+        title="Edit department"
+      >
+        <EditIcon className="w-4 h-4" />
+      </Button>
+      
+      <Button
+        isIconOnly
+        size="sm"
+        variant="light"
+        color="danger"
+        onPress={() => onDelete?.(department.id)}
+        className="text-red-600 hover:text-red-700 hover:bg-red-50 transition-all duration-200"
+        title="Delete department"
+      >
+        <TrashIcon className="w-4 h-4" />
+      </Button>
+      
       <Dropdown>
         <DropdownTrigger>
-          <Button isIconOnly size="sm" variant="light">
-            <EllipsisVertical className="w-4 h-4" />
+          <Button
+            isIconOnly
+            size="sm"
+            variant="light"
+            className="text-default-600 hover:text-default-700 hover:bg-default-50 transition-all duration-200"
+            title="More options"
+          >
+            <MoreVerticalIcon className="w-4 h-4" />
           </Button>
         </DropdownTrigger>
         <DropdownMenu aria-label="Department actions">
-          {onView ? (
-            <DropdownItem
-              key="view"
-              startContent={<EyeIcon className="w-4 h-4" />}
-              onClick={() => onView(department)}
-            >
-              View Details
-            </DropdownItem>
-          ) : null}
-          {onEdit ? (
-            <DropdownItem
-              key="edit"
-              startContent={<EditIcon className="w-4 h-4" />}
-              onClick={() => onEdit(department)}
-            >
-              Edit Department
-            </DropdownItem>
-          ) : null}
-          {onDelete ? (
-            <DropdownItem
-              key="delete"
-              className="text-danger"
-              color="danger"
-              startContent={<TrashIcon className="w-4 h-4" />}
-              onClick={() => onDelete(department.id)}
-            >
-              Delete Department
-            </DropdownItem>
-          ) : null}
+          <DropdownItem
+            key="view"
+            startContent={<EyeIcon className="w-4 h-4" />}
+            onPress={() => onView?.(department)}
+            className="text-default-600"
+          >
+            View Details
+          </DropdownItem>
+          <DropdownItem
+            key="edit"
+            startContent={<EditIcon className="w-4 h-4" />}
+            onPress={() => onEdit?.(department)}
+            className="text-blue-600"
+          >
+            Edit Department
+          </DropdownItem>
+          <DropdownItem
+            key="duplicate"
+            startContent={<CopyIcon className="w-4 h-4" />}
+            onPress={() => {}}
+            className="text-purple-600"
+          >
+            Duplicate
+          </DropdownItem>
+          <DropdownItem
+            key="archive"
+            startContent={<ArchiveIcon className="w-4 h-4" />}
+            onPress={() => {}}
+            className="text-orange-600"
+          >
+            Archive
+          </DropdownItem>
+          <DropdownItem
+            key="delete"
+            className="text-danger"
+            color="danger"
+            startContent={<TrashIcon className="w-4 h-4" />}
+            onPress={() => onDelete?.(department.id)}
+          >
+            Delete Department
+          </DropdownItem>
         </DropdownMenu>
       </Dropdown>
     </div>
