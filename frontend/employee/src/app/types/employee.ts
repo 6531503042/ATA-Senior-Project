@@ -62,11 +62,26 @@ export interface FeedbackResponse {
   [questionId: string]: string;
 }
 
+// ----- Add this near the top -----
+export type Privacy = "PUBLIC" | "PRIVATE" | "ANONYMOUS";
+
+// ... keep Answer/Question/etc.
+
+// Feedback types
+export interface FeedbackSubmission {
+  id: number;
+  title: string;
+  description: string;
+  questions: Question[];
+  validationRules: ValidationRules;
+}
+
+// Submission Types
 export interface FeedbackSubmissionPayload {
   feedbackId: number;
   responses: FeedbackResponse;
   overallComments: string;
-  privacyLevel: "PUBLIC" | "PRIVATE";
+  privacyLevel: Privacy; // ✅ allow ANONYMOUS
 }
 
 // State Types
@@ -75,7 +90,16 @@ export interface FeedbackFormState {
   currentStep: number;
   answers: Record<number, string | string[]>;
   overallComments: string;
-  privacyLevel: "PUBLIC" | "PRIVATE";
+  privacyLevel: Privacy; // ✅ allow ANONYMOUS
   loading: boolean;
   submitting: boolean;
+}
+
+// Component props (unchanged except if you reference privacy)
+export interface QuestionCardProps {
+  question: Question;
+  currentAnswer: string | string[];
+  onAnswerChange: (value: string | string[]) => void;
+  questionNumber: number;
+  totalQuestions: number;
 }
