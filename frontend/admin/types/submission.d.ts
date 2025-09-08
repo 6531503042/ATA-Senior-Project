@@ -4,6 +4,16 @@ export type SubmissionStatus = 'analyzed' | 'pending' | 'error';
 
 export type SubmissionSentiment = 'positive' | 'neutral' | 'negative';
 
+// Minimal submit item used by feedback-detail pages
+export interface SubmitDto {
+  id: number;
+  feedbackId: number;
+  submittedBy?: string | null;
+  submittedAt: string;
+  overallComments?: string | null;
+  privacyLevel: PrivacyLevel;
+}
+
 export interface Submission {
   id: number;
   feedbackId: number;
@@ -13,6 +23,11 @@ export interface Submission {
   privacyLevel: PrivacyLevel;
   submittedAt: string;
   updatedAt: string;
+  // Additional fields for UI display
+  feedbackTitle?: string;
+  projectName?: string;
+  status?: SubmissionStatus;
+  overallSentiment?: SubmissionSentiment;
 }
 
 export interface CreateSubmissionRequest {

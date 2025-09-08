@@ -1,12 +1,18 @@
 'use client';
 
-import type { SubmissionItem } from '@/types/submission';
+// Local DTO
+type SubmitDto = {
+  id: number;
+  feedbackId: number;
+  submittedBy?: string | null;
+  submittedAt: string;
+  overallComments?: string | null;
+  privacyLevel: 'PUBLIC' | 'PRIVATE' | 'ANONYMOUS' | 'CONFIDENTIAL';
+};
 
 import { Card, CardBody, Chip, Divider } from '@heroui/react';
 
-type Props = {
-  item: SubmissionItem | null;
-};
+type Props = { item: SubmitDto | null };
 
 export default function DetailsPanel({ item }: Props) {
   if (!item) {
@@ -24,25 +30,21 @@ export default function DetailsPanel({ item }: Props) {
 
   return (
     <Card
-      className="bg-white/90 dark:bg-default-50/90 backdrop-blur"
+      className="bg-white/90 dark:bg-default-50/90 backdrop-blur rounded-2xl border-0 shadow-xl"
       shadow="sm"
     >
-      <CardBody className="space-y-4 text-sm">
+      <CardBody className="space-y-4 text-sm p-5">
         <Row label="ID" value={`#${item.id}`} />
-        <Row label="Feedback" value={item.feedbackTitle} />
-        <Row label="Project" value={item.projectName} />
+        <Row label="Feedback" value={(item as any).feedbackTitle || `#${item.feedbackId}`} />
+        {/* Project can be shown elsewhere; keep essentials here */}
         <Row
           label="Submitted By"
           value={item.submittedBy ? `User #${item.submittedBy}` : 'Anonymous'}
         />
         <div className="flex items-center justify-between">
           <span className="text-default-500">Privacy</span>
-          <Chip
-            color={item.privacy === 'PUBLIC' ? 'success' : 'warning'}
-            size="sm"
-            variant="flat"
-          >
-            {item.privacy}
+          <Chip color={item.privacyLevel === 'PUBLIC' ? 'success' : 'warning'} size="sm" variant="flat">
+            {item.privacyLevel}
           </Chip>
         </div>
         <div className="flex items-center justify-between">
@@ -66,9 +68,7 @@ export default function DetailsPanel({ item }: Props) {
           value={new Date(item.submittedAt).toLocaleString()}
         />
         <Divider />
-        <div className="text-xs text-default-500">
-          More details will appear here in the full integration.
-        </div>
+        <div className="text-xs text-default-500">More details will appear here in the full integration.</div>
       </CardBody>
     </Card>
   );

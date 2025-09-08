@@ -10,7 +10,7 @@ import {
   DropdownItem,
   Button,
 } from '@heroui/react';
-import { PenLine, Trash2, Eye } from 'lucide-react';
+import { PenLine, Trash2, Eye, MoreVertical } from 'lucide-react';
 
 type Props = {
   columnKey: string | number;
@@ -48,11 +48,11 @@ export default function SubmissionCellRenderer({
     case 'privacy':
       return (
         <Chip
-          color={item.privacy === 'PUBLIC' ? 'success' : 'warning'}
+          color={item.privacyLevel === 'PUBLIC' ? 'success' : 'warning'}
           size="sm"
           variant="flat"
         >
-          {item.privacy}
+          {item.privacyLevel}
         </Chip>
       );
     case 'submittedAt':
@@ -97,38 +97,28 @@ export default function SubmissionCellRenderer({
       );
     case 'actions':
       return (
-        <Dropdown>
-          <DropdownTrigger>
-            <Button size="sm" variant="light">
-              Actions
-            </Button>
-          </DropdownTrigger>
-          <DropdownMenu>
-            <DropdownItem
-              key="view"
-              startContent={<Eye className="w-4 h-4" />}
-              onPress={() => onView?.(item)}
-            >
-              View
-            </DropdownItem>
-            <DropdownItem
-              key="edit"
-              startContent={<PenLine className="w-4 h-4" />}
-              onPress={() => onEdit?.(item)}
-            >
-              Edit
-            </DropdownItem>
-            <DropdownItem
-              key="delete"
-              className="text-danger"
-              color="danger"
-              startContent={<Trash2 className="w-4 h-4" />}
-              onPress={() => onDelete?.(item)}
-            >
-              Delete
-            </DropdownItem>
-          </DropdownMenu>
-        </Dropdown>
+        <div className="flex items-center gap-1.5">
+          <Button size="sm" variant="flat" onPress={() => onView?.(item)} startContent={<Eye className="w-4 h-4" />}>View</Button>
+          <Button size="sm" variant="flat" onPress={() => onEdit?.(item)} startContent={<PenLine className="w-4 h-4" />}>Edit</Button>
+          <Dropdown>
+            <DropdownTrigger>
+              <Button isIconOnly size="sm" variant="light" className="hover:bg-default-100" aria-label="More actions">
+                <MoreVertical className="w-4 h-4" />
+              </Button>
+            </DropdownTrigger>
+            <DropdownMenu>
+              <DropdownItem
+                key="delete"
+                className="text-danger"
+                color="danger"
+                startContent={<Trash2 className="w-4 h-4" />}
+                onPress={() => onDelete?.(item)}
+              >
+                Delete
+              </DropdownItem>
+            </DropdownMenu>
+          </Dropdown>
+        </div>
       );
     default:
       return <span />;

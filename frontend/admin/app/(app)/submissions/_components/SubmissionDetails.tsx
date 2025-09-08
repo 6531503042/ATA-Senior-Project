@@ -21,11 +21,11 @@ export default function SubmissionDetails({ item }: { item: SubmissionItem }) {
         label="Privacy"
         value={
           <Chip
-            color={item.privacy === 'PUBLIC' ? 'success' : 'warning'}
+            color={item.privacyLevel === 'PUBLIC' ? 'success' : 'warning'}
             size="sm"
             variant="flat"
           >
-            {item.privacy}
+            {item.privacyLevel}
           </Chip>
         }
       />

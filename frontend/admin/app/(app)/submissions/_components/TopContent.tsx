@@ -1,6 +1,6 @@
 'use client';
 
-import type { SubmissionPrivacy, SubmissionStatus } from '@/types/submission';
+import type { SubmissionPrivacy } from '@/types/submission';
 
 import {
   Input,
@@ -20,8 +20,6 @@ type Props = {
   onClear: () => void;
   privacy: SubmissionPrivacy[];
   onPrivacyChange: (v: SubmissionPrivacy[]) => void;
-  status: SubmissionStatus[];
-  onStatusChange: (v: SubmissionStatus[]) => void;
   onRefresh: () => void;
 };
 
@@ -31,19 +29,11 @@ export default function TopContent({
   onClear,
   privacy,
   onPrivacyChange,
-  status,
-  onStatusChange,
   onRefresh,
 }: Props) {
   const privacyOptions: { key: SubmissionPrivacy; label: string }[] = [
     { key: 'PUBLIC', label: 'Public' },
     { key: 'ANONYMOUS', label: 'Anonymous' },
-  ];
-
-  const statusOptions: { key: SubmissionStatus; label: string }[] = [
-    { key: 'analyzed', label: 'Analyzed' },
-    { key: 'pending', label: 'Pending' },
-    { key: 'error', label: 'Error' },
   ];
 
   return (
@@ -75,21 +65,6 @@ export default function TopContent({
           >
             {privacyOptions.map(p => (
               <SelectItem key={p.key}>{p.label}</SelectItem>
-            ))}
-          </Select>
-
-          <Select
-            className="w-[180px]"
-            label="Status"
-            placeholder="All status"
-            selectedKeys={new Set(status)}
-            selectionMode="multiple"
-            onSelectionChange={keys =>
-              onStatusChange(Array.from(keys) as SubmissionStatus[])
-            }
-          >
-            {statusOptions.map(s => (
-              <SelectItem key={s.key}>{s.label}</SelectItem>
             ))}
           </Select>
 
