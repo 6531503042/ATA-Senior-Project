@@ -10,6 +10,13 @@ public interface SubmitMapper {
     @Mapping(target = "userId", ignore = true)
     @Mapping(target = "anonymous", expression = "java(req.privacyLevel().name().equals(\"ANONYMOUS\"))")
     @Mapping(target = "reviewed", constant = "false")
+    @Mapping(target = "submittedAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "adminRating", ignore = true)
+    @Mapping(target = "adminSentiment", ignore = true)
+    @Mapping(target = "analysisNotes", ignore = true)
+    @Mapping(target = "analyzedAt", ignore = true)
+    @Mapping(target = "analyzedBy", ignore = true)
     Submit toEntity(SubmitRequestDto req);
 
     default SubmitResponseDto toResponse(Submit entity) {
@@ -23,7 +30,12 @@ public interface SubmitMapper {
                 entity.getOverallComments(),
                 entity.getPrivacyLevel(),
                 entity.getSubmittedAt(),
-                entity.getUpdatedAt()
+                entity.getUpdatedAt(),
+                entity.getAdminRating(),
+                entity.getAdminSentiment(),
+                entity.getAnalysisNotes(),
+                entity.getAnalyzedAt(),
+                entity.getAnalyzedBy()
         );
     }
 }

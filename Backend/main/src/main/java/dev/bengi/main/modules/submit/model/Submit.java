@@ -43,6 +43,22 @@ public class Submit {
 
     @Transient
     private Map<Long, String> responses = new HashMap<>();
+
+    // Analysis fields
+    @Column("admin_rating")
+    private Double adminRating;
+    
+    @Column("admin_sentiment")
+    private String adminSentiment;
+    
+    @Column("analysis_notes")
+    private String analysisNotes;
+    
+    @Column("analyzed_at")
+    private LocalDateTime analyzedAt;
+    
+    @Column("analyzed_by")
+    private String analyzedBy;
 }
 
 

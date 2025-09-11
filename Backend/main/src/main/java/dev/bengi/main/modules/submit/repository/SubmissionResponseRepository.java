@@ -13,6 +13,20 @@ public interface SubmissionResponseRepository extends R2dbcRepository<Submission
     @Query("SELECT question_id FROM submission_responses WHERE submission_id = :submissionId")
     Flux<Long> findQuestionIdsBySubmission(Long submissionId);
 
+    @Query("SELECT question_id, response FROM submission_responses WHERE submission_id = :submissionId")
+    Flux<ResponseRow> findResponsesBySubmission(Long submissionId);
+
+    class ResponseRow {
+        public Long questionId;
+        public String response;
+        
+        public ResponseRow() {}
+        public ResponseRow(Long questionId, String response) {
+            this.questionId = questionId;
+            this.response = response;
+        }
+    }
+
     class Row { public Long id; }
 }
 

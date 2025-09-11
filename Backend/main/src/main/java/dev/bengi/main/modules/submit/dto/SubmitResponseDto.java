@@ -12,7 +12,12 @@ public record SubmitResponseDto(
         String overallComments,
         PrivacyLevel privacyLevel,
         LocalDateTime submittedAt,
-        LocalDateTime updatedAt
+        LocalDateTime updatedAt,
+        Double adminRating,
+        String adminSentiment,
+        String analysisNotes,
+        LocalDateTime analyzedAt,
+        String analyzedBy
 ) {}
 
 

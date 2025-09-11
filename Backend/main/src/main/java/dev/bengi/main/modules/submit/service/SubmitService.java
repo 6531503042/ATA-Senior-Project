@@ -8,6 +8,7 @@ import dev.bengi.main.exception.GlobalServiceException;
 import dev.bengi.main.modules.submit.dto.SubmitMapper;
 import dev.bengi.main.modules.submit.dto.SubmitRequestDto;
 import dev.bengi.main.modules.submit.dto.SubmitResponseDto;
+import dev.bengi.main.modules.submit.dto.SubmissionAnalysisDto;
 import dev.bengi.main.modules.submit.model.Submit;
 import dev.bengi.main.modules.submit.repository.SubmitRepository;
 import dev.bengi.main.modules.submit.repository.SubmissionResponseRepository;
@@ -95,6 +96,7 @@ public class SubmitService {
     public Mono<SubmitResponseDto> getById(Long id) {
         return submitRepository.findById(id)
                 .switchIfEmpty(Mono.error(new GlobalServiceException(ErrorCode.NOT_FOUND)))
+                .flatMap(this::loadResponses)
                 .map(mapper::toResponse);
     }
 
@@ -104,20 +106,40 @@ public class SubmitService {
 
     public Mono<PageResponse<SubmitResponseDto>> getByFeedback(Long feedbackId, PageRequest pageRequest) {
         return paginationService.paginateInMemory(
-            submitRepository.findByFeedbackId(feedbackId).map(mapper::toResponse),
+            submitRepository.findByFeedbackId(feedbackId).flatMap(this::loadResponses).map(mapper::toResponse),
             pageRequest
         );
     }
 
     public Flux<SubmitResponseDto> getByUser(String userId) {
-        return submitRepository.findByUserId(userId).map(mapper::toResponse);
+        return submitRepository.findByUserId(userId).flatMap(this::loadResponses).map(mapper::toResponse);
     }
 
     public Mono<PageResponse<SubmitResponseDto>> getByUser(String userId, PageRequest pageRequest) {
         return paginationService.paginateInMemory(
-            submitRepository.findByUserId(userId).map(mapper::toResponse),
+            submitRepository.findByUserId(userId).flatMap(this::loadResponses).map(mapper::toResponse),
             pageRequest
         );
+    }
+
+    public Mono<PageResponse<SubmitResponseDto>> getAllSubmissions(PageRequest pageRequest) {
+        return paginationService.paginateInMemory(
+            submitRepository.findAll().flatMap(this::loadResponses).map(mapper::toResponse),
+            pageRequest
+        );
+    }
+
+    private Mono<Submit> loadResponses(Submit submit) {
+        return submissionResponseRepository.findResponsesBySubmission(submit.getId())
+                .collectMap(
+                    row -> row.questionId,
+                    row -> row.response
+                )
+                .map(responseMap -> {
+                    submit.setResponses(responseMap);
+                    return submit;
+                })
+                .switchIfEmpty(Mono.just(submit)); // Return original if no responses
     }
 
     // Additional methods for employee endpoints
@@ -140,6 +162,23 @@ public class SubmitService {
     public Mono<Double> getSubmissionCompletionRate(String username, java.time.LocalDateTime since) {
         // Placeholder implementation - calculate completion rate
         return Mono.just(85.0); // 85% completion rate
+    }
+
+    @Transactional
+    public Mono<Void> saveAnalysis(Long submissionId, SubmissionAnalysisDto analysisDto, String analyzedBy) {
+        return submitRepository.findById(submissionId)
+                .switchIfEmpty(Mono.error(new GlobalServiceException(ErrorCode.NOT_FOUND, "Submission not found")))
+                .flatMap(submission -> {
+                    // Update analysis fields
+                    submission.setAdminRating(analysisDto.rating());
+                    submission.setAdminSentiment(analysisDto.sentiment());
+                    submission.setAnalysisNotes(analysisDto.analysisNotes());
+                    submission.setAnalyzedAt(analysisDto.analyzedAt());
+                    submission.setAnalyzedBy(analyzedBy);
+                    
+                    return submitRepository.save(submission);
+                })
+                .then();
     }
 }
 
