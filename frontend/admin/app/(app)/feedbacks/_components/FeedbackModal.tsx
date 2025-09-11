@@ -48,8 +48,6 @@ export default function FeedbackModal({
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   const [selectedDepartmentIds, setSelectedDepartmentIds] = useState<string[]>([]);
 
-  if (!isOpen) return null;
-
   useEffect(() => {
     if (feedback) {
       setTitle(feedback.title);
@@ -105,6 +103,9 @@ export default function FeedbackModal({
       (x.category || '').toLowerCase().includes(q)
     );
   }, [questions, questionSearch]);
+
+  // Render guard must come AFTER hooks to preserve hook order
+  if (!isOpen) return null;
 
   const handleSubmit = async () => {
     if (!isFormValid()) return;

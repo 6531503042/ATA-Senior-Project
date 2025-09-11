@@ -243,26 +243,28 @@ export default function QuestionsPage() {
 
       <div className="space-y-8">
         {/* Header Section */}
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 p-6 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-2xl border border-blue-100">
-          <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Questions Management
-            </h1>
-            <p className="text-default-600 mt-1">
-              Create, edit, and manage your feedback questions with advanced analytics
-            </p>
+        <div className="relative overflow-hidden flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 p-6 rounded-2xl border border-white/10 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 shadow-2xl">
+          <div className="relative z-10 flex items-center gap-6">
+            <div className="p-4 bg-white/10 backdrop-blur-sm rounded-2xl">
+              <MessageSquareIcon className="w-8 h-8 text-white" />
+            </div>
+            <div>
+              <h1 className="text-4xl font-bold text-white">Questions Management</h1>
+              <p className="text-white/70 mt-1">Create, edit, and manage your feedback questions with analytics</p>
+            </div>
           </div>
-          <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative z-10 flex flex-col sm:flex-row gap-3">
             <Button
-              className="w-full sm:w-auto font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-300"
-              color="primary"
+              className="w-full sm:w-auto font-semibold bg-white/10 hover:bg-white/20 text-white border-white/20"
+              color="default"
               startContent={<PlusIcon className="w-4 h-4" />}
-              variant="shadow"
+              variant="bordered"
               onPress={() => setIsModalOpen(true)}
             >
               Create Question
             </Button>
           </div>
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(255,255,255,0.12),_transparent_60%)]" />
         </div>
 
         {/* Main Stats Cards */}
@@ -270,20 +272,20 @@ export default function QuestionsPage() {
           {statsCards.map((stat, index) => (
             <Card
               key={index}
-              className="border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] bg-gradient-to-br from-white to-gray-50 overflow-hidden group"
+              className="border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] bg-white/5 backdrop-blur-sm border border-white/10 overflow-hidden group"
             >
-              <CardBody className="p-6 relative">
+              <CardBody className="p-6 relative text-white">
                 {/* Background gradient overlay */}
                 <div
-                  className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300`}
+                  className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-10 group-hover:opacity-20 transition-opacity duration-300`}
                 />
 
                 <div className="flex items-center justify-between relative z-10 mb-4">
                   <div>
-                    <p className="text-sm font-medium text-default-500 mb-1">
+                    <p className="text-sm font-medium text-white/70 mb-1">
                       {stat.title}
                     </p>
-                    <p className="text-3xl font-bold text-default-900">
+                    <p className="text-3xl font-bold text-white">
                       {stat.value}
                     </p>
                     {stat.trend && (
@@ -302,7 +304,7 @@ export default function QuestionsPage() {
 
                 {/* Progress bar */}
                 <div className="relative z-10">
-                  <div className="flex items-center justify-between text-xs text-default-500 mb-2">
+                  <div className="flex items-center justify-between text-xs text-white/70 mb-2">
                     <span>{stat.description}</span>
                     <span>{stat.progress.toFixed(1)}%</span>
                   </div>
@@ -312,7 +314,7 @@ export default function QuestionsPage() {
                     color="primary"
                     size="sm"
                     classNames={{
-                      track: "bg-default-100",
+                      track: "bg-white/20",
                       indicator: `bg-gradient-to-r ${stat.progressColor}`,
                     }}
                   />

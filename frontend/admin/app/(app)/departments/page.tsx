@@ -123,26 +123,28 @@ export default function DepartmentsPage() {
 
       <div className="space-y-8">
         {/* Header Section */}
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 p-6 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-2xl border border-blue-100">
-          <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Department Management
-            </h1>
-            <p className="text-default-600 mt-1">
-              Manage departments and their members
-            </p>
+        <div className="relative overflow-hidden flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 p-6 rounded-2xl border border-white/10 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 shadow-2xl">
+          <div className="relative z-10 flex items-center gap-6">
+            <div className="p-4 bg-white/10 backdrop-blur-sm rounded-2xl">
+              <BuildingIcon className="w-8 h-8 text-white" />
+            </div>
+            <div>
+              <h1 className="text-4xl font-bold text-white">Department Management</h1>
+              <p className="text-white/70 mt-1">Manage departments and their members</p>
+            </div>
           </div>
-          <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative z-10 flex flex-col sm:flex-row gap-3">
             <Button
-              className="w-full sm:w-auto font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-300"
-              color="primary"
+              className="w-full sm:w-auto font-semibold bg-white/10 hover:bg-white/20 text-white border-white/20"
+              color="default"
               startContent={<PlusIcon className="w-4 h-4" />}
-              variant="shadow"
+              variant="bordered"
               onPress={handleAddDepartment}
             >
               Add Department
             </Button>
           </div>
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(255,255,255,0.12),_transparent_60%)]" />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
