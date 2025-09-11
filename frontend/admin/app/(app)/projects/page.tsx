@@ -4,12 +4,14 @@ import type { Project } from '@/types/project';
 import type { Department } from '@/types/department';
 import type { User } from '@/types/user';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardBody, CardHeader, Button } from '@heroui/react';
 import { PlusIcon, FolderIcon } from 'lucide-react';
 
 import ProjectModal from './_components/ProjectModal';
 import ProjectTable from './_components/ProjectTable';
+import TopContent from './_components/TopContent';
+import BottomContent from './_components/BottomContent';
 
 import { PageHeader } from '@/components/ui/page-header';
 import { useProjects } from '@/hooks/useProjects';
@@ -40,6 +42,26 @@ export default function ProjectsPage() {
   const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Local search & pagination (consistent with other modules)
+  const [filterValue, setFilterValue] = useState('');
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
+
+  const filtered = useMemo(() => {
+    const q = filterValue.trim().toLowerCase();
+    if (!q) return projects;
+    return projects.filter((p) =>
+      [p.name, p.description].some((v) => (v || '').toLowerCase().includes(q))
+    );
+  }, [projects, filterValue]);
+
+  const pages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const currentPage = Math.min(page, pages);
+  const paged = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filtered.slice(start, start + pageSize);
+  }, [filtered, currentPage]);
 
   // Calculate stats from projects data
   const stats = {
@@ -232,7 +254,7 @@ export default function ProjectsPage() {
               </div>
             ) : (
               <ProjectTable
-                projects={projects.map(proj => ({
+                projects={paged.map(proj => ({
                   id: proj.id.toString(),
                   name: proj.name,
                   description: proj.description,
@@ -250,7 +272,26 @@ export default function ProjectsPage() {
                 onRefresh={fetchProjects}
               />
             )}
+            {/* Top content: search/filter (basic search wired) */}
+            <div className="mb-4">
+              <TopContent
+                filterValue={filterValue}
+                onClear={() => setFilterValue('')}
+                onSearchChange={setFilterValue}
+                selectedStatus={[]}
+                onStatusChange={() => {}}
+                onRefresh={fetchProjects}
+              />
+            </div>
           </CardBody>
+          {/* Bottom content: pagination */}
+          <BottomContent
+            page={currentPage}
+            pages={pages}
+            setPage={setPage}
+            totalProjects={filtered.length}
+            currentPage={currentPage}
+          />
         </Card>
       </div>
 

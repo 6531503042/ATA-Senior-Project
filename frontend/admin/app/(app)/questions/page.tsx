@@ -272,20 +272,20 @@ export default function QuestionsPage() {
           {statsCards.map((stat, index) => (
             <Card
               key={index}
-              className="border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] bg-white/5 backdrop-blur-sm border border-white/10 overflow-hidden group"
+              className="border border-default-200 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] bg-white overflow-hidden group"
             >
-              <CardBody className="p-6 relative text-white">
+              <CardBody className="p-6 relative text-default-900">
                 {/* Background gradient overlay */}
                 <div
-                  className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-10 group-hover:opacity-20 transition-opacity duration-300`}
+                  className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-10 group-hover:opacity-15 transition-opacity duration-300`}
                 />
 
                 <div className="flex items-center justify-between relative z-10 mb-4">
                   <div>
-                    <p className="text-sm font-medium text-white/70 mb-1">
+                    <p className="text-sm font-medium text-default-600 mb-1">
                       {stat.title}
                     </p>
-                    <p className="text-3xl font-bold text-white">
+                    <p className="text-3xl font-bold text-default-900">
                       {stat.value}
                     </p>
                     {stat.trend && (
@@ -304,7 +304,7 @@ export default function QuestionsPage() {
 
                 {/* Progress bar */}
                 <div className="relative z-10">
-                  <div className="flex items-center justify-between text-xs text-white/70 mb-2">
+                  <div className="flex items-center justify-between text-xs text-default-600 mb-2">
                     <span>{stat.description}</span>
                     <span>{stat.progress.toFixed(1)}%</span>
                   </div>
@@ -314,7 +314,7 @@ export default function QuestionsPage() {
                     color="primary"
                     size="sm"
                     classNames={{
-                      track: "bg-white/20",
+                      track: "bg-default-100",
                       indicator: `bg-gradient-to-r ${stat.progressColor}`,
                     }}
                   />

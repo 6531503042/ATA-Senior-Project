@@ -217,138 +217,73 @@ export default function DetailsPanel({ item, onSentimentSaved }: Props) {
 
         <Divider />
 
-        {/* Clean Modern Sentiment Analysis Section */}
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
-          {/* Simple Header */}
-          <div className="flex items-center gap-3 mb-6">
-            <div className="flex items-center justify-center w-10 h-10 bg-blue-100 rounded-lg">
-              <BarChart3 className="w-5 h-5 text-blue-600" />
+        {/* Minimal Sentiment Section - dark purple theme */}
+        <div className="rounded-2xl p-5 border border-white/10 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+          <div className="flex items-center gap-3 mb-5">
+            <div className="p-3 bg-white/10 rounded-xl">
+              <BarChart3 className="w-5 h-5 text-white" />
             </div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900">Sentiment Analysis</h3>
-              <p className="text-sm text-gray-600">Rate the emotional tone of this feedback</p>
-            </div>
+            <h3 className="text-white font-semibold">Sentiment</h3>
           </div>
 
-          {/* Clean Sentiment Options */}
           <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
-                Choose Sentiment
-              </label>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-3">
                 {[
                   { 
                     value: 'positive', 
                     emoji: '😊', 
-                    label: 'Positive', 
-                    bgColor: 'bg-green-50',
-                    borderColor: 'border-green-200',
-                    selectedBg: 'bg-green-100',
-                    selectedBorder: 'border-green-500',
-                    textColor: 'text-green-700'
+                    label: 'Positive',
+                    ring: 'ring-emerald-400/50',
+                    base: 'bg-white/5 hover:bg-white/10 text-emerald-200',
+                    active: 'bg-emerald-500/20 text-emerald-100'
                   },
                   { 
                     value: 'neutral', 
                     emoji: '😐', 
-                    label: 'Neutral',
-                    bgColor: 'bg-yellow-50',
-                    borderColor: 'border-yellow-200', 
-                    selectedBg: 'bg-yellow-100',
-                    selectedBorder: 'border-yellow-500',
-                    textColor: 'text-yellow-700'
+                    label: 'Neutral', 
+                    ring: 'ring-amber-400/50',
+                    base: 'bg-white/5 hover:bg-white/10 text-amber-200',
+                    active: 'bg-amber-500/20 text-amber-100'
                   },
                   { 
                     value: 'negative', 
                     emoji: '😞', 
-                    label: 'Negative',
-                    bgColor: 'bg-red-50',
-                    borderColor: 'border-red-200',
-                    selectedBg: 'bg-red-100', 
-                    selectedBorder: 'border-red-500',
-                    textColor: 'text-red-700'
+                    label: 'Negative', 
+                    ring: 'ring-rose-400/50',
+                    base: 'bg-white/5 hover:bg-white/10 text-rose-200',
+                    active: 'bg-rose-500/20 text-rose-100'
                   }
-                ].map(({ value, emoji, label, bgColor, borderColor, selectedBg, selectedBorder, textColor }) => (
+                ].map(({ value, emoji, label, ring, base, active }) => (
                   <button
                     key={value}
                     onClick={() => setSentiment(value as any)}
-                    className={`
-                      relative flex items-center gap-3 p-4 rounded-lg border-2 transition-all duration-200
-                      ${sentiment === value 
-                        ? `${selectedBg} ${selectedBorder} shadow-md` 
-                        : `${bgColor} ${borderColor} hover:shadow-sm hover:scale-[1.02]`
-                      }
-                    `}
+                    className={`relative flex items-center justify-center gap-2 py-3 rounded-xl transition-all duration-200 ring-1 ${
+                      sentiment === value ? `${active} ${ring}` : `${base} ring-white/10`
+                    }`}
                   >
-                    <span className="text-2xl">{emoji}</span>
-                    <div className="text-left flex-1">
-                      <p className={`font-medium ${sentiment === value ? textColor : 'text-gray-700'}`}>
-                        {label}
-                      </p>
-                    </div>
-                    {sentiment === value && (
-                      <div className="w-5 h-5 bg-current rounded-full flex items-center justify-center">
-                        <div className="w-2 h-2 bg-white rounded-full"></div>
-                      </div>
-                    )}
+                    <span className="text-xl">{emoji}</span>
+                    <span className="text-sm font-medium text-white/90">{label}</span>
                   </button>
                 ))}
               </div>
-            </div>
-
-            {/* Save Button */}
-            <Button
-              size="lg"
-              className={`w-full font-semibold ${
-                sentiment 
-                  ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md' 
-                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              }`}
-              startContent={<Save className="w-5 h-5" />}
-              onPress={handleSaveAnalysis}
-              isLoading={isSaving}
-              isDisabled={!sentiment}
-              radius="lg"
-            >
-              {isSaving ? (
-                <span className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Saving...
-                </span>
-              ) : (
-                'Save Sentiment Analysis'
+            {/* Save */}
+            <div className="flex items-center gap-3">
+              <Button
+                size="md"
+                className={`font-medium ${sentiment ? 'bg-white/15 hover:bg-white/25 text-white' : 'bg-white/5 text-white/40 cursor-not-allowed'} border border-white/10`}
+                startContent={<Save className="w-4 h-4" />}
+                onPress={handleSaveAnalysis}
+                isLoading={isSaving}
+                isDisabled={!sentiment}
+                radius="lg"
+              >
+                Save
+              </Button>
+              {justSaved && <span className="text-sm text-emerald-200">Saved</span>}
+              {(item as any)?.adminSentiment && !justSaved && (
+                <span className="text-sm text-emerald-200">Analyzed</span>
               )}
-            </Button>
-            
-            {/* Status Messages */}
-            {justSaved && (
-              <div className="flex items-center justify-center gap-2 p-4 bg-green-50 border-2 border-green-200 rounded-lg animate-pulse">
-                <div className="w-3 h-3 bg-green-500 rounded-full animate-bounce"></div>
-                <p className="text-sm text-green-700 font-bold">
-                  🎉 Sentiment saved successfully! Status updated to "Analyzed"
-                </p>
-                <div className="w-3 h-3 bg-green-500 rounded-full animate-bounce delay-100"></div>
-              </div>
-            )}
-            
-            {sentiment && !isSaving && !justSaved && (
-              <div className="flex items-center justify-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <p className="text-sm text-blue-700 font-medium">
-                  Selected: {sentiment.charAt(0).toUpperCase() + sentiment.slice(1)}
-                </p>
-              </div>
-            )}
-            
-            {(item as any)?.adminSentiment && !justSaved && (
-              <div className="flex items-center justify-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <p className="text-sm text-green-700 font-medium">
-                  ✓ Analysis completed
-                </p>
-              </div>
-            )}
+            </div>
           </div>
         </div>
 
