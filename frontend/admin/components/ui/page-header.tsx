@@ -1,13 +1,15 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { ReactNode, useMemo } from 'react';
 import { Breadcrumbs, BreadcrumbItem } from '@heroui/react';
+import { usePathname } from 'next/navigation';
 
 interface PageHeaderProps {
   title?: string;
   right?: ReactNode;
   description: string;
   icon: ReactNode;
+  breadcrumbs?: { label: string; href?: string }[];
 }
 
 export function PageHeader({
@@ -15,7 +17,23 @@ export function PageHeader({
   right,
   icon,
   description,
+  breadcrumbs,
 }: PageHeaderProps) {
+  const pathname = usePathname?.() || '';
+  const moduleLabel = useMemo(() => {
+    if (breadcrumbs && breadcrumbs.length > 0) return breadcrumbs[breadcrumbs.length - 1]?.label;
+    const seg = pathname.split('/').filter(Boolean)[0];
+    if (!seg) return title || 'Dashboard';
+    return seg.charAt(0).toUpperCase() + seg.slice(1);
+  }, [breadcrumbs, pathname, title]);
+
+  const crumbs = useMemo(() => {
+    if (breadcrumbs && breadcrumbs.length > 0) return breadcrumbs;
+    return [
+      { label: 'Home', href: '/' },
+      { label: moduleLabel, href: `/${(pathname.split('/').filter(Boolean)[0] || '').toLowerCase()}` },
+    ];
+  }, [breadcrumbs, moduleLabel, pathname]);
   return (
     <div className="mb-6 w-full">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-2">
@@ -24,9 +42,7 @@ export function PageHeader({
             {icon && <span className="text-white">{icon}</span>}
           </div>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">
-              {title || 'Dashboard'}
-            </h1>
+            <h1 className="text-3xl font-bold tracking-tight">{title || moduleLabel}</h1>
             <p className="text-start text-sm text-default-500 font-medium">
               {description}
             </p>
@@ -39,8 +55,11 @@ export function PageHeader({
           className="w-full text-sm text-default-500"
           underline="hover"
         >
-          <BreadcrumbItem href="/">Home</BreadcrumbItem>
-          <BreadcrumbItem href="/dashboard">Dashboard</BreadcrumbItem>
+          {crumbs.map((c, i) => (
+            <BreadcrumbItem key={`${c.label}-${i}`} href={c.href}>
+              {c.label}
+            </BreadcrumbItem>
+          ))}
         </Breadcrumbs>
       </div>
     </div>

@@ -106,7 +106,7 @@ export function DashboardFeedbacks({ feedbacks }: DashboardFeedbacksProps) {
         {feedbacks.map(feedback => (
           <div
             key={feedback.id}
-            className="group relative flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 rounded-xl border border-default-200 hover:border-green-400 hover:bg-green-50 dark:hover:bg-green-900/30 transition-all duration-300 cursor-pointer bg-white dark:bg-default-50"
+            className="group relative flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 rounded-xl border border-default-200 hover:border-green-400 hover:bg-green-50 dark:hover:bg-green-900/30 transition-all duration-300 cursor-pointer bg-white dark:bg-default-50 overflow-hidden"
           >
             <Avatar
               className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 text-white font-semibold shadow-md"
@@ -117,7 +117,7 @@ export function DashboardFeedbacks({ feedbacks }: DashboardFeedbacksProps) {
 
             <div className="flex-1 min-w-0 space-y-3">
               <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                <h4 className="font-semibold text-default-900 truncate text-base">
+                <h4 className="font-semibold text-default-900 truncate text-base min-w-0">
                   {feedback.projectTitle}
                 </h4>
                 <div className="flex items-center gap-2">
@@ -141,7 +141,7 @@ export function DashboardFeedbacks({ feedbacks }: DashboardFeedbacksProps) {
                 </div>
               </div>
 
-              <p className="text-sm text-default-600 line-clamp-2 leading-relaxed">
+              <p className="text-sm text-default-600 line-clamp-2 leading-relaxed break-words">
                 {feedback.description}
               </p>
 

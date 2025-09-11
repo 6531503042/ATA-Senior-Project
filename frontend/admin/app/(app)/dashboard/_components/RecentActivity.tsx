@@ -73,7 +73,7 @@ export function RecentActivity({
       {activities.slice(0, 5).map((activity, index) => (
         <div
           key={`${activity.icon}-${activity.actorName}-${activity.action}-${activity.timestamp}-${index}`}
-          className="flex items-start gap-3 p-4 rounded-2xl border border-default-200 bg-white shadow-lg hover:shadow-xl transition-all duration-200 hover:-translate-y-0.5"
+          className="flex items-start gap-3 p-4 rounded-2xl border border-default-200 bg-white shadow-lg hover:shadow-xl transition-all duration-200 hover:-translate-y-0.5 overflow-hidden"
         >
           <Avatar
             className="flex-shrink-0 bg-primary text-white shadow-md"
@@ -81,8 +81,8 @@ export function RecentActivity({
             size="sm"
           />
           <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
+            <div className="flex items-start justify-between min-w-0">
+              <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-default-900 truncate">
                   <span className="font-semibold">{activity.actorName}</span>{' '}
                   {activity.action}

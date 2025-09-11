@@ -63,7 +63,7 @@ export function RecentFeedbacks({
       {feedbacks.slice(0, 5).map((feedback, index) => (
         <div
           key={feedback.id || index}
-          className="flex items-start gap-3 p-4 rounded-2xl border border-default-200 bg-white shadow-lg hover:shadow-xl transition-all duration-200 hover:-translate-y-0.5"
+          className="flex items-start gap-3 p-4 rounded-2xl border border-default-200 bg-white shadow-lg hover:shadow-xl transition-all duration-200 hover:-translate-y-0.5 overflow-hidden"
         >
           <Avatar
             className="flex-shrink-0 bg-primary text-white shadow-md"

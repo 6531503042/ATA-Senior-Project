@@ -112,6 +112,16 @@ export default function ProjectsPage() {
     fetchUsers();
   }, []); // Run only once on component mount
 
+  // Auto-open create modal when navigated with ?create=1
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('create') === '1') {
+        handleAddProject();
+      }
+    }
+  }, []);
+
   const handleAddProject = () => {
     setSelectedProject(null);
     setModalMode('create');

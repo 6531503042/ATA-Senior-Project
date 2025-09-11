@@ -77,7 +77,7 @@ export function DashboardProjects({ projects }: DashboardProjectsProps) {
         {projects.map(project => (
           <div
             key={project.id}
-            className="group relative flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 rounded-xl border border-default-200 hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all duration-300 cursor-pointer bg-white dark:bg-default-50"
+            className="group relative flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 rounded-xl border border-default-200 hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all duration-300 cursor-pointer bg-white dark:bg-default-50 overflow-hidden"
           >
             <Avatar
               className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-semibold shadow-md"
@@ -88,7 +88,7 @@ export function DashboardProjects({ projects }: DashboardProjectsProps) {
 
             <div className="flex-1 min-w-0 space-y-3">
               <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                <h4 className="font-semibold text-default-900 truncate text-base">
+                <h4 className="font-semibold text-default-900 truncate text-base min-w-0">
                   {project.title}
                 </h4>
                 <div className="flex items-center gap-2">
@@ -107,7 +107,7 @@ export function DashboardProjects({ projects }: DashboardProjectsProps) {
                 </div>
               </div>
 
-              <p className="text-sm text-default-600 line-clamp-2 leading-relaxed">
+              <p className="text-sm text-default-600 line-clamp-2 leading-relaxed break-words">
                 {project.description}
               </p>
 
