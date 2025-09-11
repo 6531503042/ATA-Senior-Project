@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { Card, CardBody, CardHeader, Button, Chip, Progress, Spinner } from '@heroui/react';
-import { PlusIcon, FileText, CheckCircleIcon, TrendingUpIcon, ChevronLeft, ChevronRight, BarChart3, Download, Zap, Eye } from 'lucide-react';
+import { PlusIcon, FileText, CheckCircleIcon, TrendingUpIcon, ChevronLeft, ChevronRight, BarChart3, Download, Zap, Eye, Clock, Smile as SmileIcon, Frown as FrownIcon, Meh as MehIcon } from 'lucide-react';
 
 import FeedbackSelector from './_components/FeedbackSelector';
 import SubmissionList from './_components/SubmissionList';
@@ -85,11 +85,16 @@ export default function SubmissionsPage() {
       try {
         const response = await apiRequest<any>(`/api/submits/feedback/${selectedFeedbackId}`, 'GET');
         const items = Array.isArray(response.data?.content) ? response.data.content : [];
+        const enhanced = items.map((it: any) => ({
+          ...it,
+          status: it?.adminSentiment ? 'analyzed' : 'pending',
+          overallSentiment: it?.adminSentiment || 'neutral',
+        }));
         if (mounted) {
-          setSubmissionItems(items);
+          setSubmissionItems(enhanced);
           // Auto-select first submission
-          if (items.length > 0 && !selectedSubmissionId) {
-            setSelectedSubmissionId(String(items[0].id));
+          if (enhanced.length > 0 && !selectedSubmissionId) {
+            setSelectedSubmissionId(String(enhanced[0].id));
           }
         }
       } catch (error) {
@@ -225,13 +230,31 @@ export default function SubmissionsPage() {
       ? Math.round((positiveCount / feedbackSubmissions.length) * 100) 
       : 0;
 
+    // Calculate sentiment distribution
+    const sentimentCounts = {
+      positive: allItems.filter(s => s.overallSentiment === 'positive').length,
+      neutral: allItems.filter(s => s.overallSentiment === 'neutral').length,
+      negative: allItems.filter(s => s.overallSentiment === 'negative').length,
+    };
+    
+    // Determine dominant sentiment
+    const dominantSentiment = sentimentCounts.positive >= sentimentCounts.neutral && sentimentCounts.positive >= sentimentCounts.negative ? 'positive' :
+                              sentimentCounts.negative >= sentimentCounts.neutral ? 'negative' : 'neutral';
+    
+    // Calculate recent activity (items analyzed today)
+    const today = new Date().toDateString();
+    const recentlyAnalyzed = allItems.filter(item => {
+      const updatedDate = item.updatedAt;
+      return updatedDate && new Date(updatedDate).toDateString() === today && item.status === 'analyzed';
+    }).length;
+
     return {
       total,
       analyzed,
       pending,
-      publicCount,
-      privateCount,
-      anonymousCount,
+      sentimentCounts,
+      dominantSentiment,
+      recentlyAnalyzed,
       satisfactionRate,
       selectedFeedbackSubmissions: feedbackSubmissions.length
     };
@@ -239,36 +262,40 @@ export default function SubmissionsPage() {
 
   const statsCards = [
     {
-      title: 'Total Submissions',
-      value: enhancedStats.total.toString(),
-      description: 'All feedback responses',
-      gradient: 'from-blue-400 to-indigo-500',
-      bgColor: 'from-blue-600 to-indigo-700',
-      icon: FileText,
+      title: 'Pending Analysis',
+      value: enhancedStats.pending.toString(),
+      description: `${enhancedStats.pending > 0 ? 'Need your attention' : 'All caught up!'}`,
+      gradient: enhancedStats.pending > 0 ? 'from-orange-400 to-red-500' : 'from-green-400 to-emerald-500',
+      bgColor: enhancedStats.pending > 0 ? 'from-orange-600 to-red-700' : 'from-green-600 to-emerald-700',
+      icon: enhancedStats.pending > 0 ? Clock : CheckCircleIcon,
+      urgent: enhancedStats.pending > 0,
     },
     {
-      title: 'Satisfaction Rate',
-      value: `${enhancedStats.satisfactionRate}%`,
-      description: 'Positive feedback ratio',
-      gradient: 'from-green-400 to-emerald-500',
-      bgColor: 'from-green-600 to-emerald-700',
+      title: 'Analysis Progress',
+      value: `${Math.round((enhancedStats.analyzed / Math.max(enhancedStats.total, 1)) * 100)}%`,
+      description: `${enhancedStats.analyzed}/${enhancedStats.total} completed`,
+      gradient: 'from-blue-400 to-indigo-500',
+      bgColor: 'from-blue-600 to-indigo-700',
       icon: TrendingUpIcon,
     },
     {
-      title: 'Analysis Complete',
-      value: enhancedStats.analyzed.toString(),
-      description: 'Processed submissions',
+      title: 'Recent Activity',
+      value: enhancedStats.recentlyAnalyzed.toString(),
+      description: 'Analyzed today',
       gradient: 'from-purple-400 to-pink-500',
       bgColor: 'from-purple-600 to-pink-700',
-      icon: CheckCircleIcon,
+      icon: Zap,
     },
     {
-      title: 'Current Feedback',
-      value: enhancedStats.selectedFeedbackSubmissions.toString(),
-      description: 'Selected feedback responses',
-      gradient: 'from-orange-400 to-red-500',
-      bgColor: 'from-orange-600 to-red-700',
-      icon: FileText,
+      title: 'Overall Sentiment',
+      value: enhancedStats.dominantSentiment.charAt(0).toUpperCase() + enhancedStats.dominantSentiment.slice(1),
+      description: `${enhancedStats.sentimentCounts.positive}+ / ${enhancedStats.sentimentCounts.neutral}≈ / ${enhancedStats.sentimentCounts.negative}-`,
+      gradient: enhancedStats.dominantSentiment === 'positive' ? 'from-green-400 to-emerald-500' : 
+                enhancedStats.dominantSentiment === 'negative' ? 'from-red-400 to-pink-500' : 'from-yellow-400 to-orange-500',
+      bgColor: enhancedStats.dominantSentiment === 'positive' ? 'from-green-600 to-emerald-700' : 
+               enhancedStats.dominantSentiment === 'negative' ? 'from-red-600 to-pink-700' : 'from-yellow-600 to-orange-700',
+      icon: enhancedStats.dominantSentiment === 'positive' ? SmileIcon : 
+            enhancedStats.dominantSentiment === 'negative' ? FrownIcon : MehIcon,
     },
   ];
 
@@ -347,7 +374,9 @@ export default function SubmissionsPage() {
           {statsCards.map((stat, i) => (
             <Card
               key={i}
-              className="border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-[1.05] hover:-translate-y-2 bg-white/80 backdrop-blur-sm overflow-hidden group cursor-pointer"
+              className={`border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-[1.05] hover:-translate-y-2 bg-white/80 backdrop-blur-sm overflow-hidden group cursor-pointer ${
+                stat.urgent ? 'ring-2 ring-orange-400 ring-opacity-75 shadow-orange-200' : ''
+              }`}
             >
               <CardBody className="p-6 relative">
                 {/* Animated background glow */}
@@ -596,21 +625,33 @@ export default function SubmissionsPage() {
             {/* Submission Details Panel */}
             <DetailsPanel 
               item={selectedSubmission} 
-              onSentimentSaved={() => {
+              onSentimentSaved={async () => {
                 // Refresh all submissions data
-                refresh();
+                await refresh();
+                
                 // Also refresh the current feedback submissions
                 if (selectedFeedbackId) {
-                  const loadSubmissions = async () => {
-                    try {
-                      const response = await apiRequest<any>(`/api/submits/feedback/${selectedFeedbackId}`, 'GET');
-                      const items = Array.isArray(response.data?.content) ? response.data.content : [];
-                      setSubmissionItems(items);
-                    } catch (error) {
-                      console.error('Failed to refresh submissions:', error);
+                  try {
+                    const response = await apiRequest<any>(`/api/submits/feedback/${selectedFeedbackId}`, 'GET');
+                    const items = Array.isArray(response.data?.content) ? response.data.content : [];
+                    const enhanced = items.map((it: any) => ({
+                      ...it,
+                      status: it?.adminSentiment ? 'analyzed' : 'pending',
+                      overallSentiment: it?.adminSentiment || 'neutral',
+                    }));
+                    setSubmissionItems(enhanced);
+                    
+                    // Update selected submission with new data
+                    if (selectedSubmissionId) {
+                      const updatedSubmission = enhanced.find((item: any) => item.id === parseInt(selectedSubmissionId));
+                      if (updatedSubmission) {
+                        // The selected submission will be automatically updated through the submissionItems state
+                        console.log('Updated submission found:', updatedSubmission.id, 'status:', updatedSubmission.status);
+                      }
                     }
-                  };
-                  loadSubmissions();
+                  } catch (error) {
+                    console.error('Failed to refresh submissions:', error);
+                  }
                 }
               }} 
             />
