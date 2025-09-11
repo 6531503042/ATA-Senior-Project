@@ -1,7 +1,7 @@
 "use client";
 
-import React, { memo, useCallback, useMemo, useState } from 'react';
-import { ChevronDown, Check, MessageSquare } from 'lucide-react';
+import React, { memo, useCallback, useMemo, useState, useRef, useEffect } from 'react';
+import { ChevronDown, Check, MessageSquare, Sparkles, Zap } from 'lucide-react';
 
 type FeedbackOption = { id: string; title: string };
 
@@ -21,6 +21,7 @@ function FeedbackSelector({
   placeholder = "Select feedback"
 }: Props) {
   const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const selectedOption = useMemo(() => options.find(opt => opt.id === value), [options, value]);
 
   const handleSelect = useCallback((option: FeedbackOption) => {
@@ -28,89 +29,131 @@ function FeedbackSelector({
     setIsOpen(false);
   }, [onChange]);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
+
   return (
-    <div className="relative w-full">
-      {/* Label with Icon */}
-      <div className="flex items-center gap-2 mb-3">
-        <MessageSquare className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-        <label className="text-base font-semibold text-gray-900 dark:text-white">
-          {label}
-        </label>
+    <div className="relative w-full" ref={dropdownRef}>
+      {/* Modern Label with Gradient */}
+      <div className="flex items-center gap-3 mb-4">
+        <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg shadow-lg">
+          <MessageSquare className="w-4 h-4 text-white" />
+        </div>
+        <div>
+          <label className="text-sm font-semibold text-slate-700 block">
+            {label}
+          </label>
+          <p className="text-xs text-slate-500">Choose a feedback survey to analyze</p>
+        </div>
       </div>
       
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`relative w-full bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border-2 transition-all duration-200 rounded-2xl px-6 py-4 text-left shadow-sm hover:shadow-md hover:scale-[1.01] focus:outline-none focus:ring-4 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 ${
+        className={`group relative w-full bg-white/80 backdrop-blur-sm border-2 transition-all duration-300 rounded-2xl px-5 py-4 text-left shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${
           selectedOption 
-            ? 'border-blue-500 dark:border-blue-400 bg-gradient-to-r from-blue-500/5 to-indigo-500/5 dark:from-blue-400/10 dark:to-indigo-400/10' 
-            : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-500'
-        }`}
+            ? 'border-blue-300 bg-gradient-to-r from-blue-50 to-purple-50 shadow-lg' 
+            : 'border-slate-200 hover:border-blue-300 hover:bg-white'
+        } ${isOpen ? 'scale-[1.02] shadow-xl' : ''}`}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
       >
-        <div className="flex items-center justify-between">
-          <span className={`text-base font-medium ${selectedOption ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
-            {selectedOption ? selectedOption.title : placeholder}
-          </span>
-          <div className={`flex items-center gap-2 ${selectedOption ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'}`}>
-            {selectedOption && <Check className="w-4 h-4" />}
-            <ChevronDown 
-              className={`w-5 h-5 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
-            />
-          </div>
+        {/* Shine effect */}
+        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -skew-x-12 transform translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-1000"></div>
         </div>
         
-        {selectedOption && (
-          <div className="absolute bottom-0 left-6 right-6 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500 dark:from-blue-400 dark:to-indigo-400 rounded-full" />
-        )}
+        <div className="flex items-center justify-between relative z-10">
+          <div className="flex items-center gap-3">
+            {selectedOption && (
+              <div className="p-1.5 bg-gradient-to-r from-emerald-400 to-green-400 rounded-lg">
+                <Sparkles className="w-3 h-3 text-white" />
+              </div>
+            )}
+            <span className={`font-medium ${selectedOption ? 'text-slate-800' : 'text-slate-500'}`}>
+              {selectedOption ? selectedOption.title : placeholder}
+            </span>
+          </div>
+          <ChevronDown 
+            className={`w-5 h-5 text-slate-400 transition-all duration-300 ${isOpen ? 'rotate-180 text-blue-500' : 'group-hover:text-blue-400'}`} 
+          />
+        </div>
       </button>
 
-      {/* Dropdown - Enhanced */}
+      {/* Modern Dropdown */}
       {isOpen && (
-        <>
-          {/* Backdrop */}
-          <div 
-            className="fixed inset-0 z-10 bg-black/10 dark:bg-black/20 backdrop-blur-sm" 
-            onClick={() => setIsOpen(false)}
-          />
-          
-          {/* Options */}
-          <div className="absolute z-20 w-full mt-3 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl shadow-xl backdrop-blur-sm max-h-64 overflow-auto">
-            <div className="py-3">
-              {options.length === 0 ? (
-                <div className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 text-center">
-                  No options available
+        <div className="absolute z-50 w-full mt-2 bg-white/95 backdrop-blur-sm border border-slate-200 rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-top-2 duration-200">
+          <div className="max-h-72 overflow-auto">
+            {options.length === 0 ? (
+              <div className="px-6 py-8 text-center">
+                <div className="p-3 bg-slate-100 rounded-full w-12 h-12 mx-auto mb-3 flex items-center justify-center">
+                  <MessageSquare className="w-5 h-5 text-slate-400" />
                 </div>
-              ) : (
-                options.map((option, index) => (
-                  <button
-                    key={option.id}
-                    type="button"
-                    onClick={() => handleSelect(option)}
-                    className={`relative w-full px-6 py-4 text-left transition-all duration-150 hover:scale-[0.98] ${
-                      value === option.id 
-                        ? 'text-blue-600 dark:text-blue-400 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/50 dark:to-indigo-950/50 border-l-4 border-blue-500 dark:border-blue-400' 
-                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white'
-                    } ${index !== options.length - 1 ? 'border-b border-gray-50 dark:border-gray-800' : ''}`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium">{option.title}</span>
-                      {value === option.id && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-semibold px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full">
-                            Selected
-                          </span>
-                          <Check className="w-4 h-4" />
+                <p className="text-sm text-slate-500 font-medium">No feedbacks available</p>
+                <p className="text-xs text-slate-400 mt-1">Create a feedback survey to get started</p>
+              </div>
+            ) : (
+              <>
+                {/* Header */}
+                <div className="px-4 py-3 bg-gradient-to-r from-slate-50 to-blue-50 border-b border-slate-200/50">
+                  <div className="flex items-center gap-2">
+                    <Zap className="w-4 h-4 text-blue-500" />
+                    <span className="text-xs font-semibold text-slate-700">Available Surveys</span>
+                  </div>
+                </div>
+                
+                {/* Options */}
+                <div className="p-2">
+                  {options.map((option, index) => (
+                    <button
+                      key={option.id}
+                      type="button"
+                      onClick={() => handleSelect(option)}
+                      className={`group relative w-full px-4 py-3 text-left rounded-xl transition-all duration-200 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 hover:shadow-md hover:scale-[1.02] ${
+                        value === option.id 
+                          ? 'text-blue-700 bg-gradient-to-r from-blue-50 to-purple-50 shadow-md font-semibold border border-blue-200' 
+                          : 'text-slate-700 hover:text-slate-900'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className={`p-1.5 rounded-lg transition-all duration-200 ${
+                            value === option.id 
+                              ? 'bg-gradient-to-r from-blue-400 to-purple-400 text-white' 
+                              : 'bg-slate-100 text-slate-400 group-hover:bg-blue-100 group-hover:text-blue-500'
+                          }`}>
+                            <MessageSquare className="w-3 h-3" />
+                          </div>
+                          <span className="truncate font-medium">{option.title}</span>
                         </div>
-                      )}
-                    </div>
-                  </button>
-                ))
-              )}
-            </div>
+                        {value === option.id && (
+                          <div className="flex items-center gap-2">
+                            <Check className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                            <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                          </div>
+                        )}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
-        </>
+        </div>
       )}
     </div>
   );

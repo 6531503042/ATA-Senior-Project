@@ -90,7 +90,7 @@ export default function ProjectTable({
 
   const projectItems = useMemo(() => {
     const sortedItems = [...filteredItems];
-    const direction = sortDescriptor.direction === 'ascending' ? 1 : -1;
+        const direction = sortDescriptor.direction === 'ascending' ? 1 : -1;
 
     switch (sortDescriptor.column) {
       case 'name':
@@ -111,7 +111,7 @@ export default function ProjectTable({
           (a, b) => {
             const aDate = new Date(a.startDate || '').getTime();
             const bDate = new Date(b.startDate || '').getTime();
-            return (aDate - bDate) * direction;
+          return (aDate - bDate) * direction;
           },
         );
         break;
@@ -250,13 +250,13 @@ export default function ProjectTable({
             </div>
           );
         case 'actions':
-          return (
-            <ProjectCellRenderer
-              project={project}
+      return (
+        <ProjectCellRenderer
+          project={project}
               onEdit={onEdit}
-              onDelete={onDelete}
-            />
-          );
+          onDelete={onDelete}
+        />
+      );
         default:
           return cellValue;
       }
@@ -266,43 +266,43 @@ export default function ProjectTable({
 
   return (
     <div className="w-full h-[600px] flex flex-col">
-      <Table
+    <Table
         aria-label="Projects table with pagination"
-        isHeaderSticky
-        classNames={{
+      isHeaderSticky
+      classNames={{
           wrapper: 'flex-1 overflow-auto',
           table: 'h-full',
           thead: 'bg-default-50 sticky top-0 z-10',
           th: 'text-default-600 font-semibold text-sm uppercase tracking-wider',
           td: 'py-4',
-          tr: 'hover:bg-default-50 transition-colors',
-        }}
-        sortDescriptor={sortDescriptor}
+        tr: 'hover:bg-default-50 transition-colors',
+      }}
+      sortDescriptor={sortDescriptor}
         topContent={topContent}
-        topContentPlacement="outside"
+      topContentPlacement="outside"
         onSortChange={onSortChange}
-      >
-        <TableHeader columns={COLUMNS}>
+    >
+      <TableHeader columns={COLUMNS}>
           {(column) => (
-            <TableColumn
-              key={column.uid}
-              align={column.uid === 'actions' ? 'center' : 'start'}
-              allowsSorting={column.allowsSorting}
-            >
-              {column.name}
-            </TableColumn>
-          )}
-        </TableHeader>
+          <TableColumn
+            key={column.uid}
+            align={column.uid === 'actions' ? 'center' : 'start'}
+            allowsSorting={column.allowsSorting}
+          >
+            {column.name}
+          </TableColumn>
+        )}
+      </TableHeader>
         <TableBody emptyContent={'No projects found'} items={items}>
           {(item) => (
             <TableRow key={item.id}>
               {(columnKey) => (
                 <TableCell>{renderCell(item, columnKey)}</TableCell>
-              )}
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+            )}
+          </TableRow>
+        )}
+      </TableBody>
+    </Table>
 
       {/* Fixed Pagination at Bottom */}
       <div className="flex w-full justify-center py-4 border-t border-default-200 bg-white">

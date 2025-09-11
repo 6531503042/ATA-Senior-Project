@@ -1,8 +1,8 @@
 import { Chip, Button, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from '@heroui/react';
 import { Key } from 'react';
-import { 
-  EditIcon, 
-  TrashIcon, 
+import {
+  EditIcon,
+  TrashIcon,
   MoreVerticalIcon, 
   EyeIcon,
   CheckCircleIcon,
@@ -110,22 +110,22 @@ export default function QuestionCellRenderer({
           <div className="flex items-start gap-3">
             <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl flex items-center justify-center shadow-sm">
               <MessageSquareIcon className="w-5 h-5 text-blue-600" />
-            </div>
+          </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-default-900 line-clamp-2 leading-relaxed">
                 {question.text}
               </p>
-              {question.options && question.options.length > 0 && (
+            {question.options && question.options.length > 0 && (
                 <div className="flex items-center gap-2 mt-2">
                   <Chip size="sm" variant="flat" color="secondary" className="text-xs">
                     {question.options.length} options
                   </Chip>
-                  <span className="text-xs text-default-400">
+                    <span className="text-xs text-default-400">
                     Order: {question.order || 1}
-                  </span>
+                    </span>
                 </div>
               )}
-            </div>
+              </div>
           </div>
         </div>
       );
@@ -142,14 +142,14 @@ export default function QuestionCellRenderer({
             </div>
           </div>
           <div className="flex flex-col gap-1">
-            <Chip
-              size="sm"
-              variant="flat"
+          <Chip
+            size="sm"
+            variant="flat"
               color={typeConfig.color}
               className="capitalize font-medium"
-            >
+          >
               {typeConfig.label}
-            </Chip>
+          </Chip>
             <span className="text-xs text-default-500">
               {typeConfig.description}
             </span>
@@ -166,14 +166,14 @@ export default function QuestionCellRenderer({
             </div>
           </div>
           <div className="flex flex-col gap-1">
-            <Chip
-              size="sm"
-              variant="flat"
+          <Chip
+            size="sm"
+            variant="flat"
               color="secondary"
               className="capitalize font-medium"
-            >
+          >
               {question.category || 'General'}
-            </Chip>
+          </Chip>
             <span className="text-xs text-default-500">
               Question category
             </span>
@@ -207,7 +207,7 @@ export default function QuestionCellRenderer({
               </Chip>
             ) : (
               <Chip
-                size="sm"
+          size="sm"
                 variant="flat"
                 color="default"
                 className="font-medium"
@@ -234,14 +234,14 @@ export default function QuestionCellRenderer({
             </div>
           </div>
           <div className="flex flex-col gap-1">
-            <Chip
-              size="sm"
-              variant="flat"
+        <Chip
+          size="sm"
+          variant="flat"
               color={statusConfig.color}
               className="font-medium"
-            >
+        >
               {statusConfig.label}
-            </Chip>
+        </Chip>
             <span className="text-xs text-default-500">
               {statusConfig.description}
             </span>
@@ -252,29 +252,29 @@ export default function QuestionCellRenderer({
     case 'actions':
       return (
         <div className="flex items-center gap-2 justify-center">
-          <Button
-            isIconOnly
-            size="sm"
-            variant="light"
+            <Button
+              isIconOnly
+              size="sm"
+              variant="light"
             color="primary"
             onPress={() => onEdit?.(question)}
             className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 transition-all duration-200"
             title="Edit question"
-          >
-            <EditIcon className="w-4 h-4" />
-          </Button>
+            >
+              <EditIcon className="w-4 h-4" />
+            </Button>
           
-          <Button
-            isIconOnly
-            size="sm"
-            variant="light"
-            color="danger"
+            <Button
+              isIconOnly
+              size="sm"
+              variant="light"
+              color="danger"
             onPress={() => onDelete?.(question.id.toString())}
             className="text-red-600 hover:text-red-700 hover:bg-red-50 transition-all duration-200"
             title="Delete question"
-          >
-            <TrashIcon className="w-4 h-4" />
-          </Button>
+            >
+              <TrashIcon className="w-4 h-4" />
+            </Button>
           
           <Dropdown>
             <DropdownTrigger>

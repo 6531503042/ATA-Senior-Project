@@ -42,8 +42,8 @@ export function useSubmissions(initial?: Partial<SubmissionsFilters & Submission
   const refresh = useCallback(async () => {
     setLoading(true);
     try {
-      // Fetch submissions from backend
-      const res = await apiRequest<{ content?: SubmissionItem[] }>('/api/submits/me', 'GET');
+      // Fetch all submissions from backend for admin dashboard
+      const res = await apiRequest<{ content?: SubmissionItem[] }>('/api/submits/all', 'GET');
       let submissions = Array.isArray(res.data?.content) ? res.data?.content : [];
       
       // Enhance submissions with additional data for UI display
@@ -69,8 +69,8 @@ export function useSubmissions(initial?: Partial<SubmissionsFilters & Submission
               ...submission,
               feedbackTitle,
               projectName,
-              status: 'analyzed' as SubmissionStatus, // Default status
-              overallSentiment: 'neutral' as SubmissionSentiment, // Default sentiment
+              status: (submission as any).adminSentiment ? 'analyzed' as SubmissionStatus : 'pending' as SubmissionStatus,
+              overallSentiment: (submission as any).adminSentiment || 'neutral' as SubmissionSentiment,
             };
           } catch {
             // If enhancement fails, return original submission
@@ -78,8 +78,8 @@ export function useSubmissions(initial?: Partial<SubmissionsFilters & Submission
               ...submission,
               feedbackTitle: `Feedback #${submission.feedbackId}`,
               projectName: '',
-              status: 'analyzed' as SubmissionStatus,
-              overallSentiment: 'neutral' as SubmissionSentiment,
+              status: (submission as any).adminSentiment ? 'analyzed' as SubmissionStatus : 'pending' as SubmissionStatus,
+              overallSentiment: (submission as any).adminSentiment || 'neutral' as SubmissionSentiment,
             };
           }
         })
@@ -188,8 +188,47 @@ export function useSubmissionsByFeedback(feedbackId?: number, params?: Record<st
   return { data, loading, error };
 }
 
+// Calculate overall sentiment for a feedback
+export function calculateOverallSentiment(submissions: SubmissionItem[]): {
+  overallSentiment: SubmissionSentiment;
+  completionRate: number;
+  isComplete: boolean;
+} {
+  const analyzedSubmissions = submissions.filter(s => s.status === 'analyzed');
+  const totalSubmissions = submissions.length;
+  const completionRate = totalSubmissions > 0 ? (analyzedSubmissions.length / totalSubmissions) * 100 : 0;
+  const isComplete = analyzedSubmissions.length === totalSubmissions && totalSubmissions > 0;
+
+  if (analyzedSubmissions.length === 0) {
+    return {
+      overallSentiment: 'neutral',
+      completionRate,
+      isComplete: false
+    };
+  }
+
+  // Count sentiments
+  const sentimentCounts = {
+    positive: analyzedSubmissions.filter(s => s.overallSentiment === 'positive').length,
+    neutral: analyzedSubmissions.filter(s => s.overallSentiment === 'neutral').length,
+    negative: analyzedSubmissions.filter(s => s.overallSentiment === 'negative').length,
+  };
+
+  // Determine overall sentiment based on majority
+  const maxCount = Math.max(sentimentCounts.positive, sentimentCounts.neutral, sentimentCounts.negative);
+  
+  if (sentimentCounts.positive === maxCount) {
+    return { overallSentiment: 'positive', completionRate, isComplete };
+  } else if (sentimentCounts.negative === maxCount) {
+    return { overallSentiment: 'negative', completionRate, isComplete };
+  } else {
+    return { overallSentiment: 'neutral', completionRate, isComplete };
+  }
+}
+
 export async function fetchSubmissionStats(): Promise<SubmissionsStats> {
   try {
+    // First try the dedicated stats endpoint
     const res = await apiRequest<{ total?: number; analyzed?: number; pending?: number }>('/api/dashboard/stats/submissions', 'GET');
     return {
       total: res.data?.total ?? 0,
@@ -197,6 +236,19 @@ export async function fetchSubmissionStats(): Promise<SubmissionsStats> {
       pending: res.data?.pending ?? 0,
     };
   } catch {
-    return { total: 0, analyzed: 0, pending: 0 };
+    // Fallback: calculate stats from all submissions
+    try {
+      const res = await apiRequest<{ content?: any[] }>('/api/submits/all', 'GET');
+      const submissions = Array.isArray(res.data?.content) ? res.data?.content : [];
+      const analyzed = submissions.filter(s => s.adminRating != null).length;
+      const pending = submissions.filter(s => s.adminRating == null).length;
+      return {
+        total: submissions.length,
+        analyzed,
+        pending,
+      };
+    } catch {
+      return { total: 0, analyzed: 0, pending: 0 };
+    }
   }
 }

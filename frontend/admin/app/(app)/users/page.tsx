@@ -54,7 +54,7 @@ export default function UsersPage() {
   };
 
   const handleModalClose = () => {
-    setIsModalOpen(false);
+      setIsModalOpen(false);
     setSelectedUser(null);
   };
 

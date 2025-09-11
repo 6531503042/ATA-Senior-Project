@@ -1,16 +1,17 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Card, CardBody, CardHeader, Button } from '@heroui/react';
-import { PlusIcon, FileText, CheckCircleIcon, TrendingUpIcon } from 'lucide-react';
+import { Card, CardBody, CardHeader, Button, Chip, Progress, Spinner } from '@heroui/react';
+import { PlusIcon, FileText, CheckCircleIcon, TrendingUpIcon, ChevronLeft, ChevronRight, BarChart3, Download, Zap, Eye } from 'lucide-react';
 
 import FeedbackSelector from './_components/FeedbackSelector';
 import SubmissionList from './_components/SubmissionList';
 import DetailsPanel from './_components/DetailsPanel';
 import Header from './_components/Header';
+import FeedbackAnalysisSummary from './_components/FeedbackAnalysisSummary';
 
 import { PageHeader } from '@/components/ui/page-header';
-import { useSubmissions } from '@/hooks/useSubmissions';
+import { useSubmissions, calculateOverallSentiment } from '@/hooks/useSubmissions';
 import { apiRequest } from '@/utils/api';
 import type { SubmitDto } from '@/types/submission';
 
@@ -112,6 +113,99 @@ export default function SubmissionsPage() {
     return submissionItems.find(item => String(item.id) === selectedSubmissionId) || null;
   }, [submissionItems, selectedSubmissionId]);
 
+  // Navigation between submissions
+  const currentSubmissionIndex = useMemo(() => {
+    if (!selectedSubmissionId || submissionItems.length === 0) return -1;
+    return submissionItems.findIndex(item => String(item.id) === selectedSubmissionId);
+  }, [submissionItems, selectedSubmissionId]);
+
+  const goToNextSubmission = () => {
+    if (currentSubmissionIndex < submissionItems.length - 1) {
+      const nextSubmission = submissionItems[currentSubmissionIndex + 1];
+      setSelectedSubmissionId(String(nextSubmission.id));
+    }
+  };
+
+  const goToPreviousSubmission = () => {
+    if (currentSubmissionIndex > 0) {
+      const prevSubmission = submissionItems[currentSubmissionIndex - 1];
+      setSelectedSubmissionId(String(prevSubmission.id));
+    }
+  };
+
+  // Export functionality for research
+  const exportToCSV = async () => {
+    if (!selectedFeedbackId) {
+      alert('Please select a feedback first');
+      return;
+    }
+
+    try {
+      // Get all questions and submissions for the feedback
+      const [questionsRes, submissionsRes] = await Promise.all([
+        apiRequest<any>(`/api/feedbacks/${selectedFeedbackId}`, 'GET'),
+        apiRequest<any>(`/api/submits/feedback/${selectedFeedbackId}`, 'GET')
+      ]);
+
+      const questionIds: number[] = questionsRes.data?.questionIds || [];
+      const submissions = Array.isArray(submissionsRes.data?.content) ? submissionsRes.data.content : [];
+
+      // Get question details
+      const questions = await Promise.all(
+        questionIds.map(id =>
+          apiRequest<any>(`/api/questions/${id}`, 'GET')
+            .then(r => r.data)
+            .catch(() => ({ id, text: `Question #${id}` }))
+        )
+      );
+
+      // Create CSV data
+      const headers = [
+        'Submission ID',
+        'Submitted By',
+        'Privacy Level',
+        'Submitted At',
+        'Overall Comments',
+        ...questions.map(q => `Q${q.id}: ${q.text}`),
+        'Admin Rating',
+        'Admin Sentiment',
+        'Admin Notes'
+      ];
+
+      const rows = submissions.map((submission: any) => [
+        submission.id,
+        submission.submittedBy || 'Anonymous',
+        submission.privacyLevel,
+        new Date(submission.submittedAt).toLocaleString(),
+        submission.overallComments || '',
+        ...questions.map(q => submission.responses?.[q.id] || ''),
+        '', // Admin Rating - to be filled
+        '', // Admin Sentiment - to be filled  
+        ''  // Admin Notes - to be filled
+      ]);
+
+      // Convert to CSV
+      const csvContent = [headers, ...rows]
+        .map(row => row.map((field: any) => `"${String(field).replace(/"/g, '""')}"`).join(','))
+        .join('\n');
+
+      // Download
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `submissions_${selectedFeedbackId}_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+    } catch (error) {
+      console.error('Export failed:', error);
+      alert('Export failed. Please try again.');
+    }
+  };
+
   // Enhanced stats calculation
   const enhancedStats = useMemo(() => {
     const total = allItems.length;
@@ -181,63 +275,124 @@ export default function SubmissionsPage() {
   return (
     <>
       <PageHeader
+        title="Submissions Management" 
         description="Review and analyze feedback submissions"
         icon={<FileText />}
       />
 
       <div className="space-y-8">
-        {/* Header Section */}
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 p-6 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-2xl border border-blue-100 shadow-lg">
-          <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Submissions Analytics
-            </h1>
-            <p className="text-default-600 mt-1">
-              Comprehensive feedback analysis and insights dashboard
-            </p>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Button
-              className="w-full sm:w-auto font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-300"
-              color="primary"
-              startContent={<PlusIcon className="w-4 h-4" />}
-              variant="shadow"
-              onPress={() => refresh()}
-            >
-              Refresh Data
-            </Button>
+        {/* Modern Header Section */}
+        <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 rounded-3xl p-8 shadow-2xl">
+          {/* Background Pattern */}
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20"></div>
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg width=%2260%22 height=%2260%22 viewBox=%220 0 60 60%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cg fill=%22none%22 fill-rule=%22evenodd%22%3E%3Cg fill=%22%239C92AC%22 fill-opacity=%220.1%22%3E%3Ccircle cx=%227%22 cy=%227%22 r=%223%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-30"></div>
+          
+          <div className="relative z-10 flex flex-col lg:flex-row lg:justify-between lg:items-center gap-6">
+            <div className="flex items-center gap-6">
+              <div className="p-4 bg-white/10 backdrop-blur-sm rounded-2xl">
+                <BarChart3 className="w-8 h-8 text-white" />
+              </div>
+              <div>
+                <h1 className="text-4xl lg:text-5xl font-bold text-white mb-2">
+                  Submissions
+                </h1>
+                <p className="text-white/80 text-lg">
+                  Advanced feedback analysis dashboard
+                </p>
+                <div className="flex items-center gap-4 mt-3">
+                  <Chip
+                    startContent={<Zap className="w-3 h-3" />}
+                    className="bg-green-500/20 text-green-300 border-green-400/30"
+                    variant="bordered"
+                    size="sm"
+                  >
+                    Live Analytics
+                  </Chip>
+                  <Chip
+                    startContent={<Eye className="w-3 h-3" />}
+                    className="bg-blue-500/20 text-blue-300 border-blue-400/30"
+                    variant="bordered"
+                    size="sm"
+                  >
+                    Real-time Updates
+                  </Chip>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button
+                className="bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-300 font-medium"
+                startContent={<Download className="w-4 h-4" />}
+                onPress={exportToCSV}
+                radius="lg"
+              >
+                Export Data
+              </Button>
+              <Button
+                className="bg-gradient-to-r from-blue-500 to-purple-500 text-white border-0 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 font-medium"
+                startContent={loading ? <Spinner size="sm" color="white" /> : <PlusIcon className="w-4 h-4" />}
+                onPress={() => refresh()}
+                isLoading={loading}
+                radius="lg"
+              >
+                Refresh
+              </Button>
+            </div>
           </div>
         </div>
 
-        {/* Enhanced Stats Cards */}
+        {/* Modern Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
           {statsCards.map((stat, i) => (
             <Card
               key={i}
-              className="border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] bg-gradient-to-br from-white to-gray-50 overflow-hidden group cursor-pointer"
+              className="border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-[1.05] hover:-translate-y-2 bg-white/80 backdrop-blur-sm overflow-hidden group cursor-pointer"
             >
               <CardBody className="p-6 relative">
+                {/* Animated background glow */}
                 <div
-                  className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300`}
+                  className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-0 group-hover:opacity-15 transition-all duration-500`}
                 />
-                <div className="flex items-center justify-between relative z-10">
-                  <div>
-                    <p className="text-sm font-medium text-default-500 mb-1">
-                      {stat.title}
-                    </p>
-                    <p className="text-3xl font-bold text-default-900">
-                      {stat.value}
-                    </p>
-                    <p className="text-xs text-default-400 mt-1">
+                
+                {/* Shine effect */}
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 transform translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-1000"></div>
+                </div>
+                
+                <div className="flex items-start justify-between relative z-10">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div
+                        className={`p-2 rounded-xl bg-gradient-to-br ${stat.bgColor} text-white shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110 group-hover:rotate-12`}
+                      >
+                        <stat.icon className="w-5 h-5" />
+                      </div>
+                      <p className="text-sm font-semibold text-slate-600 group-hover:text-slate-700">
+                        {stat.title}
+        </p>
+      </div>
+
+                    <div className="mb-3">
+                      <p className="text-3xl font-bold text-slate-900 group-hover:scale-105 transition-transform duration-300">
+                        {stat.value}
+                      </p>
+                      <Progress
+                        value={65 + i * 10}
+                        className="mt-2"
+                        classNames={{
+                          indicator: `bg-gradient-to-r ${stat.gradient}`,
+                          track: "bg-slate-200/50"
+                        }}
+                        size="sm"
+                      />
+                    </div>
+                    
+                    <p className="text-xs text-slate-500 group-hover:text-slate-600 transition-colors duration-300">
                       {stat.description}
                     </p>
-                  </div>
-                  <div
-                    className={`p-4 rounded-2xl bg-gradient-to-br ${stat.bgColor} text-white shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110`}
-                  >
-                    <stat.icon className="w-6 h-6" />
-                  </div>
-                </div>
+        </div>
+      </div>
               </CardBody>
             </Card>
           ))}
@@ -246,10 +401,16 @@ export default function SubmissionsPage() {
         {/* Main Content - Left Panel / Right Panel Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 min-h-[600px]">
           {/* Left Panel - Feedback & Submission Selection */}
-          <div className="lg:col-span-1 space-y-4">
+          <div className="lg:col-span-1 space-y-6">
             {/* Feedback Selector */}
-            <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-blue-50/30 overflow-hidden">
-              <CardBody className="p-4">
+            <Card className="border-0 shadow-xl bg-white/70 backdrop-blur-sm overflow-hidden hover:shadow-2xl transition-all duration-300">
+              <CardBody className="p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg">
+                    <FileText className="w-4 h-4 text-white" />
+                  </div>
+                  <h3 className="font-semibold text-slate-700">Feedback Selection</h3>
+                </div>
                 <FeedbackSelector
                   options={feedbackOptions}
                   value={selectedFeedbackId || undefined}
@@ -269,16 +430,23 @@ export default function SubmissionsPage() {
               />
             )}
 
-            {/* Loading State for Submissions */}
+            {/* Modern Loading State for Submissions */}
             {submissionLoading && (
-              <Card className="border-0 shadow-lg">
-                <CardBody className="p-6 text-center">
-                  <div className="animate-pulse">
-                    <div className="w-12 h-12 bg-default-200 rounded-full mx-auto mb-3"></div>
-                    <div className="h-4 bg-default-200 rounded w-3/4 mx-auto mb-2"></div>
-                    <div className="h-3 bg-default-200 rounded w-1/2 mx-auto"></div>
+              <Card className="border-0 shadow-xl bg-white/70 backdrop-blur-sm">
+                <CardBody className="p-8 text-center">
+                  <div className="relative">
+                    <Spinner 
+                      size="lg" 
+                      color="primary"
+                      classNames={{
+                        circle1: "border-b-blue-500",
+                        circle2: "border-b-purple-500"
+                      }}
+                    />
+                    <div className="absolute inset-0 rounded-full border-2 border-blue-200 animate-ping"></div>
                   </div>
-                  <p className="text-default-500 text-sm mt-3">Loading submissions...</p>
+                  <p className="text-slate-600 font-medium mt-4">Loading submissions...</p>
+                  <p className="text-slate-400 text-sm">Analyzing feedback data</p>
                 </CardBody>
               </Card>
             )}
@@ -295,8 +463,180 @@ export default function SubmissionsPage() {
               />
             )}
 
+            {/* Modern Navigation Controls */}
+            {selectedSubmission && submissionItems.length > 1 && (
+              <Card className="border-0 shadow-xl bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 overflow-hidden">
+                <CardBody className="p-6">
+                  <div className="flex items-center justify-between">
+                    <Button
+                      size="md"
+                      className="bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 disabled:opacity-50 transition-all duration-300"
+                      startContent={<ChevronLeft className="w-4 h-4" />}
+                      onPress={goToPreviousSubmission}
+                      isDisabled={currentSubmissionIndex <= 0}
+                      radius="lg"
+                    >
+                      Previous
+                    </Button>
+                    
+                    <div className="text-center px-6">
+                      <div className="flex items-center gap-2 justify-center mb-2">
+                        <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+                        <p className="text-white font-semibold">
+                          {currentSubmissionIndex + 1} of {submissionItems.length}
+                        </p>
+                        <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
+                      </div>
+                      <Progress
+                        value={(currentSubmissionIndex + 1) / submissionItems.length * 100}
+                        className="max-w-[200px]"
+                        classNames={{
+                          indicator: "bg-gradient-to-r from-blue-400 to-purple-400",
+                          track: "bg-white/20"
+                        }}
+                        size="sm"
+                      />
+                      <p className="text-white/70 text-xs mt-2">
+                        Progress through submissions
+                      </p>
+                    </div>
+                    
+                    <Button
+                      size="md"
+                      className="bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 disabled:opacity-50 transition-all duration-300"
+                      endContent={<ChevronRight className="w-4 h-4" />}
+                      onPress={goToNextSubmission}
+                      isDisabled={currentSubmissionIndex >= submissionItems.length - 1}
+                      radius="lg"
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </CardBody>
+              </Card>
+            )}
+
+            {/* Overall Sentiment Analysis */}
+            {selectedFeedbackId && submissionItems.length > 0 && (() => {
+              const overall = calculateOverallSentiment(submissionItems as any);
+              const getSentimentColor = (sentiment: string) => {
+                switch (sentiment) {
+                  case 'positive': return 'from-emerald-500 to-green-500';
+                  case 'negative': return 'from-rose-500 to-red-500';
+                  default: return 'from-amber-500 to-orange-500';
+                }
+              };
+              
+              const getSentimentIcon = (sentiment: string) => {
+                switch (sentiment) {
+                  case 'positive': return '😊';
+                  case 'negative': return '😞';
+                  default: return '😐';
+                }
+              };
+
+              return (
+                <Card className="border-0 shadow-xl bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 overflow-hidden">
+                  <CardBody className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="p-3 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl shadow-lg">
+                          <BarChart3 className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                          <h4 className="text-lg font-bold text-white">Overall Sentiment</h4>
+                          <p className="text-white/70 text-sm">Feedback analysis summary</p>
+                        </div>
+                      </div>
+                      {overall.isComplete && (
+                        <Chip className="bg-green-500/20 text-green-300 border-green-400/30" variant="bordered" size="sm">
+                          ✅ Complete
+                        </Chip>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Sentiment Result */}
+                      <div className="p-4 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20">
+                        <div className="flex items-center gap-3 mb-2">
+                          <span className="text-2xl">{getSentimentIcon(overall.overallSentiment)}</span>
+                          <div>
+                            <p className="text-white font-semibold capitalize">{overall.overallSentiment} Sentiment</p>
+                            <p className="text-white/70 text-sm">Based on majority analysis</p>
+                          </div>
+                        </div>
+                        <div className={`w-full h-2 bg-gradient-to-r ${getSentimentColor(overall.overallSentiment)} rounded-full`}></div>
+                      </div>
+
+                      {/* Progress */}
+                      <div className="p-4 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20">
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-white font-semibold">Analysis Progress</p>
+                          <p className="text-white/70 text-sm">{Math.round(overall.completionRate)}%</p>
+                        </div>
+                        <Progress
+                          value={overall.completionRate}
+                          className="mb-2"
+                          classNames={{
+                            indicator: "bg-gradient-to-r from-blue-400 to-purple-400",
+                            track: "bg-white/20"
+                          }}
+                          size="sm"
+                        />
+                        <p className="text-white/70 text-xs">
+                          {submissionItems.filter(s => (s as any).adminSentiment).length} of {submissionItems.length} submissions analyzed
+                        </p>
+                      </div>
+                    </div>
+                  </CardBody>
+                </Card>
+              );
+            })()}
+
             {/* Submission Details Panel */}
-            <DetailsPanel item={selectedSubmission} />
+            <DetailsPanel 
+              item={selectedSubmission} 
+              onSentimentSaved={() => {
+                // Refresh all submissions data
+                refresh();
+                // Also refresh the current feedback submissions
+                if (selectedFeedbackId) {
+                  const loadSubmissions = async () => {
+                    try {
+                      const response = await apiRequest<any>(`/api/submits/feedback/${selectedFeedbackId}`, 'GET');
+                      const items = Array.isArray(response.data?.content) ? response.data.content : [];
+                      setSubmissionItems(items);
+                    } catch (error) {
+                      console.error('Failed to refresh submissions:', error);
+                    }
+                  };
+                  loadSubmissions();
+                }
+              }} 
+            />
+
+            {/* Feedback Analysis Summary */}
+            {selectedFeedbackId && submissionItems.length > 0 && (
+              <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-50 to-pink-50 overflow-hidden">
+                <CardHeader className="pb-4">
+                  <div className="w-full">
+                    <h3 className="text-lg font-bold text-default-900 flex items-center gap-2">
+                      <TrendingUpIcon className="w-5 h-5 text-purple-600" />
+                      Feedback Analysis Summary
+                    </h3>
+                    <p className="text-sm text-default-600">
+                      Overall insights and patterns from all submissions
+                    </p>
+                  </div>
+                </CardHeader>
+                <CardBody className="pt-0">
+                  <FeedbackAnalysisSummary 
+                    feedbackId={Number(selectedFeedbackId)}
+                    submissions={submissionItems}
+                  />
+                </CardBody>
+              </Card>
+            )}
 
             {/* Answers Section */}
             {selectedSubmission && selectedFeedbackId && (
@@ -310,7 +650,7 @@ export default function SubmissionsPage() {
                     <p className="text-sm text-default-600">
                       Detailed answers and feedback content
                     </p>
-                  </div>
+                </div>
                 </CardHeader>
                 <CardBody className="pt-0">
                   <AnswersDisplay 
@@ -321,18 +661,74 @@ export default function SubmissionsPage() {
               </Card>
             )}
 
-            {/* Empty State */}
+            {/* Research & HR Guide */}
             {!selectedFeedbackId && (
               <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-purple-50/30 overflow-hidden">
-                <CardBody className="p-12 text-center">
-                  <div className="max-w-md mx-auto">
-                    <FileText className="w-16 h-16 text-default-300 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold text-default-700 mb-2">
-                      Select a Feedback Survey
-                    </h3>
-                    <p className="text-default-500">
-                      Choose a feedback survey from the left panel to view its submissions and analyze responses.
-                    </p>
+                <CardBody className="p-8">
+                  <div className="max-w-2xl mx-auto">
+                    <div className="text-center mb-8">
+                      <FileText className="w-16 h-16 text-purple-500 mx-auto mb-4" />
+                      <h3 className="text-2xl font-semibold text-default-700 mb-2">
+                        Research & HR Analytics Platform
+                      </h3>
+                      <p className="text-default-600">
+                        Advanced feedback analysis system for research and human resources insights
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                      <div className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl">
+                        <h4 className="font-semibold text-blue-800 mb-2 flex items-center gap-2">
+                          <TrendingUpIcon className="w-4 h-4" />
+                          Research Features
+                        </h4>
+                        <ul className="text-sm text-blue-700 space-y-1">
+                          <li>• Quantitative & qualitative analysis</li>
+                          <li>• Sentiment analysis & trends</li>
+                          <li>• Statistical data export (CSV)</li>
+                          <li>• Response pattern recognition</li>
+                          <li>• Quality rating system</li>
+                        </ul>
+                      </div>
+
+                      <div className="p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-xl">
+                        <h4 className="font-semibold text-green-800 mb-2 flex items-center gap-2">
+                          <CheckCircleIcon className="w-4 h-4" />
+                          HR Applications
+                        </h4>
+                        <ul className="text-sm text-green-700 space-y-1">
+                          <li>• Employee satisfaction tracking</li>
+                          <li>• Team collaboration insights</li>
+                          <li>• Performance feedback analysis</li>
+                          <li>• Engagement metrics</li>
+                          <li>• Action item identification</li>
+                        </ul>
+                      </div>
+                    </div>
+
+                    <div className="bg-gradient-to-r from-purple-50 to-indigo-50 p-6 rounded-xl border border-purple-200">
+                      <h4 className="font-semibold text-purple-800 mb-3">How to Use:</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-purple-700">
+                        <div className="text-center">
+                          <div className="w-8 h-8 bg-purple-200 rounded-full flex items-center justify-center mx-auto mb-2 text-purple-800 font-bold">1</div>
+                          <p><strong>Select Feedback</strong><br />Choose a survey from the dropdown</p>
+                        </div>
+                        <div className="text-center">
+                          <div className="w-8 h-8 bg-purple-200 rounded-full flex items-center justify-center mx-auto mb-2 text-purple-800 font-bold">2</div>
+                          <p><strong>Analyze Submissions</strong><br />Rate quality & add insights</p>
+                        </div>
+                        <div className="text-center">
+                          <div className="w-8 h-8 bg-purple-200 rounded-full flex items-center justify-center mx-auto mb-2 text-purple-800 font-bold">3</div>
+                          <p><strong>Export Data</strong><br />Download CSV for research</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="text-center mt-6">
+                      <p className="text-sm text-default-500">
+                        Select a feedback survey from the left panel to begin analysis
+                      </p>
+                    </div>
                   </div>
                 </CardBody>
               </Card>
@@ -412,7 +808,7 @@ function AnswersDisplay({ feedbackId, submissionId }: { feedbackId: number; subm
             <div className="h-6 bg-default-100 rounded"></div>
           </div>
         ))}
-      </div>
+              </div>
     );
   }
 
@@ -420,7 +816,7 @@ function AnswersDisplay({ feedbackId, submissionId }: { feedbackId: number; subm
     return (
       <div className="text-center py-8">
         <p className="text-default-400">No responses found for this submission.</p>
-      </div>
+                </div>
     );
   }
 
@@ -443,7 +839,7 @@ function AnswersDisplay({ feedbackId, submissionId }: { feedbackId: number; subm
             )) : (
               <span className="text-default-400 text-sm italic">No selection</span>
             )}
-          </div>
+                </div>
         );
       }
       case 'BOOLEAN': {
@@ -459,7 +855,7 @@ function AnswersDisplay({ feedbackId, submissionId }: { feedbackId: number; subm
             >
               {isYes ? '✅ Yes' : '❌ No'}
             </span>
-          </div>
+              </div>
         );
       }
       case 'RATING': {

@@ -61,12 +61,32 @@ export async function apiRequest<T>(
       };
     }
 
-    const data = await response.json();
+    let data = null;
+    const contentType = response.headers.get('content-type');
+    
+    // Only try to parse JSON if there's content and it's JSON
+    if (contentType && contentType.includes('application/json')) {
+      const text = await response.text();
+      if (text.trim()) {
+        try {
+          data = JSON.parse(text);
+        } catch (e) {
+          console.warn("Failed to parse JSON response:", text);
+          data = null;
+        }
+      }
+    } else {
+      // For non-JSON responses, just get the text
+      const text = await response.text();
+      if (text.trim()) {
+        data = { message: text };
+      }
+    }
 
     console.log("Response data:", data);
 
     if (!response.ok) {
-      const errorMessage = data.message || `HTTP error! status: ${response.status}`;
+      const errorMessage = data?.message || `HTTP error! status: ${response.status}`;
 
       console.error("API Error:", { status: response.status, message: errorMessage, data });
       throw new Error(errorMessage);
@@ -74,8 +94,8 @@ export async function apiRequest<T>(
 
     return {
       statusCode: response.status,
-      message: data.message || "Success",
-      data: data.data || data,
+      message: data?.message || "Success",
+      data: data?.data || data,
     };
   } catch (error) {
     console.error("Request error:", error);
@@ -140,12 +160,32 @@ export async function apiGolangRequest<T>(
       };
     }
 
-    const data = await response.json();
+    let data = null;
+    const contentType = response.headers.get('content-type');
+    
+    // Only try to parse JSON if there's content and it's JSON
+    if (contentType && contentType.includes('application/json')) {
+      const text = await response.text();
+      if (text.trim()) {
+        try {
+          data = JSON.parse(text);
+        } catch (e) {
+          console.warn("Failed to parse JSON response:", text);
+          data = null;
+        }
+      }
+    } else {
+      // For non-JSON responses, just get the text
+      const text = await response.text();
+      if (text.trim()) {
+        data = { message: text };
+      }
+    }
 
     console.log("Response data:", data);
 
     if (!response.ok) {
-      const errorMessage = data.message || `HTTP error! status: ${response.status}`;
+      const errorMessage = data?.message || `HTTP error! status: ${response.status}`;
 
       console.error("API Error:", { status: response.status, message: errorMessage, data });
       throw new Error(errorMessage);
@@ -153,8 +193,8 @@ export async function apiGolangRequest<T>(
 
     return {
       statusCode: response.status,
-      message: data.message || "Success",
-      data: data.data || data,
+      message: data?.message || "Success",
+      data: data?.data || data,
     };
   } catch (error) {
     console.error("Request error:", error);
