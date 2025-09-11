@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { memo, useCallback, useMemo, useState } from 'react';
 import { ChevronDown, Check, MessageSquare } from 'lucide-react';
 
 type FeedbackOption = { id: string; title: string };
@@ -13,7 +13,7 @@ type Props = {
   placeholder?: string;
 };
 
-export default function FeedbackSelector({ 
+function FeedbackSelector({ 
   options, 
   value, 
   onChange,
@@ -21,13 +21,12 @@ export default function FeedbackSelector({
   placeholder = "Select feedback"
 }: Props) {
   const [isOpen, setIsOpen] = useState(false);
-  
-  const selectedOption = options.find(opt => opt.id === value);
+  const selectedOption = useMemo(() => options.find(opt => opt.id === value), [options, value]);
 
-  const handleSelect = (option: FeedbackOption) => {
+  const handleSelect = useCallback((option: FeedbackOption) => {
     onChange(option.id);
     setIsOpen(false);
-  };
+  }, [onChange]);
 
   return (
     <div className="relative w-full">
@@ -116,3 +115,5 @@ export default function FeedbackSelector({
     </div>
   );
 }
+
+export default memo(FeedbackSelector);

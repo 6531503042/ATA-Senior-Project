@@ -1,6 +1,7 @@
 'use client';
 
 import { Pagination } from '@heroui/react';
+import { memo, useMemo } from 'react';
 
 type Props = {
   page: number;
@@ -9,13 +10,13 @@ type Props = {
   onPageChange: (p: number) => void;
 };
 
-export default function BottomContent({
+function BottomContent({
   page,
   rowsPerPage,
   total,
   onPageChange,
 }: Props) {
-  const pages = Math.max(1, Math.ceil(total / rowsPerPage));
+  const pages = useMemo(() => Math.max(1, Math.ceil(total / rowsPerPage)), [total, rowsPerPage]);
 
   return (
     <div className="flex w-full items-center justify-center py-3">
@@ -29,3 +30,5 @@ export default function BottomContent({
     </div>
   );
 }
+
+export default memo(BottomContent);
