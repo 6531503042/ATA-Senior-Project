@@ -197,31 +197,29 @@ export function DashboardStats({ loading = false }: DashboardStatsProps) {
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {statsConfig.map((stat, index) => (
         <Link key={index} href={stat.href}>
-          <Card className="shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
-            <CardBody className="p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className={`p-3 rounded-lg bg-gradient-to-r ${stat.gradient}`}>
-                    <stat.icon className="w-6 h-6 text-white" />
+          <Card className="border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] bg-gradient-to-br from-white to-gray-50 overflow-hidden group cursor-pointer">
+            <CardBody className="p-6 relative">
+              {/* subtle overlay on hover to add depth */}
+              <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
+              <div className="flex items-center justify-between relative z-10">
+                <div className="flex items-center gap-4">
+                  <div className={`p-4 rounded-2xl bg-gradient-to-br ${stat.gradient} text-white shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110`}>
+                    <stat.icon className="w-6 h-6" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                    <p className={`text-2xl font-bold ${stat.textColor}`}>
+                    <p className="text-sm font-medium text-default-500">{stat.title}</p>
+                    <p className={`text-3xl font-bold ${stat.textColor.replace('text-', 'text-')}`}>
                       {stat.value.toLocaleString()}
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center gap-2">
                   {stat.trendUp ? (
                     <ArrowUpRight className="w-4 h-4 text-green-500" />
                   ) : (
                     <ArrowDownRight className="w-4 h-4 text-red-500" />
                   )}
-                  <span
-                    className={`text-sm font-medium ${
-                      stat.trendUp ? 'text-green-600' : 'text-red-600'
-                    }`}
-                  >
+                  <span className={`text-sm font-medium ${stat.trendUp ? 'text-green-600' : 'text-red-600'}`}>
                     {stat.trend}
                   </span>
                 </div>

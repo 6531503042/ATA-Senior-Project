@@ -155,6 +155,31 @@ export default function DashboardPage() {
       </div>
 
       <main className="py-4 sm:py-6 lg:py-8">
+        {/* Gradient Banner */}
+        <section className="relative overflow-hidden flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 p-6 rounded-2xl border border-white/10 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 shadow-2xl mb-6">
+          <div className="relative z-10 flex items-center gap-6">
+            <div className="p-4 bg-white/10 backdrop-blur-sm rounded-2xl">
+              <LayoutDashboard className="w-8 h-8 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl sm:text-4xl font-bold text-white">Dashboard</h1>
+              <p className="text-white/70 mt-1">System overview, quick actions and recent activity</p>
+            </div>
+          </div>
+          <div className="relative z-10 flex flex-col sm:flex-row gap-3">
+            <Button
+              className="w-full sm:w-auto font-semibold bg-white/10 hover:bg-white/20 text-white border-white/20"
+              color="default"
+              startContent={<RefreshCw className="w-4 h-4" />}
+              variant="bordered"
+              onPress={handleRefresh}
+              isLoading={loading || dashboardLoading}
+            >
+              Refresh
+            </Button>
+          </div>
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(255,255,255,0.12),_transparent_60%)]" />
+        </section>
         {/* Quick Stats Section */}
         <section className="mb-4 sm:mb-6">
           <DashboardStats loading={dashboardLoading} />
@@ -204,6 +229,7 @@ export default function DashboardPage() {
               colors="purple-100"
               icon={<TrendingUp className="w-4 h-4" />}
               label="Performance Metrics"
+              defaultOpen={true}
             >
               <div className="w-full min-w-0">
                 <DashboardMetrics

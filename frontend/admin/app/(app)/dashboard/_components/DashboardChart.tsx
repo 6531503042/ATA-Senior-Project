@@ -56,9 +56,7 @@ export function DashboardChart({ data, loading = false }: DashboardChartProps) {
               <h3 className="text-lg font-semibold text-gray-900">
                 Analytics Overview
               </h3>
-              <p className="text-sm text-gray-600">
-                Performance metrics over time
-              </p>
+              <p className="text-sm text-gray-600">Performance metrics over time</p>
             </div>
           </div>
           <div className="flex items-center gap-2 text-green-600">
@@ -69,16 +67,14 @@ export function DashboardChart({ data, loading = false }: DashboardChartProps) {
       </CardHeader>
       <CardBody className="pt-0">
         {data && data.labels && data.datasets && data.datasets.length > 0 ? (
-          <div className="space-y-4">
+          <div className="space-y-6">
             {/* Simple Bar Chart */}
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <h4 className="font-medium text-gray-700">
-                  {data.datasets[0]?.label || 'Data'}
-                </h4>
-                <span className="text-sm text-gray-500">Last 7 days</span>
+                <h4 className="font-semibold text-default-800">{data.datasets[0]?.label || 'Data'}</h4>
+                <span className="text-sm text-default-500">Last 7 days</span>
               </div>
-              <div className="grid grid-cols-7 gap-2 items-end h-40">
+              <div className="grid grid-cols-7 gap-3 items-end h-44">
                 {data.labels.map((label, index) => {
                   const value = data.datasets[0]?.data[index] || 0;
                   const percentage =
@@ -90,11 +86,11 @@ export function DashboardChart({ data, loading = false }: DashboardChartProps) {
                       className="flex flex-col items-center justify-end h-full"
                     >
                       <div
-                        className="w-8 rounded-t-lg bg-gradient-to-t from-blue-600 to-blue-400"
+                        className="w-8 rounded-t-xl bg-gradient-to-t from-blue-600 to-blue-400 shadow-md"
                         style={{ height: `${percentage}%` }}
                         title={`${label}: ${value}`}
                       />
-                      <span className="mt-2 text-xs text-gray-600">
+                      <span className="mt-2 text-xs text-default-500">
                         {label}
                       </span>
                     </div>
@@ -104,27 +100,27 @@ export function DashboardChart({ data, loading = false }: DashboardChartProps) {
             </div>
 
             {/* Summary Stats */}
-            <div className="grid grid-cols-3 gap-4 pt-4">
-              <div className="text-center p-4 bg-blue-50 rounded-lg">
+            <div className="grid grid-cols-3 gap-4 pt-2">
+              <div className="text-center p-4 bg-blue-50 rounded-xl border border-blue-100">
                 <div className="text-2xl font-bold text-blue-600">
                   {data.datasets[0]?.data.reduce((a, b) => a + b, 0) || 0}
                 </div>
-                <div className="text-sm text-blue-600">Total</div>
+                <div className="text-xs text-blue-600">Total</div>
               </div>
-              <div className="text-center p-4 bg-green-50 rounded-lg">
+              <div className="text-center p-4 bg-green-50 rounded-xl border border-green-100">
                 <div className="text-2xl font-bold text-green-600">
                   {Math.max(...(data.datasets[0]?.data || [0]))}
                 </div>
-                <div className="text-sm text-green-600">Peak</div>
+                <div className="text-xs text-green-600">Peak</div>
               </div>
-              <div className="text-center p-4 bg-purple-50 rounded-lg">
+              <div className="text-center p-4 bg-purple-50 rounded-xl border border-purple-100">
                 <div className="text-2xl font-bold text-purple-600">
                   {Math.round(
                     (data.datasets[0]?.data.reduce((a, b) => a + b, 0) || 0) /
                       (data.datasets[0]?.data.length || 1),
                   )}
                 </div>
-                <div className="text-sm text-purple-600">Average</div>
+                <div className="text-xs text-purple-600">Average</div>
               </div>
             </div>
           </div>
