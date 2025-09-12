@@ -75,7 +75,7 @@ export function DashboardOverview({
   ];
 
   return (
-    <Card className="shadow-sm">
+    <Card className="shadow-sm w-full overflow-visible">
       <CardHeader className="pb-4">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-blue-100 rounded-lg">
@@ -89,7 +89,7 @@ export function DashboardOverview({
           </div>
         </div>
       </CardHeader>
-      <CardBody className="pt-0">
+      <CardBody className="pt-0 overflow-visible">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {metrics.map((metric, index) => {
             const isPositiveTrend = metric.growth.startsWith('+');

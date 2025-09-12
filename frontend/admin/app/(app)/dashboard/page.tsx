@@ -125,36 +125,31 @@ export default function DashboardPage() {
 
   return (
     <div className="w-full">
-      {/* Sticky page header on mobile for quick actions */}
-      <div className="sticky top-0 z-30 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-default-100">
-        <div className="px-0">
-          <PageHeader
-            description="System overview — quickly access key modules, recent activity, and statistics."
-            icon={<LayoutDashboard />}
-            right={
-              <div className="flex items-center gap-2">
-                {/* Compact refresh on xs, full on sm+ */}
-                <Button
-                  color="primary"
-                  isLoading={loading || dashboardLoading}
-                  size="sm"
-                  variant="flat"
-                  onPress={handleRefresh}
-                  aria-label="Refresh dashboard"
-                  className="min-w-0"
-                  startContent={
-                    <RefreshCw size={16} className="shrink-0" />
-                  }
-                >
-                  <span className="hidden xs:inline">Refresh</span>
-                </Button>
-              </div>
-            }
-          />
-        </div>
-      </div>
+      <PageHeader
+        description="System overview — quickly access key modules, recent activity, and statistics."
+        icon={<LayoutDashboard />}
+        right={
+          <div className="flex items-center gap-2">
+            {/* Compact refresh on xs, full on sm+ */}
+            <Button
+              color="primary"
+              isLoading={loading || dashboardLoading}
+              size="sm"
+              variant="flat"
+              onPress={handleRefresh}
+              aria-label="Refresh dashboard"
+              className="min-w-0"
+              startContent={
+                <RefreshCw size={16} className="shrink-0" />
+              }
+            >
+              <span className="hidden xs:inline">Refresh</span>
+            </Button>
+          </div>
+        }
+      />
 
-      <main className="py-4 sm:py-6 lg:py-8">
+      <div className="space-y-8">
         {/* Gradient Banner */}
         <section className="relative overflow-hidden flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 p-6 rounded-2xl border border-white/10 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 shadow-2xl mb-6">
           <div className="relative z-10 flex items-center gap-6">
@@ -215,8 +210,7 @@ export default function DashboardPage() {
               icon={<TrendingUp className="w-4 h-4" />}
               label="Analytics Chart"
             >
-              {/* Responsive height for charts */}
-              <div className="w-full min-w-0 h-64 sm:h-72 md:h-80 lg:h-96">
+              <div className="w-full min-w-0">
                 <DashboardChart
                   data={dashboard?.chartData || null}
                   loading={dashboardLoading}
@@ -322,7 +316,7 @@ export default function DashboardPage() {
             </CardBody>
           </Card>
         )}
-      </main>
+      </div>
     </div>
   );
 }

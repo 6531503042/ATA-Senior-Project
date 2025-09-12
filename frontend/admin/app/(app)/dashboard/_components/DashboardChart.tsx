@@ -45,7 +45,7 @@ export function DashboardChart({ data, loading = false }: DashboardChartProps) {
   const maxValue = Math.max(...(data.datasets[0]?.data || [0]));
 
   return (
-    <Card className="shadow-lg border-0 rounded-2xl h-full">
+    <Card className="shadow-lg border-0 rounded-2xl w-full overflow-visible">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-3">
@@ -65,7 +65,7 @@ export function DashboardChart({ data, loading = false }: DashboardChartProps) {
           </div>
         </div>
       </CardHeader>
-      <CardBody className="pt-0">
+      <CardBody className="pt-0 overflow-visible">
         {data && data.labels && data.datasets && data.datasets.length > 0 ? (
           <div className="space-y-6">
             {/* Simple Bar Chart */}

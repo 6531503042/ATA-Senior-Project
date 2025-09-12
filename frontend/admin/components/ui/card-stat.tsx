@@ -78,8 +78,8 @@ export function CardStat({
       </CardHeader>
 
       {(isOpen || !isClosable) && (
-        <div className="overflow-hidden">
-          <CardBody className="flex flex-col items-center justify-center px-4 pt-4 pb-4">
+        <div className="overflow-visible">
+          <CardBody className="flex flex-col items-center justify-center px-4 pt-4 pb-4 overflow-visible">
             {children}
           </CardBody>
         </div>
