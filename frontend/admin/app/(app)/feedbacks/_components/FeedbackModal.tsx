@@ -6,9 +6,9 @@ import type { Question } from '@/types/question';
 import type { Department } from '@/types/department';
 import type { User } from '@/types/user';
 
-import { Button, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Select, SelectItem, Switch, Textarea, Chip, Checkbox } from '@heroui/react';
+import { Button, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Select, SelectItem, Switch, Textarea, Chip, Checkbox, Tooltip } from '@heroui/react';
 import { useState, useEffect, useMemo } from 'react';
-import { MessageSquare, Calendar, Users, Building, FileText, Clock, Eye, EyeOff, Search } from 'lucide-react';
+import { MessageSquare, Calendar, Users, Building, FileText, Clock, Eye, EyeOff, Search, Shield, Building2 } from 'lucide-react';
 import { useQuestionMeta } from '@/hooks/useQuestionMeta';
 
 type FeedbackModalProps = {
@@ -47,6 +47,7 @@ export default function FeedbackModal({
   const [selectedDepartmentId, setSelectedDepartmentId] = useState<string>('');
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   const [selectedDepartmentIds, setSelectedDepartmentIds] = useState<string[]>([]);
+  const [statusChoice, setStatusChoice] = useState<'ACTIVE' | 'DRAFT'>('DRAFT');
 
   useEffect(() => {
     if (feedback) {
@@ -61,6 +62,7 @@ export default function FeedbackModal({
       setSelectedDepartmentId(feedback.departmentId);
       setSelectedUserIds(feedback.targetUserIds?.map(id => id.toString()) || []);
       setSelectedDepartmentIds(feedback.targetDepartmentIds || []);
+      setStatusChoice((feedback.status as any) === 'ACTIVE' ? 'ACTIVE' : 'DRAFT');
     } else {
       setTitle('');
       setDescription('');
@@ -74,6 +76,7 @@ export default function FeedbackModal({
       setSelectedDepartmentId('');
       setSelectedUserIds([]);
       setSelectedDepartmentIds([]);
+      setStatusChoice('DRAFT');
     }
   }, [isOpen, feedback]);
 
@@ -124,6 +127,7 @@ export default function FeedbackModal({
       formData.append('allowAnonymous', allowAnonymous.toString());
       formData.append('isDepartmentWide', isDepartmentWide.toString());
       formData.append('departmentId', selectedDepartmentId);
+      formData.append('active', (statusChoice === 'ACTIVE').toString());
       selectedUserIds.forEach(userId => formData.append('targetUserIds', userId));
       selectedDepartmentIds.forEach(deptId => formData.append('targetDepartmentIds', deptId));
       await onSubmit(formData, mode);
@@ -184,8 +188,46 @@ export default function FeedbackModal({
               </p>
             </div>
           </div>
+          {/* Quick status chips */}
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Chip size="sm" variant="flat" color={visibilityStatus.color as any} radius="full">
+              {visibilityStatus.text}
+            </Chip>
+            <Chip size="sm" variant="flat" color={allowAnonymous ? 'success' : 'default'} radius="full" startContent={allowAnonymous ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" /> }>
+              {allowAnonymous ? 'Anonymous ON' : 'Anonymous OFF'}
+            </Chip>
+            <Chip size="sm" variant="flat" color={isDepartmentWide ? 'secondary' : 'default'} radius="full" startContent={<Building2 className="w-3 h-3" /> }>
+              {isDepartmentWide ? 'Department-wide' : 'Project-specific'}
+            </Chip>
+          </div>
         </ModalHeader>
         <ModalBody className="space-y-6">
+          {/* Status */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+              <Shield className="w-4 h-4" />
+              Status
+            </h3>
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant={statusChoice === 'ACTIVE' ? 'solid' : 'bordered'}
+                color="success"
+                onPress={() => setStatusChoice('ACTIVE')}
+              >
+                Active
+              </Button>
+              <Button
+                size="sm"
+                variant={statusChoice === 'DRAFT' ? 'solid' : 'bordered'}
+                color="default"
+                onPress={() => setStatusChoice('DRAFT')}
+              >
+                Draft
+              </Button>
+              <span className="text-xs text-default-500 ml-2">You can change status later from the list.</span>
+            </div>
+          </div>
           {/* Basic Information */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
@@ -210,13 +252,30 @@ export default function FeedbackModal({
                 {departments.map((dept) => (<SelectItem key={dept.id.toString()}>{dept.name}</SelectItem>))}
               </Select>
             </div>
-            <div className="flex items-center gap-4">
-              <Switch isSelected={isDepartmentWide} onValueChange={setIsDepartmentWide} size="sm" />
-              <span className="text-sm font-medium text-gray-700">Department-wide scope (overrides project-specific members)</span>
-            </div>
-            <div className="flex items-center gap-4">
-              <Switch isSelected={allowAnonymous} onValueChange={setAllowAnonymous} size="sm" />
-              <span className="text-sm font-medium text-gray-700">Allow anonymous responses</span>
+            {/* Friendly toggle buttons */}
+            <div className="flex flex-wrap items-center gap-3">
+              <Tooltip content="Department-wide scope overrides project members">
+                <Button
+                  variant={isDepartmentWide ? 'solid' : 'bordered'}
+                  color={isDepartmentWide ? 'secondary' : 'default'}
+                  startContent={<Building2 className="w-4 h-4" />}
+                  onPress={() => setIsDepartmentWide(v => !v)}
+                  size="sm"
+                >
+                  {isDepartmentWide ? 'Department-wide' : 'Project-specific'}
+                </Button>
+              </Tooltip>
+              <Tooltip content={allowAnonymous ? 'Anonymous responses enabled' : 'Anonymous responses disabled'}>
+                <Button
+                  variant={allowAnonymous ? 'solid' : 'bordered'}
+                  color={allowAnonymous ? 'success' : 'default'}
+                  startContent={allowAnonymous ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                  onPress={() => setAllowAnonymous(v => !v)}
+                  size="sm"
+                >
+                  {allowAnonymous ? 'Anonymous ON' : 'Anonymous OFF'}
+                </Button>
+              </Tooltip>
             </div>
           </div>
 
@@ -249,12 +308,16 @@ export default function FeedbackModal({
               <Input className="flex-1" placeholder="Search questions..." startContent={<Search className="w-4 h-4 text-gray-400" />} value={questionSearch} onValueChange={setQuestionSearch} variant="bordered" aria-label="Search questions in modal" />
               <span className="text-xs text-gray-500 whitespace-nowrap">{filteredQuestions.length} found</span>
             </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button size="sm" variant="light" onPress={() => setSelectedQuestions(filteredQuestions.map(q => q.id))}>Select all</Button>
+              <Button size="sm" variant="light" onPress={() => setSelectedQuestions([])}>Clear</Button>
+            </div>
             <div className="space-y-3">
               {filteredQuestions.map((question) => {
                 const s = typeStyle(question.type);
                 return (
-                  <div key={question.id} className="flex items-center gap-3 p-3 border rounded-lg">
-                    <Checkbox isSelected={selectedQuestions.includes(question.id)} onValueChange={() => handleQuestionToggle(question.id)} />
+                  <div key={question.id} className="flex items-center gap-3 p-3 border rounded-lg hover:bg-default-50 cursor-pointer" onClick={() => handleQuestionToggle(question.id)}>
+                    <Checkbox isSelected={selectedQuestions.includes(question.id)} onValueChange={() => handleQuestionToggle(question.id)} onClick={(e) => e.stopPropagation()} />
                     <div className="flex-1">
                       <p className="font-medium text-gray-900">{question.text}</p>
                       <div className="flex items-center gap-2 mt-1">
