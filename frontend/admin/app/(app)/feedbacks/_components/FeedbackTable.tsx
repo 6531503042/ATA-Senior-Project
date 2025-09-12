@@ -324,14 +324,14 @@ export default function FeedbackTable({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="w-full flex flex-col">
       <Table 
         aria-label="Feedback surveys table"
-        className="min-w-full"
         classNames={{
-          wrapper: "bg-transparent shadow-none",
+          wrapper: "min-w-full overflow-visible bg-transparent shadow-none",
+          table: "min-w-full",
           th: "bg-gray-50 text-gray-700 font-semibold text-sm border-b border-gray-200",
-          td: "border-b border-gray-100 group-hover:bg-gray-50 transition-colors",
+          td: "border-b border-gray-100 group-hover:bg-gray-50 transition-colors py-3",
           tr: "hover:bg-gray-50 transition-colors",
         }}
       >

@@ -18,6 +18,7 @@ import { useQuestions } from '@/hooks/useQuestions';
 import FeedbackModal from './_components/FeedbackModal';
 import FeedbackTable from './_components/FeedbackTable';
 import TopContent from './_components/TopContent';
+import BottomContent from './_components/BottomContent';
 import FeedbackDetailModal from './_components/FeedbackDetailModal';
 
 export default function FeedbacksPage() {
@@ -43,9 +44,10 @@ export default function FeedbacksPage() {
   const [selectedFeedback, setSelectedFeedback] = useState<Feedback | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [projectFilter, setProjectFilter] = useState<string>('all');
+  const [filterValue, setFilterValue] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState<string[]>([]);
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(10);
 
   // Calculate stats from feedbacks data
   const stats = {
@@ -92,16 +94,8 @@ export default function FeedbacksPage() {
   ];
 
   useEffect(() => {
-    const filters = {
-      search: searchTerm,
-        status: statusFilter !== 'all' ? statusFilter : undefined,
-      projectId: projectFilter !== 'all' ? parseInt(projectFilter) : undefined,
-      page: 1,
-      limit: 100,
-    };
-
-    fetchFeedbacks(filters);
-  }, [fetchFeedbacks, searchTerm, statusFilter, projectFilter]);
+    fetchFeedbacks();
+  }, [fetchFeedbacks]);
 
   const handleAddFeedback = () => {
     setSelectedFeedback(null);
@@ -139,14 +133,7 @@ export default function FeedbacksPage() {
       }
       handleModalClose();
       // Refresh feedbacks list
-      const filters = {
-        search: searchTerm,
-        status: statusFilter !== 'all' ? statusFilter : undefined,
-        projectId: projectFilter !== 'all' ? parseInt(projectFilter) : undefined,
-        page: 1,
-        limit: 100,
-      };
-      await fetchFeedbacks(filters);
+      await fetchFeedbacks();
     } catch (error) {
       console.error('Failed to submit feedback:', error);
     }
@@ -155,14 +142,7 @@ export default function FeedbacksPage() {
   const handleDeleteFeedback = async (id: number) => {
     try {
       await deleteFeedback(id);
-      const filters = {
-        search: searchTerm,
-        status: statusFilter !== 'all' ? statusFilter : undefined,
-        projectId: projectFilter !== 'all' ? parseInt(projectFilter) : undefined,
-        page: 1,
-        limit: 100,
-      };
-      await fetchFeedbacks(filters);
+      await fetchFeedbacks();
     } catch (error) {
       console.error('Failed to delete feedback:', error);
     }
@@ -171,14 +151,7 @@ export default function FeedbacksPage() {
   const handleStatusChange = async (id: number, newStatus: string) => {
     try {
       await updateFeedbackStatus(id, { status: newStatus as 'ACTIVE' | 'COMPLETED' | 'PENDING' | 'DRAFT' });
-      const filters = {
-        search: searchTerm,
-        status: statusFilter !== 'all' ? statusFilter : undefined,
-        projectId: projectFilter !== 'all' ? parseInt(projectFilter) : undefined,
-        page: 1,
-        limit: 100,
-      };
-      await fetchFeedbacks(filters);
+      await fetchFeedbacks();
     } catch (error) {
       console.error('Failed to update feedback status:', error);
     }
@@ -186,15 +159,19 @@ export default function FeedbacksPage() {
 
   const filteredFeedbacks = feedbacks.filter(feedback => {
     const matchesSearch =
-      feedback.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      feedback.description.toLowerCase().includes(searchTerm.toLowerCase());
+      feedback.title.toLowerCase().includes(filterValue.toLowerCase()) ||
+      feedback.description.toLowerCase().includes(filterValue.toLowerCase());
     const matchesStatus =
-      statusFilter === 'all' || feedback.status === statusFilter;
-    const matchesProject =
-      projectFilter === 'all' || feedback.projectId.toString() === projectFilter;
+      selectedStatus.length === 0 || selectedStatus.includes(feedback.status.toLowerCase());
 
-    return matchesSearch && matchesStatus && matchesProject;
+    return matchesSearch && matchesStatus;
   });
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredFeedbacks.length / pageSize);
+  const startIndex = (page - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const pagedFeedbacks = filteredFeedbacks.slice(startIndex, endIndex);
 
   return (
     <>
@@ -265,27 +242,16 @@ export default function FeedbacksPage() {
         <Card className="border-0 shadow-xl overflow-hidden">
           <CardBody className="p-6">
             <TopContent
-              searchTerm={searchTerm}
-              onSearchChange={setSearchTerm}
-              statusFilter={statusFilter}
-              onStatusFilterChange={setStatusFilter}
-              projectFilter={projectFilter}
-              onProjectFilterChange={setProjectFilter}
-              departmentFilter="all"
-              onDepartmentFilterChange={() => {}}
-              visibilityFilter="all"
-              onVisibilityFilterChange={() => {}}
-              projects={projects}
-              departments={[]}
-              onRefresh={() => {
-                const filters = {
-                  search: searchTerm,
-                  status: statusFilter !== 'all' ? statusFilter : undefined,
-                  projectId: projectFilter !== 'all' ? parseInt(projectFilter) : undefined,
-                  page: 1,
-                  limit: 100,
-                };
-                fetchFeedbacks(filters);
+              filterValue={filterValue}
+              onClear={() => setFilterValue('')}
+              onSearchChange={setFilterValue}
+              selectedStatus={selectedStatus}
+              onStatusChange={setSelectedStatus}
+              onRefresh={fetchFeedbacks}
+              onAdd={() => {
+                setModalMode('create');
+                setSelectedFeedback(null);
+                setIsModalOpen(true);
               }}
             />
           </CardBody>
@@ -322,7 +288,7 @@ export default function FeedbacksPage() {
               </div>
             ) : (
               <FeedbackTable
-                feedbacks={filteredFeedbacks}
+                feedbacks={pagedFeedbacks}
                 onView={handleViewFeedback}
                 onEdit={handleEditFeedback}
                 onDelete={handleDeleteFeedback}
@@ -335,6 +301,17 @@ export default function FeedbacksPage() {
                 <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-2" />
                 <p className="text-gray-600">No feedback surveys found</p>
               </div>
+            )}
+
+            {/* Pagination */}
+            {filteredFeedbacks.length > 0 && (
+              <BottomContent
+                page={page}
+                pages={totalPages}
+                setPage={setPage}
+                totalFeedbacks={filteredFeedbacks.length}
+                currentPage={page}
+              />
             )}
           </CardBody>
         </Card>

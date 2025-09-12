@@ -17,6 +17,7 @@ import { Users } from 'lucide-react';
 
 import DepartmentCellRenderer from './DepartmentCellRenderer';
 import TopContent from './TopContent';
+import BottomContent from './BottomContent';
 
 export type Department = {
   id: string;
@@ -107,9 +108,11 @@ export default function DepartmentsTable({
         );
         break;
       case 'createdAt':
-        sortedItems.sort(
-          (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime() * direction,
-        );
+        sortedItems.sort((a, b) => {
+          const aTime = new Date(a.createdAt).getTime();
+          const bTime = new Date(b.createdAt).getTime();
+          return (aTime - bTime) * direction;
+        });
         break;
       default:
         break;
@@ -152,10 +155,10 @@ export default function DepartmentsTable({
       switch (columnKey) {
         case 'name':
           return (
-            <div className="flex flex-col gap-1">
-              <p className="text-bold text-small capitalize text-default-900">{department.name}</p>
+            <div className="flex flex-col gap-0.5">
+              <p className="font-medium text-default-900">{department.name}</p>
               {department.description && (
-                <p className="text-default-500 text-xs leading-relaxed max-w-xs">
+                <p className="text-default-500 text-xs leading-snug max-w-md line-clamp-1">
                   {department.description}
                 </p>
               )}
@@ -164,14 +167,12 @@ export default function DepartmentsTable({
         case 'memberCount':
           return (
             <div className="flex items-center gap-2">
-              <div className="flex items-center justify-center w-8 h-8 bg-primary-50 rounded-full">
-                <Users className="w-4 h-4 text-primary-600" />
+              <div className="flex items-center justify-center w-6 h-6 bg-primary-50 rounded-full">
+                <Users className="w-3.5 h-3.5 text-primary-600" />
               </div>
               <div className="flex flex-col">
-                <span className="text-bold text-small text-default-900">
-                  {department.memberCount}
-                </span>
-                <span className="text-xs text-default-500">
+                <span className="text-default-900 text-sm">{department.memberCount}</span>
+                <span className="text-[11px] text-default-500">
                   {department.memberCount === 1 ? 'member' : 'members'}
                 </span>
               </div>
@@ -191,11 +192,11 @@ export default function DepartmentsTable({
           );
         case 'createdAt':
           return (
-            <div className="flex flex-col gap-1">
-              <p className="text-bold text-small text-default-900">
+            <div className="flex flex-col gap-0.5">
+              <p className="text-default-900 text-sm">
                 {new Date(department.createdAt).toLocaleDateString()}
               </p>
-              <p className="text-default-500 text-xs">
+              <p className="text-default-500 text-[11px]">
                 {new Date(department.createdAt).toLocaleTimeString()}
               </p>
             </div>
@@ -217,16 +218,15 @@ export default function DepartmentsTable({
   );
 
   return (
-    <div className="w-full h-[600px] flex flex-col">
+    <div className="w-full flex flex-col">
       <Table
         aria-label="Departments table with pagination"
-        isHeaderSticky
         classNames={{
-          wrapper: 'flex-1 overflow-auto',
-          table: 'h-full',
-          thead: 'bg-default-50 sticky top-0 z-10',
-          th: 'text-default-600 font-semibold text-sm uppercase tracking-wider',
-          td: 'py-4',
+          wrapper: 'min-w-full overflow-visible',
+          table: 'min-w-full',
+          thead: 'bg-default-50',
+          th: 'text-default-600 font-semibold text-xs uppercase tracking-wide py-2',
+          td: 'py-3',
           tr: 'hover:bg-default-50 transition-colors',
         }}
         sortDescriptor={sortDescriptor}
@@ -256,18 +256,13 @@ export default function DepartmentsTable({
         </TableBody>
       </Table>
       
-      {/* Fixed Pagination at Bottom */}
-      <div className="flex w-full justify-center py-4 border-t border-default-200 bg-white">
-        <Pagination
-          isCompact
-          showControls
-          showShadow
-          color="primary"
-          page={page}
-          total={pages}
-          onChange={setPage}
-        />
-      </div>
+      <BottomContent
+        page={page}
+        pages={pages}
+        setPage={setPage}
+        totalDepartments={departmentItems.length}
+        currentPage={page}
+      />
     </div>
   );
 }

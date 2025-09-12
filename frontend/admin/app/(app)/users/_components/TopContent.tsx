@@ -8,7 +8,12 @@ import {
   DropdownMenu,
   DropdownItem,
 } from '@heroui/react';
-import { SearchIcon, RefreshCwIcon, MoreVerticalIcon, FilterIcon, ChevronDownIcon, XIcon } from 'lucide-react';
+import {
+  SearchIcon,
+  RefreshCwIcon,
+  EllipsisVertical,
+  PlusIcon,
+} from 'lucide-react';
 import { useRoles } from '@/hooks/useRoles';
 
 type TopContentProps = {
@@ -46,192 +51,99 @@ export default function TopContent({
   }));
 
   const statusOptions = [
-    { key: true, label: 'Active' },
-    { key: false, label: 'Inactive' },
+    { key: 'active', label: 'Active' },
+    { key: 'inactive', label: 'Inactive' },
   ];
 
-  const hasActiveFilters = filterValue || selectedRole.length > 0 || selectedStatus.length > 0;
-
-  const clearAllFilters = () => {
-    onClear();
-    onRoleChange([]);
-    onStatusChange([]);
-  };
-
   return (
-    <div className="space-y-6">
-      {/* Search and Filter Section */}
-      <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-end">
-        {/* Search Input */}
-        <div className="flex-1 min-w-0">
+    <div className="flex flex-col gap-4">
+      <div className="flex w-full items-center justify-between gap-3 flex-wrap">
+        <div className="flex-1 min-w-[260px]">
           <Input
             isClearable
             className="w-full"
-            placeholder="Search users by name, email, or department..."
+            placeholder="Search users..."
             startContent={<SearchIcon className="w-4 h-4 text-default-400" />}
             value={filterValue}
+            variant="bordered"
             onClear={onClear}
             onValueChange={onSearchChange}
-            classNames={{
-              input: "text-sm",
-              inputWrapper: "h-12 bg-white border-2 border-default-200 hover:border-default-300 focus-within:border-primary-500 transition-colors duration-200",
-            }}
           />
         </div>
 
-        {/* Filter Buttons */}
-        <div className="flex flex-wrap gap-3">
-          {/* Role Filter */}
-          <Dropdown>
-            <DropdownTrigger>
-              <Button
-                endContent={<ChevronDownIcon className="w-4 h-4" />}
-                variant="flat"
-                startContent={<FilterIcon className="w-4 h-4" />}
-                className={`min-w-[140px] ${
-                  selectedRole.length > 0 
-                    ? 'bg-primary-100 text-primary-700 border-primary-300' 
-                    : 'bg-default-100 text-default-700'
-                }`}
-              >
-                Role
-                {selectedRole.length > 0 && (
-                  <span className="ml-2 px-2 py-1 bg-primary-500 text-white text-xs rounded-full">
-                    {selectedRole.length}
-                  </span>
-                )}
-              </Button>
-            </DropdownTrigger>
-            <DropdownMenu
-              aria-label="User roles"
-              selectionMode="multiple"
-              selectedKeys={selectedRole}
-              onSelectionChange={(keys) => onRoleChange(Array.from(keys) as string[])}
-              className="w-64"
-            >
-              {roleOptions.map((role) => (
-                <DropdownItem key={role.key} className="py-3">
-                  <div className="flex items-center gap-3 w-full">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center flex-shrink-0">
-                      <span className="text-sm">👤</span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium text-default-900">{role.label}</div>
-                      <div className="text-xs text-default-500">User role</div>
-                    </div>
-                  </div>
-                </DropdownItem>
-              ))}
-            </DropdownMenu>
-          </Dropdown>
+        <div className="flex items-end gap-3">
+          <Select
+            className="w-[180px]"
+            label="Role"
+            placeholder="All roles"
+            selectedKeys={selectedRole.length > 0 ? new Set(selectedRole) : new Set()}
+            selectionMode="multiple"
+            onSelectionChange={keys => {
+              const selected = Array.from(keys) as string[];
+              onRoleChange(selected);
+            }}
+          >
+            {roleOptions.map(role => (
+              <SelectItem key={role.key}>{role.label}</SelectItem>
+            ))}
+          </Select>
 
-          {/* Status Filter */}
-          <Dropdown>
-            <DropdownTrigger>
-              <Button
-                endContent={<ChevronDownIcon className="w-4 h-4" />}
-                variant="flat"
-                startContent={<FilterIcon className="w-4 h-4" />}
-                className={`min-w-[140px] ${
-                  selectedStatus.length > 0 
-                    ? 'bg-secondary-100 text-secondary-700 border-secondary-300' 
-                    : 'bg-default-100 text-default-700'
-                }`}
-              >
-                Status
-                {selectedStatus.length > 0 && (
-                  <span className="ml-2 px-2 py-1 bg-secondary-500 text-white text-xs rounded-full">
-                    {selectedStatus.length}
-                  </span>
-                )}
-              </Button>
-            </DropdownTrigger>
-            <DropdownMenu
-              aria-label="User status"
-              selectionMode="multiple"
-              selectedKeys={selectedStatus.map(s => s.toString())}
-              onSelectionChange={(keys) => {
-                const selected = Array.from(keys).map(k => k === 'true') as boolean[];
-                onStatusChange(selected);
-              }}
-            >
-              {statusOptions.map((status) => (
-                <DropdownItem key={status.key.toString()} className="py-3">
-                  <div className="flex items-center gap-3 w-full">
-                    <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${
-                      status.key ? 'from-green-50 to-emerald-50' : 'from-red-50 to-rose-50'
-                    } flex items-center justify-center flex-shrink-0`}>
-                      <span className="text-sm">{status.key ? '✅' : '❌'}</span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium text-default-900">{status.label}</div>
-                      <div className="text-xs text-default-500">User status</div>
-                    </div>
-                  </div>
-                </DropdownItem>
-              ))}
-            </DropdownMenu>
-          </Dropdown>
+          <Select
+            className="w-[180px]"
+            label="Status"
+            placeholder="All status"
+            selectedKeys={selectedStatus.length > 0 ? new Set(selectedStatus.map(s => s ? 'active' : 'inactive')) : new Set()}
+            selectionMode="multiple"
+            onSelectionChange={keys => {
+              const selected = Array.from(keys) as string[];
+              const statusArray = selected.map(s => s === 'active');
+              onStatusChange(statusArray);
+            }}
+          >
+            {statusOptions.map(status => (
+              <SelectItem key={status.key}>{status.label}</SelectItem>
+            ))}
+          </Select>
 
-          {/* Clear Filters */}
-          {hasActiveFilters && (
-            <Button
-              variant="flat"
-              color="default"
-              startContent={<XIcon className="w-4 h-4" />}
-              onPress={clearAllFilters}
-              className="bg-red-50 text-red-700 hover:bg-red-100 border-red-200"
-            >
-              Clear All
-            </Button>
-          )}
-
-          {/* Refresh Button */}
           <Button
-            variant="flat"
-            color="primary"
             startContent={<RefreshCwIcon className="w-4 h-4" />}
+            variant="bordered"
             onPress={onRefresh}
-            className="bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200"
           >
             Refresh
           </Button>
+
+          <Dropdown>
+            <DropdownTrigger>
+              <Button isIconOnly size="sm" variant="light">
+                <EllipsisVertical className="text-default-400" />
+              </Button>
+            </DropdownTrigger>
+            <DropdownMenu>
+              {onDeleteSelected ? (
+                <DropdownItem
+                  key="delete"
+                  className="text-danger"
+                  color="danger"
+                  onPress={onDeleteSelected}
+                >
+                  Delete Selected
+                </DropdownItem>
+              ) : null}
+            </DropdownMenu>
+          </Dropdown>
+
+          {onAdd ? (
+            <Button
+              color="primary"
+              startContent={<PlusIcon className="w-4 h-4" />}
+              onPress={onAdd}
+            >
+              Add User
+            </Button>
+          ) : null}
         </div>
       </div>
-
-      {/* Active Filters Display */}
-      {hasActiveFilters && (
-        <div className="flex flex-wrap gap-2 items-center">
-          <span className="text-sm font-medium text-default-600">Active filters:</span>
-          
-          {filterValue && (
-            <span className="px-3 py-1 bg-blue-100 text-blue-700 text-sm rounded-full">
-              Search: "{filterValue}"
-            </span>
-          )}
-          
-          {selectedRole.map((role) => {
-            const roleInfo = roleOptions.find(r => r.key === role);
-            return (
-              <span
-                key={role}
-                className="px-3 py-1 bg-purple-100 text-purple-700 text-sm rounded-full"
-              >
-                Role: {roleInfo?.label || role}
-              </span>
-            );
-          })}
-          
-          {selectedStatus.map((status) => (
-            <span
-              key={status.toString()}
-              className="px-3 py-1 bg-orange-100 text-orange-700 text-sm rounded-full"
-            >
-              Status: {status ? 'Active' : 'Inactive'}
-            </span>
-          ))}
-        </div>
-      )}
     </div>
   );
 }

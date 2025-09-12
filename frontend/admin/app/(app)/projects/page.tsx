@@ -10,8 +10,6 @@ import { PlusIcon, FolderIcon } from 'lucide-react';
 
 import ProjectModal from './_components/ProjectModal';
 import ProjectTable from './_components/ProjectTable';
-import TopContent from './_components/TopContent';
-import BottomContent from './_components/BottomContent';
 
 import { PageHeader } from '@/components/ui/page-header';
 import { useProjects } from '@/hooks/useProjects';
@@ -268,6 +266,7 @@ export default function ProjectsPage() {
                   id: proj.id.toString(),
                   name: proj.name,
                   description: proj.description,
+                  category: 'General', // Default category since Project type doesn't have category field
                   memberCount: proj.memberCount || 0,
                   status: proj.active ? 'active' as const : 'inactive' as const,
                   startDate: proj.startDate,
@@ -282,26 +281,7 @@ export default function ProjectsPage() {
                 onRefresh={fetchProjects}
               />
             )}
-            {/* Top content: search/filter (basic search wired) */}
-            <div className="mb-4">
-              <TopContent
-                filterValue={filterValue}
-                onClear={() => setFilterValue('')}
-                onSearchChange={setFilterValue}
-                selectedStatus={[]}
-                onStatusChange={() => {}}
-                onRefresh={fetchProjects}
-              />
-            </div>
           </CardBody>
-          {/* Bottom content: pagination */}
-          <BottomContent
-            page={currentPage}
-            pages={pages}
-            setPage={setPage}
-            totalProjects={filtered.length}
-            currentPage={currentPage}
-          />
         </Card>
       </div>
 

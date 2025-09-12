@@ -12,6 +12,7 @@ import { Key, useCallback, useMemo, useState } from 'react';
 
 import UserCellRenderer from './UserCellRenderer';
 import TopContent from './TopContent';
+import BottomContent from './BottomContent';
 
 import { User } from '@/types/user';
 
@@ -143,7 +144,7 @@ export default function UserTable({
   );
 
   return (
-    <div className="w-full h-[600px] flex flex-col">
+    <div className="w-full flex flex-col">
       <Table
         aria-label="Users Table"
         topContent={
@@ -160,11 +161,11 @@ export default function UserTable({
         }
         topContentPlacement="outside"
         classNames={{
-          wrapper: 'flex-1 overflow-auto',
-          table: 'h-full',
-          thead: 'bg-default-50 sticky top-0 z-10',
+          wrapper: 'min-w-full overflow-visible',
+          table: 'min-w-full',
+          thead: 'bg-default-50',
           th: 'text-default-600 font-semibold text-sm uppercase tracking-wider',
-          td: 'py-4',
+          td: 'py-3',
           tr: 'hover:bg-default-50 transition-colors',
         }}
         sortDescriptor={sortDescriptor}
@@ -193,18 +194,14 @@ export default function UserTable({
         </TableBody>
       </Table>
       
-      {/* Fixed Pagination at Bottom */}
-      <div className="flex w-full justify-center py-4 border-t border-default-200 bg-white">
-        <Pagination
-          isCompact
-          showControls
-          showShadow
-          color="primary"
-          page={page}
-          total={pages}
-          onChange={setPage}
-        />
-      </div>
+      {/* Pagination at Bottom */}
+      <BottomContent
+        page={page}
+        pages={pages}
+        setPage={setPage}
+        totalUsers={userItems.length}
+        currentPage={page}
+      />
     </div>
   );
 }

@@ -167,43 +167,33 @@ export default function QuestionTable({
   );
 
   return (
-    <Table
-      isHeaderSticky
-      aria-label="Questions Table"
-      bottomContent={
-        <BottomContent
-          currentPage={page}
-          page={page}
-          pages={pages}
-          setPage={setPage}
-          totalQuestions={filteredItems.length}
-        />
-      }
-      bottomContentPlacement="outside"
-      classNames={{
-        wrapper: 'shadow-none',
-        table: 'min-h-[400px]',
-        thead: 'bg-white sticky top-0 z-10 shadow-sm',
-        th: 'text-default-700 font-semibold text-xs uppercase tracking-wide',
-        tr: 'hover:bg-default-50 transition-colors',
-        td: 'py-4',
-      }}
-      sortDescriptor={sortDescriptor}
-      topContent={
-        <TopContent
-          filterValue={filterValue}
-          selectedCategory={selectedCategory}
-          selectedType={selectedType}
-          onCategoryChange={handleCategoryChange}
-          onClear={handleClear}
-          onRefresh={onRefresh || (() => {})}
-          onSearchChange={handleSearch}
-          onTypeChange={handleTypeChange}
-        />
-      }
-      topContentPlacement="outside"
-      onSortChange={setSortDescriptor}
-    >
+    <div className="w-full flex flex-col">
+      <Table
+        aria-label="Questions Table"
+        classNames={{
+          wrapper: 'min-w-full overflow-visible',
+          table: 'min-w-full',
+          thead: 'bg-default-50',
+          th: 'text-default-700 font-semibold text-xs uppercase tracking-wide',
+          tr: 'hover:bg-default-50 transition-colors',
+          td: 'py-3',
+        }}
+        sortDescriptor={sortDescriptor}
+        topContent={
+          <TopContent
+            filterValue={filterValue}
+            selectedCategory={selectedCategory}
+            selectedType={selectedType}
+            onCategoryChange={handleCategoryChange}
+            onClear={handleClear}
+            onRefresh={onRefresh || (() => {})}
+            onSearchChange={handleSearch}
+            onTypeChange={handleTypeChange}
+          />
+        }
+        topContentPlacement="outside"
+        onSortChange={setSortDescriptor}
+      >
       <TableHeader columns={COLUMNS}>
         {column => (
           <TableColumn
@@ -236,6 +226,16 @@ export default function QuestionTable({
           </TableRow>
         )}
       </TableBody>
-    </Table>
+      </Table>
+      
+      {/* Pagination at Bottom */}
+      <BottomContent
+        currentPage={page}
+        page={page}
+        pages={pages}
+        setPage={setPage}
+        totalQuestions={filteredItems.length}
+      />
+    </div>
   );
 }

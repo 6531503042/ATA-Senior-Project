@@ -15,11 +15,13 @@ import { Users, Calendar, Tag } from 'lucide-react';
 
 import ProjectCellRenderer from './ProjectCellRenderer';
 import TopContent from './TopContent';
+import BottomContent from './BottomContent';
 
 export type ProjectTableItem = {
   id: string;
   name: string;
   description: string;
+  category: string;
   memberCount: number;
   status: 'active' | 'inactive';
   startDate?: string;
@@ -265,23 +267,22 @@ export default function ProjectTable({
   );
 
   return (
-    <div className="w-full h-[600px] flex flex-col">
-    <Table
+    <div className="w-full flex flex-col">
+      <Table
         aria-label="Projects table with pagination"
-      isHeaderSticky
-      classNames={{
-          wrapper: 'flex-1 overflow-auto',
-          table: 'h-full',
-          thead: 'bg-default-50 sticky top-0 z-10',
+        classNames={{
+          wrapper: 'min-w-full overflow-visible',
+          table: 'min-w-full',
+          thead: 'bg-default-50',
           th: 'text-default-600 font-semibold text-sm uppercase tracking-wider',
-          td: 'py-4',
-        tr: 'hover:bg-default-50 transition-colors',
-      }}
-      sortDescriptor={sortDescriptor}
+          td: 'py-3',
+          tr: 'hover:bg-default-50 transition-colors',
+        }}
+        sortDescriptor={sortDescriptor}
         topContent={topContent}
-      topContentPlacement="outside"
+        topContentPlacement="outside"
         onSortChange={onSortChange}
-    >
+      >
       <TableHeader columns={COLUMNS}>
           {(column) => (
           <TableColumn
@@ -304,40 +305,14 @@ export default function ProjectTable({
       </TableBody>
     </Table>
 
-      {/* Fixed Pagination at Bottom */}
-      <div className="flex w-full justify-center py-4 border-t border-default-200 bg-white">
-        <div className="flex items-center gap-2">
-          <button
-            className="px-3 py-2 text-sm text-default-500 bg-default-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-default-200 transition-colors"
-            disabled={page === 1}
-            onClick={onPreviousPage}
-          >
-            Previous
-          </button>
-          <div className="flex items-center gap-1">
-            {Array.from({ length: pages }, (_, i) => (
-              <button
-                key={i + 1}
-                className={`px-3 py-2 text-sm rounded-lg transition-colors ${
-                  page === i + 1
-                    ? 'bg-primary text-white shadow-lg'
-                    : 'text-default-500 bg-default-100 hover:bg-default-200'
-                }`}
-                onClick={() => setPage(i + 1)}
-              >
-                {i + 1}
-              </button>
-            ))}
-          </div>
-          <button
-            className="px-3 py-2 text-sm text-default-500 bg-default-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-default-200 transition-colors"
-            disabled={page === pages}
-            onClick={onNextPage}
-          >
-            Next
-          </button>
-        </div>
-      </div>
+      {/* Pagination at Bottom */}
+      <BottomContent
+        page={page}
+        pages={pages}
+        setPage={setPage}
+        totalProjects={projectItems.length}
+        currentPage={page}
+      />
     </div>
   );
 }
