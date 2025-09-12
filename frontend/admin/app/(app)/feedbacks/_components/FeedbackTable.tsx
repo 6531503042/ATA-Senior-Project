@@ -307,15 +307,30 @@ export default function FeedbackTable({
         );
       case 'actions':
         return (
-          <div className="py-2">
+          <div className="flex items-center gap-2 py-2">
+            <Button
+              isIconOnly
+              size="sm"
+              variant="light"
+              color="primary"
+              onPress={() => onEdit(feedback)}
+              aria-label="Edit feedback"
+            >
+              <Edit className="w-4 h-4" />
+            </Button>
+            <Button
+              isIconOnly
+              size="sm"
+              variant="light"
+              color="danger"
+              onPress={() => onDelete(feedback.id)}
+              aria-label="Delete feedback"
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
             <Dropdown>
               <DropdownTrigger>
-                <Button 
-                  isIconOnly 
-                  size="sm" 
-                  variant="light"
-                  className="hover:bg-gray-100 transition-colors"
-                >
+                <Button isIconOnly size="sm" variant="light">
                   <MoreVertical className="w-4 h-4" />
                 </Button>
               </DropdownTrigger>
@@ -324,62 +339,14 @@ export default function FeedbackTable({
                   key="view"
                   startContent={<Eye className="w-4 h-4" />}
                   onPress={() => onView(feedback)}
-                  className="text-blue-600"
                 >
                   View Details
                 </DropdownItem>
                 <DropdownItem
-                  key="edit"
-                  startContent={<Edit className="w-4 h-4" />}
-                  onPress={() => onEdit(feedback)}
-                  className="text-green-600"
-                >
-                  Edit Survey
-                </DropdownItem>
-                <DropdownItem
                   key="status"
                   startContent={<span className={`inline-flex h-2 w-2 rounded-full ${getStatusBadgeStyle(feedback.status).dot}`} />}
-                  className="text-purple-600"
                 >
-                  <DropdownMenu aria-label="Change status">
-                    <DropdownItem
-                      key="active"
-                      onPress={() => onStatusChange(feedback.id, 'ACTIVE')}
-                      className="text-green-600"
-                    >
-                      Set Active
-                    </DropdownItem>
-                    <DropdownItem
-                      key="completed"
-                      onPress={() => onStatusChange(feedback.id, 'COMPLETED')}
-                      className="text-blue-600"
-                    >
-                      Set Completed
-                    </DropdownItem>
-                    <DropdownItem
-                      key="pending"
-                      onPress={() => onStatusChange(feedback.id, 'PENDING')}
-                      className="text-amber-600"
-                    >
-                      Set Pending
-                    </DropdownItem>
-                    <DropdownItem
-                      key="draft"
-                      onPress={() => onStatusChange(feedback.id, 'DRAFT')}
-                      className="text-gray-600"
-                    >
-                      Set Draft
-                    </DropdownItem>
-                  </DropdownMenu>
-                </DropdownItem>
-                <DropdownItem
-                  key="delete"
-                  className="text-danger"
-                  color="danger"
-                  startContent={<Trash2 className="w-4 h-4" />}
-                  onPress={() => onDelete(feedback.id)}
-                >
-                  Delete Survey
+                  Change Status
                 </DropdownItem>
               </DropdownMenu>
             </Dropdown>

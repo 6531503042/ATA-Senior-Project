@@ -36,6 +36,32 @@ export default function ProjectCellRenderer({
 }: ProjectCellRendererProps) {
   return (
     <div className="flex items-center gap-2">
+      {onEdit ? (
+        <Button
+          isIconOnly
+          size="sm"
+          variant="light"
+          color="primary"
+          onPress={() => onEdit(project)}
+          aria-label="Edit project"
+        >
+          <EditIcon className="w-4 h-4" />
+        </Button>
+      ) : null}
+
+      {onDelete ? (
+        <Button
+          isIconOnly
+          size="sm"
+          variant="light"
+          color="danger"
+          onPress={() => onDelete(project.id)}
+          aria-label="Delete project"
+        >
+          <TrashIcon className="w-4 h-4" />
+        </Button>
+      ) : null}
+
       <Dropdown>
         <DropdownTrigger>
           <Button isIconOnly size="sm" variant="light">
