@@ -18,8 +18,13 @@ import {
   DropdownItem,
   Card,
   CardBody,
+  SortDescriptor,
 } from '@heroui/react';
 import { MoreVertical, Eye, Edit, Trash2, MessageSquare, Calendar, FileText, Users, Clock, Building } from 'lucide-react';
+import { Key, useCallback, useMemo, useState } from 'react';
+
+import TopContent from './TopContent';
+import BottomContent from './BottomContent';
 
 interface FeedbackTableProps {
   feedbacks: Feedback[];
@@ -27,6 +32,7 @@ interface FeedbackTableProps {
   onEdit: (feedback: Feedback) => void;
   onDelete: (id: number) => void;
   onStatusChange: (id: number, status: string) => void;
+  onRefresh?: () => void;
 }
 
 export default function FeedbackTable({
@@ -35,7 +41,82 @@ export default function FeedbackTable({
   onEdit,
   onDelete,
   onStatusChange,
+  onRefresh,
 }: FeedbackTableProps) {
+  const [filterValue, setFilterValue] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState<string[]>([]);
+  const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
+    column: 'createdAt',
+    direction: 'descending',
+  });
+  const [page, setPage] = useState(1);
+  const rowsPerPage = 10;
+
+  const filteredItems = useMemo(() => {
+    let filteredFeedbacks = [...feedbacks];
+
+    if (filterValue) {
+      filteredFeedbacks = filteredFeedbacks.filter(feedback =>
+        feedback.title.toLowerCase().includes(filterValue.toLowerCase()) ||
+        feedback.description.toLowerCase().includes(filterValue.toLowerCase())
+      );
+    }
+
+    if (selectedStatus.length > 0) {
+      filteredFeedbacks = filteredFeedbacks.filter(feedback =>
+        selectedStatus.includes(feedback.status.toLowerCase())
+      );
+    }
+
+    return filteredFeedbacks;
+  }, [feedbacks, filterValue, selectedStatus]);
+
+  const sortedItems = useMemo(() => {
+    return [...filteredItems].sort((a, b) => {
+      const first = a[sortDescriptor.column as keyof Feedback] as number;
+      const second = b[sortDescriptor.column as keyof Feedback] as number;
+      const cmp = first < second ? -1 : first > second ? 1 : 0;
+
+      return sortDescriptor.direction === 'descending' ? -cmp : cmp;
+    });
+  }, [filteredItems, sortDescriptor]);
+
+  const pages = Math.ceil(sortedItems.length / rowsPerPage);
+
+  const items = useMemo(() => {
+    const start = (page - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+    return sortedItems.slice(start, end);
+  }, [page, sortedItems, rowsPerPage]);
+
+  const onSortChange = useCallback((descriptor: SortDescriptor) => {
+    setSortDescriptor(descriptor);
+  }, []);
+
+  const handleClear = useCallback(() => {
+    setFilterValue('');
+    setPage(1);
+  }, []);
+
+  const handleSearch = useCallback((value: string) => {
+    setFilterValue(value);
+    setPage(1);
+  }, []);
+
+  const topContent = useMemo(
+    () => (
+      <TopContent
+        filterValue={filterValue}
+        onClear={handleClear}
+        onSearchChange={handleSearch}
+        selectedStatus={selectedStatus}
+        onStatusChange={setSelectedStatus}
+        onRefresh={onRefresh || (() => {})}
+      />
+    ),
+    [filterValue, selectedStatus, onRefresh, handleClear, handleSearch],
+  );
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'ACTIVE':
@@ -328,12 +409,17 @@ export default function FeedbackTable({
       <Table 
         aria-label="Feedback surveys table"
         classNames={{
-          wrapper: "min-w-full overflow-visible bg-transparent shadow-none",
+          wrapper: "min-w-full overflow-visible",
           table: "min-w-full",
-          th: "bg-gray-50 text-gray-700 font-semibold text-sm border-b border-gray-200",
-          td: "border-b border-gray-100 group-hover:bg-gray-50 transition-colors py-3",
-          tr: "hover:bg-gray-50 transition-colors",
+          thead: "bg-default-50",
+          th: "text-default-600 font-semibold text-xs uppercase tracking-wide py-2",
+          td: "py-3",
+          tr: "hover:bg-default-50 transition-colors",
         }}
+        sortDescriptor={sortDescriptor}
+        topContent={topContent}
+        topContentPlacement="outside"
+        onSortChange={onSortChange}
       >
         <TableHeader>
           <TableColumn key="feedback" className="text-left">SURVEY</TableColumn>
@@ -346,7 +432,7 @@ export default function FeedbackTable({
           <TableColumn key="actions" className="text-center">ACTIONS</TableColumn>
         </TableHeader>
         <TableBody>
-          {feedbacks.map((feedback) => (
+          {items.map((feedback) => (
             <TableRow 
               key={feedback.id}
               className="cursor-pointer hover:bg-gray-50 transition-colors"
@@ -360,6 +446,14 @@ export default function FeedbackTable({
           ))}
         </TableBody>
       </Table>
+      
+      <BottomContent
+        page={page}
+        pages={pages}
+        setPage={setPage}
+        totalFeedbacks={sortedItems.length}
+        currentPage={page}
+      />
     </div>
   );
 }

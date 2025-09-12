@@ -17,8 +17,6 @@ import { useQuestions } from '@/hooks/useQuestions';
 
 import FeedbackModal from './_components/FeedbackModal';
 import FeedbackTable from './_components/FeedbackTable';
-import TopContent from './_components/TopContent';
-import BottomContent from './_components/BottomContent';
 import FeedbackDetailModal from './_components/FeedbackDetailModal';
 
 export default function FeedbacksPage() {
@@ -44,10 +42,6 @@ export default function FeedbacksPage() {
   const [selectedFeedback, setSelectedFeedback] = useState<Feedback | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [filterValue, setFilterValue] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState<string[]>([]);
-  const [page, setPage] = useState(1);
-  const [pageSize] = useState(10);
 
   // Calculate stats from feedbacks data
   const stats = {
@@ -157,21 +151,6 @@ export default function FeedbacksPage() {
     }
   };
 
-  const filteredFeedbacks = feedbacks.filter(feedback => {
-    const matchesSearch =
-      feedback.title.toLowerCase().includes(filterValue.toLowerCase()) ||
-      feedback.description.toLowerCase().includes(filterValue.toLowerCase());
-    const matchesStatus =
-      selectedStatus.length === 0 || selectedStatus.includes(feedback.status.toLowerCase());
-
-    return matchesSearch && matchesStatus;
-  });
-
-  // Pagination logic
-  const totalPages = Math.ceil(filteredFeedbacks.length / pageSize);
-  const startIndex = (page - 1) * pageSize;
-  const endIndex = startIndex + pageSize;
-  const pagedFeedbacks = filteredFeedbacks.slice(startIndex, endIndex);
 
   return (
     <>
@@ -238,24 +217,6 @@ export default function FeedbacksPage() {
           ))}
                   </div>
 
-        {/* Filters and Search */}
-        <Card className="border-0 shadow-xl overflow-hidden">
-          <CardBody className="p-6">
-            <TopContent
-              filterValue={filterValue}
-              onClear={() => setFilterValue('')}
-              onSearchChange={setFilterValue}
-              selectedStatus={selectedStatus}
-              onStatusChange={setSelectedStatus}
-              onRefresh={fetchFeedbacks}
-              onAdd={() => {
-                setModalMode('create');
-                setSelectedFeedback(null);
-                setIsModalOpen(true);
-              }}
-            />
-          </CardBody>
-        </Card>
 
         {/* Feedbacks Table */}
         <Card className="border-0 shadow-xl overflow-hidden">
@@ -288,31 +249,16 @@ export default function FeedbacksPage() {
               </div>
             ) : (
               <FeedbackTable
-                feedbacks={pagedFeedbacks}
+                feedbacks={feedbacks}
                 onView={handleViewFeedback}
                 onEdit={handleEditFeedback}
                 onDelete={handleDeleteFeedback}
                 onStatusChange={handleStatusChange}
+                onRefresh={fetchFeedbacks}
               />
             )}
 
-            {filteredFeedbacks.length === 0 && !loading && (
-              <div className="text-center py-8">
-                <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-2" />
-                <p className="text-gray-600">No feedback surveys found</p>
-              </div>
-            )}
 
-            {/* Pagination */}
-            {filteredFeedbacks.length > 0 && (
-              <BottomContent
-                page={page}
-                pages={totalPages}
-                setPage={setPage}
-                totalFeedbacks={filteredFeedbacks.length}
-                currentPage={page}
-              />
-            )}
           </CardBody>
         </Card>
       </div>
