@@ -127,7 +127,7 @@ export default function DashboardPage() {
     <div className="w-full">
       {/* Sticky page header on mobile for quick actions */}
       <div className="sticky top-0 z-30 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-default-100">
-        <div className="container mx-auto max-w-[1400px] px-3 sm:px-4 lg:px-6">
+        <div className="px-0">
           <PageHeader
             description="System overview — quickly access key modules, recent activity, and statistics."
             icon={<LayoutDashboard />}
@@ -154,7 +154,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <main className="container mx-auto max-w-[1400px] px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
+      <main className="py-4 sm:py-6 lg:py-8">
         {/* Quick Stats Section */}
         <section className="mb-4 sm:mb-6">
           <DashboardStats loading={dashboardLoading} />
