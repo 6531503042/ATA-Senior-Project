@@ -8,6 +8,7 @@ import { addToast } from '@heroui/react';
 import { getToken, saveToken, removeToken } from '@/utils/storage';
 import { isTokenExpired, isTokenExpiringSoon } from '@/utils/token';
 import { login, logout, refresh, validate } from '@/services/authService';
+import { canAccessAdmin } from '@/utils/roleUtils';
 
 const useAuthStore = create<AuthStore>()(
   persist(
@@ -42,12 +43,30 @@ const useAuthStore = create<AuthStore>()(
             updatedAt: new Date().toISOString(),
           };
 
+          // Check if user has admin access
+          const hasAdminAccess = canAccessAdmin(user.roles);
+          if (!hasAdminAccess) {
+            // Clear tokens if user doesn't have admin access
+            removeToken('accessToken');
+            removeToken('refreshToken');
+            
+            addToast({
+              title: 'Access Denied',
+              color: 'danger',
+              description: 'You do not have administrator privileges to access this panel.',
+              variant: 'solid',
+            });
+            
+            set({ user: null, loading: false, error: 'Insufficient privileges. Admin access required.' });
+            return false;
+          }
+
           set({ user, loading: false });
 
           addToast({
-            title: 'Login successful',
+            title: 'Admin Access Granted',
             color: 'success',
-            description: `Welcome back, ${user.firstName}!`,
+            description: `Welcome back, ${user.firstName}! You have administrator privileges.`,
             variant: 'solid',
           });
 

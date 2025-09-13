@@ -6,6 +6,7 @@ import { createContext, useContext, useEffect, ReactNode, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 
 import useAuthStore from '@/stores/authStore';
+import { canAccessAdmin } from '@/utils/roleUtils';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -46,6 +47,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
       } else if (isLoggedIn && isAuthRoute && pathname !== '/logout') {
         // Redirect to dashboard if authenticated and trying to access auth routes
         router.push('/');
+      } else if (isLoggedIn && isProtectedRoute) {
+        // Check if user has admin privileges for admin panel access
+        const hasAdminAccess = canAccessAdmin(auth.user?.roles);
+        if (!hasAdminAccess) {
+          // Redirect non-admin users to a restricted access page
+          router.push('/access-denied');
+        }
       }
     };
 

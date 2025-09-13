@@ -87,48 +87,77 @@ export default function LoginPage() {
   }, [password]);
 
   return (
-    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-gradient-to-br from-gray-50 via-white to-indigo-50 dark:from-zinc-900 dark:via-zinc-950 dark:to-indigo-950">
-      {/* Left side: simple brand area (hidden on small screens) */}
-      <div className="hidden lg:flex flex-col justify-between p-10">
-        <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-xl bg-indigo-600 text-white grid place-items-center shadow-sm">
-            <KeyRound size={18} />
+    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      {/* Left side: enhanced brand area with admin focus */}
+      <div className="hidden lg:flex flex-col justify-between p-12 relative overflow-hidden">
+        {/* Background decoration */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_rgba(255,255,255,0.1),_transparent_60%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_rgba(168,85,247,0.2),_transparent_60%)]" />
+        
+        <div className="relative z-10 flex items-center gap-4">
+          <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white grid place-items-center shadow-xl">
+            <KeyRound size={20} />
           </div>
-          <span className="text-lg font-semibold text-gray-900 dark:text-gray-100">Admin</span>
+          <div>
+            <span className="text-xl font-bold text-white">Admin Console</span>
+            <p className="text-purple-200 text-sm">Management Portal</p>
+          </div>
         </div>
 
-        <div className="max-w-md">
-          <h1 className="text-3xl font-bold leading-tight text-gray-900 dark:text-gray-100">
-            Sign in to continue
+        <div className="relative z-10 max-w-lg">
+          <h1 className="text-4xl font-bold leading-tight text-white mb-4">
+            Secure Admin Access
           </h1>
-          <p className="mt-3 text-gray-600 dark:text-gray-300">
-            Access your admin tools and manage your workspace.
+          <p className="text-purple-100 text-lg leading-relaxed">
+            Sign in with your administrator credentials to access the management dashboard, 
+            user controls, and system configuration tools.
+          </p>
+          
+          <div className="mt-8 flex items-center gap-4 text-purple-200">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+              <span className="text-sm">Secure Authentication</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+              <span className="text-sm">Role-Based Access</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="relative z-10">
+          <p className="text-purple-300 text-sm">
+            © {new Date().getFullYear()} — Admin Management System
+          </p>
+          <p className="text-purple-400 text-xs mt-1">
+            Authorized personnel only
           </p>
         </div>
-
-        <p className="text-xs text-gray-500 dark:text-gray-400">© {new Date().getFullYear()} — Admin Console</p>
       </div>
 
-      {/* Right side: form */}
-      <div className="flex items-center justify-center p-6 md:p-10">
+      {/* Right side: enhanced form */}
+      <div className="flex items-center justify-center p-6 md:p-10 bg-white/5 backdrop-blur-sm">
         <form
           onSubmit={onSubmit}
-          className="w-full max-w-md bg-white/95 dark:bg-zinc-900/80 rounded-2xl shadow-xl p-6 md:p-8 border border-gray-100 dark:border-white/10"
+          className="w-full max-w-md bg-white/95 dark:bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/20 dark:border-white/10"
           aria-labelledby="login-title"
         >
-          <div className="text-center">
-            <h2 id="login-title" className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100">
-              Admin Login
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl mb-4 shadow-lg">
+              <LogIn className="w-8 h-8 text-white" />
+            </div>
+            <h2 id="login-title" className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
+              Administrator Login
             </h2>
-            <p className="mt-1 text-gray-600 dark:text-gray-400">Use your credentials to sign in</p>
+            <p className="mt-2 text-gray-600 dark:text-gray-300">Enter your admin credentials to continue</p>
           </div>
 
-          <div className="mt-8 space-y-5">
+          <div className="space-y-6">
             <div>
               <Input
                 isRequired
-                label="Username"
-                placeholder="username"
+                label="Admin Username"
+                placeholder="Enter your username"
                 size="lg"
                 variant="bordered"
                 value={username}
@@ -140,6 +169,10 @@ export default function LoginPage() {
                 aria-describedby={fieldErrors.username ? 'username-error' : undefined}
                 autoFocus
                 autoComplete="username"
+                classNames={{
+                  input: "text-gray-900 dark:text-white",
+                  inputWrapper: "border-gray-300 dark:border-gray-600 hover:border-purple-500 focus-within:border-purple-500"
+                }}
               />
               {fieldErrors.username && (
                 <p id="username-error" className="mt-1 text-sm text-red-600">{fieldErrors.username}</p>
@@ -149,7 +182,7 @@ export default function LoginPage() {
             <div>
               <Input
                 isRequired
-                label="Password"
+                label="Admin Password"
                 placeholder="Enter your password"
                 size="lg"
                 variant="bordered"
@@ -162,7 +195,7 @@ export default function LoginPage() {
                   <button
                     type="button"
                     onClick={toggleVisibility}
-                    className="focus:outline-none"
+                    className="focus:outline-none hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md p-1 transition-colors"
                     aria-label={isVisible ? 'Hide password' : 'Show password'}
                   >
                     {isVisible ? <Eye className="text-xl text-gray-400" /> : <EyeClosed className="text-xl text-gray-400" />}
@@ -175,6 +208,10 @@ export default function LoginPage() {
                   capsLock ? 'capslock-hint' : null,
                 ].filter(Boolean).join(' ')}
                 autoComplete="current-password"
+                classNames={{
+                  input: "text-gray-900 dark:text-white",
+                  inputWrapper: "border-gray-300 dark:border-gray-600 hover:border-purple-500 focus-within:border-purple-500"
+                }}
               />
               <div className="mt-1 flex items-center gap-2 min-h-6">
                 {fieldErrors.password && (
@@ -207,29 +244,34 @@ export default function LoginPage() {
             </div>
 
             {error && (
-              <div role="alert" aria-live="assertive" className="text-red-600 text-sm bg-red-50 dark:bg-red-950/40 dark:text-red-400 p-3 rounded-lg flex items-center gap-2">
-                <AlertCircle size={16} /> {error}
+              <div role="alert" aria-live="assertive" className="text-red-600 text-sm bg-red-50 dark:bg-red-950/40 dark:text-red-400 p-4 rounded-xl flex items-center gap-3 border border-red-200 dark:border-red-800">
+                <AlertCircle size={18} /> 
+                <div>
+                  <p className="font-medium">Authentication Failed</p>
+                  <p className="text-xs mt-1">{error}</p>
+                </div>
               </div>
             )}
 
             <Button
-              className="w-full"
-              color="primary"
+              className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
               size="lg"
               type="submit"
               isLoading={loading}
               isDisabled={!username || !password}
-              startContent={<LogIn className="h-4 w-4" />}
+              startContent={!loading && <LogIn className="h-5 w-5" />}
             >
-              {loading ? 'Signing in…' : 'Sign In'}
+              {loading ? 'Authenticating...' : 'Access Admin Panel'}
             </Button>
 
-            <Divider className="my-2" />
-
-            <p className="text-center text-sm text-gray-600 dark:text-gray-400">
-              Don’t have an account?{' '}
-              <UiLink href="/register" className="text-indigo-600">Create one</UiLink>
-            </p>
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                <span>Secure connection</span>
+                <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                <span>Admin only</span>
+              </div>
+            </div>
           </div>
         </form>
       </div>

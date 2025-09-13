@@ -72,17 +72,6 @@ export const siteConfig: {
       ],
     },
     {
-      section: 'Settings',
-      items: [
-        {
-          label: 'Settings',
-          href: '/settings',
-          icon: SettingsIcon,
-          permission: 'system:read',
-        },
-      ],
-    },
-    {
       section: 'Account',
       items: [{ label: 'Logout', href: '/logout', icon: LogOutIcon }],
     },
