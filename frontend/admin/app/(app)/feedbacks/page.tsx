@@ -188,7 +188,7 @@ export default function FeedbacksPage() {
           {statsCards.map((stat, i) => (
             <Card
               key={i}
-              className="border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] bg-gradient-to-br from-white to-gray-50 overflow-hidden group"
+              className="border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 overflow-hidden group"
             >
               <CardBody className="p-6 relative">
                 <div
@@ -196,13 +196,13 @@ export default function FeedbacksPage() {
                 />
                 <div className="flex items-center justify-between relative z-10">
                 <div>
-                    <p className="text-sm font-medium text-default-500 mb-1">
+                    <p className="text-sm font-medium text-default-500 dark:text-default-400 mb-1">
                       {stat.title}
                     </p>
-                    <p className="text-3xl font-bold text-default-900">
+                    <p className="text-3xl font-bold text-default-900 dark:text-white">
                       {stat.value}
                     </p>
-                    <p className="text-xs text-default-400 mt-1">
+                    <p className="text-xs text-default-400 dark:text-default-500 mt-1">
                       {stat.description}
                   </p>
                 </div>
@@ -222,10 +222,10 @@ export default function FeedbacksPage() {
         <Card className="border-0 shadow-xl overflow-hidden">
           <CardHeader className="pb-6">
             <div className="w-full">
-              <h3 className="text-xl font-bold text-default-900">
+              <h3 className="text-xl font-bold text-default-900 dark:text-white">
                 Feedback Surveys List
               </h3>
-              <p className="text-sm text-default-600">
+              <p className="text-sm text-default-600 dark:text-gray-400">
                 View and manage all feedback surveys with their scope and visibility settings
                   </p>
                 </div>
@@ -278,24 +278,24 @@ export default function FeedbacksPage() {
 
               {/* Questions Status Display */}
         {questionsLoading && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-            <p className="text-blue-800 text-sm">
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
+            <p className="text-blue-800 dark:text-blue-200 text-sm">
               <strong>Loading questions...</strong> Please wait while we fetch available questions from the backend.
             </p>
           </div>
         )}
 
         {questionsError && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
-            <p className="text-red-800 text-sm">
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-4">
+            <p className="text-red-800 dark:text-red-200 text-sm">
               <strong>Questions API Error:</strong> {questionsError}
             </p>
-            <p className="text-red-700 text-sm mt-1">
+            <p className="text-red-700 dark:text-red-300 text-sm mt-1">
               Cannot create feedback surveys without questions. Please check the backend API.
             </p>
             <button 
               onClick={fetchQuestions}
-              className="mt-2 text-red-600 hover:text-red-800 underline text-sm"
+              className="mt-2 text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-200 underline text-sm"
             >
               Retry loading questions
             </button>
@@ -303,11 +303,11 @@ export default function FeedbacksPage() {
         )}
 
         {!questionsLoading && !questionsError && questions.length === 0 && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-            <p className="text-yellow-800 text-sm">
+          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-4">
+            <p className="text-yellow-800 dark:text-yellow-200 text-sm">
               <strong>No Questions Available:</strong> No questions found in the database.
             </p>
-            <p className="text-yellow-700 text-sm mt-1">
+            <p className="text-yellow-700 dark:text-yellow-300 text-sm mt-1">
               Please create some questions first before creating feedback surveys.
             </p>
     </div>

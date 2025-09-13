@@ -63,7 +63,7 @@ export default function TopContent({
             isClearable
             className="w-full"
             placeholder="Search users..."
-            startContent={<SearchIcon className="w-4 h-4 text-default-400" />}
+            startContent={<SearchIcon className="w-4 h-4 text-default-400 dark:text-default-500" />}
             value={filterValue}
             variant="bordered"
             onClear={onClear}

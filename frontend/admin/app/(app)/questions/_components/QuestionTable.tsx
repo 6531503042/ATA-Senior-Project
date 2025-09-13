@@ -173,9 +173,9 @@ export default function QuestionTable({
         classNames={{
           wrapper: 'min-w-full overflow-visible',
           table: 'min-w-full',
-          thead: 'bg-default-50',
-          th: 'text-default-700 font-semibold text-xs uppercase tracking-wide',
-          tr: 'hover:bg-default-50 transition-colors',
+          thead: 'bg-default-50 dark:bg-default-100',
+          th: 'text-default-700 dark:text-default-300 font-semibold text-xs uppercase tracking-wide',
+          tr: 'hover:bg-default-50 dark:hover:bg-default-100 transition-colors',
           td: 'py-3',
         }}
         sortDescriptor={sortDescriptor}

@@ -60,14 +60,14 @@ export default function DetailsPanel({ item, onSentimentSaved }: Props) {
   }, [item, sentiment, onSentimentSaved]);
   if (!item) {
     return (
-      <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-default-50/30 overflow-hidden">
+      <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-default-50/30 dark:from-gray-800 dark:to-gray-900/30 overflow-hidden">
         <CardBody className="min-h-[400px] flex items-center justify-center text-center p-8">
           <div className="max-w-sm mx-auto">
-            <div className="w-20 h-20 bg-gradient-to-br from-default-100 to-default-200 rounded-full flex items-center justify-center mx-auto mb-4">
-              <FileText className="w-8 h-8 text-default-400" />
+            <div className="w-20 h-20 bg-gradient-to-br from-default-100 to-default-200 dark:from-gray-700 dark:to-gray-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <FileText className="w-8 h-8 text-default-400 dark:text-gray-500" />
             </div>
-            <h3 className="text-lg font-semibold text-default-600 mb-2">No Submission Selected</h3>
-            <p className="text-default-500 text-sm">
+            <h3 className="text-lg font-semibold text-default-600 dark:text-gray-400 mb-2">No Submission Selected</h3>
+            <p className="text-default-500 dark:text-gray-500 text-sm">
               Choose a submission from the list to view detailed information and responses.
             </p>
           </div>
@@ -106,8 +106,8 @@ export default function DetailsPanel({ item, onSentimentSaved }: Props) {
   };
 
   return (
-    <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-blue-50/30 overflow-hidden">
-      <CardHeader className="pb-4 bg-gradient-to-r from-blue-50/50 to-indigo-50/50">
+    <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-blue-50/30 dark:from-gray-800 dark:to-blue-900/20 overflow-hidden">
+      <CardHeader className="pb-4 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 dark:from-blue-900/20 dark:to-indigo-900/20">
         <div className="w-full">
           <div className="flex items-center gap-3 mb-2">
             <Avatar 
@@ -116,11 +116,11 @@ export default function DetailsPanel({ item, onSentimentSaved }: Props) {
               className="bg-gradient-to-br from-primary-400 to-primary-600 text-white"
             />
             <div>
-              <h3 className="text-lg font-bold text-default-900 flex items-center gap-2">
+              <h3 className="text-lg font-bold text-default-900 dark:text-white flex items-center gap-2">
                 <FileText className="w-5 h-5 text-primary" />
                 Submission #{item.id}
               </h3>
-              <p className="text-sm text-default-600">
+              <p className="text-sm text-default-600 dark:text-gray-400">
                 Feedback response details and metadata
               </p>
             </div>
@@ -154,10 +154,10 @@ export default function DetailsPanel({ item, onSentimentSaved }: Props) {
 
         {/* Status & Privacy */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="p-4 bg-gradient-to-br from-default-50 to-default-100/50 rounded-xl border border-default-200">
+          <div className="p-4 bg-gradient-to-br from-default-50 to-default-100/50 dark:from-gray-700 dark:to-gray-600/50 rounded-xl border border-default-200 dark:border-gray-600">
             <div className="flex items-center gap-2 mb-2">
-              <Shield className="w-4 h-4 text-default-600" />
-              <span className="text-sm font-medium text-default-600">Privacy Level</span>
+              <Shield className="w-4 h-4 text-default-600 dark:text-gray-400" />
+              <span className="text-sm font-medium text-default-600 dark:text-gray-400">Privacy Level</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-lg">{getPrivacyIcon(item.privacyLevel)}</span>
@@ -172,10 +172,10 @@ export default function DetailsPanel({ item, onSentimentSaved }: Props) {
         </div>
           </div>
 
-          <div className="p-4 bg-gradient-to-br from-default-50 to-default-100/50 rounded-xl border border-default-200">
+          <div className="p-4 bg-gradient-to-br from-default-50 to-default-100/50 dark:from-gray-700 dark:to-gray-600/50 rounded-xl border border-default-200 dark:border-gray-600">
             <div className="flex items-center gap-2 mb-2">
-              <Clock className="w-4 h-4 text-default-600" />
-              <span className="text-sm font-medium text-default-600">Analysis Status</span>
+              <Clock className="w-4 h-4 text-default-600 dark:text-gray-400" />
+              <span className="text-sm font-medium text-default-600 dark:text-gray-400">Analysis Status</span>
             </div>
           <Chip
               color={getStatusColor((item as any).status || 'pending')} 
@@ -203,12 +203,12 @@ export default function DetailsPanel({ item, onSentimentSaved }: Props) {
           />
 
           {item.overallComments && (
-            <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
+            <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
               <div className="flex items-center gap-2 mb-2">
-                <MessageCircle className="w-4 h-4 text-blue-600" />
-                <span className="text-sm font-medium text-blue-700">Overall Comments</span>
+                <MessageCircle className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Overall Comments</span>
               </div>
-              <p className="text-sm text-blue-800 leading-relaxed">
+              <p className="text-sm text-blue-800 dark:text-blue-200 leading-relaxed">
                 {item.overallComments}
               </p>
             </div>
@@ -296,7 +296,7 @@ export default function DetailsPanel({ item, onSentimentSaved }: Props) {
             variant="flat"
             color="primary"
             startContent={<ExternalLink className="w-4 h-4" />}
-            className="bg-primary-50 hover:bg-primary-100"
+            className="bg-primary-50 hover:bg-primary-100 dark:bg-primary-900/20 dark:hover:bg-primary-900/30"
           >
             View Full Details
           </Button>
@@ -305,15 +305,15 @@ export default function DetailsPanel({ item, onSentimentSaved }: Props) {
             variant="flat"
             color="secondary"
             startContent={<FileText className="w-4 h-4" />}
-            className="bg-secondary-50 hover:bg-secondary-100"
+            className="bg-secondary-50 hover:bg-secondary-100 dark:bg-secondary-900/20 dark:hover:bg-secondary-900/30"
           >
             Export Response
           </Button>
         </div>
 
         {/* Metadata Footer */}
-        <div className="pt-4 border-t border-default-200">
-          <p className="text-xs text-default-400 text-center">
+        <div className="pt-4 border-t border-default-200 dark:border-gray-700">
+          <p className="text-xs text-default-400 dark:text-gray-500 text-center">
             Last updated: {new Date(item.submittedAt).toLocaleString()} • ID: {item.id}
           </p>
         </div>
@@ -334,12 +334,12 @@ function InfoCard({
   valueClass?: string;
 }) {
   return (
-    <div className="p-4 bg-gradient-to-br from-white to-default-50 rounded-xl border border-default-200 hover:shadow-md transition-shadow duration-200">
+    <div className="p-4 bg-gradient-to-br from-white to-default-50 dark:from-gray-800 dark:to-gray-700 rounded-xl border border-default-200 dark:border-gray-600 hover:shadow-md transition-shadow duration-200">
       <div className="flex items-center gap-2 mb-2">
         {icon}
-        <span className="text-sm font-medium text-default-600">{label}</span>
+        <span className="text-sm font-medium text-default-600 dark:text-gray-400">{label}</span>
       </div>
-      <p className={`text-sm ${valueClass}`}>{value}</p>
+      <p className={`text-sm ${valueClass} dark:text-gray-300`}>{value}</p>
     </div>
   );
 }
@@ -354,12 +354,12 @@ function InfoRow({
   value: string; 
 }) {
   return (
-    <div className="flex items-center justify-between p-3 bg-gradient-to-r from-white to-default-50/50 rounded-lg border border-default-200">
+    <div className="flex items-center justify-between p-3 bg-gradient-to-r from-white to-default-50/50 dark:from-gray-800 dark:to-gray-700/50 rounded-lg border border-default-200 dark:border-gray-600">
       <div className="flex items-center gap-2">
         {icon}
-        <span className="text-sm font-medium text-default-600">{label}</span>
+        <span className="text-sm font-medium text-default-600 dark:text-gray-400">{label}</span>
       </div>
-      <span className="text-sm text-default-900 font-medium">{value}</span>
+      <span className="text-sm text-default-900 dark:text-gray-300 font-medium">{value}</span>
     </div>
   );
 }

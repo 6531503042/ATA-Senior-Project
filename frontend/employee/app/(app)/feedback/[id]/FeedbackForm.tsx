@@ -1,0 +1,401 @@
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import {
+  AlertCircle,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  User2,
+} from 'lucide-react';
+import { useRouter } from 'next/navigation';
+
+import { useAlertDialog } from '../../../components/ui/alert-dialog';
+import { Button } from '../../../components/ui/button';
+import { cn } from '@/libs/utils';
+import type { Question } from '@/types/employee';
+import { FeedbackSidebar } from './components/Sidebar';
+import QuestionCard from './components/QuestionCard';
+import CongratsModal from './components/CongratsModal';
+import { FeedbackOverallComments } from './components'; // your existing component
+import type { Privacy, FeedbackSubmissionPayload } from '@/types/employee';
+
+// ---------- Types ----------
+type QType = 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'TEXT_BASED' | 'SENTIMENT';
+type AnswersMap = Record<number, string | string[]>;
+
+interface FeedbackQuestion {
+  id: number;
+  text: string;
+  description?: string;
+  required: boolean;
+  type: QType;
+  answers?: { text: string; value: string }[];
+}
+interface FeedbackSubmission {
+  id: number;
+  title: string;
+  description?: string;
+  questions: FeedbackQuestion[];
+}
+
+const MAX_TEXT_LENGTH = 255;
+const DESIGN_MODE = true; // mock/demo mode
+
+function mapAnswerType(t: FeedbackQuestion['type']): string {
+  switch (t) {
+    case 'SINGLE_CHOICE':
+      return 'single';
+    case 'MULTIPLE_CHOICE':
+      return 'multiple';
+    case 'TEXT_BASED':
+      return 'text';
+    case 'SENTIMENT':
+      return 'sentiment';
+  }
+}
+
+const mockFeedback: FeedbackSubmission = {
+  id: 1001,
+  title: 'Quarterly Satisfaction Survey',
+  description: 'Help us improve by answering a few quick questions.',
+  questions: [
+    {
+      id: 1,
+      text: 'Overall satisfaction with your current project?',
+      description: 'Consider workload, support, and outcome.',
+      required: true,
+      type: 'SINGLE_CHOICE',
+      answers: [
+        { text: 'Very dissatisfied', value: '1' },
+        { text: 'Dissatisfied', value: '2' },
+        { text: 'Neutral', value: '3' },
+        { text: 'Satisfied', value: '4' },
+        { text: 'Very satisfied', value: '5' },
+      ],
+    },
+    {
+      id: 2,
+      text: 'Pick the areas you want to see improved',
+      required: false,
+      type: 'MULTIPLE_CHOICE',
+      answers: [
+        { text: 'Communication', value: 'comm' },
+        { text: 'Tools', value: 'tools' },
+        { text: 'Meetings', value: 'mtgs' },
+        { text: 'Deadlines', value: 'ddl' },
+      ],
+    },
+    {
+      id: 3,
+      text: 'Any blockers you are facing?',
+      description: 'Be as specific as possible.',
+      required: false,
+      type: 'TEXT_BASED',
+    },
+    {
+      id: 4,
+      text: 'How do you feel this week?',
+      required: true,
+      type: 'SENTIMENT',
+      answers: [
+        { text: 'Very bad', value: '1' },
+        { text: 'Bad', value: '2' },
+        { text: 'Okay', value: '3' },
+        { text: 'Good', value: '4' },
+        { text: 'Great', value: '5' },
+      ],
+    },
+  ],
+};
+
+// ---------- Adapters ----------
+function adaptToQuestion(q: FeedbackQuestion): Question {
+  return {
+    id: q.id, // number ✅
+    text: q.text, // your QuestionCard reads question.text
+    required: q.required,
+    type: q.type, // same union
+    category: 'general', // default
+    answers: q.answers ?? [], // ensure array
+    description: q.description ?? '', // must be string (not undefined)
+  };
+}
+
+// ---------- Component ----------
+export default function FeedbackForm({ id }: { id: string }) {
+  const router = useRouter();
+  const { showAlert } = useAlertDialog();
+
+  const [feedback, setFeedback] = useState<FeedbackSubmission | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const [currentStep, setCurrentStep] = useState(0);
+  const [answers, setAnswers] = useState<AnswersMap>({});
+  const [overallComments, setOverallComments] = useState('');
+  const [privacyLevel, setPrivacyLevel] = useState<Privacy>('PUBLIC');
+
+  const [submitting, setSubmitting] = useState(false);
+  const [showCongrats, setShowCongrats] = useState(false);
+
+  // init/load
+  useEffect(() => {
+    setLoading(true);
+    setFeedback(null);
+    setCurrentStep(0);
+    setAnswers({});
+    setOverallComments('');
+    setPrivacyLevel('PUBLIC');
+    setShowCongrats(false);
+
+    if (DESIGN_MODE) {
+      const t = setTimeout(() => {
+        setFeedback({ ...mockFeedback, id: Number(id) || mockFeedback.id });
+        setLoading(false);
+      }, 300);
+      return () => clearTimeout(t);
+    }
+  }, [id]);
+
+  const canProceed =
+    feedback && currentStep === feedback.questions.length
+      ? overallComments.trim().length > 0
+      : Boolean(
+          feedback &&
+            (!feedback.questions[currentStep].required ||
+              (answers[feedback.questions[currentStep].id] &&
+                (!Array.isArray(answers[feedback.questions[currentStep].id]) ||
+                  (answers[feedback.questions[currentStep].id] as string[])
+                    .length > 0))),
+        );
+
+  async function handleSubmit() {
+    if (!feedback) return;
+
+    // validate text too long
+    const tooLong = Object.entries(answers).find(([qid, val]) => {
+      const q = feedback.questions.find(x => x.id === Number(qid));
+      return (
+        q?.type === 'TEXT_BASED' &&
+        typeof val === 'string' &&
+        val.length > MAX_TEXT_LENGTH
+      );
+    });
+    if (tooLong) {
+      const q = feedback.questions.find(x => x.id === Number(tooLong[0]));
+      showAlert({
+        title: 'Text Too Long',
+        description: `The response for "${q?.text}" exceeds ${MAX_TEXT_LENGTH} characters.`,
+        variant: 'solid',
+        color: 'warning',
+        duration: 4000,
+      });
+      return;
+    }
+
+    if (!overallComments.trim()) {
+      showAlert({
+        title: 'Overall Comments Required',
+        description: 'Please provide overall comments before submitting.',
+        variant: 'solid',
+        color: 'warning',
+        duration: 3500,
+      });
+      return;
+    }
+    const payload: FeedbackSubmissionPayload = {
+      feedbackId: feedback.id,
+      responses: Object.fromEntries(
+        Object.entries(answers).map(([qid, val]) => [
+          qid,
+          Array.isArray(val) ? val.join(',') : String(val),
+        ]),
+      ),
+      overallComments,
+      privacyLevel, // ✅ PUBLIC | PRIVATE | ANONYMOUS
+    };
+
+    setSubmitting(true);
+
+    // simulate call
+    setTimeout(() => {
+      setSubmitting(false);
+      // Instead of instant redirect, open the Congrats popup
+      setShowCongrats(true);
+    }, 600);
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-600" />
+          <p className="text-sm text-gray-500">Loading your feedback form...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!feedback) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
+        <AlertCircle className="h-12 w-12 text-red-500" />
+        <h2 className="text-xl font-semibold">Feedback Not Found</h2>
+        <p className="text-gray-500">
+          This feedback form doesn&apos;t exist or has expired.
+        </p>
+        <Button onClick={() => router.push('/')}>
+          Return to Home
+        </Button>
+      </div>
+    );
+  }
+
+  const isFinal = currentStep === feedback.questions.length;
+
+  return (
+    <>
+      <div className="min-h-screen bg-gray-50/50 overflow-hidden">
+        <div className="flex h-screen">
+          <FeedbackSidebar
+            title={feedback.title}
+            description={feedback.description}
+            questions={feedback.questions.map(q => ({
+              id: q.id,
+              description: q.description,
+              required: q.required,
+            }))}
+            currentStep={currentStep}
+            answers={answers}
+            overallComments={overallComments}
+            onSelectStep={setCurrentStep}
+          />
+
+          {/* Main */}
+          <main className="w-3/4 h-screen overflow-y-auto bg-white custom-scrollbar">
+            <div className="max-w-4xl mx-auto p-8">
+              <motion.div
+                key={currentStep}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className="space-y-8"
+              >
+                <div className="space-y-6">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-violet-100 rounded-lg">
+                      <User2 className="h-5 w-5 text-violet-600" />
+                    </div>
+                    <div>
+                      <h2 className="text-sm font-medium text-gray-500">
+                        {isFinal ? (
+                          'Overall Comments'
+                        ) : (
+                          <>
+                            Question {currentStep + 1} of{' '}
+                            {feedback.questions.length}
+                          </>
+                        )}
+                      </h2>
+                      {!isFinal &&
+                        feedback.questions[currentStep]?.required && (
+                          <div className="flex items-center gap-1 text-red-500 text-sm">
+                            <AlertCircle className="h-4 w-4" />
+                            <span>Required</span>
+                          </div>
+                        )}
+                    </div>
+                  </div>
+
+                  <AnimatePresence mode="wait">
+                    {!isFinal ? (
+                      <QuestionCard
+                        question={adaptToQuestion(
+                          feedback.questions[currentStep],
+                        )}
+                        currentAnswer={
+                          answers[feedback.questions[currentStep].id] || ''
+                        }
+                        onAnswerChange={(val: string | string[]) =>
+                          setAnswers(prev => ({
+                            ...prev,
+                            [feedback.questions[currentStep].id]: val,
+                          }))
+                        }
+                        questionNumber={currentStep + 1}
+                        totalQuestions={feedback.questions.length}
+                      />
+                    ) : (
+                      <FeedbackOverallComments
+                        overallComments={overallComments}
+                        privacyLevel={privacyLevel}
+                        onCommentsChange={setOverallComments}
+                        onPrivacyChange={p => setPrivacyLevel(p)} // ✅ keep ANONYMOUS as-is
+                      />
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* Nav */}
+                <div className="flex items-center justify-between pt-6 border-t">
+                  <Button
+                    variant="outline"
+                    onClick={() => setCurrentStep(i => i - 1)}
+                    disabled={currentStep === 0}
+                    className="gap-2 hover:bg-gray-50"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    Previous
+                  </Button>
+
+                  {isFinal ? (
+                    <Button
+                      onClick={handleSubmit}
+                      disabled={submitting || !overallComments.trim()}
+                      className="gap-2 bg-gradient-to-r from-violet-600 to-violet-700 hover:from-violet-700 hover:to-violet-800 text-white shadow-sm"
+                    >
+                      {submitting ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                          <span>Submitting...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>Submit Feedback</span>
+                          <CheckCircle2 className="h-4 w-4" />
+                        </>
+                      )}
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={() => setCurrentStep(i => i + 1)}
+                      disabled={!canProceed}
+                      className="gap-2 bg-gradient-to-r from-violet-600 to-violet-700 hover:from-violet-700 hover:to-violet-800 text-white shadow-sm"
+                    >
+                      <span>
+                        {currentStep === feedback.questions.length - 1
+                          ? 'Final Step'
+                          : 'Next Question'}
+                      </span>
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              </motion.div>
+            </div>
+          </main>
+        </div>
+      </div>
+
+      {/* Congrats Popup */}
+      <CongratsModal
+        open={showCongrats}
+        onClose={() => setShowCongrats(false)}
+        onContinue={() => router.push('/')}
+        seconds={10}
+      />
+    </>
+  );
+}

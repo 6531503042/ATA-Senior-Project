@@ -78,15 +78,15 @@ export function DashboardOverview({
     <Card className="shadow-sm w-full overflow-visible">
       <CardHeader className="pb-4">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-blue-100 rounded-lg">
-            <BarChart3 className="w-5 h-5 text-blue-600" />
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900">
-              Performance Overview
-            </h3>
-            <p className="text-sm text-gray-600">Key performance indicators</p>
-          </div>
+            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+              <BarChart3 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Performance Overview
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Key performance indicators</p>
+            </div>
         </div>
       </CardHeader>
       <CardBody className="pt-0 overflow-visible">
@@ -96,21 +96,21 @@ export function DashboardOverview({
 
             return (
               <div key={index} className="text-center">
-                <p className="text-sm font-medium text-gray-600 mb-1">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
                   {metric.title}
                 </p>
-                <p className={`text-2xl font-bold ${metric.color} mb-2`}>
+                <p className={`text-2xl font-bold ${metric.color} dark:text-white mb-2`}>
                   {typeof metric.value === 'number'
                     ? metric.value.toLocaleString()
                     : metric.value}
                 </p>
                 <div className="flex items-center justify-center gap-1">
                   <TrendingUp
-                    className={`w-4 h-4 ${isPositiveTrend ? 'text-green-500' : 'text-red-500'}`}
+                    className={`w-4 h-4 ${isPositiveTrend ? 'text-green-500 dark:text-green-400' : 'text-red-500 dark:text-red-400'}`}
                   />
                   <span
                     className={`text-sm font-medium ${
-                      isPositiveTrend ? 'text-green-600' : 'text-red-600'
+                      isPositiveTrend ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
                     }`}
                   >
                     {metric.growth}

@@ -243,19 +243,19 @@ export default function QuestionsPage() {
 
       <div className="space-y-8">
         {/* Header Section */}
-        <div className="relative overflow-hidden flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 p-6 rounded-2xl border border-white/10 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 shadow-2xl">
+        <div className="relative overflow-hidden flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 p-6 rounded-2xl border border-white/10 dark:border-gray-700 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 dark:from-gray-800 dark:via-purple-800 dark:to-gray-900 shadow-2xl">
           <div className="relative z-10 flex items-center gap-6">
-            <div className="p-4 bg-white/10 backdrop-blur-sm rounded-2xl">
+            <div className="p-4 bg-white/10 dark:bg-gray-700/30 backdrop-blur-sm rounded-2xl">
               <MessageSquareIcon className="w-8 h-8 text-white" />
             </div>
             <div>
               <h1 className="text-4xl font-bold text-white">Questions Management</h1>
-              <p className="text-white/70 mt-1">Create, edit, and manage your feedback questions with analytics</p>
+              <p className="text-white/70 dark:text-gray-300 mt-1">Create, edit, and manage your feedback questions with analytics</p>
             </div>
           </div>
           <div className="relative z-10 flex flex-col sm:flex-row gap-3">
             <Button
-              className="w-full sm:w-auto font-semibold bg-white/10 hover:bg-white/20 text-white border-white/20"
+              className="w-full sm:w-auto font-semibold bg-white/10 hover:bg-white/20 dark:bg-gray-700/30 dark:hover:bg-gray-700/50 text-white border-white/20 dark:border-gray-600"
               color="default"
               startContent={<PlusIcon className="w-4 h-4" />}
               variant="bordered"
@@ -272,9 +272,9 @@ export default function QuestionsPage() {
           {statsCards.map((stat, index) => (
             <Card
               key={index}
-              className="border border-default-200 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] bg-white overflow-hidden group"
+              className="border border-default-200 dark:border-default-700 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] bg-white dark:bg-gray-800 overflow-hidden group"
             >
-              <CardBody className="p-6 relative text-default-900">
+              <CardBody className="p-6 relative text-default-900 dark:text-white">
                 {/* Background gradient overlay */}
                 <div
                   className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-10 group-hover:opacity-15 transition-opacity duration-300`}
@@ -282,10 +282,10 @@ export default function QuestionsPage() {
 
                 <div className="flex items-center justify-between relative z-10 mb-4">
                   <div>
-                    <p className="text-sm font-medium text-default-600 mb-1">
+                    <p className="text-sm font-medium text-default-600 dark:text-default-400 mb-1">
                       {stat.title}
                     </p>
-                    <p className="text-3xl font-bold text-default-900">
+                    <p className="text-3xl font-bold text-default-900 dark:text-white">
                       {stat.value}
                     </p>
                     {stat.trend && (
@@ -304,7 +304,7 @@ export default function QuestionsPage() {
 
                 {/* Progress bar */}
                 <div className="relative z-10">
-                  <div className="flex items-center justify-between text-xs text-default-600 mb-2">
+                  <div className="flex items-center justify-between text-xs text-default-600 dark:text-default-400 mb-2">
                     <span>{stat.description}</span>
                     <span>{stat.progress.toFixed(1)}%</span>
                   </div>
@@ -328,10 +328,10 @@ export default function QuestionsPage() {
         <Card className="border-0 shadow-xl overflow-hidden">
           <CardHeader className="pb-6">
             <div className="w-full">
-              <h3 className="text-xl font-bold text-default-900">
+              <h3 className="text-xl font-bold text-default-900 dark:text-white">
                 Question Type Distribution
               </h3>
-              <p className="text-sm text-default-600">
+              <p className="text-sm text-default-600 dark:text-default-400">
                 Overview of different question types in your system
               </p>
             </div>
@@ -341,21 +341,21 @@ export default function QuestionsPage() {
               {typeDistributionCards.map((type, index) => (
                 <div
                   key={index}
-                  className="p-4 rounded-xl border border-default-200 hover:border-default-300 transition-all duration-200 hover:shadow-md"
+                  className="p-4 rounded-xl border border-default-200 dark:border-default-700 hover:border-default-300 dark:hover:border-default-600 transition-all duration-200 hover:shadow-md bg-white dark:bg-gray-800"
                 >
                   <div className="flex items-center gap-3 mb-3">
                     <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${type.bgColor} flex items-center justify-center`}>
                       <type.icon className={`w-5 h-5 ${type.color}`} />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-default-900">{type.title}</p>
-                      <p className="text-xs text-default-500">{type.description}</p>
+                      <p className="text-sm font-medium text-default-900 dark:text-white">{type.title}</p>
+                      <p className="text-xs text-default-500 dark:text-default-400">{type.description}</p>
                     </div>
                   </div>
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-2xl font-bold text-default-900">{type.value}</span>
-                      <span className="text-sm font-medium text-default-600">{type.percentage.toFixed(1)}%</span>
+                      <span className="text-2xl font-bold text-default-900 dark:text-white">{type.value}</span>
+                      <span className="text-sm font-medium text-default-600 dark:text-default-400">{type.percentage.toFixed(1)}%</span>
                     </div>
                     <Progress
                       value={type.percentage}
@@ -378,10 +378,10 @@ export default function QuestionsPage() {
         <Card className="border-0 shadow-xl overflow-hidden">
           <CardHeader className="pb-6">
             <div className="w-full">
-              <h3 className="text-xl font-bold text-default-900">
+              <h3 className="text-xl font-bold text-default-900 dark:text-white">
                 Question List
               </h3>
-              <p className="text-sm text-default-600">
+              <p className="text-sm text-default-600 dark:text-default-400">
                 View and manage all your questions with advanced filtering and sorting
               </p>
             </div>
@@ -390,12 +390,12 @@ export default function QuestionsPage() {
             {loading ? (
               <div className="py-12">
                 <div className="flex flex-col items-center justify-center space-y-4">
-                  <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center animate-pulse">
-                    <MessageSquareIcon className="w-8 h-8 text-blue-600" />
+                  <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-full flex items-center justify-center animate-pulse">
+                    <MessageSquareIcon className="w-8 h-8 text-blue-600 dark:text-blue-400" />
                   </div>
                   <div className="text-center">
-                    <div className="text-lg font-medium text-default-600 mb-2">Loading questions...</div>
-                    <div className="text-sm text-default-400">Please wait while we fetch your data</div>
+                    <div className="text-lg font-medium text-default-600 dark:text-default-400 mb-2">Loading questions...</div>
+                    <div className="text-sm text-default-400 dark:text-default-500">Please wait while we fetch your data</div>
                   </div>
                 </div>
               </div>

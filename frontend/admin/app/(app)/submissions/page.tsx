@@ -374,7 +374,7 @@ export default function SubmissionsPage() {
           {statsCards.map((stat, i) => (
             <Card
               key={i}
-              className={`border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-[1.05] hover:-translate-y-2 bg-white/80 backdrop-blur-sm overflow-hidden group cursor-pointer ${
+              className={`border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-[1.05] hover:-translate-y-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm overflow-hidden group cursor-pointer ${
                 stat.urgent ? 'ring-2 ring-orange-400 ring-opacity-75 shadow-orange-200' : ''
               }`}
             >
@@ -397,13 +397,13 @@ export default function SubmissionsPage() {
                       >
                         <stat.icon className="w-5 h-5" />
                       </div>
-                      <p className="text-sm font-semibold text-slate-600 group-hover:text-slate-700">
+                      <p className="text-sm font-semibold text-slate-600 dark:text-gray-300 group-hover:text-slate-700 dark:group-hover:text-gray-200">
                         {stat.title}
         </p>
       </div>
 
                     <div className="mb-3">
-                      <p className="text-3xl font-bold text-slate-900 group-hover:scale-105 transition-transform duration-300">
+                      <p className="text-3xl font-bold text-slate-900 dark:text-white group-hover:scale-105 transition-transform duration-300">
                         {stat.value}
                       </p>
                       <Progress
@@ -411,13 +411,13 @@ export default function SubmissionsPage() {
                         className="mt-2"
                         classNames={{
                           indicator: `bg-gradient-to-r ${stat.gradient}`,
-                          track: "bg-slate-200/50"
+                          track: "bg-slate-200/50 dark:bg-gray-600/50"
                         }}
                         size="sm"
                       />
                     </div>
                     
-                    <p className="text-xs text-slate-500 group-hover:text-slate-600 transition-colors duration-300">
+                    <p className="text-xs text-slate-500 dark:text-gray-400 group-hover:text-slate-600 dark:group-hover:text-gray-300 transition-colors duration-300">
                       {stat.description}
                     </p>
         </div>
@@ -432,13 +432,13 @@ export default function SubmissionsPage() {
           {/* Left Panel - Feedback & Submission Selection */}
           <div className="lg:col-span-1 space-y-6">
             {/* Feedback Selector */}
-            <Card className="border-0 shadow-xl bg-white/70 backdrop-blur-sm overflow-hidden hover:shadow-2xl transition-all duration-300">
+            <Card className="border-0 shadow-xl bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm overflow-hidden hover:shadow-2xl transition-all duration-300">
               <CardBody className="p-6">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg">
                     <FileText className="w-4 h-4 text-white" />
                   </div>
-                  <h3 className="font-semibold text-slate-700">Feedback Selection</h3>
+                  <h3 className="font-semibold text-slate-700 dark:text-gray-300">Feedback Selection</h3>
                 </div>
                 <FeedbackSelector
                   options={feedbackOptions}
@@ -461,7 +461,7 @@ export default function SubmissionsPage() {
 
             {/* Modern Loading State for Submissions */}
             {submissionLoading && (
-              <Card className="border-0 shadow-xl bg-white/70 backdrop-blur-sm">
+              <Card className="border-0 shadow-xl bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm">
                 <CardBody className="p-8 text-center">
                   <div className="relative">
                     <Spinner 
@@ -472,10 +472,10 @@ export default function SubmissionsPage() {
                         circle2: "border-b-purple-500"
                       }}
                     />
-                    <div className="absolute inset-0 rounded-full border-2 border-blue-200 animate-ping"></div>
+                    <div className="absolute inset-0 rounded-full border-2 border-blue-200 dark:border-blue-800 animate-ping"></div>
                   </div>
-                  <p className="text-slate-600 font-medium mt-4">Loading submissions...</p>
-                  <p className="text-slate-400 text-sm">Analyzing feedback data</p>
+                  <p className="text-slate-600 dark:text-gray-300 font-medium mt-4">Loading submissions...</p>
+                  <p className="text-slate-400 dark:text-gray-500 text-sm">Analyzing feedback data</p>
                 </CardBody>
               </Card>
             )}
@@ -658,14 +658,14 @@ export default function SubmissionsPage() {
 
             {/* Feedback Analysis Summary */}
             {selectedFeedbackId && submissionItems.length > 0 && (
-              <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-50 to-pink-50 overflow-hidden">
+              <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 overflow-hidden">
                 <CardHeader className="pb-4">
                   <div className="w-full">
-                    <h3 className="text-lg font-bold text-default-900 flex items-center gap-2">
-                      <TrendingUpIcon className="w-5 h-5 text-purple-600" />
+                    <h3 className="text-lg font-bold text-default-900 dark:text-white flex items-center gap-2">
+                      <TrendingUpIcon className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                       Feedback Analysis Summary
                     </h3>
-                    <p className="text-sm text-default-600">
+                    <p className="text-sm text-default-600 dark:text-gray-400">
                       Overall insights and patterns from all submissions
                     </p>
                   </div>
@@ -681,14 +681,14 @@ export default function SubmissionsPage() {
 
             {/* Answers Section */}
             {selectedSubmission && selectedFeedbackId && (
-              <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-indigo-50/30 overflow-hidden">
+              <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-indigo-50/30 dark:from-gray-800 dark:to-indigo-900/20 overflow-hidden">
                 <CardHeader className="pb-4">
                   <div className="w-full">
-                    <h3 className="text-lg font-bold text-default-900 flex items-center gap-2">
+                    <h3 className="text-lg font-bold text-default-900 dark:text-white flex items-center gap-2">
                       <FileText className="w-5 h-5 text-primary" />
                       Submission Responses
                     </h3>
-                    <p className="text-sm text-default-600">
+                    <p className="text-sm text-default-600 dark:text-gray-400">
                       Detailed answers and feedback content
                     </p>
                 </div>
@@ -704,26 +704,26 @@ export default function SubmissionsPage() {
 
             {/* Research & HR Guide */}
             {!selectedFeedbackId && (
-              <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-purple-50/30 overflow-hidden">
+              <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-purple-50/30 dark:from-gray-800 dark:to-purple-900/20 overflow-hidden">
                 <CardBody className="p-8">
                   <div className="max-w-2xl mx-auto">
                     <div className="text-center mb-8">
-                      <FileText className="w-16 h-16 text-purple-500 mx-auto mb-4" />
-                      <h3 className="text-2xl font-semibold text-default-700 mb-2">
+                      <FileText className="w-16 h-16 text-purple-500 dark:text-purple-400 mx-auto mb-4" />
+                      <h3 className="text-2xl font-semibold text-default-700 dark:text-gray-300 mb-2">
                         Research & HR Analytics Platform
                       </h3>
-                      <p className="text-default-600">
+                      <p className="text-default-600 dark:text-gray-400">
                         Advanced feedback analysis system for research and human resources insights
                       </p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                      <div className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl">
-                        <h4 className="font-semibold text-blue-800 mb-2 flex items-center gap-2">
+                      <div className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-xl">
+                        <h4 className="font-semibold text-blue-800 dark:text-blue-300 mb-2 flex items-center gap-2">
                           <TrendingUpIcon className="w-4 h-4" />
                           Research Features
                         </h4>
-                        <ul className="text-sm text-blue-700 space-y-1">
+                        <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
                           <li>• Quantitative & qualitative analysis</li>
                           <li>• Sentiment analysis & trends</li>
                           <li>• Statistical data export (CSV)</li>
@@ -732,12 +732,12 @@ export default function SubmissionsPage() {
                         </ul>
                       </div>
 
-                      <div className="p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-xl">
-                        <h4 className="font-semibold text-green-800 mb-2 flex items-center gap-2">
+                      <div className="p-4 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-xl">
+                        <h4 className="font-semibold text-green-800 dark:text-green-300 mb-2 flex items-center gap-2">
                           <CheckCircleIcon className="w-4 h-4" />
                           HR Applications
                         </h4>
-                        <ul className="text-sm text-green-700 space-y-1">
+                        <ul className="text-sm text-green-700 dark:text-green-300 space-y-1">
                           <li>• Employee satisfaction tracking</li>
                           <li>• Team collaboration insights</li>
                           <li>• Performance feedback analysis</li>
@@ -747,26 +747,26 @@ export default function SubmissionsPage() {
                       </div>
                     </div>
 
-                    <div className="bg-gradient-to-r from-purple-50 to-indigo-50 p-6 rounded-xl border border-purple-200">
-                      <h4 className="font-semibold text-purple-800 mb-3">How to Use:</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-purple-700">
+                    <div className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 p-6 rounded-xl border border-purple-200 dark:border-purple-800">
+                      <h4 className="font-semibold text-purple-800 dark:text-purple-300 mb-3">How to Use:</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-purple-700 dark:text-purple-300">
                         <div className="text-center">
-                          <div className="w-8 h-8 bg-purple-200 rounded-full flex items-center justify-center mx-auto mb-2 text-purple-800 font-bold">1</div>
+                          <div className="w-8 h-8 bg-purple-200 dark:bg-purple-800 rounded-full flex items-center justify-center mx-auto mb-2 text-purple-800 dark:text-purple-200 font-bold">1</div>
                           <p><strong>Select Feedback</strong><br />Choose a survey from the dropdown</p>
                         </div>
                         <div className="text-center">
-                          <div className="w-8 h-8 bg-purple-200 rounded-full flex items-center justify-center mx-auto mb-2 text-purple-800 font-bold">2</div>
+                          <div className="w-8 h-8 bg-purple-200 dark:bg-purple-800 rounded-full flex items-center justify-center mx-auto mb-2 text-purple-800 dark:text-purple-200 font-bold">2</div>
                           <p><strong>Analyze Submissions</strong><br />Rate quality & add insights</p>
                         </div>
                         <div className="text-center">
-                          <div className="w-8 h-8 bg-purple-200 rounded-full flex items-center justify-center mx-auto mb-2 text-purple-800 font-bold">3</div>
+                          <div className="w-8 h-8 bg-purple-200 dark:bg-purple-800 rounded-full flex items-center justify-center mx-auto mb-2 text-purple-800 dark:text-purple-200 font-bold">3</div>
                           <p><strong>Export Data</strong><br />Download CSV for research</p>
                         </div>
                       </div>
                     </div>
 
                     <div className="text-center mt-6">
-                      <p className="text-sm text-default-500">
+                      <p className="text-sm text-default-500 dark:text-gray-400">
                         Select a feedback survey from the left panel to begin analysis
                       </p>
                     </div>
@@ -856,7 +856,7 @@ function AnswersDisplay({ feedbackId, submissionId }: { feedbackId: number; subm
   if (qa.length === 0) {
     return (
       <div className="text-center py-8">
-        <p className="text-default-400">No responses found for this submission.</p>
+        <p className="text-default-400 dark:text-gray-500">No responses found for this submission.</p>
                 </div>
     );
   }
@@ -878,7 +878,7 @@ function AnswersDisplay({ feedbackId, submissionId }: { feedbackId: number; subm
                 {choice}
               </span>
             )) : (
-              <span className="text-default-400 text-sm italic">No selection</span>
+              <span className="text-default-400 dark:text-gray-500 text-sm italic">No selection</span>
             )}
                 </div>
         );
@@ -920,9 +920,9 @@ function AnswersDisplay({ feedbackId, submissionId }: { feedbackId: number; subm
       }
       default: {
         return (
-          <div className="mt-2 p-3 bg-gradient-to-r from-default-50 to-default-100 rounded-lg border border-default-200">
-            <p className="text-sm text-default-800 leading-relaxed">
-              {answer || <span className="text-default-400 italic">No response provided</span>}
+          <div className="mt-2 p-3 bg-gradient-to-r from-default-50 to-default-100 dark:from-gray-700 dark:to-gray-600 rounded-lg border border-default-200 dark:border-gray-600">
+            <p className="text-sm text-default-800 dark:text-gray-200 leading-relaxed">
+              {answer || <span className="text-default-400 dark:text-gray-500 italic">No response provided</span>}
             </p>
           </div>
         );
@@ -935,14 +935,14 @@ function AnswersDisplay({ feedbackId, submissionId }: { feedbackId: number; subm
       {qa.map((row, index) => (
         <div
           key={row.id}
-          className="p-4 bg-white rounded-xl border border-default-200 shadow-sm hover:shadow-md transition-shadow duration-200"
+          className="p-4 bg-white dark:bg-gray-800 rounded-xl border border-default-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow duration-200"
         >
           <div className="flex items-start gap-3">
-            <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-primary-100 to-primary-200 rounded-full flex items-center justify-center">
-              <span className="text-xs font-bold text-primary-700">{index + 1}</span>
+            <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-900 dark:to-primary-800 rounded-full flex items-center justify-center">
+              <span className="text-xs font-bold text-primary-700 dark:text-primary-300">{index + 1}</span>
             </div>
             <div className="flex-1 min-w-0">
-              <h4 className="text-sm font-semibold text-default-700 mb-2 leading-snug">
+              <h4 className="text-sm font-semibold text-default-700 dark:text-gray-300 mb-2 leading-snug">
                 {row.q}
               </h4>
               {renderAnswer(row)}

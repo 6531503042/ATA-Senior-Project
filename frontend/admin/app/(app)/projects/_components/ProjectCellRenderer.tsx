@@ -44,6 +44,7 @@ export default function ProjectCellRenderer({
           color="primary"
           onPress={() => onEdit(project)}
           aria-label="Edit project"
+          className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/20"
         >
           <EditIcon className="w-4 h-4" />
         </Button>
@@ -57,6 +58,7 @@ export default function ProjectCellRenderer({
           color="danger"
           onPress={() => onDelete(project.id)}
           aria-label="Delete project"
+          className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
         >
           <TrashIcon className="w-4 h-4" />
         </Button>
@@ -64,7 +66,12 @@ export default function ProjectCellRenderer({
 
       <Dropdown>
         <DropdownTrigger>
-          <Button isIconOnly size="sm" variant="light">
+          <Button 
+            isIconOnly 
+            size="sm" 
+            variant="light"
+            className="text-default-600 hover:text-default-700 hover:bg-default-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
+          >
             <EllipsisVertical className="w-4 h-4" />
           </Button>
         </DropdownTrigger>

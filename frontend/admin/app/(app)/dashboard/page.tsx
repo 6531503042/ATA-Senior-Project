@@ -86,10 +86,10 @@ export default function DashboardPage() {
           ) : (
             <Spinner size="lg" className="mb-4" />
           )}
-          <h2 className="text-lg sm:text-xl font-semibold text-default-800 mb-1">
+          <h2 className="text-lg sm:text-xl font-semibold text-default-800 dark:text-default-200 mb-1">
             Loading dashboard
           </h2>
-          <p className="text-default-600 text-sm sm:text-base">
+          <p className="text-default-600 dark:text-default-400 text-sm sm:text-base">
             Fetching your latest metrics…
           </p>
         </div>
@@ -103,10 +103,10 @@ export default function DashboardPage() {
       <div className="flex items-center justify-center min-h-dvh bg-transparent px-4">
         <Card className="w-full max-w-md">
           <CardBody className="p-6 text-center">
-            <h2 className="text-xl font-semibold text-red-600 mb-2">
+            <h2 className="text-xl font-semibold text-red-600 dark:text-red-400 mb-2">
               Authentication required
             </h2>
-            <p className="text-default-600 mb-4">
+            <p className="text-default-600 dark:text-default-400 mb-4">
               You need to be logged in to access the dashboard.
             </p>
             <Button
@@ -295,12 +295,12 @@ export default function DashboardPage() {
 
         {/* Error Display */}
         {error && (
-          <Card className="mt-4 sm:mt-6 bg-red-50 border border-red-200">
+          <Card className="mt-4 sm:mt-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
             <CardBody className="p-4 sm:p-6">
-              <p className="text-red-600 font-medium text-sm sm:text-base">
+              <p className="text-red-600 dark:text-red-400 font-medium text-sm sm:text-base">
                 Error loading dashboard data
               </p>
-              <p className="text-red-500 text-xs sm:text-sm mt-1 break-words">
+              <p className="text-red-500 dark:text-red-400 text-xs sm:text-sm mt-1 break-words">
                 {String(error)}
               </p>
               <div className="mt-3 sm:mt-4 flex flex-wrap gap-2">

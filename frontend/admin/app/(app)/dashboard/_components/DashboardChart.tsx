@@ -49,17 +49,17 @@ export function DashboardChart({ data, loading = false }: DashboardChartProps) {
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <BarChart3 className="w-5 h-5 text-blue-600" />
+            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+              <BarChart3 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                 Analytics Overview
               </h3>
-              <p className="text-sm text-gray-600">Performance metrics over time</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Performance metrics over time</p>
             </div>
           </div>
-          <div className="flex items-center gap-2 text-green-600">
+          <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
             <TrendingUp className="w-4 h-4" />
             <span className="text-sm font-medium">+12.5%</span>
           </div>
@@ -71,8 +71,8 @@ export function DashboardChart({ data, loading = false }: DashboardChartProps) {
             {/* Simple Bar Chart */}
             <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <h4 className="font-semibold text-default-800">{data.datasets[0]?.label || 'Data'}</h4>
-                <span className="text-sm text-default-500">Last 7 days</span>
+                <h4 className="font-semibold text-default-800 dark:text-default-200">{data.datasets[0]?.label || 'Data'}</h4>
+                <span className="text-sm text-default-500 dark:text-default-400">Last 7 days</span>
               </div>
               <div className="grid grid-cols-7 gap-3 items-end h-44">
                 {data.labels.map((label, index) => {
@@ -90,7 +90,7 @@ export function DashboardChart({ data, loading = false }: DashboardChartProps) {
                         style={{ height: `${percentage}%` }}
                         title={`${label}: ${value}`}
                       />
-                      <span className="mt-2 text-xs text-default-500">
+                      <span className="mt-2 text-xs text-default-500 dark:text-default-400">
                         {label}
                       </span>
                     </div>
@@ -101,31 +101,31 @@ export function DashboardChart({ data, loading = false }: DashboardChartProps) {
 
             {/* Summary Stats */}
             <div className="grid grid-cols-3 gap-4 pt-2">
-              <div className="text-center p-4 bg-blue-50 rounded-xl border border-blue-100">
-                <div className="text-2xl font-bold text-blue-600">
+              <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800">
+                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                   {data.datasets[0]?.data.reduce((a, b) => a + b, 0) || 0}
                 </div>
-                <div className="text-xs text-blue-600">Total</div>
+                <div className="text-xs text-blue-600 dark:text-blue-400">Total</div>
               </div>
-              <div className="text-center p-4 bg-green-50 rounded-xl border border-green-100">
-                <div className="text-2xl font-bold text-green-600">
+              <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-100 dark:border-green-800">
+                <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                   {Math.max(...(data.datasets[0]?.data || [0]))}
                 </div>
-                <div className="text-xs text-green-600">Peak</div>
+                <div className="text-xs text-green-600 dark:text-green-400">Peak</div>
               </div>
-              <div className="text-center p-4 bg-purple-50 rounded-xl border border-purple-100">
-                <div className="text-2xl font-bold text-purple-600">
+              <div className="text-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl border border-purple-100 dark:border-purple-800">
+                <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
                   {Math.round(
                     (data.datasets[0]?.data.reduce((a, b) => a + b, 0) || 0) /
                       (data.datasets[0]?.data.length || 1),
                   )}
                 </div>
-                <div className="text-xs text-purple-600">Average</div>
+                <div className="text-xs text-purple-600 dark:text-purple-400">Average</div>
               </div>
             </div>
           </div>
         ) : (
-          <div className="text-center py-8 text-gray-500">
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
             No chart data available
           </div>
         )}

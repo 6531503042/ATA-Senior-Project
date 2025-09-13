@@ -48,7 +48,7 @@ export default function DepartmentCellRenderer({
         variant="light"
         color="primary"
         onPress={() => onEdit?.(department)}
-        className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 transition-all duration-200"
+        className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200"
         title="Edit department"
       >
         <EditIcon className="w-4 h-4" />
@@ -60,7 +60,7 @@ export default function DepartmentCellRenderer({
         variant="light"
         color="danger"
         onPress={() => onDelete?.(department.id)}
-        className="text-red-600 hover:text-red-700 hover:bg-red-50 transition-all duration-200"
+        className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200"
         title="Delete department"
       >
         <TrashIcon className="w-4 h-4" />
@@ -72,7 +72,7 @@ export default function DepartmentCellRenderer({
             isIconOnly
             size="sm"
             variant="light"
-            className="text-default-600 hover:text-default-700 hover:bg-default-50 transition-all duration-200"
+            className="text-default-600 dark:text-default-400 hover:text-default-700 dark:hover:text-default-300 hover:bg-default-50 dark:hover:bg-default-100 transition-all duration-200"
             title="More options"
           >
             <MoreVerticalIcon className="w-4 h-4" />

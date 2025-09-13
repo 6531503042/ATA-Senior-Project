@@ -123,19 +123,19 @@ export default function DepartmentsPage() {
 
       <div className="space-y-8">
         {/* Header Section */}
-        <div className="relative overflow-hidden flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 p-6 rounded-2xl border border-white/10 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 shadow-2xl">
+        <div className="relative overflow-hidden flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 p-6 rounded-2xl border border-white/10 dark:border-gray-700 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 dark:from-gray-800 dark:via-purple-800 dark:to-gray-900 shadow-2xl">
           <div className="relative z-10 flex items-center gap-6">
-            <div className="p-4 bg-white/10 backdrop-blur-sm rounded-2xl">
+            <div className="p-4 bg-white/10 dark:bg-gray-700/30 backdrop-blur-sm rounded-2xl">
               <BuildingIcon className="w-8 h-8 text-white" />
             </div>
             <div>
               <h1 className="text-4xl font-bold text-white">Department Management</h1>
-              <p className="text-white/70 mt-1">Manage departments and their members</p>
+              <p className="text-white/70 dark:text-gray-300 mt-1">Manage departments and their members</p>
             </div>
           </div>
           <div className="relative z-10 flex flex-col sm:flex-row gap-3">
             <Button
-              className="w-full sm:w-auto font-semibold bg-white/10 hover:bg-white/20 text-white border-white/20"
+              className="w-full sm:w-auto font-semibold bg-white/10 hover:bg-white/20 dark:bg-gray-700/30 dark:hover:bg-gray-700/50 text-white border-white/20 dark:border-gray-600"
               color="default"
               startContent={<PlusIcon className="w-4 h-4" />}
               variant="bordered"
@@ -151,7 +151,7 @@ export default function DepartmentsPage() {
           {statsCards.map((stat, i) => (
             <Card
               key={i}
-              className="border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] bg-gradient-to-br from-white to-gray-50 overflow-hidden group"
+              className="border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 overflow-hidden group"
             >
               <CardBody className="p-6 relative">
                 <div
@@ -159,13 +159,13 @@ export default function DepartmentsPage() {
                 />
                 <div className="flex items-center justify-between relative z-10">
                   <div>
-                    <p className="text-sm font-medium text-default-500 mb-1">
+                    <p className="text-sm font-medium text-default-500 dark:text-default-400 mb-1">
                       {stat.title}
                     </p>
-                    <p className="text-3xl font-bold text-default-900">
+                    <p className="text-3xl font-bold text-default-900 dark:text-white">
                       {stat.value}
                     </p>
-                    <p className="text-xs text-default-400 mt-1">
+                    <p className="text-xs text-default-400 dark:text-default-500 mt-1">
                       {stat.description}
                     </p>
                   </div>
@@ -183,10 +183,10 @@ export default function DepartmentsPage() {
         <Card className="border-0 shadow-xl overflow-hidden">
           <CardHeader className="pb-6">
             <div className="w-full">
-              <h3 className="text-xl font-bold text-default-900">
+              <h3 className="text-xl font-bold text-default-900 dark:text-white">
                 Department List
               </h3>
-              <p className="text-sm text-default-600">
+              <p className="text-sm text-default-600 dark:text-default-400">
                 View and manage all departments
               </p>
             </div>
@@ -194,11 +194,11 @@ export default function DepartmentsPage() {
           <CardBody className="pt-0">
             {loading ? (
               <div className="flex items-center justify-center py-12">
-                <div className="text-default-400">Loading departments...</div>
+                <div className="text-default-400 dark:text-default-500">Loading departments...</div>
               </div>
             ) : error ? (
               <div className="flex items-center justify-center py-12">
-                <div className="text-red-500">Error: {error}</div>
+                <div className="text-red-500 dark:text-red-400">Error: {error}</div>
               </div>
             ) : (
               <DepartmentTable

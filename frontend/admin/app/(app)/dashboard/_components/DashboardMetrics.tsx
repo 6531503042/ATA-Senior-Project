@@ -126,14 +126,14 @@ export function DashboardMetrics({
       {mainMetrics.length > 0 && (
         <div>
           <div className="flex items-center gap-3 mb-6">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <TrendingUp className="w-6 h-6 text-blue-600" />
+            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+              <TrendingUp className="w-6 h-6 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-900">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                 Performance Overview
               </h2>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 Key metrics and growth indicators
               </p>
             </div>
@@ -166,10 +166,10 @@ export function DashboardMetrics({
                         </span>
                       )}
                     </div>
-                    <h3 className="text-sm font-medium text-gray-600 mb-1">
+                    <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
                       {metric.title}
                     </h3>
-                    <p className="text-2xl font-bold text-gray-900">
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
                       {typeof metric.value === 'number'
                         ? metric.value.toLocaleString()
                         : metric.value}
@@ -186,14 +186,14 @@ export function DashboardMetrics({
       {advancedMetrics.length > 0 && (
         <div>
           <div className="flex items-center gap-3 mb-6">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <BarChart3 className="w-6 h-6 text-purple-600" />
+            <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+              <BarChart3 className="w-6 h-6 text-purple-600 dark:text-purple-400" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-900">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                 Advanced Analytics
               </h2>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 Detailed engagement and activity metrics
               </p>
             </div>
@@ -214,10 +214,10 @@ export function DashboardMetrics({
                         <Icon className={`w-6 h-6 ${metric.textColor}`} />
                       </div>
                       <div className="flex-1">
-                        <h3 className="text-sm font-medium text-gray-600 mb-1">
+                        <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
                           {metric.title}
                         </h3>
-                        <p className="text-xl font-bold text-gray-900">
+                        <p className="text-xl font-bold text-gray-900 dark:text-white">
                           {typeof metric.value === 'number'
                             ? metric.value.toLocaleString()
                             : metric.value}

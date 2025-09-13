@@ -208,8 +208,8 @@ export default function FeedbackTable({
                 <MessageSquare className="w-4 h-4 text-blue-600" />
               </div>
               <div className="flex flex-col">
-                <p className="font-semibold text-gray-900 text-sm">{feedback.title}</p>
-                <p className="text-xs text-gray-500 truncate max-w-xs">
+                <p className="font-semibold text-gray-900 dark:text-white text-sm">{feedback.title}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-xs">
                   {feedback.description}
                 </p>
               </div>
@@ -223,8 +223,8 @@ export default function FeedbackTable({
               <Building className="w-3 h-3 text-purple-600" />
             </div>
             <div className="flex flex-col">
-              <span className="text-sm font-medium text-gray-700">{getScopeText(feedback)}</span>
-              <span className="text-xs text-gray-500">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{getScopeText(feedback)}</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">
                 {feedback.isDepartmentWide ? 'Department-wide' : 'Project-specific'}
               </span>
             </div>
@@ -247,7 +247,7 @@ export default function FeedbackTable({
               >
                 {visibilityStatus.text}
               </Chip>
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-gray-500 dark:text-gray-400">
                 {feedback.startDate ? formatDate(feedback.startDate) : 'Not set'}
               </span>
             </div>
@@ -260,10 +260,10 @@ export default function FeedbackTable({
               <FileText className="w-3 h-3 text-orange-600" />
             </div>
             <div className="flex flex-col">
-              <span className="text-sm font-semibold text-gray-700">
+              <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                 {feedback.questionIds?.length || 0}
               </span>
-              <span className="text-xs text-gray-500">questions</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">questions</span>
             </div>
           </div>
         );
@@ -274,10 +274,10 @@ export default function FeedbackTable({
               <Users className="w-3 h-3 text-cyan-600" />
             </div>
             <div className="flex flex-col">
-              <span className="text-sm font-semibold text-gray-700">
+              <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                 {feedback.submissionCount || 0}
               </span>
-              <span className="text-xs text-gray-500">responses</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">responses</span>
             </div>
           </div>
         );
@@ -298,8 +298,8 @@ export default function FeedbackTable({
               <Calendar className="w-3 h-3 text-gray-600" />
             </div>
             <div className="flex flex-col">
-              <span className="text-sm text-gray-700">{formatDate(feedback.createdAt)}</span>
-              <span className="text-xs text-gray-500">
+              <span className="text-sm text-gray-700 dark:text-gray-300">{formatDate(feedback.createdAt)}</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">
                 {feedback.allowAnonymous ? 'Anonymous allowed' : 'Named only'}
               </span>
             </div>
@@ -315,6 +315,7 @@ export default function FeedbackTable({
               color="primary"
               onPress={() => onEdit(feedback)}
               aria-label="Edit feedback"
+              className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/20"
             >
               <Edit className="w-4 h-4" />
             </Button>
@@ -325,12 +326,18 @@ export default function FeedbackTable({
               color="danger"
               onPress={() => onDelete(feedback.id)}
               aria-label="Delete feedback"
+              className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
             >
               <Trash2 className="w-4 h-4" />
             </Button>
             <Dropdown>
               <DropdownTrigger>
-                <Button isIconOnly size="sm" variant="light">
+                <Button 
+                  isIconOnly 
+                  size="sm" 
+                  variant="light"
+                  className="text-default-600 hover:text-default-700 hover:bg-default-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
+                >
                   <MoreVertical className="w-4 h-4" />
                 </Button>
               </DropdownTrigger>
@@ -359,12 +366,12 @@ export default function FeedbackTable({
 
   if (feedbacks.length === 0) {
     return (
-      <Card className="border-2 border-dashed border-gray-200 bg-gray-50">
+      <Card className="border-2 border-dashed border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
         <CardBody className="py-12">
           <div className="text-center">
-            <MessageSquare className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-600 mb-2">No feedback surveys yet</h3>
-            <p className="text-gray-500">Create your first feedback survey to get started</p>
+            <MessageSquare className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-400 mb-2">No feedback surveys yet</h3>
+            <p className="text-gray-500 dark:text-gray-400">Create your first feedback survey to get started</p>
           </div>
         </CardBody>
       </Card>
@@ -378,10 +385,10 @@ export default function FeedbackTable({
         classNames={{
           wrapper: "min-w-full overflow-visible",
           table: "min-w-full",
-          thead: "bg-default-50",
-          th: "text-default-600 font-semibold text-xs uppercase tracking-wide py-2",
+          thead: "bg-default-50 dark:bg-gray-800",
+          th: "text-default-600 dark:text-gray-300 font-semibold text-xs uppercase tracking-wide py-2",
           td: "py-3",
-          tr: "hover:bg-default-50 transition-colors",
+          tr: "hover:bg-default-50 dark:hover:bg-gray-700 transition-colors",
         }}
         sortDescriptor={sortDescriptor}
         topContent={topContent}
@@ -402,7 +409,7 @@ export default function FeedbackTable({
           {items.map((feedback) => (
             <TableRow 
               key={feedback.id}
-              className="cursor-pointer hover:bg-gray-50 transition-colors"
+              className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
               {(columnKey) => (
                 <TableCell className="py-4">

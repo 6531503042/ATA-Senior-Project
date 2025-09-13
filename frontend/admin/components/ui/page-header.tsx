@@ -42,17 +42,17 @@ export function PageHeader({
             {icon && <span className="text-white">{icon}</span>}
           </div>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">{title || moduleLabel}</h1>
-            <p className="text-start text-sm text-default-500 font-medium">
+            <h1 className="text-3xl font-bold tracking-tight text-default-900 dark:text-white">{title || moduleLabel}</h1>
+            <p className="text-start text-sm text-default-500 dark:text-gray-400 font-medium">
               {description}
             </p>
           </div>
         </div>
         {right && <div className="mt-2 md:mt-0">{right}</div>}
       </div>
-      <div className="py-3 px-4 rounded-xl bg-white shadow-sm ring-1 ring-default-200/60 mb-4 mt-4">
+      <div className="py-3 px-4 rounded-xl bg-white dark:bg-gray-800 shadow-sm ring-1 ring-default-200/60 dark:ring-gray-700/60 mb-4 mt-4">
         <Breadcrumbs
-          className="w-full text-sm text-default-500"
+          className="w-full text-sm text-default-500 dark:text-gray-400"
           underline="hover"
         >
           {crumbs.map((c, i) => (

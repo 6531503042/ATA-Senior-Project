@@ -77,26 +77,26 @@ function FeedbackSelector({
   return (
     <div className="relative w-full">
       {/* Minimal label */}
-      <label className="text-sm font-medium text-slate-700 mb-2 block">{label}</label>
+      <label className="text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 block">{label}</label>
 
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         ref={buttonRef}
-        className={`group relative w-full border rounded-xl px-4 py-3 text-left bg-white focus:outline-none focus:ring-2 focus:ring-purple-500/20 transition-colors ${
-          selectedOption ? 'border-slate-300' : 'border-slate-200 hover:border-slate-300'
+        className={`group relative w-full border rounded-xl px-4 py-3 text-left bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500/20 transition-colors ${
+          selectedOption ? 'border-slate-300 dark:border-gray-600' : 'border-slate-200 dark:border-gray-700 hover:border-slate-300 dark:hover:border-gray-600'
         }`}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
       >
         <div className="flex items-center justify-between relative z-10">
           <div className="flex items-center gap-3">
-            <span className={`font-medium ${selectedOption ? 'text-slate-800' : 'text-slate-500'}`}>
+            <span className={`font-medium ${selectedOption ? 'text-slate-800 dark:text-white' : 'text-slate-500 dark:text-gray-400'}`}>
               {selectedOption ? selectedOption.title : placeholder}
             </span>
           </div>
           <ChevronDown 
-            className={`w-5 h-5 text-slate-400 transition-transform ${isOpen ? 'rotate-180 text-purple-500' : ''}`} 
+            className={`w-5 h-5 text-slate-400 dark:text-gray-500 transition-transform ${isOpen ? 'rotate-180 text-purple-500 dark:text-purple-400' : ''}`} 
           />
         </div>
       </button>
@@ -104,14 +104,14 @@ function FeedbackSelector({
       {/* Modern Dropdown - rendered in a portal with very high z-index */}
       {isMounted && isOpen && createPortal(
         <div
-          className="fixed z-[9999] bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden"
+          className="fixed z-[9999] bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-xl shadow-xl overflow-hidden"
           style={{ top: menuPos.top, left: menuPos.left, width: menuPos.width }}
           ref={menuRef}
           role="listbox"
         >
           <div className="max-h-72 overflow-auto py-1">
             {options.length === 0 ? (
-              <div className="px-4 py-6 text-center text-sm text-slate-500">No feedbacks available</div>
+              <div className="px-4 py-6 text-center text-sm text-slate-500 dark:text-gray-400">No feedbacks available</div>
             ) : (
               <>
                 <div className="py-1">
@@ -120,15 +120,15 @@ function FeedbackSelector({
                       key={option.id}
                       type="button"
                       onClick={() => handleSelect(option)}
-                      className={`w-full px-4 py-2 text-left text-sm flex items-center gap-3 hover:bg-slate-50 ${
-                        value === option.id ? 'bg-slate-50 font-medium' : 'text-slate-700'
+                      className={`w-full px-4 py-2 text-left text-sm flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-gray-700 ${
+                        value === option.id ? 'bg-slate-50 dark:bg-gray-700 font-medium' : 'text-slate-700 dark:text-gray-300'
                       }`}
                       role="option"
                       aria-selected={value === option.id}
                     >
-                      <MessageSquare className="w-4 h-4 text-slate-400" />
+                      <MessageSquare className="w-4 h-4 text-slate-400 dark:text-gray-500" />
                       <span className="truncate flex-1">{option.title}</span>
-                      {value === option.id && <Check className="w-4 h-4 text-purple-600" />}
+                      {value === option.id && <Check className="w-4 h-4 text-purple-600 dark:text-purple-400" />}
                     </button>
                   ))}
                 </div>

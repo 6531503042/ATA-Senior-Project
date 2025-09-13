@@ -16,8 +16,8 @@ export default function BottomContent({
   currentPage,
 }: BottomContentProps) {
   return (
-    <div className="py-3 px-4 flex flex-col sm:flex-row gap-3 sm:gap-0 sm:justify-between sm:items-center border-t border-default-200 bg-white">
-      <div className="text-sm text-default-500">
+    <div className="py-3 px-4 flex flex-col sm:flex-row gap-3 sm:gap-0 sm:justify-between sm:items-center border-t border-default-200 dark:border-default-700 bg-white dark:bg-default-50">
+      <div className="text-sm text-default-500 dark:text-default-400">
         Showing {(currentPage - 1) * 10 + 1} to{' '}
         {Math.min(currentPage * 10, totalUsers)} of {totalUsers} users
       </div>

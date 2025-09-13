@@ -21,6 +21,24 @@
       ],
       "@components/*": [
         "./src/app/components/*"
+      ],
+      "@/services/*": [
+        "./services/*"
+      ],
+      "@/types/*": [
+        "./types/*"
+      ],
+      "@/libs/*": [
+        "./libs/*"
+      ],
+      "@/hooks/*": [
+        "./hooks/*"
+      ],
+      "@/stores/*": [
+        "./stores/*"
+      ],
+      "@/contexts/*": [
+        "./contexts/*"
       ]
     },
     "types": [

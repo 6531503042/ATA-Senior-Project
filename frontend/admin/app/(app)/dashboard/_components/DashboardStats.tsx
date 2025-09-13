@@ -197,7 +197,7 @@ export function DashboardStats({ loading = false }: DashboardStatsProps) {
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {statsConfig.map((stat, index) => (
         <Link key={index} href={stat.href}>
-          <Card className="border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] bg-gradient-to-br from-white to-gray-50 overflow-hidden group cursor-pointer">
+          <Card className="border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 overflow-hidden group cursor-pointer">
             <CardBody className="p-6 relative">
               {/* subtle overlay on hover to add depth */}
               <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
@@ -207,8 +207,8 @@ export function DashboardStats({ loading = false }: DashboardStatsProps) {
                     <stat.icon className="w-6 h-6" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-default-500">{stat.title}</p>
-                    <p className={`text-3xl font-bold ${stat.textColor.replace('text-', 'text-')}`}>
+                    <p className="text-sm font-medium text-default-500 dark:text-default-400">{stat.title}</p>
+                    <p className={`text-3xl font-bold ${stat.textColor.replace('text-', 'text-')} dark:text-white`}>
                       {stat.value.toLocaleString()}
                     </p>
                   </div>
@@ -219,7 +219,7 @@ export function DashboardStats({ loading = false }: DashboardStatsProps) {
                   ) : (
                     <ArrowDownRight className="w-4 h-4 text-red-500" />
                   )}
-                  <span className={`text-sm font-medium ${stat.trendUp ? 'text-green-600' : 'text-red-600'}`}>
+                  <span className={`text-sm font-medium ${stat.trendUp ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                     {stat.trend}
                   </span>
                 </div>

@@ -184,11 +184,11 @@ export default function ProjectTable({
                 {project.name.charAt(0).toUpperCase()}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-bold text-small capitalize text-default-900 group-hover:text-blue-600 transition-colors">
+                <p className="text-bold text-small capitalize text-default-900 dark:text-white group-hover:text-blue-600 transition-colors">
                   {project.name}
                 </p>
                 {project.description && (
-                  <p className="text-default-500 text-xs leading-relaxed max-w-xs">
+                  <p className="text-default-500 dark:text-gray-400 text-xs leading-relaxed max-w-xs">
                     {project.description}
                   </p>
                 )}
@@ -202,10 +202,10 @@ export default function ProjectTable({
                 <Users className="w-4 h-4 text-primary-600" />
               </div>
               <div className="flex flex-col">
-                <span className="text-bold text-small text-default-900">
+                <span className="text-bold text-small text-default-900 dark:text-white">
                   {project.memberCount}
                 </span>
-                <span className="text-xs text-default-500">
+                <span className="text-xs text-default-500 dark:text-gray-400">
                   {project.memberCount === 1 ? 'member' : 'members'}
                 </span>
               </div>
@@ -228,13 +228,13 @@ export default function ProjectTable({
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-1">
                 <Calendar className="w-3 h-3 text-green-500" />
-                <span className="text-xs text-default-600">
+                <span className="text-xs text-default-600 dark:text-gray-300">
                   Start: {project.startDate ? new Date(project.startDate).toLocaleDateString() : 'N/A'}
                 </span>
               </div>
               <div className="flex items-center gap-1">
                 <Calendar className="w-3 h-3 text-orange-500" />
-                <span className="text-xs text-default-600">
+                <span className="text-xs text-default-600 dark:text-gray-300">
                   End: {project.endDate ? new Date(project.endDate).toLocaleDateString() : 'N/A'}
                 </span>
               </div>
@@ -243,10 +243,10 @@ export default function ProjectTable({
         case 'createdAt':
           return (
             <div className="flex flex-col gap-1">
-              <p className="text-bold text-small text-default-900">
+              <p className="text-bold text-small text-default-900 dark:text-white">
                 {new Date(project.createdAt).toLocaleDateString()}
               </p>
-              <p className="text-default-500 text-xs">
+              <p className="text-default-500 dark:text-gray-400 text-xs">
                 {new Date(project.createdAt).toLocaleTimeString()}
               </p>
             </div>
@@ -273,10 +273,10 @@ export default function ProjectTable({
         classNames={{
           wrapper: 'min-w-full overflow-visible',
           table: 'min-w-full',
-          thead: 'bg-default-50',
-          th: 'text-default-600 font-semibold text-sm uppercase tracking-wider',
+          thead: 'bg-default-50 dark:bg-gray-800',
+          th: 'text-default-600 dark:text-gray-300 font-semibold text-sm uppercase tracking-wider',
           td: 'py-3',
-          tr: 'hover:bg-default-50 transition-colors',
+          tr: 'hover:bg-default-50 dark:hover:bg-gray-700 transition-colors',
         }}
         sortDescriptor={sortDescriptor}
         topContent={topContent}
