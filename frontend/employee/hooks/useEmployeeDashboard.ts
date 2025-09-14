@@ -48,10 +48,10 @@ export function useEmployeeDashboard() {
       // Transform the response to match our interface
       const transformedData: EmployeeDashboardData = {
         stats: {
-          totalFeedbacks: response?.availableFeedbacks || 0,
-          pendingFeedbacks: response?.pendingFeedbacks || 0,
-          completedFeedbacks: response?.totalSubmissions || 0,
-          totalSubmissions: response?.totalSubmissions || 0,
+          totalFeedbacks: (response as any)?.availableFeedbacks || 0,
+          pendingFeedbacks: (response as any)?.pendingFeedbacks || 0,
+          completedFeedbacks: (response as any)?.totalSubmissions || 0,
+          totalSubmissions: (response as any)?.totalSubmissions || 0,
         },
         recentFeedbacks: [],
         recentSubmissions: [],

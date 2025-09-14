@@ -1,6 +1,7 @@
 "use client";
 
-import { EmployeeFeedback } from "@/types/employee";
+import React from "react";
+import { EmployeeFeedback } from "../../../../../types/employee";
 
 interface FeedbackHeaderProps {
   feedback: EmployeeFeedback;

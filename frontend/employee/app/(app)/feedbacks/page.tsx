@@ -244,7 +244,7 @@ export default function FeedbacksPage() {
                       </div>
                       
                       <div className="text-sm text-default-500">
-                        <span className="font-medium">Questions:</span> {feedback.questions.length}
+                        <span className="font-medium">Questions:</span> {feedback.questions?.length || 0}
                       </div>
                     </div>
                     

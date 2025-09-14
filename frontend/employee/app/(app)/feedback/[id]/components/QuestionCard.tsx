@@ -4,9 +4,9 @@ import { Label } from "../../../../components/ui/label";
 import { Textarea } from "../../../../components/ui/textarea";
 import { Checkbox } from "../../../../components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "../../../../components/ui/radio-group";
-import { cn } from "@/libs/utils";
+import { cn } from "../../../../../libs/utils";
 import SentimentIndicator from "./SentimentIndicator";
-import { QuestionCardProps } from "@/types/employee";
+import { QuestionCardProps } from "../../../../../types/employee";
 
 const MAX_TEXT_LENGTH = 255;
 
@@ -57,7 +57,7 @@ export default function QuestionCard({
             onValueChange={onAnswerChange}
             className="grid grid-cols-1 md:grid-cols-2 gap-4"
           >
-            {question.answers?.map((answer, index) => (
+            {question.answers?.map((answer: { text: string; value: string }, index: number) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 10 }}
@@ -92,7 +92,7 @@ export default function QuestionCard({
 
         {question.type === "MULTIPLE_CHOICE" && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {question.answers?.map((answer, index) => (
+            {question.answers?.map((answer: { text: string; value: string }, index: number) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 10 }}
@@ -173,7 +173,7 @@ export default function QuestionCard({
 
         {question.type === "SENTIMENT" && (
           <div className="flex flex-col sm:flex-row justify-center items-center gap-6 py-6">
-            {question.answers?.map((answer) => (
+            {question.answers?.map((answer: { text: string; value: string }) => (
               <motion.button
                 key={answer.value}
                 initial={{ opacity: 0, scale: 0.9 }}

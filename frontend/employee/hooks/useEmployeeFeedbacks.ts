@@ -55,8 +55,8 @@ export function useEmployeeFeedbacks() {
       ]);
 
       // Handle paginated response structure
-      const feedbacksData = feedbacksResponse?.content || feedbacksResponse || [];
-      const submissionsData = submissionsResponse?.content || submissionsResponse || [];
+      const feedbacksData = (feedbacksResponse as any)?.content || feedbacksResponse || [];
+      const submissionsData = (submissionsResponse as any)?.content || submissionsResponse || [];
 
       setFeedbacks(Array.isArray(feedbacksData) ? feedbacksData : []);
       setSubmissions(Array.isArray(submissionsData) ? submissionsData : []);
