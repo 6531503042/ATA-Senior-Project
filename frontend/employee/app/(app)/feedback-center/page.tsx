@@ -175,7 +175,7 @@ export default function FeedbackCenter() {
               {pendingFeedbacks.length > 0 && (
                 <Button
                   as={Link}
-                  href="/feedbacks"
+                  href="/feedback-center"
                   variant="solid"
                   color="primary"
                   size="lg"
@@ -253,7 +253,7 @@ export default function FeedbackCenter() {
                 <div className="space-y-3">
                   <Button
                     as={Link}
-                    href="/feedbacks"
+                    href="/feedback-center"
                     variant="flat"
                     className="w-full justify-start bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 hover:from-blue-100 hover:to-blue-200"
                     startContent={<MessageSquare className="w-4 h-4" />}

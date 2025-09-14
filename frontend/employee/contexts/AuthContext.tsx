@@ -23,7 +23,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const protectedRoutes = [
     '/',
     '/feedback-center',
-    '/feedbacks',
     '/feedback',
   ];
   const authRoutes = ['/login', '/logout'];

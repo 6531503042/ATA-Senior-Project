@@ -4,7 +4,7 @@ import { LogOut } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import { useAuthContext } from '@/contexts/AuthContext';
+import { useAuthContext } from '../../contexts/AuthContext';
 
 type NavbarProps = {
   userName?: string;
@@ -12,8 +12,7 @@ type NavbarProps = {
 };
 
 const links = [
-  { label: 'Feedback Center', href: '/feedback-center' },
-  { label: 'Feedbacks', href: '/feedbacks' }
+  { label: 'Feedback Center', href: '/feedback-center' }
 ];
 
 function isRouteActive(pathname: string, href: string) {
