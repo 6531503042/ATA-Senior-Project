@@ -1,189 +1,205 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import { login, logout, refresh, validate } from '../services/authService';
-import { setToken, clearTokens } from '../libs/storage';
-import type { AuthStore } from '../types/auth';
-import type { User, UserRole, UserStatus } from '../types/user';
+import type { AuthStore, LoginRequest } from '../types/auth';
+import type { User } from '../types/user';
 
-export const useAuthStore = create<AuthStore>()(
+import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
+
+import { getToken, saveToken, removeToken } from '../utils/storage';
+import { isTokenExpired, isTokenExpiringSoon } from '../utils/token';
+import { login, logout, refresh, validate } from '../services/authService';
+import { canAccessEmployee } from '../utils/roleUtils';
+
+const useAuthStore = create<AuthStore>()(
   persist(
     (set, get) => ({
-      // State
-      user: null,
-      accessToken: null,
-      refreshToken: null,
       loading: false,
       error: null,
+      user: null,
 
-      // Computed properties
-      get isLoggedIn() {
-        return !!this.user && !!this.accessToken;
-      },
-
-      // Actions
-      signIn: async (username: string, password: string) => {
+      signIn: async (username, password) => {
         try {
           set({ loading: true, error: null });
-          
-          const response = await login({ username, password });
-          const { accessToken, refreshToken, userId, username: responseUsername, email, roles } = response;
-          
-          // Create user object from response
+          console.log('Attempting login for user:', username);
+
+          const loginRequest: LoginRequest = { username, password };
+          const response = await login(loginRequest);
+
+          console.log('Login response received:', response);
+
+          saveToken('accessToken', response.accessToken);
+          saveToken('refreshToken', response.refreshToken);
+
           const user: User = {
-            id: userId.toString(),
-            username: responseUsername,
-            email,
-            firstName: responseUsername, // Use username as firstName for now
-            lastName: '', // Empty for now
-            role: 'user' as UserRole, // Default role
-            roles: roles || [],
-            status: 'active' as UserStatus, // Default status
+            id: response.userId,
+            username: response.username,
+            firstName: response.username,
+            lastName: '',
+            email: response.email,
+            roles: response.roles,
+            active: true,
+            departments: [],
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           };
-          
+
           // Check if user has employee access
-          const hasEmployeeAccess = user.roles.includes('employee') || user.roles.includes('user') || user.roles.includes('ADMIN');
+          const hasEmployeeAccess = canAccessEmployee(user.roles);
           if (!hasEmployeeAccess) {
-            throw new Error('Access denied. Employee role required.');
+            // Clear tokens if user doesn't have employee access
+            removeToken('accessToken');
+            removeToken('refreshToken');
+            
+            set({ user: null, loading: false, error: 'Insufficient privileges. Employee access required.' });
+            return false;
           }
 
-          // Store tokens in storage
-          setToken('accessToken', accessToken);
-          setToken('refreshToken', refreshToken);
-
-          set({
-            user,
-            accessToken,
-            refreshToken,
-            loading: false,
-            error: null,
-          });
+          set({ user, loading: false });
           return true;
-        } catch (error: any) {
-          set({
-            user: null,
-            accessToken: null,
-            refreshToken: null,
-            loading: false,
-            error: error.message || 'Login failed',
-          });
-          throw error;
+        } catch (err: any) {
+          console.error('Login error details:', err);
+
+          let errorMessage = 'Login failed. Please check your credentials.';
+
+          if (err?.code === 'NETWORK_ERROR') {
+            errorMessage =
+              'Cannot connect to server. Please check if the backend is running on http://localhost:8080';
+          } else if (err?.code === 'HTTP_401') {
+            errorMessage = 'Invalid username or password.';
+          } else if (err?.code === 'HTTP_404') {
+            errorMessage =
+              'Login endpoint not found. Please check the backend API.';
+          } else if (err?.code === 'HTTP_500') {
+            errorMessage = 'Server error. Please try again later.';
+          } else if (err?.message) {
+            errorMessage = err.message;
+          }
+
+          set({ error: errorMessage, loading: false });
+          return false;
         }
       },
 
       signOut: async () => {
         try {
-          const { accessToken } = get();
-          if (accessToken) {
-            await logout();
-          }
-        } catch (error) {
-          console.error('Logout error:', error);
-        } finally {
-          // Clear tokens from storage
-          clearTokens();
-          
-          set({
-            user: null,
-            accessToken: null,
-            refreshToken: null,
-            loading: false,
-            error: null,
-          });
+          await logout();
+        } catch (err) {
+          console.warn('Logout API call failed:', err);
         }
+
+        set({ user: null, error: null });
+
+        removeToken('accessToken');
+        removeToken('refreshToken');
       },
 
-      refreshTokens: async (): Promise<string> => {
+      refreshToken: async () => {
         try {
-          const { refreshToken } = get();
+          const refreshToken = getToken('refreshToken');
+
           if (!refreshToken) {
-            throw new Error('No refresh token available');
+            console.log('No refresh token available');
+            return false;
           }
 
+          console.log('Attempting to refresh token...');
           const response = await refresh(refreshToken);
-          const { accessToken } = response;
-          
-          // Update token in storage
-          setToken('accessToken', accessToken);
-          
-          set({
-            accessToken,
-            loading: false,
-            error: null,
-          });
 
-          return accessToken;
-        } catch (error: any) {
-          // Clear tokens from storage on refresh failure
-          clearTokens();
-          
-          set({
-            user: null,
-            accessToken: null,
-            refreshToken: null,
-            loading: false,
-            error: error.message || 'Token refresh failed',
-          });
-          throw error;
+          saveToken('accessToken', response.accessToken);
+          saveToken('refreshToken', response.refreshToken);
+
+          console.log('Token refreshed successfully');
+
+          if (response.userId) {
+            const user: User = {
+              id: response.userId,
+              username: response.username,
+              firstName: response.username,
+              lastName: '',
+              email: response.email,
+              roles: response.roles,
+              active: true,
+              departments: [],
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            };
+
+            set({ user });
+          }
+
+          return true;
+        } catch (err) {
+          console.error('Token refresh failed:', err);
+
+          set({ user: null, error: 'Session expired. Please log in again.' });
+          removeToken('accessToken');
+          removeToken('refreshToken');
+
+          return false;
         }
       },
 
-      setUser: (user: User | null) => {
-        set({ user });
+      isLoggedIn: () => {
+        const accessToken = getToken('accessToken');
+        return !!accessToken && !!get().user;
       },
 
-      setTokens: (accessToken: string, refreshToken: string) => {
-        set({ accessToken, refreshToken });
+      ensureValidSession: async () => {
+        const accessToken = getToken('accessToken');
+
+        if (!accessToken) {
+          console.log('No access token found');
+          return false;
+        }
+
+        if (isTokenExpiringSoon(accessToken)) {
+          console.log('Token expiring soon, refreshing...');
+          return await get().refreshToken();
+        }
+
+        if (isTokenExpired(accessToken)) {
+          console.log('Token expired, refreshing...');
+          return await get().refreshToken();
+        }
+
+        const lastValidation = getToken('lastValidation');
+        const now = Date.now();
+        const validationInterval = 10 * 60 * 1000;
+
+        if (
+          !lastValidation ||
+          now - parseInt(lastValidation) > validationInterval
+        ) {
+          try {
+            console.log('Performing token validation with backend...');
+            const validation = await validate();
+
+            saveToken('lastValidation', now.toString());
+
+            if (!validation.valid) {
+              console.log('Token validation failed, refreshing...');
+              return await get().refreshToken();
+            }
+          } catch (err) {
+            console.log('Token validation error, attempting refresh...', err);
+            return await get().refreshToken();
+          }
+        }
+
+        return true;
       },
 
       clearError: () => {
         set({ error: null });
       },
-
-      setLoading: (loading: boolean) => {
-        set({ loading });
-      },
-
-      ensureValidSession: async () => {
-        try {
-          const { accessToken, refreshToken } = get();
-          if (!accessToken) {
-            return false;
-          }
-
-          // Validate current token
-          try {
-            await validate();
-            return true;
-          } catch (error) {
-            // Try to refresh token
-            if (refreshToken) {
-              try {
-                await get().refreshTokens();
-                return true;
-              } catch (refreshError) {
-                // Refresh failed, clear session
-                get().signOut();
-                return false;
-              }
-            }
-            return false;
-          }
-        } catch (error) {
-          console.error('Session validation error:', error);
-          return false;
-        }
-      },
     }),
     {
-      name: 'employee-auth-storage',
-      partialize: (state) => ({
+      name: 'employee-auth-store',
+      storage: createJSONStorage(() => localStorage),
+      partialize: state => ({
         user: state.user,
-        accessToken: state.accessToken,
-        refreshToken: state.refreshToken,
-        isLoggedIn: state.isLoggedIn,
       }),
-    }
-  )
+    },
+  ),
 );
+
+export default useAuthStore;

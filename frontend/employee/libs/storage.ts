@@ -7,7 +7,7 @@ export const getToken = (key: string): string | null => {
 
 export const setToken = (key: string, value: string, options?: any): void => {
   setCookie(key, value, {
-    maxAge: 15 * 60, // 15 minutes
+    maxAge: key === 'refreshToken' ? 7 * 24 * 60 * 60 : 15 * 60, // 7 days for refresh token, 15 minutes for access token
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     ...options,

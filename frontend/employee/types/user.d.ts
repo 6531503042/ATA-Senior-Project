@@ -1,24 +1,22 @@
-export type UserRole = 'admin' | 'manager' | 'user' | 'guest';
-
-export type UserStatus = 'active' | 'inactive' | 'pending' | 'suspended';
-
-export interface User {
-  id: string;
+export type User = {
+  id: number;
   username: string;
   email: string;
   firstName: string;
   lastName: string;
-  role: UserRole;
-  roles: string[];
-  status: UserStatus;
-  avatar?: string;
   phone?: string;
-  department?: string;
-  position?: string;
-  lastLogin?: string;
+  departments: DepartmentSummary[];
+  roles: string[];
+  active: boolean;
+  lastLoginAt?: string;
   createdAt: string;
   updatedAt: string;
-}
+};
+
+export type DepartmentSummary = {
+  id: number;
+  name: string;
+};
 
 export interface CreateUserRequest {
   username: string;

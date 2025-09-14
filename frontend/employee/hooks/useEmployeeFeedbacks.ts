@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { employeeService } from '@/services/employeeService';
+import { employeeService } from '../services/employeeService';
 
 export interface EmployeeFeedback {
   id: string;
@@ -54,8 +54,12 @@ export function useEmployeeFeedbacks() {
         employeeService.getMySubmissions(),
       ]);
 
-      setFeedbacks(feedbacksResponse || []);
-      setSubmissions(submissionsResponse || []);
+      // Handle paginated response structure
+      const feedbacksData = feedbacksResponse?.content || feedbacksResponse || [];
+      const submissionsData = submissionsResponse?.content || submissionsResponse || [];
+
+      setFeedbacks(Array.isArray(feedbacksData) ? feedbacksData : []);
+      setSubmissions(Array.isArray(submissionsData) ? submissionsData : []);
     } catch (err: any) {
       setError(err.message || 'Failed to fetch feedbacks');
       console.error('Error fetching employee feedbacks:', err);
@@ -101,12 +105,18 @@ export function useEmployeeFeedbacks() {
 
   // Get feedbacks that haven't been submitted yet
   const getPendingFeedbacks = () => {
+    if (!submissions || !Array.isArray(submissions)) {
+      return feedbacks.filter(f => f.active);
+    }
     const submittedFeedbackIds = new Set(submissions.map(s => s.feedbackId));
     return feedbacks.filter(f => !submittedFeedbackIds.has(f.id) && f.active);
   };
 
   // Get completed feedbacks
   const getCompletedFeedbacks = () => {
+    if (!submissions || !Array.isArray(submissions)) {
+      return [];
+    }
     const submittedFeedbackIds = new Set(submissions.map(s => s.feedbackId));
     return feedbacks.filter(f => submittedFeedbackIds.has(f.id));
   };

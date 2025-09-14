@@ -1,6 +1,6 @@
 import type { RequestOptions, ApiError } from '../types/api';
 
-import { getToken } from './storage';
+import { getToken } from '../utils/storage';
 
 class ApiClient {
   private baseUrl: string;

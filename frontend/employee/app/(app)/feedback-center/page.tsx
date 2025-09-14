@@ -13,9 +13,9 @@ import {
   ArrowRight
 } from 'lucide-react';
 import Link from 'next/link';
-import { useEmployeeDashboard } from '@/hooks/useEmployeeDashboard';
-import { useEmployeeFeedbacks } from '@/hooks/useEmployeeFeedbacks';
-import { useAuthContext } from '@/contexts/AuthContext';
+import { useEmployeeDashboard } from '../../../hooks/useEmployeeDashboard';
+import { useEmployeeFeedbacks } from '../../../hooks/useEmployeeFeedbacks';
+import { useAuthContext } from '../../../contexts/AuthContext';
 
 export default function FeedbackCenter() {
   const { dashboardData, loading: dashboardLoading, error: dashboardError } = useEmployeeDashboard();

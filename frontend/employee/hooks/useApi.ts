@@ -25,7 +25,7 @@ export const useApi = () => {
       setLoading(true);
       setError(null);
 
-      const url = `${process.env.NEXT_PUBLIC_PROJECT_API_URL}${endpoint}`;
+      const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}${endpoint}`;
 
       console.log(`Making ${method} request to ${url}`, { body, options });
 

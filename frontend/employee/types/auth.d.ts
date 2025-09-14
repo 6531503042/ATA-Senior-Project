@@ -1,16 +1,12 @@
+// Auth Types for Backend API Integration
+
 import type { User } from './user';
 
-export type AuthContextType = {
-    user: User | null;
-    loading: boolean;
-    signIn: (username: string, password: string) => Promise<void>;
-    signOut: () => Promise<void>;
-    refreshToken: () => Promise<string>;
-  };
-  
-export type TokenResponse = {
-  accessToken: string;
-  refreshToken: string;
+export interface AuthContextType {
+  user: User | null;
+  loading: boolean;
+  signIn: (username: string, password: string) => Promise<void>;
+  signOut: () => Promise<void>;
 }
 
 export interface JwtResponse {
@@ -22,11 +18,6 @@ export interface JwtResponse {
   roles: string[];
 }
 
-export interface LoginRequest {
-  username: string;
-  password: string;
-}
-
 export interface TokenValidationResponse {
   valid: boolean;
   userId: number;
@@ -35,19 +26,46 @@ export interface TokenValidationResponse {
   message: string;
 }
 
+export interface LoginRequest {
+  username: string;
+  password: string;
+}
+
+export interface RegisterRequest {
+  username: string;
+  email: string;
+  password: string;
+  firstName?: string;
+  lastName?: string;
+}
+
+export interface ChangePasswordRequest {
+  currentPassword?: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+export interface UserRoleUpdateRequest {
+  roles: string[];
+}
+
+// Auth Store Interface
 export interface AuthStore {
   loading: boolean;
   error: string | null;
   user: User | null;
-  accessToken: string | null;
-  refreshToken: string | null;
   signIn: (username: string, password: string) => Promise<boolean>;
   signOut: () => Promise<void>;
-  refreshTokens: () => Promise<string>;
-  isLoggedIn: boolean;
+  refreshToken: () => Promise<boolean>;
+  isLoggedIn: () => boolean;
   ensureValidSession: () => Promise<boolean>;
   clearError: () => void;
-  setUser: (user: User | null) => void;
-  setTokens: (accessToken: string, refreshToken: string) => void;
-  setLoading: (loading: boolean) => void;
+}
+
+// Profile Store Interface
+export interface ProfileStore {
+  user: User | null;
+  setUser: (user: User) => void;
+  clearUser: () => void;
+  updateUser: (updates: Partial<User>) => void;
 }

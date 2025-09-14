@@ -1,190 +1,155 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import { useAuthStore } from '../stores/authStore';
-import { validate } from '../services/authService';
-import { getToken, setToken, clearTokens } from '../libs/storage';
 import type { AuthContextType } from '../types/auth';
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+import { createContext, useContext, useEffect, ReactNode, useRef } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 
-export function useAuthContext() {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuthContext must be used within an AuthProvider');
-  }
-  return context;
-}
+import useAuthStore from '../stores/authStore';
+import { canAccessEmployee } from '../utils/roleUtils';
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 interface AuthProviderProps {
   children: ReactNode;
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [loading, setLoading] = useState(true);
+  const auth = useAuthStore();
   const router = useRouter();
   const pathname = usePathname();
-  const authStore = useAuthStore();
+  const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Protected routes that require authentication
-  const protectedRoutes = ['/', '/feedback', '/feedbacks', '/feedback-center'];
-  const authRoutes = ['/login'];
+  const protectedRoutes = [
+    '/',
+    '/feedback-center',
+    '/feedbacks',
+    '/feedback',
+  ];
+  const authRoutes = ['/login', '/logout'];
 
-  const isProtectedRoute = (path: string) => {
-    return protectedRoutes.some(route => path.startsWith(route));
-  };
-
-  const isAuthRoute = (path: string) => {
-    return authRoutes.some(route => path.startsWith(route));
-  };
-
-  // Check if user has employee role
-  const hasEmployeeAccess = (userRoles: string[]) => {
-    return userRoles.includes('employee') || userRoles.includes('user');
-  };
-
-  // Initialize auth state
   useEffect(() => {
-    const initAuth = async () => {
-      try {
-        const token = getToken('accessToken');
-        if (token) {
-          // Verify token and get user info
-          const userData = await validate();
-          if (userData && hasEmployeeAccess(userData.roles)) {
-            authStore.setUser({
-              id: userData.userId,
-              username: userData.username,
-              email: '',
-              firstName: '',
-              lastName: '',
-              roles: userData.roles,
-              active: true,
-              createdAt: '',
-              updatedAt: ''
-            });
-            const refreshToken = getToken('refreshToken');
-            authStore.setTokens(token, refreshToken || '');
-          } else {
-            // User doesn't have employee access
-            clearTokens();
-            authStore.setUser(null);
-          }
+    const checkAuth = async () => {
+      const isLoggedIn = auth.isLoggedIn();
+      const isAuthRoute = authRoutes.some(route => pathname.startsWith(route));
+      const isProtectedRoute = protectedRoutes.some(route =>
+        pathname.startsWith(route),
+      );
+
+      if (!isLoggedIn && isProtectedRoute) {
+        // Redirect to login if not authenticated and trying to access protected route
+        router.push('/login');
+      } else if (isLoggedIn && isAuthRoute && pathname !== '/logout') {
+        // Redirect to home if authenticated and trying to access auth routes
+        router.push('/');
+      } else if (isLoggedIn && isProtectedRoute) {
+        // Check if user has employee privileges for employee panel access
+        const hasEmployeeAccess = canAccessEmployee(auth.user?.roles);
+        if (!hasEmployeeAccess) {
+          // Redirect non-employee users to a restricted access page
+          router.push('/access-denied');
         }
-      } catch (error) {
-        console.error('Auth initialization error:', error);
-        clearTokens();
-        authStore.setUser(null);
-      } finally {
-        setLoading(false);
       }
     };
 
-    initAuth();
-  }, []);
+    checkAuth();
+  }, [auth, router, pathname]);
 
-  // Route protection
+  // Auto-refresh token with better scheduling
   useEffect(() => {
-    if (loading) {
-      console.log('⏳ Auth loading, skipping route protection');
-      return;
-    }
+    const startTokenRefresh = async () => {
+      if (auth.isLoggedIn()) {
+        // Initial check - only if user is logged in
+        try {
+          await auth.ensureValidSession();
+        } catch (error) {
+          console.warn('Initial token validation failed:', error);
+        }
 
-    const isAuthenticated = authStore.isLoggedIn;
-    const isOnProtectedRoute = isProtectedRoute(pathname);
-    const isOnAuthRoute = isAuthRoute(pathname);
+        // Set up interval for periodic checks (every 10 minutes instead of 4)
+        refreshIntervalRef.current = setInterval(
+          async () => {
+            if (auth.isLoggedIn()) {
+              try {
+                console.log('Performing periodic token validation...');
+                const success = await auth.ensureValidSession();
 
-    console.log('🛡️ Route protection check:', {
-      pathname,
-      isAuthenticated,
-      isOnProtectedRoute,
-      isOnAuthRoute,
-      userRoles: authStore.user?.roles,
-      hasAccess: hasEmployeeAccess(authStore.user?.roles || [])
-    });
-
-    if (!isAuthenticated && isOnProtectedRoute) {
-      // Redirect to login if not authenticated and on protected route
-      console.log('🔒 Redirecting to login - not authenticated');
-      router.replace('/login');
-    } else if (isAuthenticated && isOnAuthRoute) {
-      // Redirect to home if authenticated and on auth route
-      console.log('🏠 Redirecting to home - authenticated on auth route');
-      router.replace('/');
-    } else if (isAuthenticated && isOnProtectedRoute && !hasEmployeeAccess(authStore.user?.roles || [])) {
-      // Redirect to access denied if user doesn't have employee access
-      console.log('🚫 Redirecting to access denied - no employee access');
-      router.replace('/access-denied');
-    } else {
-      console.log('✅ Route protection - no redirect needed');
-    }
-  }, [authStore.user, loading, pathname, router]);
-
-  const signIn = async (username: string, password: string) => {
-    try {
-      setLoading(true);
-      console.log('🔐 Starting sign in process...');
-      
-      await authStore.signIn(username, password);
-      console.log('✅ Auth store sign in successful');
-      
-      // Wait a bit for state to update
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      // Force redirect to home page
-      console.log('🔄 Redirecting to home page...');
-      window.location.href = '/';
-      console.log('✅ Redirect initiated');
-      
-    } catch (error: any) {
-      console.error('❌ Sign in error:', error);
-      throw new Error(error.message || 'Login failed');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const signOut = async () => {
-    try {
-      await authStore.signOut();
-      // Clear tokens from storage
-      clearTokens();
-      router.replace('/login');
-    } catch (error) {
-      console.error('Sign out error:', error);
-    }
-  };
-
-  const refreshToken = async () => {
-    try {
-      const refreshTokenValue = getToken('refreshToken');
-      if (!refreshTokenValue) {
-        throw new Error('No refresh token available');
+                if (!success) {
+                  // If refresh failed, redirect to login
+                  console.log('Token refresh failed, redirecting to login');
+                  router.push('/login');
+                }
+              } catch (error) {
+                console.warn('Periodic token validation failed:', error);
+                // Don't redirect immediately on error, let it retry
+              }
+            }
+          },
+          10 * 60 * 1000,
+        ); // Check every 10 minutes instead of 4
       }
+    };
 
-      const newAccessToken = await authStore.refreshTokens();
-      setToken('accessToken', newAccessToken);
-      return newAccessToken;
-    } catch (error) {
-      console.error('Token refresh error:', error);
-      // If refresh fails, sign out user
-      await signOut();
-      throw error;
+    const stopTokenRefresh = () => {
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
+        refreshIntervalRef.current = null;
+      }
+    };
+
+    // Start token refresh when component mounts or auth state changes
+    startTokenRefresh();
+
+    // Cleanup on unmount
+    return () => {
+      stopTokenRefresh();
+    };
+  }, [auth, router]);
+
+  // Additional effect to handle auth state changes
+  useEffect(() => {
+    if (!auth.isLoggedIn()) {
+      // Clear interval if user is not logged in
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
+        refreshIntervalRef.current = null;
+      }
     }
-  };
+  }, [auth.isLoggedIn()]);
 
-  const value: AuthContextType = {
-    user: authStore.user,
-    loading: loading || authStore.loading,
-    signIn,
-    signOut,
-    refreshToken,
+  const contextValue: AuthContextType = {
+    user: auth.user,
+    loading: auth.loading,
+    signIn: async (username: string, password: string) => {
+      const success = await auth.signIn(username, password);
+
+      if (success) {
+        router.push('/');
+      }
+    },
+    signOut: async () => {
+      // Clear refresh interval before signing out
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
+        refreshIntervalRef.current = null;
+      }
+      await auth.signOut();
+      router.push('/login');
+    },
   };
 
   return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
   );
+}
+
+export function useAuthContext() {
+  const context = useContext(AuthContext);
+
+  if (context === undefined) {
+    throw new Error('useAuthContext must be used within an AuthProvider');
+  }
+
+  return context;
 }

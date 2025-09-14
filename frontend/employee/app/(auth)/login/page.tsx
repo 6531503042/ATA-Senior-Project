@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button, Input, Card, CardBody, CardHeader } from '@heroui/react';
 import { Eye, EyeOff, User, Lock, ArrowRight, AlertCircle } from 'lucide-react';
-import { useAuthContext } from '@/contexts/AuthContext';
+import { useAuthContext } from '../../../contexts/AuthContext';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
@@ -29,12 +29,6 @@ export default function LoginPage() {
     try {
       await signIn(username, password);
       // Navigation will be handled by AuthContext
-      // Fallback redirect after 1 second
-      setTimeout(() => {
-        if (window.location.pathname === '/login') {
-          window.location.href = '/';
-        }
-      }, 1000);
     } catch (err: any) {
       setError(err.message || 'Login failed. Please try again.');
     } finally {

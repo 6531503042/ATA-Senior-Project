@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { employeeService } from '@/services/employeeService';
+import { employeeService } from '../services/employeeService';
 
 export interface EmployeeDashboardData {
   stats: {
@@ -44,7 +44,21 @@ export function useEmployeeDashboard() {
       setError(null);
       
       const response = await employeeService.getDashboardData();
-      setDashboardData(response);
+      
+      // Transform the response to match our interface
+      const transformedData: EmployeeDashboardData = {
+        stats: {
+          totalFeedbacks: response?.availableFeedbacks || 0,
+          pendingFeedbacks: response?.pendingFeedbacks || 0,
+          completedFeedbacks: response?.totalSubmissions || 0,
+          totalSubmissions: response?.totalSubmissions || 0,
+        },
+        recentFeedbacks: [],
+        recentSubmissions: [],
+        projects: [],
+      };
+      
+      setDashboardData(transformedData);
     } catch (err: any) {
       setError(err.message || 'Failed to fetch dashboard data');
       console.error('Error fetching employee dashboard:', err);
