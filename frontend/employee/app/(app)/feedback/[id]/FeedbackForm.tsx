@@ -13,13 +13,14 @@ import { useRouter } from 'next/navigation';
 
 import { useAlertDialog } from '../../../components/ui/alert-dialog';
 import { Button } from '../../../components/ui/button';
-import { cn } from '@/libs/utils';
-import type { Question } from '@/types/employee';
+import { cn } from '../../../../libs/utils';
+import type { Question } from '../../../../types/employee';
 import { FeedbackSidebar } from './components/Sidebar';
 import QuestionCard from './components/QuestionCard';
 import CongratsModal from './components/CongratsModal';
+import employeeService from '../../../../services/employeeService';
 import { FeedbackOverallComments } from './components'; // your existing component
-import type { Privacy, FeedbackSubmissionPayload } from '@/types/employee';
+import type { Privacy, FeedbackSubmissionPayload } from '../../../../types/employee';
 
 // ---------- Types ----------
 type QType = 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'TEXT_BASED' | 'SENTIMENT';
@@ -217,13 +218,19 @@ export default function FeedbackForm({ id }: { id: string }) {
     };
 
     setSubmitting(true);
-
-    // simulate call
-    setTimeout(() => {
+    try {
+      const created = await employeeService.submitFeedback(String(feedback.id), payload);
       setSubmitting(false);
-      // Instead of instant redirect, open the Congrats popup
       setShowCongrats(true);
-    }, 600);
+    } catch (err) {
+      setSubmitting(false);
+      showAlert({
+        title: 'Submission failed',
+        description: 'Please try again or contact support if the issue persists.',
+        variant: 'solid',
+        color: 'danger',
+      });
+    }
   }
 
   if (loading) {
@@ -256,25 +263,54 @@ export default function FeedbackForm({ id }: { id: string }) {
 
   return (
     <>
-      <div className="min-h-screen bg-gray-50/50 overflow-hidden">
-        <div className="flex h-screen">
-          <FeedbackSidebar
-            title={feedback.title}
-            description={feedback.description}
-            questions={feedback.questions.map(q => ({
-              id: q.id,
-              description: q.description,
-              required: q.required,
-            }))}
-            currentStep={currentStep}
-            answers={answers}
-            overallComments={overallComments}
-            onSelectStep={setCurrentStep}
-          />
+      <div className="min-h-screen">
+        {/* Responsive layout: Sidebar (fixed width) + Flexible Main */}
+        <div className="flex gap-6">
+          {/* Sidebar (desktop only) */}
+          <div className="hidden lg:block shrink-0 w-[280px]">
+            <FeedbackSidebar
+              title={feedback.title}
+              description={feedback.description}
+              questions={feedback.questions.map(q => ({
+                id: q.id,
+                description: q.description,
+                required: q.required,
+              }))}
+              currentStep={currentStep}
+              answers={answers}
+              overallComments={overallComments}
+              onSelectStep={setCurrentStep}
+            />
+          </div>
 
           {/* Main */}
-          <main className="w-3/4 h-screen overflow-y-auto bg-white custom-scrollbar">
-            <div className="max-w-4xl mx-auto p-8">
+          <main className="flex-1 bg-white rounded-2xl border border-gray-100 shadow-sm min-w-0">
+            {/* Mobile header with progress */}
+            <div className="lg:hidden sticky top-0 z-10 bg-white/90 backdrop-blur border-b border-gray-100">
+              <div className="px-4 py-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-sm font-medium text-gray-700">
+                      {isFinal ? 'Overall Comments' : `Question ${currentStep + 1} of ${feedback.questions.length}`}
+                    </h2>
+                    {!isFinal && feedback.questions[currentStep]?.required && (
+                      <span className="text-xs text-red-500">Required</span>
+                    )}
+                  </div>
+                  <span className="text-xs text-gray-500">
+                    {Math.round(((currentStep + 1) / (feedback.questions.length + 1)) * 100)}%
+                  </span>
+                </div>
+                <div className="mt-2 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-violet-600"
+                    style={{ width: `${Math.round(((currentStep + 1) / (feedback.questions.length + 1)) * 100)}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="max-w-4xl mx-auto p-4 sm:p-6 md:p-8">
               <motion.div
                 key={currentStep}
                 initial={{ opacity: 0, y: 20 }}
@@ -339,22 +375,23 @@ export default function FeedbackForm({ id }: { id: string }) {
                 </div>
 
                 {/* Nav */}
-                <div className="flex items-center justify-between pt-6 border-t">
+                <div className="flex items-center justify-between pt-6 border-t gap-3">
                   <Button
                     variant="outline"
                     onClick={() => setCurrentStep(i => i - 1)}
                     disabled={currentStep === 0}
-                    className="gap-2 hover:bg-gray-50"
+                    className="gap-2 hover:bg-gray-50 w-full sm:w-auto"
                   >
                     <ChevronLeft className="h-4 w-4" />
-                    Previous
+                    <span>Previous</span>
+                    <span className="text-lg">⬅️</span>
                   </Button>
 
                   {isFinal ? (
                     <Button
                       onClick={handleSubmit}
                       disabled={submitting || !overallComments.trim()}
-                      className="gap-2 bg-gradient-to-r from-violet-600 to-violet-700 hover:from-violet-700 hover:to-violet-800 text-white shadow-sm"
+                      className="gap-2 bg-gradient-to-r from-violet-600 to-violet-700 hover:from-violet-700 hover:to-violet-800 text-white shadow-sm w-full sm:w-auto"
                     >
                       {submitting ? (
                         <>
@@ -364,7 +401,7 @@ export default function FeedbackForm({ id }: { id: string }) {
                       ) : (
                         <>
                           <span>Submit Feedback</span>
-                          <CheckCircle2 className="h-4 w-4" />
+                          <span className="text-lg">🚀</span>
                         </>
                       )}
                     </Button>
@@ -372,14 +409,14 @@ export default function FeedbackForm({ id }: { id: string }) {
                     <Button
                       onClick={() => setCurrentStep(i => i + 1)}
                       disabled={!canProceed}
-                      className="gap-2 bg-gradient-to-r from-violet-600 to-violet-700 hover:from-violet-700 hover:to-violet-800 text-white shadow-sm"
+                      className="gap-2 bg-gradient-to-r from-violet-600 to-violet-700 hover:from-violet-700 hover:to-violet-800 text-white shadow-sm w-full sm:w-auto"
                     >
                       <span>
                         {currentStep === feedback.questions.length - 1
                           ? 'Final Step'
                           : 'Next Question'}
                       </span>
-                      <ChevronRight className="h-4 w-4" />
+                      <span className="text-lg">➡️</span>
                     </Button>
                   )}
                 </div>
@@ -393,7 +430,8 @@ export default function FeedbackForm({ id }: { id: string }) {
       <CongratsModal
         open={showCongrats}
         onClose={() => setShowCongrats(false)}
-        onContinue={() => router.push('/')}
+        onContinue={() => router.push('/feedback-center')}
+        onEditNow={() => router.push(`/feedback/${id}`)}
         seconds={10}
       />
     </>

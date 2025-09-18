@@ -45,14 +45,14 @@ const FeedbackStepper: React.FC<FeedbackStepperProps> = ({
                   )}
                 >
                   {isCompleted ? (
-                    <CheckCircle2 className="w-6 h-6 text-white" />
+                    <span className="text-white text-lg">✅</span>
                   ) : (
-                    <Circle
-                      className={cn(
-                        "w-6 h-6",
-                        isCurrent ? "text-violet-600" : "text-gray-400",
-                      )}
-                    />
+                    <span className={cn(
+                      "text-lg",
+                      isCurrent ? "text-violet-600" : "text-gray-400",
+                    )}>
+                      {index + 1}
+                    </span>
                   )}
 
                   {/* Step label */}

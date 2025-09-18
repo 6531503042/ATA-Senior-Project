@@ -27,7 +27,7 @@ export function FeedbackSidebar({
   const progressPct = Math.round(((currentStep + 1) / (questions.length + 1)) * 100);
 
   return (
-    <aside className="w-1/4 bg-white border-r border-gray-200 flex flex-col h-screen overflow-hidden">
+    <aside className="w-full bg-white border-r border-gray-200 flex flex-col h-screen overflow-hidden rounded-2xl">
       <div className="flex-none p-6 border-b border-gray-100 bg-white">
         <div className="flex items-center gap-3 mb-4">
           <div className="p-2 bg-violet-100 rounded-lg">

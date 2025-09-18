@@ -17,15 +17,28 @@ export const employeeService = {
     api.get<EmployeeFeedback>(`/api/feedbacks/${id}`),
 
   // Submit feedback response
-  submitFeedback: (feedbackId: string, data: {
-    responses: Record<string, string>;
-    overallComments: string;
-    privacyLevel: 'PUBLIC' | 'PRIVATE' | 'ANONYMOUS';
-  }) =>
-    api.post<void>(`/api/submits`, {
+  submitFeedback: (
+    feedbackId: string,
+    data: {
+      responses: Record<string, string>;
+      overallComments: string;
+      privacyLevel: 'PUBLIC' | 'PRIVATE' | 'ANONYMOUS';
+    },
+  ) =>
+    api.post<EmployeeSubmission>(`/api/submits`, {
       feedbackId: parseInt(feedbackId),
-      ...data
+      ...data,
     }),
+
+  // Update an existing submission (edit before deadline)
+  updateSubmission: (
+    submissionId: string,
+    data: {
+      responses: Record<string, string>;
+      overallComments?: string;
+      privacyLevel?: 'PUBLIC' | 'PRIVATE' | 'ANONYMOUS';
+    },
+  ) => api.put<EmployeeSubmission>(`/api/submits/${submissionId}`, data),
 
   // Get employee's submission history
   getMySubmissions: () =>

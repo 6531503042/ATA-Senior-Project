@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { CheckCircle2 } from 'lucide-react';
 import { Button } from '../../../../components/ui/button';
 
 type Props = {
@@ -10,9 +9,10 @@ type Props = {
   onClose: () => void;      
   onContinue: () => void;    
   seconds?: number;           
+  onEditNow?: () => void;     
 };
 
-export default function CongratsModal({ open, onClose, onContinue, seconds = 10 }: Props) {
+export default function CongratsModal({ open, onClose, onContinue, onEditNow, seconds = 10 }: Props) {
   const [left, setLeft] = useState(seconds);
   const backdropRef = useRef<HTMLDivElement | null>(null);
 
@@ -20,7 +20,7 @@ export default function CongratsModal({ open, onClose, onContinue, seconds = 10 
   useEffect(() => {
     if (!open) return;
     setLeft(seconds);
-    const timer = setInterval(() => setLeft((s) => s - 1), 1000);
+    const timer = setInterval(() => setLeft((s) => (s > 0 ? s - 1 : 0)), 1000);
     return () => clearInterval(timer);
   }, [open, seconds]);
 
@@ -37,6 +37,7 @@ export default function CongratsModal({ open, onClose, onContinue, seconds = 10 
     }
     function onKey(e: KeyboardEvent) {
       if (e.key === 'Escape') onClose();
+      if (e.key === 'Enter') onContinue();
     }
     document.addEventListener('mousedown', onDown);
     document.addEventListener('keydown', onKey);
@@ -66,13 +67,13 @@ export default function CongratsModal({ open, onClose, onContinue, seconds = 10 
               transition={{ type: 'spring', stiffness: 260, damping: 20 }}
             >
               <div className="flex items-start gap-3">
-                <div className="p-2 bg-emerald-100 rounded-lg">
-                  <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                <div className="p-3 bg-gradient-to-r from-emerald-100 to-green-100 rounded-full">
+                  <span className="text-2xl">🎉</span>
                 </div>
                 <div className="flex-1">
                   <h3 className="text-lg font-semibold text-gray-900">All set! 🎉</h3>
                   <p className="mt-1 text-sm text-gray-600">
-                    Your feedback has been submitted successfully.
+                    Your feedback has been submitted successfully! Thank you for your valuable input. 🙏
                   </p>
                 </div>
               </div>
@@ -93,14 +94,19 @@ export default function CongratsModal({ open, onClose, onContinue, seconds = 10 
                 </div>
               </div>
 
-              <div className="mt-6 flex items-center justify-end gap-2">
+              <div className="mt-6 flex items-center justify-between gap-2">
                 <Button variant="outline" onClick={onClose}>Close</Button>
-                <Button
-                  className="bg-gradient-to-r from-violet-600 to-violet-700 text-white hover:from-violet-700 hover:to-violet-800"
-                  onClick={onContinue}
-                >
-                  Continue
-                </Button>
+                <div className="flex items-center gap-2">
+                  {onEditNow && (
+                    <Button variant="outline" onClick={onEditNow}>Edit submission ✏️</Button>
+                  )}
+                  <Button
+                    className="bg-gradient-to-r from-violet-600 to-violet-700 text-white hover:from-violet-700 hover:to-violet-800"
+                    onClick={onContinue}
+                  >
+                    Continue
+                  </Button>
+                </div>
               </div>
             </motion.div>
           </div>

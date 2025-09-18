@@ -42,22 +42,42 @@ export function useEmployeeDashboard() {
     try {
       setLoading(true);
       setError(null);
-      
-      const response = await employeeService.getDashboardData();
-      
-      // Transform the response to match our interface
+      // Fetch summary plus recent submissions in parallel
+      const [summaryResponse, submissionsResponse] = await Promise.all([
+        employeeService.getDashboardData(),
+        employeeService.getMySubmissions(),
+      ]);
+
+      const submissionsData = (submissionsResponse as any)?.content || submissionsResponse || [];
+
+      const recentSubmissions = Array.isArray(submissionsData)
+        ? submissionsData
+            .slice()
+            .sort((a: any, b: any) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime())
+            .slice(0, 5)
+            .map((s: any) => ({
+              id: String(s.id ?? s.submissionId ?? ''),
+              feedbackTitle: String(s.feedbackTitle ?? s.title ?? 'Feedback'),
+              projectName: String(s.projectName ?? s.project ?? '—'),
+              submittedAt: String(s.submittedAt ?? s.createdAt ?? new Date().toISOString()),
+              status: (s.status as any) || 'pending',
+              overallSentiment: s.overallSentiment as any,
+            }))
+        : [];
+
+      // Transform the summary response to match our interface
       const transformedData: EmployeeDashboardData = {
         stats: {
-          totalFeedbacks: (response as any)?.availableFeedbacks || 0,
-          pendingFeedbacks: (response as any)?.pendingFeedbacks || 0,
-          completedFeedbacks: (response as any)?.totalSubmissions || 0,
-          totalSubmissions: (response as any)?.totalSubmissions || 0,
+          totalFeedbacks: (summaryResponse as any)?.availableFeedbacks || 0,
+          pendingFeedbacks: (summaryResponse as any)?.pendingFeedbacks || 0,
+          completedFeedbacks: (summaryResponse as any)?.totalSubmissions || recentSubmissions.length || 0,
+          totalSubmissions: (summaryResponse as any)?.totalSubmissions || recentSubmissions.length || 0,
         },
         recentFeedbacks: [],
-        recentSubmissions: [],
+        recentSubmissions,
         projects: [],
       };
-      
+
       setDashboardData(transformedData);
     } catch (err: any) {
       setError(err.message || 'Failed to fetch dashboard data');

@@ -10,7 +10,9 @@ import {
   Users,
   Calendar,
   BarChart3,
-  ArrowRight
+  ArrowRight,
+  Eye,
+  Pencil
 } from 'lucide-react';
 import Link from 'next/link';
 import { useEmployeeDashboard } from '../../../hooks/useEmployeeDashboard';
@@ -18,11 +20,17 @@ import { useEmployeeFeedbacks } from '../../../hooks/useEmployeeFeedbacks';
 import { useAuthContext } from '../../../contexts/AuthContext';
 
 export default function FeedbackCenter() {
-  const { dashboardData, loading: dashboardLoading, error: dashboardError } = useEmployeeDashboard();
-  const { getPendingFeedbacks, loading: feedbacksLoading } = useEmployeeFeedbacks();
+  const { dashboardData, loading: dashboardLoading, error: dashboardError, refresh: refreshDashboard } = useEmployeeDashboard();
+  const { getPendingFeedbacks, loading: feedbacksLoading, refresh: refreshFeedbacks } = useEmployeeFeedbacks();
   const { user } = useAuthContext();
 
   const pendingFeedbacks = getPendingFeedbacks();
+
+  // Ensure the latest data after navigation back from a submission
+  React.useEffect(() => {
+    refreshDashboard();
+    refreshFeedbacks();
+  }, []);
 
   if (dashboardLoading || feedbacksLoading) {
     return (
@@ -336,54 +344,66 @@ export default function FeedbackCenter() {
           {/* Recent Submissions */}
           <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm">
             <CardBody className="p-8">
-              <div className="flex items-center gap-4 mb-8">
-                <div className="p-3 bg-gradient-to-br from-green-100 to-green-200 rounded-2xl shadow-lg">
-                  <CheckCircle className="w-6 h-6 text-green-600" />
+              <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-gradient-to-br from-green-100 to-green-200 rounded-2xl shadow-lg">
+                    <CheckCircle className="w-6 h-6 text-green-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900">Recent Submissions</h2>
+                    <p className="text-gray-600 mt-1">Your latest feedback submissions and their status</p>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">Recent Submissions</h2>
-                  <p className="text-gray-600 mt-1">Your latest feedback submissions and their status</p>
-                </div>
+                {dashboardData?.recentSubmissions?.length ? (
+                  <Button as={Link} href="/feedback-center" variant="solid" color="default" className="bg-gray-900 text-white">
+                    View all
+                  </Button>
+                ) : null}
               </div>
-            
+
               <div className="space-y-4">
                 {dashboardData?.recentSubmissions?.length ? (
-                  dashboardData.recentSubmissions.slice(0, 5).map((submission) => (
-                    <div key={submission.id} className="p-5 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200 hover:shadow-md transition-all">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h3 className="font-bold text-gray-900 mb-2">{submission.feedbackTitle}</h3>
-                          <p className="text-sm text-gray-600 mb-3">{submission.projectName}</p>
-                          <div className="flex items-center gap-2 text-sm text-gray-500 bg-white p-2 rounded-lg">
-                            <Calendar className="w-4 h-4 text-gray-400" />
-                            <span>Submitted: {new Date(submission.submittedAt).toLocaleDateString()}</span>
+                  dashboardData.recentSubmissions.slice(0, 5).map((submission) => {
+                    const statusStyle =
+                      submission.status === 'analyzed'
+                        ? 'bg-green-100 text-green-700'
+                        : submission.status === 'error'
+                        ? 'bg-red-100 text-red-700'
+                        : 'bg-orange-100 text-orange-700';
+                    const sentimentEmoji =
+                      submission.overallSentiment === 'positive'
+                        ? '😊'
+                        : submission.overallSentiment === 'negative'
+                        ? '😕'
+                        : submission.overallSentiment === 'neutral'
+                        ? '😐'
+                        : '—';
+                    return (
+                      <div key={submission.id} className="relative p-5 rounded-xl border border-gray-200 bg-white/70 hover:bg-white shadow-sm hover:shadow-md transition-all">
+                        <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-violet-500 via-purple-500 to-indigo-500 rounded-t-xl" />
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-gray-900 mb-1 truncate">{submission.feedbackTitle || 'Feedback'}</h3>
+                            <p className="text-sm text-gray-600 mb-3 truncate">{submission.projectName || '—'}</p>
+                            <div className="flex flex-wrap items-center gap-2 text-sm">
+                              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusStyle}`}>{submission.status}</span>
+                              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-700">
+                                Sentiment: <span className="ml-1">{sentimentEmoji}</span>
+                              </span>
+                              <span className="flex items-center gap-2 text-gray-600 bg-gray-50 px-3 py-1 rounded-md">
+                                <Calendar className="w-4 h-4 text-gray-400" />
+                                Submitted: {new Date(submission.submittedAt).toLocaleDateString()}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <Button as={Link} href={`/feedback/${submission.id}`} variant="flat" className="bg-gray-100 text-gray-800 hover:bg-gray-200" startContent={<Eye className="w-4 h-4" />}>View</Button>
+                            <Button as={Link} href={`/feedback/${submission.id}`} variant="flat" className="bg-violet-100 text-violet-800 hover:bg-violet-200" startContent={<Pencil className="w-4 h-4" />}>Edit</Button>
                           </div>
                         </div>
-                        <div className="flex flex-col items-end gap-2">
-                          <span className={`px-3 py-1 rounded-full text-xs font-semibold shadow-sm ${
-                            submission.status === 'analyzed' 
-                              ? 'bg-green-100 text-green-700' 
-                              : submission.status === 'error'
-                              ? 'bg-red-100 text-red-700'
-                              : 'bg-orange-100 text-orange-700'
-                          }`}>
-                            {submission.status}
-                          </span>
-                          {submission.overallSentiment && (
-                            <span className={`px-3 py-1 rounded-full text-xs font-semibold shadow-sm ${
-                              submission.overallSentiment === 'positive' 
-                                ? 'bg-green-100 text-green-700' 
-                                : submission.overallSentiment === 'negative'
-                                ? 'bg-red-100 text-red-700'
-                                : 'bg-gray-100 text-gray-700'
-                            }`}>
-                              {submission.overallSentiment}
-                            </span>
-                          )}
-                        </div>
                       </div>
-                    </div>
-                  ))
+                    );
+                  })
                 ) : (
                   <div className="text-center py-12">
                     <div className="w-16 h-16 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">

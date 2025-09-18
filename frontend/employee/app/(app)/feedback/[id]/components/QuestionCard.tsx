@@ -39,13 +39,21 @@ export default function QuestionCard({
     >
       {/* Question Title */}
       <div className="space-y-4">
-        <h3 className="text-2xl font-semibold text-gray-900">
-          {question.text}
-        </h3>
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2 bg-violet-100 rounded-full">
+            <span className="text-2xl">💭</span>
+          </div>
+          <h3 className="text-2xl font-semibold text-gray-900">
+            {question.text}
+          </h3>
+        </div>
         {question.description && (
-          <p className="text-base text-gray-600 leading-relaxed">
-            {question.description}
-          </p>
+          <div className="flex items-start gap-3 p-4 bg-blue-50 rounded-xl border border-blue-200">
+            <span className="text-lg">💡</span>
+            <p className="text-base text-gray-700 leading-relaxed">
+              {question.description}
+            </p>
+          </div>
         )}
       </div>
 
@@ -84,6 +92,7 @@ export default function QuestionCard({
                   >
                     {answer.text}
                   </Label>
+                  <span className="text-2xl opacity-60">✨</span>
                 </label>
               </motion.div>
             ))}
@@ -131,6 +140,7 @@ export default function QuestionCard({
                   >
                     {answer.text}
                   </Label>
+                  <span className="text-2xl opacity-60">🎯</span>
                 </label>
               </motion.div>
             ))}
@@ -143,18 +153,21 @@ export default function QuestionCard({
             animate={{ opacity: 1, y: 0 }}
             className="space-y-2"
           >
-            <Textarea
-              value={currentAnswer as string}
-              onChange={(e) => {
-                const text = e.target.value;
-                if (text.length <= MAX_TEXT_LENGTH) {
-                  onAnswerChange(text);
-                }
-              }}
-              placeholder="Type your answer here..."
-              className="min-h-[200px] text-base p-6 border-2 border-gray-200 rounded-xl focus:border-violet-500 focus:ring-violet-500 shadow-sm"
-              maxLength={MAX_TEXT_LENGTH}
-            />
+            <div className="relative">
+              <div className="absolute top-4 left-4 text-2xl opacity-60">✍️</div>
+              <Textarea
+                value={currentAnswer as string}
+                onChange={(e) => {
+                  const text = e.target.value;
+                  if (text.length <= MAX_TEXT_LENGTH) {
+                    onAnswerChange(text);
+                  }
+                }}
+                placeholder="Type your answer here... 📝"
+                className="min-h-[200px] text-base p-6 pl-16 border-2 border-gray-200 rounded-xl focus:border-violet-500 focus:ring-violet-500 shadow-sm"
+                maxLength={MAX_TEXT_LENGTH}
+              />
+            </div>
             <div className="flex justify-end">
               <span
                 className={cn(
@@ -198,6 +211,7 @@ export default function QuestionCard({
                 <span className="text-lg font-medium text-gray-700">
                   {answer.text}
                 </span>
+                <span className="text-2xl opacity-60">😊</span>
               </motion.button>
             ))}
           </div>
