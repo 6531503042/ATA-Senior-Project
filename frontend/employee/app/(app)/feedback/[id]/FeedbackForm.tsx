@@ -14,7 +14,7 @@ import { useRouter } from 'next/navigation';
 import { useAlertDialog } from '../../../components/ui/alert-dialog';
 import { Button } from '../../../components/ui/button';
 import { cn } from '../../../../libs/utils';
-import type { Question } from '../../../../types/employee';
+import type { Question, EmployeeFeedback, EmployeeQuestion } from '../../../../types/employee';
 import { FeedbackSidebar } from './components/Sidebar';
 import QuestionCard from './components/QuestionCard';
 import CongratsModal from './components/CongratsModal';
@@ -26,25 +26,10 @@ import type { Privacy, FeedbackSubmissionPayload } from '../../../../types/emplo
 type QType = 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'TEXT_BASED' | 'SENTIMENT';
 type AnswersMap = Record<number, string | string[]>;
 
-interface FeedbackQuestion {
-  id: number;
-  text: string;
-  description?: string;
-  required: boolean;
-  type: QType;
-  answers?: { text: string; value: string }[];
-}
-interface FeedbackSubmission {
-  id: number;
-  title: string;
-  description?: string;
-  questions: FeedbackQuestion[];
-}
-
 const MAX_TEXT_LENGTH = 255;
-const DESIGN_MODE = true; // mock/demo mode
+const DESIGN_MODE = false;
 
-function mapAnswerType(t: FeedbackQuestion['type']): string {
+function mapAnswerType(t: EmployeeQuestion['type']): string {
   switch (t) {
     case 'SINGLE_CHOICE':
       return 'single';
@@ -57,62 +42,10 @@ function mapAnswerType(t: FeedbackQuestion['type']): string {
   }
 }
 
-const mockFeedback: FeedbackSubmission = {
-  id: 1001,
-  title: 'Quarterly Satisfaction Survey',
-  description: 'Help us improve by answering a few quick questions.',
-  questions: [
-    {
-      id: 1,
-      text: 'Overall satisfaction with your current project?',
-      description: 'Consider workload, support, and outcome.',
-      required: true,
-      type: 'SINGLE_CHOICE',
-      answers: [
-        { text: 'Very dissatisfied', value: '1' },
-        { text: 'Dissatisfied', value: '2' },
-        { text: 'Neutral', value: '3' },
-        { text: 'Satisfied', value: '4' },
-        { text: 'Very satisfied', value: '5' },
-      ],
-    },
-    {
-      id: 2,
-      text: 'Pick the areas you want to see improved',
-      required: false,
-      type: 'MULTIPLE_CHOICE',
-      answers: [
-        { text: 'Communication', value: 'comm' },
-        { text: 'Tools', value: 'tools' },
-        { text: 'Meetings', value: 'mtgs' },
-        { text: 'Deadlines', value: 'ddl' },
-      ],
-    },
-    {
-      id: 3,
-      text: 'Any blockers you are facing?',
-      description: 'Be as specific as possible.',
-      required: false,
-      type: 'TEXT_BASED',
-    },
-    {
-      id: 4,
-      text: 'How do you feel this week?',
-      required: true,
-      type: 'SENTIMENT',
-      answers: [
-        { text: 'Very bad', value: '1' },
-        { text: 'Bad', value: '2' },
-        { text: 'Okay', value: '3' },
-        { text: 'Good', value: '4' },
-        { text: 'Great', value: '5' },
-      ],
-    },
-  ],
-};
+// No mock data; real API only
 
 // ---------- Adapters ----------
-function adaptToQuestion(q: FeedbackQuestion): Question {
+function adaptToQuestion(q: EmployeeQuestion): Question {
   return {
     id: q.id, // number ✅
     text: q.text, // your QuestionCard reads question.text
@@ -129,7 +62,7 @@ export default function FeedbackForm({ id }: { id: string }) {
   const router = useRouter();
   const { showAlert } = useAlertDialog();
 
-  const [feedback, setFeedback] = useState<FeedbackSubmission | null>(null);
+  const [feedback, setFeedback] = useState<EmployeeFeedback | null>(null);
   const [loading, setLoading] = useState(true);
 
   const [currentStep, setCurrentStep] = useState(0);
@@ -142,22 +75,38 @@ export default function FeedbackForm({ id }: { id: string }) {
 
   // init/load
   useEffect(() => {
-    setLoading(true);
-    setFeedback(null);
-    setCurrentStep(0);
-    setAnswers({});
-    setOverallComments('');
-    setPrivacyLevel('PUBLIC');
-    setShowCongrats(false);
-
-    if (DESIGN_MODE) {
-      const t = setTimeout(() => {
-        setFeedback({ ...mockFeedback, id: Number(id) || mockFeedback.id });
-        setLoading(false);
-      }, 300);
-      return () => clearTimeout(t);
+    let isMounted = true;
+    async function load() {
+      setLoading(true);
+      setFeedback(null);
+      setCurrentStep(0);
+      setAnswers({});
+      setOverallComments('');
+      setPrivacyLevel('PUBLIC');
+      setShowCongrats(false);
+      try {
+        const data = await employeeService.getFeedbackById(id);
+        if (isMounted) {
+          setFeedback(data as unknown as EmployeeFeedback);
+        }
+      } catch (e) {
+        if (isMounted) {
+          showAlert({
+            title: 'Unable to load feedback',
+            description: 'Please try again later.',
+            variant: 'solid',
+            color: 'danger',
+          });
+        }
+      } finally {
+        if (isMounted) setLoading(false);
+      }
     }
-  }, [id]);
+    load();
+    return () => {
+      isMounted = false;
+    };
+  }, [id, showAlert]);
 
   const canProceed =
     feedback && currentStep === feedback.questions.length
@@ -206,7 +155,7 @@ export default function FeedbackForm({ id }: { id: string }) {
       return;
     }
     const payload: FeedbackSubmissionPayload = {
-      feedbackId: feedback.id,
+      feedbackId: Number(feedback.id),
       responses: Object.fromEntries(
         Object.entries(answers).map(([qid, val]) => [
           qid,
