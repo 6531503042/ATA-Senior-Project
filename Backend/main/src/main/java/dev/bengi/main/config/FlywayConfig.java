@@ -22,14 +22,18 @@ public class FlywayConfig {
     @Value("${spring.flyway.out-of-order:true}")
     private boolean outOfOrder;
 
+    @Value("${spring.flyway.validate-on-migrate:false}")
+    private boolean validateOnMigrate;
+
     @Bean
     public Flyway flyway(DataSource dataSource) {
-        log.info("Configuring Flyway with locations={} baselineOnMigrate={} outOfOrder={}", locations, baselineOnMigrate, outOfOrder);
+        log.info("Configuring Flyway with locations={} baselineOnMigrate={} outOfOrder={} validateOnMigrate={}", locations, baselineOnMigrate, outOfOrder, validateOnMigrate);
         return Flyway.configure()
                 .dataSource(dataSource)
                 .locations(locations)
                 .baselineOnMigrate(baselineOnMigrate)
                 .outOfOrder(outOfOrder)
+                .validateOnMigrate(validateOnMigrate)
                 .load();
     }
 }
