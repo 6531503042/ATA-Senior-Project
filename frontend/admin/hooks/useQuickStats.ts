@@ -1,12 +1,23 @@
-import type { QuickStats } from '@/types/dashboard';
 import type { ApiError } from '@/types/api';
 
 import { useState, useCallback } from 'react';
 
 import { api } from '@/libs/apiClient';
 
+export interface AdminQuickStats {
+  thisMonth: number;
+  totalTimeSeconds: number;
+  avgRating: number;
+  totalUsers?: number;
+  totalDepartments?: number;
+  totalQuestions?: number;
+  totalFeedbacks?: number;
+  totalSubmissions?: number;
+  totalProjects?: number;
+}
+
 export function useQuickStats() {
-  const [stats, setStats] = useState<QuickStats | null>(null);
+  const [stats, setStats] = useState<AdminQuickStats | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<ApiError | null>(null);
 
@@ -15,39 +26,9 @@ export function useQuickStats() {
       setLoading(true);
       setError(null);
 
-      // Fetch counts from different endpoints
-      const [users, departments, questions, feedbacks, submissions, projects] =
-        await Promise.all([
-          api
-            .get<any>('/api/users', { page: 0, size: 1 })
-            .catch(() => ({ totalElements: 0 })),
-          api
-            .get<any>('/api/departments', { page: 0, size: 1 })
-            .catch(() => ({ totalElements: 0 })),
-          api
-            .get<any>('/api/questions', { page: 0, size: 1 })
-            .catch(() => ({ totalElements: 0 })),
-          api
-            .get<any>('/api/feedbacks', { page: 0, size: 1 })
-            .catch(() => ({ totalElements: 0 })),
-          api
-            .get<any>('/api/submissions', { page: 0, size: 1 })
-            .catch(() => ({ totalElements: 0 })),
-          api
-            .get<any>('/api/projects', { page: 0, size: 1 })
-            .catch(() => ({ totalElements: 0 })),
-        ]);
+      const quick = await api.get<AdminQuickStats>('/api/dashboard/quick-stats');
 
-      const quickStats: QuickStats = {
-        totalUsers: users.totalElements || 0,
-        totalDepartments: departments.totalElements || 0,
-        totalQuestions: questions.totalElements || 0,
-        totalFeedbacks: feedbacks.totalElements || 0,
-        totalSubmissions: submissions.totalElements || 0,
-        totalProjects: projects.totalElements || 0,
-      };
-
-      setStats(quickStats);
+      setStats(quick);
     } catch (err) {
       console.error('Failed to load quick stats:', err);
       const apiError = err as ApiError;

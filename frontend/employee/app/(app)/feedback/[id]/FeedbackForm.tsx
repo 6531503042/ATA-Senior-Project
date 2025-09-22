@@ -21,6 +21,7 @@ import CongratsModal from './components/CongratsModal';
 import employeeService from '../../../../services/employeeService';
 import { FeedbackOverallComments } from './components'; // your existing component
 import type { Privacy, FeedbackSubmissionPayload } from '../../../../types/employee';
+import employeeSvc from '../../../../services/employeeService';
 
 // ---------- Types ----------
 type QType = 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'TEXT_BASED' | 'SENTIMENT';
@@ -87,7 +88,43 @@ export default function FeedbackForm({ id }: { id: string }) {
       try {
         const data = await employeeService.getFeedbackById(id);
         if (isMounted) {
-          setFeedback(data as unknown as EmployeeFeedback);
+          // Hydrate questions if backend returns IDs instead of full objects
+          const questionIds = (data as any)?.questionIds as number[] | undefined;
+          const hydratedQuestions = questionIds && questionIds.length > 0
+            ? await Promise.all(
+                questionIds.map(async qid => {
+                  try {
+                    const q = await employeeService.getQuestionById(qid);
+                    return {
+                      id: q.id,
+                      text: q.text || q.title || '',
+                      required: !!q.required,
+                      type: (q.type || 'TEXT_BASED') as any,
+                      category: (q.category || 'general') as any,
+                      answers: q.options?.map((o: any) => String(o.text ?? o.value ?? '')) || [],
+                      description: q.description || '',
+                    } as unknown as EmployeeQuestion;
+                  } catch {
+                    return null;
+                  }
+                })
+              )
+                .then(list => list.filter(Boolean) as EmployeeQuestion[])
+            : [];
+
+          const adapted: EmployeeFeedback = {
+            ...(data as unknown as EmployeeFeedback),
+            questions: hydratedQuestions && hydratedQuestions.length > 0
+              ? hydratedQuestions
+              : ((data as any)?.questions || []),
+          };
+
+          setFeedback(adapted as unknown as EmployeeFeedback);
+        }
+        // Start timing session when form loads and feedback exists
+        const fid = Number(id);
+        if (!Number.isNaN(fid)) {
+          employeeSvc.startSession(fid).catch(() => {});
         }
       } catch (e) {
         if (isMounted) {
@@ -105,19 +142,23 @@ export default function FeedbackForm({ id }: { id: string }) {
     load();
     return () => {
       isMounted = false;
+      // Stop timing session on unmount
+      employeeSvc.stopSession().catch(() => {});
     };
   }, [id, showAlert]);
 
+  const totalQuestions = feedback?.questions?.length ?? 0;
+  const currentQuestion = totalQuestions > 0 ? feedback?.questions?.[currentStep] : undefined;
+
   const canProceed =
-    feedback && currentStep === feedback.questions.length
+    totalQuestions > 0 && currentStep === totalQuestions
       ? overallComments.trim().length > 0
       : Boolean(
-          feedback &&
-            (!feedback.questions[currentStep].required ||
-              (answers[feedback.questions[currentStep].id] &&
-                (!Array.isArray(answers[feedback.questions[currentStep].id]) ||
-                  (answers[feedback.questions[currentStep].id] as string[])
-                    .length > 0))),
+          currentQuestion &&
+            (!currentQuestion.required ||
+              (answers[currentQuestion.id] &&
+                (!Array.isArray(answers[currentQuestion.id]) ||
+                  (answers[currentQuestion.id] as string[]).length > 0))),
         );
 
   async function handleSubmit() {
@@ -169,6 +210,8 @@ export default function FeedbackForm({ id }: { id: string }) {
     setSubmitting(true);
     try {
       const created = await employeeService.submitFeedback(String(feedback.id), payload);
+      // Stop session after successful submit
+      employeeSvc.stopSession().catch(() => {});
       setSubmitting(false);
       setShowCongrats(true);
     } catch (err) {
@@ -208,7 +251,7 @@ export default function FeedbackForm({ id }: { id: string }) {
     );
   }
 
-  const isFinal = currentStep === feedback.questions.length;
+  const isFinal = currentStep === totalQuestions;
 
   return (
     <>
@@ -220,7 +263,7 @@ export default function FeedbackForm({ id }: { id: string }) {
             <FeedbackSidebar
               title={feedback.title}
               description={feedback.description}
-              questions={feedback.questions.map(q => ({
+              questions={(feedback.questions ?? []).map(q => ({
                 id: q.id,
                 description: q.description,
                 required: q.required,
@@ -235,25 +278,25 @@ export default function FeedbackForm({ id }: { id: string }) {
           {/* Main */}
           <main className="flex-1 bg-white rounded-2xl border border-gray-100 shadow-sm min-w-0">
             {/* Mobile header with progress */}
-            <div className="lg:hidden sticky top-0 z-10 bg-white/90 backdrop-blur border-b border-gray-100">
+              <div className="lg:hidden sticky top-0 z-10 bg-white/90 backdrop-blur border-b border-gray-100">
               <div className="px-4 py-3">
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-sm font-medium text-gray-700">
-                      {isFinal ? 'Overall Comments' : `Question ${currentStep + 1} of ${feedback.questions.length}`}
+                        {isFinal ? 'Overall Comments' : `Question ${currentStep + 1} of ${totalQuestions}`}
                     </h2>
-                    {!isFinal && feedback.questions[currentStep]?.required && (
+                      {!isFinal && currentQuestion?.required && (
                       <span className="text-xs text-red-500">Required</span>
                     )}
                   </div>
                   <span className="text-xs text-gray-500">
-                    {Math.round(((currentStep + 1) / (feedback.questions.length + 1)) * 100)}%
+                    {totalQuestions > 0 ? Math.round(((currentStep + 1) / (totalQuestions + 1)) * 100) : 0}%
                   </span>
                 </div>
                 <div className="mt-2 h-1.5 bg-gray-100 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-violet-600"
-                    style={{ width: `${Math.round(((currentStep + 1) / (feedback.questions.length + 1)) * 100)}%` }}
+                      style={{ width: `${totalQuestions > 0 ? Math.round(((currentStep + 1) / (totalQuestions + 1)) * 100) : 0}%` }}
                   />
                 </div>
               </div>
@@ -279,13 +322,11 @@ export default function FeedbackForm({ id }: { id: string }) {
                           'Overall Comments'
                         ) : (
                           <>
-                            Question {currentStep + 1} of{' '}
-                            {feedback.questions.length}
+                            Question {currentStep + 1} of {totalQuestions}
                           </>
                         )}
                       </h2>
-                      {!isFinal &&
-                        feedback.questions[currentStep]?.required && (
+                      {!isFinal && currentQuestion?.required && (
                           <div className="flex items-center gap-1 text-red-500 text-sm">
                             <AlertCircle className="h-4 w-4" />
                             <span>Required</span>
@@ -296,22 +337,20 @@ export default function FeedbackForm({ id }: { id: string }) {
 
                   <AnimatePresence mode="wait">
                     {!isFinal ? (
-                      <QuestionCard
-                        question={adaptToQuestion(
-                          feedback.questions[currentStep],
-                        )}
-                        currentAnswer={
-                          answers[feedback.questions[currentStep].id] || ''
-                        }
-                        onAnswerChange={(val: string | string[]) =>
-                          setAnswers(prev => ({
-                            ...prev,
-                            [feedback.questions[currentStep].id]: val,
-                          }))
-                        }
-                        questionNumber={currentStep + 1}
-                        totalQuestions={feedback.questions.length}
-                      />
+                      currentQuestion ? (
+                        <QuestionCard
+                          question={adaptToQuestion(currentQuestion)}
+                          currentAnswer={answers[currentQuestion.id] || ''}
+                          onAnswerChange={(val: string | string[]) =>
+                            setAnswers(prev => ({
+                              ...prev,
+                              [currentQuestion.id]: val,
+                            }))
+                          }
+                          questionNumber={currentStep + 1}
+                          totalQuestions={totalQuestions}
+                        />
+                      ) : null
                     ) : (
                       <FeedbackOverallComments
                         overallComments={overallComments}
@@ -361,7 +400,7 @@ export default function FeedbackForm({ id }: { id: string }) {
                       className="gap-2 bg-gradient-to-r from-violet-600 to-violet-700 hover:from-violet-700 hover:to-violet-800 text-white shadow-sm w-full sm:w-auto"
                     >
                       <span>
-                        {currentStep === feedback.questions.length - 1
+                        {totalQuestions > 0 && currentStep === totalQuestions - 1
                           ? 'Final Step'
                           : 'Next Question'}
                       </span>

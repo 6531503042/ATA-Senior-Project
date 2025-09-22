@@ -18,19 +18,32 @@ import Link from 'next/link';
 import { useEmployeeDashboard } from '../../../hooks/useEmployeeDashboard';
 import { useEmployeeFeedbacks } from '../../../hooks/useEmployeeFeedbacks';
 import { useAuthContext } from '../../../contexts/AuthContext';
+import employeeService from '../../../services/employeeService';
 
 export default function FeedbackCenter() {
   const { dashboardData, loading: dashboardLoading, error: dashboardError, refresh: refreshDashboard } = useEmployeeDashboard();
   const { getPendingFeedbacks, loading: feedbacksLoading, refresh: refreshFeedbacks } = useEmployeeFeedbacks();
   const { user } = useAuthContext();
 
-  const pendingFeedbacks = getPendingFeedbacks();
+  const pendingFeedbacks = getPendingFeedbacks() || [];
 
   // Ensure the latest data after navigation back from a submission
   React.useEffect(() => {
     refreshDashboard();
     refreshFeedbacks();
+    // Load quick stats for current user
+    employeeService.getQuickStats().then((data) => {
+      setQuickStats({
+        thisMonth: data.thisMonth || 0,
+        totalTimeSeconds: data.totalTimeSeconds || 0,
+        avgRating: data.avgRating || 0,
+      });
+    }).catch(() => {});
   }, []);
+
+  const [quickStats, setQuickStats] = React.useState<{ thisMonth: number; totalTimeSeconds: number; avgRating: number }>({ thisMonth: 0, totalTimeSeconds: 0, avgRating: 0 });
+
+  const formatMinutes = (secs: number) => `${Math.floor(secs / 60)}m`;
 
   if (dashboardLoading || feedbacksLoading) {
     return (
@@ -180,7 +193,7 @@ export default function FeedbackCenter() {
                   <p className="text-gray-600 mt-1">Complete these feedback forms to help improve our processes</p>
                 </div>
               </div>
-              {pendingFeedbacks.length > 0 && (
+              {(pendingFeedbacks?.length ?? 0) > 0 && (
                 <Button
                   as={Link}
                   href="/feedback-center"
@@ -195,7 +208,7 @@ export default function FeedbackCenter() {
               )}
             </div>
           
-            {pendingFeedbacks.length > 0 ? (
+            {(pendingFeedbacks?.length ?? 0) > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {pendingFeedbacks.slice(0, 6).map((feedback) => (
                   <Card
@@ -507,7 +520,7 @@ export default function FeedbackCenter() {
                         <p className="text-xs text-orange-700">Due: {new Date(feedback.endDate).toLocaleDateString()}</p>
                       </div>
                     ))}
-                    {pendingFeedbacks.length === 0 && (
+                    {(pendingFeedbacks?.length ?? 0) === 0 && (
                       <div className="p-3 bg-gradient-to-r from-green-50 to-green-100 rounded-lg">
                         <p className="text-sm font-medium text-green-900">No upcoming deadlines</p>
                         <p className="text-xs text-green-700">You're all caught up!</p>
@@ -529,15 +542,15 @@ export default function FeedbackCenter() {
                   <div className="space-y-3">
                     <div className="flex justify-between items-center p-3 bg-gradient-to-r from-emerald-50 to-emerald-100 rounded-lg">
                       <span className="text-sm font-medium text-emerald-900">This Month</span>
-                      <span className="text-lg font-bold text-emerald-700">0</span>
+                      <span className="text-lg font-bold text-emerald-700">{quickStats.thisMonth}</span>
                     </div>
                     <div className="flex justify-between items-center p-3 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg">
                       <span className="text-sm font-medium text-blue-900">Total Time</span>
-                      <span className="text-lg font-bold text-blue-700">0m</span>
+                      <span className="text-lg font-bold text-blue-700">{formatMinutes(quickStats.totalTimeSeconds)}</span>
                     </div>
                     <div className="flex justify-between items-center p-3 bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg">
                       <span className="text-sm font-medium text-purple-900">Avg Rating</span>
-                      <span className="text-lg font-bold text-purple-700">-</span>
+                      <span className="text-lg font-bold text-purple-700">{quickStats.avgRating ? quickStats.avgRating.toFixed(1) : '-'}</span>
                     </div>
                   </div>
                 </CardBody>

@@ -16,6 +16,10 @@ export const employeeService = {
   getFeedbackById: (id: string) =>
     api.get<EmployeeFeedback>(`/api/feedbacks/${id}`),
 
+  // Get question by ID (for hydrating feedback questions)
+  getQuestionById: (id: number) =>
+    api.get<any>(`/api/questions/${id}`),
+
   // Submit feedback response
   submitFeedback: (
     feedbackId: string,
@@ -51,6 +55,18 @@ export const employeeService = {
   // Get employee's dashboard data
   getDashboardData: () =>
     api.get<EmployeeDashboardData>('/api/employees/dashboard-summary'),
+
+  // Start/stop timing session for a feedback form
+  startSession: (feedbackId: number) =>
+    api.post<{ id: number; startedAt: string }>(`/api/sessions/start?feedbackId=${feedbackId}`),
+  stopSession: () =>
+    api.post<{ id: number; durationSeconds: number }>(`/api/sessions/stop`),
+
+  // Quick stats for current user (this month count, total time, avg rating)
+  getQuickStats: () =>
+    api.get<{ thisMonth: number; totalTimeSeconds: number; avgRating: number }>(
+      '/api/dashboard/quick-stats',
+    ),
 
   // Get employee profile
   getProfile: () =>
