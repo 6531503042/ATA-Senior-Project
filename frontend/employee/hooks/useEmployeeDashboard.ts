@@ -42,10 +42,11 @@ export function useEmployeeDashboard() {
     try {
       setLoading(true);
       setError(null);
-      // Fetch summary plus recent submissions in parallel
-      const [summaryResponse, submissionsResponse] = await Promise.all([
+      // Fetch summary, submissions, and projects in parallel
+      const [summaryResponse, submissionsResponse, projectsResponse] = await Promise.all([
         employeeService.getDashboardData(),
         employeeService.getMySubmissions(),
+        employeeService.getMyProjects(),
       ]);
 
       const submissionsData = (submissionsResponse as any)?.content || submissionsResponse || [];
@@ -65,6 +66,19 @@ export function useEmployeeDashboard() {
             }))
         : [];
 
+      // Projects (PageResponse or array)
+      const projectsData = (projectsResponse as any)?.content || projectsResponse || [];
+      const projects = Array.isArray(projectsData)
+        ? projectsData.map((p: any) => ({
+            id: String(p.id ?? ''),
+            name: String(p.name ?? p.title ?? 'Project'),
+            description: String(p.description ?? ''),
+            status: (p.active ? 'active' : 'pending') as any,
+            startDate: String(p.startDate ?? p.createdAt ?? ''),
+            endDate: String(p.endDate ?? ''),
+          }))
+        : [];
+
       // Transform the summary response to match our interface
       const transformedData: EmployeeDashboardData = {
         stats: {
@@ -75,7 +89,7 @@ export function useEmployeeDashboard() {
         },
         recentFeedbacks: [],
         recentSubmissions,
-        projects: [],
+        projects,
       };
 
       setDashboardData(transformedData);
