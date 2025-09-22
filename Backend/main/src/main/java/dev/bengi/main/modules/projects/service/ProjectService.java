@@ -132,15 +132,15 @@ public class ProjectService {
     // Additional methods for employee endpoints
     
     public Mono<PageResponse<ProjectResponseDto>> getProjectsByMember(Long userId, PageRequest pageRequest) {
-        // TODO: Implement actual query logic
         return paginationService.paginateInMemory(
-            Flux.empty(),
+            projectRepository.findByMemberUserId(userId)
+                .flatMap(this::calculateMemberCount),
             pageRequest
         );
     }
     
     public Mono<Long> countProjectsByMember(Long userId) {
-        return projectMemberRepository.findUserIdsByProjectId(userId).count();
+        return projectRepository.countProjectsByMember(userId).defaultIfEmpty(0L);
     }
     
     public Mono<Long> countProjectsJoinedSince(Long userId, java.time.LocalDateTime since) {

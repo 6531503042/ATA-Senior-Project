@@ -18,6 +18,13 @@ import java.util.Map;
 public class DashboardController {
 
     private final DashboardService dashboardService;
+    
+    @GetMapping("/quick-stats")
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    public Mono<ResponseEntity<Map<String, Object>>> quickStats(Authentication auth) {
+        String userId = auth != null ? auth.getName() : null;
+        return dashboardService.getQuickStats(userId).map(ResponseEntity::ok);
+    }
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN','USER')")

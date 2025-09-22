@@ -19,6 +19,13 @@ public interface ProjectRepository extends R2dbcRepository<Project, Long> {
     // Dashboard stats methods
     @Query("SELECT COUNT(*) FROM projects WHERE active = true")
     Mono<Long> countActiveProjects();
+
+    // Employee: projects by member
+    @Query("SELECT p.* FROM projects p JOIN project_members pm ON pm.project_id = p.id WHERE pm.user_id = :userId ORDER BY p.created_at DESC")
+    Flux<Project> findByMemberUserId(Long userId);
+
+    @Query("SELECT COUNT(DISTINCT p.id) FROM project_members pm JOIN projects p ON pm.project_id = p.id WHERE pm.user_id = :userId")
+    Mono<Long> countProjectsByMember(Long userId);
 }
 
 

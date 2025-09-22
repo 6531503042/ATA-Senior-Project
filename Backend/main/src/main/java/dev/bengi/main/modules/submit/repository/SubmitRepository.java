@@ -26,8 +26,14 @@ public interface SubmitRepository extends R2dbcRepository<Submit, Long> {
     @Query("SELECT COUNT(DISTINCT feedback_id) FROM submissions WHERE submitted_at >= :from AND submitted_at < :to")
     Mono<Long> countFeedbacksWithSubmissionsBetween(java.time.LocalDateTime from, java.time.LocalDateTime to);
 
-    @Query("SELECT AVG(rating) FROM submissions WHERE submitted_at >= :from AND submitted_at < :to AND rating IS NOT NULL")
+    @Query("SELECT AVG(admin_rating) FROM submissions WHERE submitted_at >= :from AND submitted_at < :to AND admin_rating IS NOT NULL")
     Mono<Double> getAverageRatingBetween(java.time.LocalDateTime from, java.time.LocalDateTime to);
+
+    @Query("SELECT AVG(admin_rating) FROM submissions WHERE user_id = :userId AND submitted_at >= :from AND submitted_at < :to AND admin_rating IS NOT NULL")
+    Mono<Double> getUserAverageRatingBetween(String userId, java.time.LocalDateTime from, java.time.LocalDateTime to);
+
+    @Query("SELECT COUNT(*) FROM submissions WHERE user_id = :userId AND submitted_at >= :from AND submitted_at < :to")
+    Mono<Long> countUserSubmittedBetween(String userId, java.time.LocalDateTime from, java.time.LocalDateTime to);
 }
 
 

@@ -29,6 +29,7 @@ public class DashboardService {
     private final UserRepository userRepository;
     private final DepartmentRepository departmentRepository;
     private final DatabaseClient databaseClient;
+    private final dev.bengi.main.modules.submit.service.SubmissionSessionService sessionService;
 
     // Individual stats methods for dashboard cards
     public Mono<Map<String, Object>> getUsersStats() {
@@ -322,6 +323,33 @@ public class DashboardService {
                             t.getT6(),
                             engagementRate
                     );
+                });
+    }
+
+    public Mono<Map<String, Object>> getQuickStats(String userId) {
+        java.time.YearMonth now = java.time.YearMonth.now();
+        java.time.LocalDateTime from = now.atDay(1).atStartOfDay();
+        java.time.LocalDateTime to = now.plusMonths(1).atDay(1).atStartOfDay();
+
+        Mono<Long> thisMonthCount = userId != null
+                ? submitRepository.countUserSubmittedBetween(userId, from, to).defaultIfEmpty(0L)
+                : submitRepository.countSubmittedBetween(from, to).defaultIfEmpty(0L);
+
+        Mono<Long> totalSeconds = userId != null
+                ? sessionService.totalSecondsForUserThisMonth(userId).defaultIfEmpty(0L)
+                : sessionService.totalSecondsThisMonth().defaultIfEmpty(0L);
+
+        Mono<Double> avgRating = userId != null
+                ? submitRepository.getUserAverageRatingBetween(userId, from, to).defaultIfEmpty(0.0)
+                : submitRepository.getAverageRatingBetween(from, to).defaultIfEmpty(0.0);
+
+        return reactor.core.publisher.Mono.zip(thisMonthCount, totalSeconds, avgRating)
+                .map(t -> {
+                    java.util.Map<String, Object> map = new java.util.HashMap<>();
+                    map.put("thisMonth", t.getT1());
+                    map.put("totalTimeSeconds", t.getT2());
+                    map.put("avgRating", t.getT3());
+                    return map;
                 });
     }
 
