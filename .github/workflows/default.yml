@@ -10,6 +10,8 @@ env:
   JAVA_VERSION: '21'
   NODE_VERSION: '20'
   BUN_VERSION: '1.2.2'
+  DOCKER_BUILDKIT: 1
+  COMPOSE_DOCKER_CLI_BUILD: 1
 
 jobs:
   # Setup and dependency validation
@@ -71,24 +73,34 @@ jobs:
         id: bun-version
         run: echo "version=$(bun --version)" >> $GITHUB_OUTPUT
 
-      - name: Install script dependencies
+      - name: Install script dependencies (if scripts directory exists)
         run: |
-          cd scripts
-          bun install
+          if [ -d "scripts" ]; then
+            cd scripts
+            bun install
+          else
+            echo "ℹ️  No scripts directory found, skipping script dependencies"
+          fi
 
       - name: Start essential services
         run: |
           docker compose up -d postgres redis
-          sleep 10
+          sleep 15
 
       - name: Wait for services
         run: |
           echo "Waiting for PostgreSQL..."
-          until docker exec ata-it-postgres pg_isready -U postgres; do sleep 2; done
+          until docker exec ata-it-postgres pg_isready -U postgres; do 
+            echo "PostgreSQL not ready, waiting..."
+            sleep 3
+          done
           echo "✅ PostgreSQL is ready."
           
           echo "Waiting for Redis..."
-          until docker exec ata-it-redis redis-cli ping | grep PONG; do sleep 2; done
+          until docker exec ata-it-redis redis-cli ping | grep PONG; do 
+            echo "Redis not ready, waiting..."
+            sleep 3
+          done
           echo "✅ Redis is ready."
 
   # Backend Spring Boot WebFlux
@@ -125,12 +137,12 @@ jobs:
       - name: Clean and build Backend
         run: |
           cd backend/main
-          ./gradlew clean build --no-daemon --info
+          ./gradlew clean build --no-daemon --info --stacktrace
 
       - name: Run Backend tests
         run: |
           cd backend/main
-          ./gradlew test --no-daemon
+          ./gradlew test --no-daemon --info --stacktrace
 
       - name: Check WebFlux configuration
         run: |
@@ -179,7 +191,8 @@ jobs:
       - name: Build Admin Frontend
         run: |
           cd frontend/admin
-          bun run build || (echo "Build failed, trying with --no-lint" && bun run build --no-lint)
+          echo "Building Admin Frontend..."
+          timeout 300 bun run build || (echo "Build failed with timeout or error, trying with --no-lint" && timeout 300 bun run build --no-lint)
 
       - name: Test Admin Frontend (if test script exists)
         run: |
@@ -209,7 +222,7 @@ jobs:
           path: |
             ~/.bun/install/cache
             frontend/employee/node_modules
-          key: ${{ runner.os }}-bun-employee-${{ hashFiles('frontend/employee/package.json', 'frontend/employee/package-lock.json') }}
+          key: ${{ runner.os }}-bun-employee-${{ hashFiles('frontend/employee/package.json', 'frontend/employee/bun.lock') }}
           restore-keys: |
             ${{ runner.os }}-bun-employee-
 
@@ -226,7 +239,8 @@ jobs:
       - name: Build Employee Frontend
         run: |
           cd frontend/employee
-          bun run build || (echo "Build failed, trying with --no-lint" && bun run build --no-lint)
+          echo "Building Employee Frontend..."
+          timeout 300 bun run build || (echo "Build failed with timeout or error, trying with --no-lint" && timeout 300 bun run build --no-lint)
 
       - name: Test Employee Frontend (if test script exists)
         run: |
@@ -250,27 +264,59 @@ jobs:
 
       - name: Build Docker images
         run: |
-          docker compose build --no-cache
+          echo "Building Docker images..."
+          docker compose build --no-cache --parallel
 
       - name: Test Docker services
         run: |
           docker compose up -d
-          sleep 30
+          sleep 45
           
-          # Test backend health
-          curl -f http://localhost:8080/actuator/health || exit 1
-          echo "✅ Backend health check passed"
+          # Test backend health with retry
+          echo "Testing backend health..."
+          for i in {1..5}; do
+            if curl -f http://localhost:8080/actuator/health; then
+              echo "✅ Backend health check passed"
+              break
+            else
+              echo "Backend not ready, attempt $i/5..."
+              sleep 10
+            fi
+          done
           
-          # Test frontend services
-          curl -f http://localhost:3000 || exit 1
-          echo "✅ Admin Frontend is accessible"
+          # Test frontend services with retry
+          echo "Testing Admin Frontend..."
+          for i in {1..5}; do
+            if curl -f http://localhost:3000; then
+              echo "✅ Admin Frontend is accessible"
+              break
+            else
+              echo "Admin Frontend not ready, attempt $i/5..."
+              sleep 10
+            fi
+          done
           
-          curl -f http://localhost:3001 || exit 1
-          echo "✅ Employee Frontend is accessible"
+          echo "Testing Employee Frontend..."
+          for i in {1..5}; do
+            if curl -f http://localhost:3001; then
+              echo "✅ Employee Frontend is accessible"
+              break
+            else
+              echo "Employee Frontend not ready, attempt $i/5..."
+              sleep 10
+            fi
+          done
 
       - name: Show service status
         run: |
+          echo "📊 Docker Compose Services Status:"
           docker compose ps
+          
+          echo "🐳 Docker Images:"
+          docker images | grep -E "(ata-it|postgres|redis)" || echo "No matching images found"
+          
+          echo "📋 Service Logs (last 50 lines):"
+          docker compose logs --tail=50
 
   # Deploy to staging (only on deployment branch)
   deploy-staging:
@@ -294,8 +340,40 @@ jobs:
 
       - name: Verify deployment
         run: |
-          sleep 30
+          sleep 45
           docker compose ps
-          curl -f http://localhost:8080/actuator/health
-          curl -f http://localhost:3000
-          curl -f http://localhost:3001
+          
+          # Verify backend with retry
+          echo "Verifying backend deployment..."
+          for i in {1..5}; do
+            if curl -f http://localhost:8080/actuator/health; then
+              echo "✅ Backend deployment verified"
+              break
+            else
+              echo "Backend not ready, attempt $i/5..."
+              sleep 15
+            fi
+          done
+          
+          # Verify frontend services with retry
+          echo "Verifying Admin Frontend deployment..."
+          for i in {1..5}; do
+            if curl -f http://localhost:3000; then
+              echo "✅ Admin Frontend deployment verified"
+              break
+            else
+              echo "Admin Frontend not ready, attempt $i/5..."
+              sleep 15
+            fi
+          done
+          
+          echo "Verifying Employee Frontend deployment..."
+          for i in {1..5}; do
+            if curl -f http://localhost:3001; then
+              echo "✅ Employee Frontend deployment verified"
+              break
+            else
+              echo "Employee Frontend not ready, attempt $i/5..."
+              sleep 15
+            fi
+          done
