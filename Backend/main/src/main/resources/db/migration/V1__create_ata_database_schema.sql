@@ -204,6 +204,14 @@ BEGIN
     END IF;
 END$$;
 
+-- Add missing columns to users table if they don't exist
+ALTER TABLE users ADD COLUMN IF NOT EXISTS first_name VARCHAR(100);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS last_name VARCHAR(100);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(20);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS department_id BIGINT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS active BOOLEAN DEFAULT true;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login_at TIMESTAMP;
+
 -- Add foreign key constraint for users department
 ALTER TABLE users 
 ADD CONSTRAINT fk_users_department 
@@ -309,7 +317,7 @@ VALUES
 ON CONFLICT (name) DO NOTHING;
 
 -- Insert default admin user
--- Password: admin123 (BCrypt hash)
+-- Password: admin123 (BCrypt hash with strength 10 - using working hash from register API)
 INSERT INTO users (username, email, password, first_name, last_name) 
 VALUES (
     'admin', 
@@ -320,8 +328,8 @@ VALUES (
 )
 ON CONFLICT (username) DO NOTHING;
 
--- Insert default regular user
--- Password: user123 (BCrypt hash)
+-- Insert default regular user  
+-- Password: user123 (BCrypt hash with strength 10 - updated to working hash)
 INSERT INTO users (username, email, password, first_name, last_name) 
 VALUES (
     'user', 
