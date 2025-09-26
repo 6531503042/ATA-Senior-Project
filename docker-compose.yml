@@ -1,103 +1,36 @@
+version: '3.8'
+
 services:
-  # Database Services
   postgres:
-    image: postgres:16
-    container_name: ata-it-postgres
+    image: postgres:17
+    container_name: ata-postgres
     environment:
       POSTGRES_DB: senior
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: 0947044119
     ports:
       - "5432:5432"
     volumes:
-      - pg-data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
+      test: ["CMD-SHELL", "pg_isready -U postgres -d senior"]
+      interval: 10s
       timeout: 5s
       retries: 5
-    networks:
-      - ata-network
 
-  redis:
-    image: redis:latest
-    container_name: ata-it-redis
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: ata-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
     ports:
-      - "6379:6379"
+      - "5050:80"
+    depends_on:
+      - postgres
     volumes:
-      - redis-data:/data
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-    networks:
-      - ata-network
-
-  # Backend Service
-  backend:
-    build:
-      context: ./backend/main
-      dockerfile: Dockerfile
-    container_name: ata-it-backend
-    ports:
-      - "8080:8080"
-    environment:
-      SPRING_PROFILES_ACTIVE: docker
-      SPRING_R2DBC_URL: r2dbc:postgresql://postgres:5432/senior
-      SPRING_R2DBC_USERNAME: postgres
-      SPRING_R2DBC_PASSWORD: postgres
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/senior
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: postgres
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks:
-      - ata-network
-    restart: unless-stopped
-
-  # Admin Frontend Service
-  admin-frontend:
-    build:
-      context: ./frontend/admin
-      dockerfile: Dockerfile
-    container_name: ata-it-admin
-    ports:
-      - "3000:3000"
-    environment:
-      NODE_ENV: production
-      NEXT_PUBLIC_API_URL: http://localhost:8080
-    depends_on:
-      - backend
-    networks:
-      - ata-network
-    restart: unless-stopped
-
-  # Employee Frontend Service
-  employee-frontend:
-    build:
-      context: ./frontend/employee
-      dockerfile: Dockerfile
-    container_name: ata-it-employee
-    ports:
-      - "3001:3001"
-    environment:
-      NODE_ENV: production
-      NEXT_PUBLIC_API_URL: http://localhost:8080
-    depends_on:
-      - backend
-    networks:
-      - ata-network
-    restart: unless-stopped
+      - pgadmin_data:/var/lib/pgadmin
 
 volumes:
-  pg-data:
-  redis-data:
-
-networks:
-  ata-network:
-    driver: bridge
+  postgres_data:
+  pgadmin_data:
