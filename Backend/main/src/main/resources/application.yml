@@ -2,13 +2,14 @@ spring:
   application:
     name: main
   r2dbc:
-    url: r2dbc:postgresql://localhost:3307/senior
+    url: r2dbc:postgresql://localhost:5432/senior
     username: postgres
-    password: postgres
+    password: 0947044119
   datasource:
-    url: jdbc:postgresql://localhost:3307/senior
+    url: jdbc:postgresql://localhost:5432/senior
     username: postgres
-    password: postgres
+    password: 0947044119
+    driver-class-name: org.postgresql.Driver
   flyway:
     enabled: true
     locations: classpath:db/migration
@@ -21,27 +22,10 @@ spring:
   webflux:
     base-path: /
 
-server:
-  port: 8080
-
-logging:
-  level:
-    root: INFO
-    org.springframework.r2dbc: INFO
-    io.r2dbc.postgresql: WARN
-    io.r2dbc.postgresql.QUERY: WARN
-    io.r2dbc.postgresql.client.ReactorNettyClient: WARN
-    reactor.netty: WARN
-    org.springframework.security: INFO
-
-jwt:
-  # Use plain string or base64:<encoded>; both are supported. Plain strings shorter than 32 bytes will be SHA-256 expanded.
-  secret: 9b565deb729cf3201a19c54af3b31afbae6819226c0f1adb2e524fd121973f1c54f74048
-  expiration: 3600000 # 1 hour in ms
-  refresh-expiration: 604800000 # 7 days in ms
-
-# Application Security Configuration
+# Application Configuration
 app:
+  # Seeder removed; rely solely on Flyway migrations
+  # Security and CORS Configuration
   allowed-origins: "http://localhost:3000,http://localhost:3001,http://localhost:8081"
   security:
     # Rate limiting configuration - COMPLETELY DISABLED
@@ -66,4 +50,23 @@ app:
       xss-protection: true
       referrer-policy: STRICT_ORIGIN_WHEN_CROSS_ORIGIN
       hsts-max-age: 31536000
+
+server:
+  port: 8080
+
+logging:
+  level:
+    root: INFO
+    org.springframework.r2dbc: INFO
+    io.r2dbc.postgresql: WARN
+    io.r2dbc.postgresql.QUERY: WARN
+    io.r2dbc.postgresql.client.ReactorNettyClient: WARN
+    reactor.netty: WARN
+    org.springframework.security: INFO
+
+jwt:
+  # Use plain string or base64:<encoded>; both are supported. Plain strings shorter than 32 bytes will be SHA-256 expanded.
+  secret: 9b565deb729cf3201a19c54af3b31afbae6819226c0f1adb2e524fd121973f1c54f74048
+  expiration: 3600000 # 1 hour in ms
+  refresh-expiration: 604800000 # 7 days in ms
 

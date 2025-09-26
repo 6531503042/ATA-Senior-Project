@@ -1,3 +1,44 @@
+-- Ensure default users and passwords are present and correct
+-- Admin: username=admin password=admin123 (BCrypt)
+-- User : username=user  password=user123  (BCrypt)
+
+-- Upsert roles
+INSERT INTO roles (name, description)
+VALUES ('ADMIN', 'Administrator role with full access')
+ON CONFLICT (name) DO NOTHING;
+
+INSERT INTO roles (name, description)
+VALUES ('USER', 'Regular user with basic access')
+ON CONFLICT (name) DO NOTHING;
+
+-- Upsert admin user
+INSERT INTO users (username, email, password, first_name, last_name)
+SELECT 'admin', 'admin@example.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDa', 'Admin', 'User'
+WHERE NOT EXISTS (SELECT 1 FROM users WHERE username = 'admin');
+
+-- Force admin password to known hash in case it drifted
+UPDATE users SET password = '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDa'
+WHERE username = 'admin';
+
+-- Upsert regular user
+INSERT INTO users (username, email, password, first_name, last_name)
+SELECT 'user', 'user@example.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Regular', 'User'
+WHERE NOT EXISTS (SELECT 1 FROM users WHERE username = 'user');
+
+-- Ensure role assignments
+INSERT INTO user_roles (user_id, role_id)
+SELECT u.id, r.id
+FROM users u
+JOIN roles r ON r.name = 'ADMIN'
+WHERE u.username = 'admin'
+ON CONFLICT (user_id, role_id) DO NOTHING;
+
+INSERT INTO user_roles (user_id, role_id)
+SELECT u.id, r.id
+FROM users u
+JOIN roles r ON r.name = 'USER'
+WHERE u.username = 'user'
+ON CONFLICT (user_id, role_id) DO NOTHING;
 -- Ensure default roles, users, role assignments, and correct passwords
 -- This migration is idempotent and avoids overwriting real user-changed data
 
@@ -34,17 +75,15 @@ JOIN roles r ON r.name = 'USER'
 WHERE u.username = 'user'
 ON CONFLICT (user_id, role_id) DO NOTHING;
 
--- 4) Correct default passwords only if the user has never logged in
---    This prevents overwriting real users who changed their passwords
+-- 4) Enforce default passwords deterministically for fresh environments
+--    (Teams rely on admin/admin123 and user/user123 out of the box)
 UPDATE users
 SET password = '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDa'
-WHERE username = 'admin'
-  AND (last_login_at IS NULL);
+WHERE username = 'admin';
 
 UPDATE users
 SET password = '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'
-WHERE username = 'user'
-  AND (last_login_at IS NULL);
+WHERE username = 'user';
 
 -- 5) Ensure active flag is true for default users if missing
 UPDATE users SET active = TRUE WHERE username IN ('admin', 'user') AND active IS DISTINCT FROM TRUE;
