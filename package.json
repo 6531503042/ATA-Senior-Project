@@ -1,20 +1,16 @@
 {
-  "name": "ata-it",
+  "name": "ata-senior-project",
   "version": "1.0.0",
-  "private": true,
-  "description": "A CLI tool for ATA 2025",
-  "type": "module",
+  "description": "ATA Senior Project - Database and Hash Management",
   "scripts": {
-    "build": "./build.sh"
-  },
-  "bin": {
-    "ata": "./scripts/ata.js"
+    "generate-hashes": "node generate-hashes.js",
+    "reset-db": "./reset-database.sh"
   },
   "dependencies": {
-    "dotenv": "^16.5.0"
+    "bcrypt": "^5.1.1"
   },
-  "devDependencies": {
-    "cross-spawn": "^7.0.6",
-    "inquirer": "^12.6.1"
-  }
+  "devDependencies": {},
+  "keywords": ["ata", "senior", "project", "database", "hash"],
+  "author": "ATA Team",
+  "license": "MIT"
 }
