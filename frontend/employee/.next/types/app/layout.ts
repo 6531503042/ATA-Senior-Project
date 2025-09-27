@@ -1,4 +1,4 @@
-// File: /Users/bricksocoolxd/GitHub-Initial/ATA-Senior-Project/frontend/employee/app/layout.tsx
+// File: /Users/bricksocoolxd/Documents/GitHub/ATA-Senior-Project/frontend/employee/app/layout.tsx
 import * as entry from '../../../app/layout.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

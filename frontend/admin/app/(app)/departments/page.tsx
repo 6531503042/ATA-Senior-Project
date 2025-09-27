@@ -91,14 +91,16 @@ export default function DepartmentsPage() {
     setSelectedDepartment(null);
   };
 
-  const handleSubmit = async (formData: FormData, mode: 'create' | 'edit') => {
+  const handleSubmit = async (departmentData: { name: string; description: string; active: boolean }, mode: 'create' | 'edit') => {
     try {
+      let result;
       if (mode === 'create') {
-        await createDepartment(formData);
+        result = await createDepartment(departmentData);
       } else if (mode === 'edit' && selectedDepartment) {
-        await updateDepartment(selectedDepartment.id, formData);
+        result = await updateDepartment(selectedDepartment.id, departmentData);
       }
       handleModalClose();
+      return result;
     } catch (error) {
       console.error('Failed to submit department:', error);
       // Error is already handled by the hook with toast notifications

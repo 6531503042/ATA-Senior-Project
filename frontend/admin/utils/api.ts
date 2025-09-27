@@ -13,9 +13,11 @@ export async function apiRequest<T>(
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> {
   try {
-    const url = `${process.env.NEXT_PUBLIC_API_URL}${endpoint}`;
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+    const url = `${baseUrl}${endpoint}`;
 
     console.log(`Making ${method} request to ${url}`, { body, options });
+    console.log('DEBUG: Request body content:', body);
 
     const headers: HeadersInit = {};
 
@@ -112,7 +114,8 @@ export async function apiGolangRequest<T>(
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> {
   try {
-    const url = `${process.env.NEXT_PUBLIC_GOLANG_API_URL}${endpoint}`;
+    const baseUrl = process.env.NEXT_PUBLIC_GOLANG_API_URL || 'http://localhost:8080';
+    const url = `${baseUrl}${endpoint}`;
 
     console.log(`Making ${method} request to ${url}`, { body, options });
 

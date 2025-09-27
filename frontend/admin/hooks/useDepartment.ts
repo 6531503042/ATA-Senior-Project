@@ -9,8 +9,8 @@ export interface UseDepartmentReturn {
   loading: boolean;
   error: string | null;
   fetchDepartments: () => Promise<void>;
-  createDepartment: (departmentData: FormData) => Promise<void>;
-  updateDepartment: (id: number, departmentData: FormData) => Promise<void>;
+  createDepartment: (departmentData: { name: string; description: string; active: boolean }) => Promise<Department | void>;
+  updateDepartment: (id: number, departmentData: { name: string; description: string; active: boolean }) => Promise<Department | void>;
   deleteDepartment: (id: number) => Promise<void>;
   getDepartmentMembers: (departmentId: number) => Promise<DepartmentMember[]>;
   clearError: () => void;
@@ -54,10 +54,10 @@ export function useDepartment(): UseDepartmentReturn {
 
   /**
    * Create a new department
-   * @param departmentData - FormData containing department information
+   * @param departmentData - Department data containing department information
    * @returns Promise<void>
    */
-  const createDepartment = async (departmentData: FormData): Promise<void> => {
+  const createDepartment = async (departmentData: { name: string; description: string; active: boolean }): Promise<Department | void> => {
     setLoading(true);
     setError(null);
     try {
@@ -71,6 +71,7 @@ export function useDepartment(): UseDepartmentReturn {
         
         // Refresh departments list immediately
         await fetchDepartments();
+        return res.data;
       }
     } catch (err) {
       const errorMessage = err && typeof err === 'object' && 'message' in err
@@ -91,10 +92,10 @@ export function useDepartment(): UseDepartmentReturn {
   /**
    * Update an existing department
    * @param id - Department ID
-   * @param departmentData - FormData containing updated department information
+   * @param departmentData - Department data containing updated department information
    * @returns Promise<void>
    */
-  const updateDepartment = async (id: number, departmentData: FormData): Promise<void> => {
+  const updateDepartment = async (id: number, departmentData: { name: string; description: string; active: boolean }): Promise<Department | void> => {
     setLoading(true);
     setError(null);
     try {
@@ -108,6 +109,7 @@ export function useDepartment(): UseDepartmentReturn {
         
         // Refresh departments list immediately
         await fetchDepartments();
+        return res.data;
       }
     } catch (err) {
       const errorMessage = err && typeof err === 'object' && 'message' in err

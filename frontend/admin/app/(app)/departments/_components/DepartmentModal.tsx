@@ -13,7 +13,7 @@ type DepartmentModalProps = {
   department?: Department;
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (formData: FormData, mode: 'create' | 'edit') => void;
+  onSubmit: (departmentData: { name: string; description: string; active: boolean }, mode: 'create' | 'edit') => void;
   mode: 'create' | 'edit';
   getDepartmentMembers?: (departmentId: number) => Promise<DepartmentMember[]>;
 };
@@ -43,12 +43,15 @@ export default function DepartmentModal({
       setName(department.name);
       setDescription(department.description || '');
       setActive(department.active);
+      console.log('DEBUG: Setting active state from department:', department.active);
+      console.log('DEBUG: Department active type:', typeof department.active);
       setSelectedMembers([]);
       setExistingMembers([]);
     } else {
       setName('');
       setDescription('');
       setActive(true);
+      console.log('DEBUG: Setting active state to true for new department');
       setSelectedMembers([]);
       setExistingMembers([]);
     }
@@ -79,33 +82,94 @@ export default function DepartmentModal({
 
     setLoading(true);
     try {
-      const formData = new FormData();
-      formData.append('name', name.trim());
-      formData.append('description', description.trim());
-      formData.append('active', active.toString());
+      const departmentData = {
+        name: name.trim(),
+        description: description.trim(),
+        active: active ?? true  // Default to true if active is null/undefined
+      };
+
+      // Ensure active field is always included
+      console.log('DEBUG: Active state before submit:', active);
+      console.log('DEBUG: Department data being sent:', departmentData);
+      console.log('DEBUG: Active state type:', typeof active);
+      console.log('DEBUG: Active state value:', active);
       
-      // Add members if any are selected
+      // Force active to be true if it's undefined or null
+      if (active === undefined || active === null) {
+        console.warn('Active state is undefined/null, defaulting to true');
+        departmentData.active = true;
+      }
+      
+      // Always ensure active is included and is a boolean
+      if (typeof departmentData.active !== 'boolean') {
+        console.warn('Active is not a boolean, forcing to true');
+        departmentData.active = true;
+      }
+      
+      console.log('DEBUG: Final department data:', departmentData);
+
+
+      // Submit department data first
+      const result = await onSubmit(departmentData, mode);
+      
+      // Handle member assignments separately
       if (selectedMembers.length > 0) {
-        const memberIds = selectedMembers
-          .filter(user => user.id && user.id !== '__SELECT_ALL__' as any)
-          .map(user => user.id.toString());
-        
-        if (memberIds.length > 0) {
-          formData.append('members', JSON.stringify(memberIds));
+        const deptId = mode === 'edit' ? departmentId : result?.id;
+        if (deptId) {
+          await handleMemberAssignments(deptId);
         }
       }
-
-      // Add existing members that weren't removed (for edit mode)
-      if (mode === 'edit' && existingMembers.length > 0) {
-        const existingMemberIds = existingMembers.map(member => member.id.toString());
-        formData.append('existingMembers', JSON.stringify(existingMemberIds));
-      }
-
-      await onSubmit(formData, mode);
     } catch (error) {
       console.error('Failed to submit department:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleMemberAssignments = async (deptId: number) => {
+    try {
+      // Get all selected member IDs
+      const selectedMemberIds = selectedMembers
+        .filter(user => user.id && user.id !== '__SELECT_ALL__' as any)
+        .map(user => user.id);
+
+      // Get existing member IDs that should be removed
+      const existingMemberIds = existingMembers.map(member => member.id);
+      const membersToRemove = existingMemberIds.filter(id => !selectedMemberIds.includes(id));
+
+      // Update users to assign them to this department
+      for (const userId of selectedMemberIds) {
+        await updateUserDepartment(userId, deptId);
+      }
+
+      // Update users to remove them from this department
+      for (const userId of membersToRemove) {
+        await updateUserDepartment(userId, null);
+      }
+    } catch (error) {
+      console.error('Failed to handle member assignments:', error);
+    }
+  };
+
+  const updateUserDepartment = async (userId: number, departmentId: number | null) => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/users/${userId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+        },
+        body: JSON.stringify({
+          departmentId: departmentId
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to update user ${userId}`);
+      }
+    } catch (error) {
+      console.error(`Error updating user ${userId}:`, error);
+      throw error;
     }
   };
 
@@ -152,7 +216,11 @@ export default function DepartmentModal({
             <div className="flex items-center gap-3">
               <Switch
                 isSelected={active}
-                onValueChange={setActive}
+                onValueChange={(value) => {
+                  console.log('DEBUG: Switch toggled to:', value);
+                  console.log('DEBUG: Switch value type:', typeof value);
+                  setActive(value);
+                }}
                 size="sm"
               />
               <span className="text-sm font-medium text-gray-700">
