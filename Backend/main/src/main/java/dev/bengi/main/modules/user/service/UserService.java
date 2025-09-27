@@ -169,6 +169,17 @@ public class UserService {
             user.getUpdatedAt()
         );
     }
+
+    public Mono<Void> assignUserToDepartment(Long userId, Long departmentId) {
+        return userRepository.findById(userId)
+                .switchIfEmpty(Mono.error(new GlobalServiceException(ErrorCode.NOT_FOUND, "User not found")))
+                .flatMap(user -> {
+                    user.setDepartmentId(departmentId);
+                    return userRepository.save(user);
+                })
+                .doOnSuccess(v -> log.info("User {} assigned to department {}", userId, departmentId))
+                .then();
+    }
 }
 
 

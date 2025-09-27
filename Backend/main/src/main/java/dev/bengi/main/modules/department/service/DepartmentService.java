@@ -34,8 +34,17 @@ public class DepartmentService {
     public Mono<DepartmentResponseDto> create(DepartmentRequestDto req) {
         Department entity = mapper.toEntity(req);
         return departmentRepository.save(entity)
-                .map(mapper::toResponse)
-                .doOnSuccess(d -> log.info("Department created: {}", d));
+                .flatMap(savedDepartment -> {
+                    // Handle member assignment if provided
+                    if (req.memberIds() != null && !req.memberIds().isEmpty()) {
+                        log.info("Assigning {} members to department {}", req.memberIds().size(), savedDepartment.getId());
+                        return assignMembersToDepartment(savedDepartment.getId(), req.memberIds())
+                                .then(Mono.just(savedDepartment));
+                    }
+                    return Mono.just(savedDepartment);
+                })
+                .flatMap(this::calculateMemberCount)
+                .doOnSuccess(d -> log.info("Department created with {} members: {}", d.memberCount(), d));
     }
 
     @Transactional
@@ -112,5 +121,12 @@ public class DepartmentService {
                     dept.getUpdatedAt(),
                     0L
                 ));
+    }
+
+    private Mono<Void> assignMembersToDepartment(Long departmentId, List<Long> memberIds) {
+        return Flux.fromIterable(memberIds)
+                .flatMap(userId -> userService.assignUserToDepartment(userId, departmentId))
+                .then()
+                .doOnSuccess(v -> log.info("Assigned {} members to department {}", memberIds.size(), departmentId));
     }
 }
