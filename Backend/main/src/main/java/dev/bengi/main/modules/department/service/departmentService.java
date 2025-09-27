@@ -123,7 +123,7 @@ public class DepartmentService {
                 ));
     }
 
-    private Mono<Void> assignMembersToDepartment(Long departmentId, List<Long> memberIds) {
+    private Mono<Void> assignMembersToDepartment(Long departmentId, java.util.List<Long> memberIds) {
         return Flux.fromIterable(memberIds)
                 .flatMap(userId -> userService.assignUserToDepartment(userId, departmentId))
                 .then()

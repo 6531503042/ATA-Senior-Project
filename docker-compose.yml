@@ -31,6 +31,60 @@ services:
     volumes:
       - pgadmin_data:/var/lib/pgadmin
 
+  backend:
+    build:
+      context: ./Backend/main
+      dockerfile: Dockerfile
+    container_name: ata-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/senior
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=0947044119
+      - SPRING_R2DBC_URL=r2dbc:postgresql://postgres:5432/senior
+      - SPRING_R2DBC_USERNAME=postgres
+      - SPRING_R2DBC_PASSWORD=0947044119
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./Backend/main:/app
+    working_dir: /app
+
+  admin-frontend:
+    build:
+      context: ./frontend/admin
+      dockerfile: Dockerfile
+    container_name: ata-admin-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8080
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend/admin:/app
+      - /app/node_modules
+    working_dir: /app
+
+  employee-frontend:
+    build:
+      context: ./frontend/employee
+      dockerfile: Dockerfile
+    container_name: ata-employee-frontend
+    ports:
+      - "3001:3001"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8080
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend/employee:/app
+      - /app/node_modules
+    working_dir: /app
+
 volumes:
   postgres_data:
   pgadmin_data:
