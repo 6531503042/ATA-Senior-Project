@@ -16,7 +16,7 @@ public class JdbcDataSourceConfig {
     @Value("${spring.datasource.username}")
     private String username;
 
-    @Value("${spring.datasource.password}")
+    @Value("${spring.datasource.password:}")
     private String password;
 
     @Bean

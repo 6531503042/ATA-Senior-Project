@@ -7,7 +7,7 @@ services:
     environment:
       POSTGRES_DB: senior
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 0947044119
+      POSTGRES_HOST_AUTH_METHOD: trust
     ports:
       - "5432:5432"
     volumes:
@@ -42,10 +42,10 @@ services:
       - SPRING_PROFILES_ACTIVE=docker
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/senior
       - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=0947044119
+      - SPRING_DATASOURCE_PASSWORD="postgres"
       - SPRING_R2DBC_URL=r2dbc:postgresql://postgres:5432/senior
       - SPRING_R2DBC_USERNAME=postgres
-      - SPRING_R2DBC_PASSWORD=0947044119
+      - SPRING_R2DBC_PASSWORD="postgres"
     depends_on:
       postgres:
         condition: service_healthy
