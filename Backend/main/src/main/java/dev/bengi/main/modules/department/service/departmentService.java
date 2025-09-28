@@ -33,7 +33,7 @@ public class DepartmentService {
     @Transactional
     public Mono<DepartmentResponseDto> create(DepartmentRequestDto req) {
         Department entity = mapper.toEntity(req);
-        return departmentRepository.save(entity)
+        return DepartmentRepository.save(entity)
                 .flatMap(savedDepartment -> {
                     // Handle member assignment if provided
                     if (req.memberIds() != null && !req.memberIds().isEmpty()) {
