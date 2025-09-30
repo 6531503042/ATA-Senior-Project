@@ -7,16 +7,21 @@ services:
     environment:
       POSTGRES_DB: senior
       POSTGRES_USER: postgres
-      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_PASSWORD: postgres123
+      POSTGRES_HOST_AUTH_METHOD: md5
     ports:
-      - "5432:5432"
+      - "5433:5432"  # เปลี่ยนจาก 5432 เป็น 5433 เพื่อไม่ชนกับ PostgreSQL ท้องถิ่น
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./Backend/main/src/main/resources/db/migration:/docker-entrypoint-initdb.d/
+    networks:
+      - ata-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d senior"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
 
   pgadmin:
     image: dpage/pgadmin4:latest
@@ -24,12 +29,16 @@ services:
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@example.com
       PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
     ports:
-      - "5050:80"
+      - "5051:80"  # เปลี่ยนจาก 5050 เป็น 5051
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     volumes:
       - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - ata-network
 
   backend:
     build:
@@ -42,16 +51,22 @@ services:
       - SPRING_PROFILES_ACTIVE=docker
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/senior
       - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD="postgres"
+      - SPRING_DATASOURCE_PASSWORD=postgres123
       - SPRING_R2DBC_URL=r2dbc:postgresql://postgres:5432/senior
       - SPRING_R2DBC_USERNAME=postgres
-      - SPRING_R2DBC_PASSWORD="postgres"
+      - SPRING_R2DBC_PASSWORD=postgres123
     depends_on:
       postgres:
         condition: service_healthy
-    volumes:
-      - ./Backend/main:/app
-    working_dir: /app
+    networks:
+      - ata-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
   admin-frontend:
     build:
@@ -61,13 +76,14 @@ services:
     ports:
       - "3000:3000"
     environment:
+      - NODE_ENV=development
       - NEXT_PUBLIC_API_URL=http://localhost:8080
     depends_on:
-      - backend
-    volumes:
-      - ./frontend/admin:/app
-      - /app/node_modules
-    working_dir: /app
+      backend:
+        condition: service_healthy
+    networks:
+      - ata-network
+    restart: unless-stopped
 
   employee-frontend:
     build:
@@ -77,14 +93,21 @@ services:
     ports:
       - "3001:3001"
     environment:
+      - NODE_ENV=development
       - NEXT_PUBLIC_API_URL=http://localhost:8080
     depends_on:
-      - backend
-    volumes:
-      - ./frontend/employee:/app
-      - /app/node_modules
-    working_dir: /app
+      backend:
+        condition: service_healthy
+    networks:
+      - ata-network
+    restart: unless-stopped
 
 volumes:
   postgres_data:
+    driver: local
   pgadmin_data:
+    driver: local
+
+networks:
+  ata-network:
+    driver: bridge

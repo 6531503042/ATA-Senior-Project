@@ -4,10 +4,11 @@ spring:
   r2dbc:
     url: r2dbc:postgresql://postgres:5432/senior
     username: postgres
-    password: ""
+    password: postgres123
   datasource:
     url: jdbc:postgresql://postgres:5432/senior
     username: postgres
+    password: postgres123
     driver-class-name: org.postgresql.Driver
   flyway:
     enabled: true

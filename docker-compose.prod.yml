@@ -2,52 +2,115 @@
 version: '3.8'
 
 services:
-  backend:
-    build:
-      context: ./Backend/main
-      dockerfile: Dockerfile
-    environment:
-      - SPRING_PROFILES_ACTIVE=prod
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-
-  admin-frontend:
-    build:
-      context: ./frontend/admin
-      dockerfile: Dockerfile
-    environment:
-      - NODE_ENV=production
-      - NEXT_PUBLIC_API_URL=http://localhost:8080
-    restart: unless-stopped
-    depends_on:
-      - backend
-
-  employee-frontend:
-    build:
-      context: ./frontend/employee
-      dockerfile: Dockerfile
-    environment:
-      - NODE_ENV=production
-      - NEXT_PUBLIC_API_URL=http://localhost:8080
-    restart: unless-stopped
-    depends_on:
-      - backend
-
   postgres:
+    image: postgres:17
+    container_name: ata-postgres-prod
+    environment:
+      POSTGRES_DB: senior
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+      POSTGRES_HOST_AUTH_METHOD: md5
+    ports:
+      - "5434:5432"  # ใช้ port อื่นสำหรับ production
+    volumes:
+      - postgres_prod_data:/var/lib/postgresql/data
+      - ./Backend/main/src/main/resources/db/migration:/docker-entrypoint-initdb.d/
+    networks:
+      - ata-prod-network
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d senior"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
 
-  pgadmin:
-    restart: unless-stopped
+  backend:
+    build:
+      context: ./Backend/main
+      dockerfile: Dockerfile
+    container_name: ata-backend-prod
+    ports:
+      - "8081:8080"  # ใช้ port อื่นสำหรับ production
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/senior
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres123
+      - SPRING_R2DBC_URL=r2dbc:postgresql://postgres:5432/senior
+      - SPRING_R2DBC_USERNAME=postgres
+      - SPRING_R2DBC_PASSWORD=postgres123
     depends_on:
       postgres:
         condition: service_healthy
+    networks:
+      - ata-prod-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  admin-frontend:
+    build:
+      context: ./frontend/admin
+      dockerfile: Dockerfile
+    container_name: ata-admin-frontend-prod
+    ports:
+      - "3002:3000"  # ใช้ port อื่นสำหรับ production
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://localhost:8081
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - ata-prod-network
+    restart: unless-stopped
+
+  employee-frontend:
+    build:
+      context: ./frontend/employee
+      dockerfile: Dockerfile
+    container_name: ata-employee-frontend-prod
+    ports:
+      - "3003:3001"  # ใช้ port อื่นสำหรับ production
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://localhost:8081
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - ata-prod-network
+    restart: unless-stopped
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: ata-pgadmin-prod
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5052:80"  # ใช้ port อื่นสำหรับ production
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - pgadmin_prod_data:/var/lib/pgadmin
+    networks:
+      - ata-prod-network
+    restart: unless-stopped
+
+volumes:
+  postgres_prod_data:
+    driver: local
+  pgadmin_prod_data:
+    driver: local
+
+networks:
+  ata-prod-network:
+    driver: bridge
