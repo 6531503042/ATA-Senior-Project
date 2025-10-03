@@ -172,10 +172,10 @@ export default function ProjectModal({
               <FolderIcon className="w-5 h-5 text-blue-600" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-900">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                 {mode === 'create' ? 'Create Project' : 'Edit Project'}
               </h2>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 {mode === 'create' ? 'Add a new project' : 'Update project information'}
               </p>
             </div>
@@ -253,11 +253,11 @@ export default function ProjectModal({
           {/* Member Management */}
           <div className="space-y-4">
             <div className="border-t pt-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Member Management</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 dark:text-white">Member Management</h3>
               
               {/* Department Filter for Members */}
               <div className="space-y-3">
-                <label className="text-sm font-medium text-gray-700">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-400">
                   Filter Members by Department
                 </label>
                                  <Select
@@ -289,7 +289,7 @@ export default function ProjectModal({
 
               {/* Member Selection */}
               <div className="space-y-3 mt-4">
-                <label className="text-sm font-medium text-gray-700">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-400">
                   Select Members to Add
                 </label>
                                  <Select

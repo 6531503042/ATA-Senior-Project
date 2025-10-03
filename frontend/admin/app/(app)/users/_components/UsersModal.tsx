@@ -190,7 +190,7 @@ export function UsersModal({
     >
       <ModalContent className="max-h-[90vh] overflow-hidden">
         <ModalHeader className="flex flex-col gap-1 border-b border-default-200 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
-          <h2 className="text-xl font-bold text-default-900">
+          <h2 className="text-xl font-bold text-default-900 ">
             {mode === 'create' ? 'Create New User' : 'Edit User'}
           </h2>
           <p className="text-sm text-default-600">

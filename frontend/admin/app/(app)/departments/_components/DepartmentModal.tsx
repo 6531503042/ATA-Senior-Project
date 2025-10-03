@@ -194,10 +194,10 @@ export default function DepartmentModal({
               <Building2 className="w-5 h-5 text-blue-600" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-900">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                 {mode === 'create' ? 'Create Department' : 'Edit Department'}
               </h2>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 {mode === 'create' ? 'Add a new department' : 'Update department information'}
               </p>
             </div>
@@ -223,7 +223,7 @@ export default function DepartmentModal({
                 }}
                 size="sm"
               />
-              <span className="text-sm font-medium text-gray-700">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-400">
                 {active ? 'Active' : 'Inactive'}
               </span>
             </div>
@@ -241,7 +241,7 @@ export default function DepartmentModal({
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <Users className="w-5 h-5 text-gray-600" />
-              <span className="text-sm font-medium text-gray-700">Department Members</span>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-400">Department Members</span>
             </div>
             
             {/* Show existing members if editing */}

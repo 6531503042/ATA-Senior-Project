@@ -191,13 +191,13 @@ export function ProjectsModal({
       onClose={onClose}
     >
       <ModalContent className="max-h-[90vh] overflow-hidden">
-        <ModalHeader className="flex flex-col gap-1 border-b border-default-200 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
+        <ModalHeader className="flex flex-col gap-1 border-b border-default-200 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 ">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 text-white">
               <PlusIcon className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-default-900">
+              <h2 className="text-xl font-bold text-default-900 dark:text-white">
                 {mode === 'create' ? 'Create New Project' : 'Edit Project'}
               </h2>
               <p className="text-sm text-default-600">

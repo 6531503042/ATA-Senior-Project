@@ -180,10 +180,10 @@ export default function FeedbackModal({
               <MessageSquare className="w-5 h-5 text-blue-600" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-900">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                 {mode === 'create' ? 'Create Feedback Survey' : 'Edit Feedback Survey'}
               </h2>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 {mode === 'create' ? 'Create a new feedback survey with scope and visibility control' : 'Update feedback survey settings'}
               </p>
             </div>
@@ -204,7 +204,7 @@ export default function FeedbackModal({
         <ModalBody className="space-y-6">
           {/* Status */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+            <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2 dark:text-gray-400">
               <Shield className="w-4 h-4" />
               Status
             </h3>
@@ -230,7 +230,7 @@ export default function FeedbackModal({
           </div>
           {/* Basic Information */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+            <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2 dark:text-gray-400">
               <MessageSquare className="w-4 h-4" />
               Basic Information
             </h3>
@@ -240,7 +240,7 @@ export default function FeedbackModal({
 
           {/* Scope Configuration */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+            <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2 dark:text-gray-400">
               <Building className="w-4 h-4" />
               Scope Configuration
             </h3>

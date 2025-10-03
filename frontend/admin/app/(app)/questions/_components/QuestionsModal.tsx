@@ -248,7 +248,7 @@ export function QuestionsModal({
           <h2 className="text-xl font-bold text-default-900">
             {mode === 'create' ? 'Create New Question' : 'Edit Question'}
           </h2>
-          <p className="text-sm text-default-600">
+          <p className="text-sm text-default-600 dark:text-gray-400">
             {mode === 'create'
               ? 'Add a new question to your feedback system'
               : 'Update question information'}

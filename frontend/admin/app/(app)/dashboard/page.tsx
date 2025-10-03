@@ -189,13 +189,13 @@ export default function DashboardPage() {
           <div className="xl:col-span-9 space-y-4 sm:space-y-5 lg:space-y-6 min-w-0">
             {/* Overview */}
             <CardStat
-              colors="blue-100"
+              colors="blue-100 dark:bg-blue-900/30 dark:text-white"
               defaultOpen={true}
               icon={<TrendingUp className="w-4 h-4" />}
               isClosable={false}
               label="System Overview"
             >
-              <div className="w-full min-w-0">
+              <div className="w-full min-w-0 ">
                 <DashboardOverview
                   data={dashboard?.overview || null}
                   loading={dashboardLoading}
