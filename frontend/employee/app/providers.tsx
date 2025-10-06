@@ -1,12 +1,39 @@
-"use client";
+'use client';
 
-import { HeroUIProvider } from "@heroui/react";
-import { AlertDialogProvider } from "./components/ui/alert-dialog";
+import type { ThemeProviderProps } from 'next-themes';
 
-export function Providers({ children }: { children: React.ReactNode }) {
+import * as React from 'react';
+import { HeroUIProvider } from '@heroui/react';
+import { ToastProvider } from '@heroui/toast';
+import { useRouter } from 'next/navigation';
+import { ThemeProvider as NextThemesProvider } from 'next-themes';
+
+import { AuthProvider } from '../contexts/AuthContext';
+
+export interface ProvidersProps {
+  children: React.ReactNode;
+  themeProps?: ThemeProviderProps;
+}
+
+declare module '@react-types/shared' {
+  interface RouterConfig {
+    routerOptions: NonNullable<
+      Parameters<ReturnType<typeof useRouter>['push']>[1]
+    >;
+  }
+}
+
+export function Providers({ children, themeProps }: ProvidersProps) {
+  const router = useRouter();
+
   return (
-    <HeroUIProvider>
-      <AlertDialogProvider>{children}</AlertDialogProvider>
+    <HeroUIProvider navigate={router.push}>
+      <NextThemesProvider {...themeProps}>
+        <AuthProvider>
+          <ToastProvider placement="bottom-right" />
+          {children}
+        </AuthProvider>
+      </NextThemesProvider>
     </HeroUIProvider>
   );
 }

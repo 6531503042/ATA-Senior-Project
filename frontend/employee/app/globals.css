@@ -1,7 +1,5 @@
 @import "tailwindcss";
-
-/* If you want tailwindcss-animate with v4, add it via plugin directive */
 @plugin "tailwindcss-animate";
 
-/* your global tweaks here */
+/* Global tweaks */
 html, body { height: 100%; }
