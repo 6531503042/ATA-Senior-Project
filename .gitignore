@@ -1,60 +1,120 @@
-HELP.md
-.gradle
-build/
-gradle/wrapper/gradle-wrapper.jar
-!**/src/main/**/build/
-!**/src/test/**/build/
-gradle-wrapper.jar
-gradlew
-gradlew.bat
-!**/src/main/**/gradlew
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+bun.lock
+bun.lockb
+package-lock.json
+yarn.lock
 
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-bin/
-!**/src/main/**/bin/
-!**/src/test/**/bin/
-
-### IntelliJ IDEA ###
-.idea
-*.iws
-*.iml
-*.ipr
+# Next.js
+.next/
 out/
-!**/src/main/**/out/
-!**/src/test/**/out/
+build/
+dist/
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
+# TypeScript
+*.tsbuildinfo
+tsconfig.tsbuildinfo
 
-### VS Code ###
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE
 .vscode/
+.idea/
+*.swp
+*.swo
+.project
+.pydevproject
+.settings/
 
-### Java ###
-# Compiled class file
-*.class
+# OS
+.DS_Store
+Thumbs.db
+*~
 
-# Log files
+# Logs
 *.log
 logs/
 
-# BlueJ files
-*.ctxt
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
 
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
 
-# Package Files #
+# nyc test coverage
+.nyc_output
+
+# Dependency directories
+jspm_packages/
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+.parcel-cache
+
+# Next.js build output
+.next
+
+# Nuxt.js build / generate output
+.nuxt
+dist
+
+# Gatsby files
+.cache/
+public
+
+# Storybook build outputs
+.out
+.storybook-out
+
+# Temporary folders
+tmp/
+temp/
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Java
+*.class
 *.jar
 *.war
 *.nar
@@ -63,35 +123,24 @@ logs/
 *.tar.gz
 *.rar
 
-# virtual machine crash logs
-hs_err_pid*
-replay_pid*
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
 
-### Gradle ###
-.gradle
-**/build/
-!src/**/build/
-
-# Ignore Gradle GUI config
-gradle-app.setting
-
-# Avoid ignoring Gradle wrapper jar file
-!gradle-wrapper.jar
-
-# Cache of project
-.gradletasknamecache
-
-### Spring Boot ###
+# Spring Boot
 application-*.yml
 !application-example.yml
 *.properties
 !application.properties
 !gradle.properties
 
-# Environment files
-.env
-.env.local
-.env.*.local
+# Database
+*.db
+*.sqlite
+*.sqlite3
 
 # Docker
 docker-compose.override.yml
@@ -104,517 +153,65 @@ docker-compose.override.yml
 *.pem
 
 # Python
-**/__pycache__/
-**/*.py[cod]
-**/*$py.class
-**/*.so
-**/.Python
-**/build/
-**/develop-eggs/
-**/dist/
-**/downloads/
-**/eggs/
-**/.eggs/
-**/lib64/
-**/parts/
-**/sdist/
-**/var/
-**/wheels/
-**/*.egg-info/
-**/.installed.cfg
-**/*.egg
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+develop-eggs/
+downloads/
+eggs/
+.eggs/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
 
 # Virtual Environment
-**/.venv/
-**/venv/
-**/env/
-**/.env
-**/.env.*
-**/ENV/
-**/.Python
-**/pip-log.txt
-**/pip-delete-this-directory.txt
-
-# IDE
-**/.idea/
-**/.vscode/
-**/*.swp
-**/*.swo
-**/.project
-**/.pydevproject
-**/.settings/
+.venv/
+venv/
+env/
+ENV/
+pip-log.txt
+pip-delete-this-directory.txt
 
 # Model files and cache
-**/*.pkl
-**/*.h5
-**/.cache/
-**/*.pt
-**/*.pth
-**/*.ckpt
-**/.transformers_cache/
-
-# Logs and databases
-**/*.log
-**/*.sqlite
-**/*.db
-**/logs/
-**/*.mongodb
-**/mongodb_data/
-
-# Docker
-**/.docker/
-**/docker-compose.override.yml
+*.pkl
+*.h5
+*.pt
+*.pth
+*.ckpt
+.transformers_cache/
 
 # Testing
-**/.coverage
-**/htmlcov/
-**/.pytest_cache/
-**/.tox/
-**/nosetests.xml
-**/coverage.xml
-**/*.cover
-**/.hypothesis/
-
-# Distribution / packaging
-**/*.manifest
-**/*.spec
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
 
 # Jupyter Notebook
-**/.ipynb_checkpoints
-**/*.ipynb
-
-# System Files
-**/.DS_Store
-**/Thumbs.db
-**/*~
+.ipynb_checkpoints
+*.ipynb
 
 # Project specific
-**/feedback-model-cache/
-**/enhanced_training_data.json
-**/test_results/
-**/predictions/
-**/*.config
+feedback-model-cache/
+enhanced_training_data.json
+test_results/
+predictions/
+*.config
 
-# Node (in case you have frontend)
-**/node_modules/
-**/npm-debug.log*
-**/yarn-debug.log*
-**/yarn-error.log*
-frontend/bun.lockb
-bun.lockb
-frontend/bun.lockb
-.cursor/rules/ai-func.mdc
-.cursor/rules/ai.mdc
-.cursor/rules/frontend.mdc
-.gitignore
-.cursor/rules/overall-structure.mdc
-backend/feedback-scoring-service/.cursor/rules/ai.mdc
-.gitignore
-backend/feedback-scoring-service/.cursor/rules/frontend.mdc
-frontend/bun.lockb
-frontend/bun.lockb
-frontend/bun.lockb
-frontend/bun.lockb
-frontend/admin-example
-frontend/old-frontend
-backend/old-backend
-frontend/employee/.next
-frontend/admin/.next/app-build-manifest.json
-frontend/admin/.next/build-manifest.json
-frontend/admin/.next/fallback-build-manifest.json
-frontend/admin/.next/package.json
-frontend/admin/.next/trace
-frontend/admin/.next/transform.js
-frontend/admin/.next/transform.js.map
-frontend/admin/.next/cache/.rscinfo
-frontend/admin/.next/server/app-paths-manifest.json
-frontend/admin/.next/server/interception-route-rewrite-manifest.js
-frontend/admin/.next/server/middleware-build-manifest.js
-frontend/admin/.next/server/middleware-manifest.json
-frontend/admin/.next/server/next-font-manifest.js
-frontend/admin/.next/server/next-font-manifest.json
-frontend/admin/.next/server/pages-manifest.json
-frontend/admin/.next/server/server-reference-manifest.js
-frontend/admin/.next/server/server-reference-manifest.json
-frontend/admin/.next/server/app/(app)/page_client-reference-manifest.js
-frontend/admin/.next/server/app/(app)/page.js
-frontend/admin/.next/server/app/(app)/page.js.map
-frontend/admin/.next/server/app/(app)/dashboard/page_client-reference-manifest.js
-frontend/admin/.next/server/app/(app)/dashboard/page.js
-frontend/admin/.next/server/app/(app)/dashboard/page.js.map
-frontend/admin/.next/server/app/(app)/dashboard/page/app-build-manifest.json
-frontend/admin/.next/server/app/(app)/dashboard/page/app-paths-manifest.json
-frontend/admin/.next/server/app/(app)/dashboard/page/build-manifest.json
-frontend/admin/.next/server/app/(app)/dashboard/page/next-font-manifest.json
-frontend/admin/.next/server/app/(app)/dashboard/page/react-loadable-manifest.json
-frontend/admin/.next/server/app/(app)/dashboard/page/server-reference-manifest.json
-frontend/admin/.next/server/app/(app)/departments/page_client-reference-manifest.js
-frontend/admin/.next/server/app/(app)/departments/page.js
-frontend/admin/.next/server/app/(app)/departments/page.js.map
-frontend/admin/.next/server/app/(app)/departments/page/app-build-manifest.json
-frontend/admin/.next/server/app/(app)/departments/page/app-paths-manifest.json
-frontend/admin/.next/server/app/(app)/departments/page/build-manifest.json
-frontend/admin/.next/server/app/(app)/departments/page/next-font-manifest.json
-frontend/admin/.next/server/app/(app)/departments/page/react-loadable-manifest.json
-frontend/admin/.next/server/app/(app)/departments/page/server-reference-manifest.json
-frontend/admin/.next/server/app/(app)/page/app-build-manifest.json
-frontend/admin/.next/server/app/(app)/page/app-paths-manifest.json
-frontend/admin/.next/server/app/(app)/page/build-manifest.json
-frontend/admin/.next/server/app/(app)/page/next-font-manifest.json
-frontend/admin/.next/server/app/(app)/page/react-loadable-manifest.json
-frontend/admin/.next/server/app/(app)/page/server-reference-manifest.json
-frontend/admin/.next/server/app/(app)/users/page_client-reference-manifest.js
-frontend/admin/.next/server/app/(app)/users/page.js
-frontend/admin/.next/server/app/(app)/users/page.js.map
-frontend/admin/.next/server/app/(app)/users/page/app-build-manifest.json
-frontend/admin/.next/server/app/(app)/users/page/app-paths-manifest.json
-frontend/admin/.next/server/app/(app)/users/page/build-manifest.json
-frontend/admin/.next/server/app/(app)/users/page/next-font-manifest.json
-frontend/admin/.next/server/app/(app)/users/page/react-loadable-manifest.json
-frontend/admin/.next/server/app/(app)/users/page/server-reference-manifest.json
-frontend/admin/.next/server/app/(auth)/access-denied/page_client-reference-manifest.js
-frontend/admin/.next/server/app/(auth)/access-denied/page.js
-frontend/admin/.next/server/app/(auth)/access-denied/page.js.map
-frontend/admin/.next/server/app/(auth)/access-denied/page/app-build-manifest.json
-frontend/admin/.next/server/app/(auth)/access-denied/page/app-paths-manifest.json
-frontend/admin/.next/server/app/(auth)/access-denied/page/build-manifest.json
-frontend/admin/.next/server/app/(auth)/access-denied/page/next-font-manifest.json
-frontend/admin/.next/server/app/(auth)/access-denied/page/react-loadable-manifest.json
-frontend/admin/.next/server/app/(auth)/access-denied/page/server-reference-manifest.json
-frontend/admin/.next/server/app/(auth)/login/page_client-reference-manifest.js
-frontend/admin/.next/server/app/(auth)/login/page.js
-frontend/admin/.next/server/app/(auth)/login/page.js.map
-frontend/admin/.next/server/app/(auth)/login/page/app-build-manifest.json
-frontend/admin/.next/server/app/(auth)/login/page/app-paths-manifest.json
-frontend/admin/.next/server/app/(auth)/login/page/build-manifest.json
-frontend/admin/.next/server/app/(auth)/login/page/next-font-manifest.json
-frontend/admin/.next/server/app/(auth)/login/page/react-loadable-manifest.json
-frontend/admin/.next/server/app/(auth)/login/page/server-reference-manifest.json
-frontend/admin/.next/server/app/_not-found/page_client-reference-manifest.js
-frontend/admin/.next/server/app/_not-found/page.js
-frontend/admin/.next/server/app/_not-found/page.js.map
-frontend/admin/.next/server/app/_not-found/page/app-build-manifest.json
-frontend/admin/.next/server/app/_not-found/page/app-paths-manifest.json
-frontend/admin/.next/server/app/_not-found/page/build-manifest.json
-frontend/admin/.next/server/app/_not-found/page/next-font-manifest.json
-frontend/admin/.next/server/app/_not-found/page/react-loadable-manifest.json
-frontend/admin/.next/server/app/_not-found/page/server-reference-manifest.json
-frontend/admin/.next/server/chunks/ssr/_5b3b3f6f._.js
-frontend/admin/.next/server/chunks/ssr/_5b3b3f6f._.js.map
-frontend/admin/.next/server/chunks/ssr/_5d5bb067._.js
-frontend/admin/.next/server/chunks/ssr/_5d5bb067._.js.map
-frontend/admin/.next/server/chunks/ssr/_6ad8c9b7._.js
-frontend/admin/.next/server/chunks/ssr/_6ad8c9b7._.js.map
-frontend/admin/.next/server/chunks/ssr/_33a92e6e._.js
-frontend/admin/.next/server/chunks/ssr/_33a92e6e._.js.map
-frontend/admin/.next/server/chunks/ssr/_78ac8e7d._.js
-frontend/admin/.next/server/chunks/ssr/_78ac8e7d._.js.map
-frontend/admin/.next/server/chunks/ssr/_6995f3af._.js
-frontend/admin/.next/server/chunks/ssr/_6995f3af._.js.map
-frontend/admin/.next/server/chunks/ssr/_20925d0a._.js
-frontend/admin/.next/server/chunks/ssr/_20925d0a._.js.map
-frontend/admin/.next/server/chunks/ssr/_bc9b4681._.js
-frontend/admin/.next/server/chunks/ssr/_bc9b4681._.js.map
-frontend/admin/.next/server/chunks/ssr/_c98bb00c._.js
-frontend/admin/.next/server/chunks/ssr/_c98bb00c._.js.map
-frontend/admin/.next/server/chunks/ssr/_cb9a5809._.js
-frontend/admin/.next/server/chunks/ssr/_cb9a5809._.js.map
-frontend/admin/.next/server/chunks/ssr/_d290ca89._.js
-frontend/admin/.next/server/chunks/ssr/_d290ca89._.js.map
-frontend/admin/.next/server/chunks/ssr/_ec05916b._.js
-frontend/admin/.next/server/chunks/ssr/_ec05916b._.js.map
-frontend/admin/.next/server/chunks/ssr/\[root-of-the-server]__50a7c09c._.js
-frontend/admin/.next/server/chunks/ssr/\[root-of-the-server]__50a7c09c._.js.map
-frontend/admin/.next/server/chunks/ssr/\[root-of-the-server]__85742bda._.js
-frontend/admin/.next/server/chunks/ssr/\[root-of-the-server]__85742bda._.js.map
-frontend/admin/.next/server/chunks/ssr/\[root-of-the-server]__b8211ce3._.js
-frontend/admin/.next/server/chunks/ssr/\[root-of-the-server]__b8211ce3._.js.map
-frontend/admin/.next/server/chunks/ssr/\[turbopack]_browser_dev_hmr-client_hmr-client_ts_59fa4ecd._.js
-frontend/admin/.next/server/chunks/ssr/\[turbopack]_browser_dev_hmr-client_hmr-client_ts_59fa4ecd._.js.map
-frontend/admin/.next/server/chunks/ssr/\[turbopack]_browser_dev_hmr-client_hmr-client_ts_bb0a101f._.js
-frontend/admin/.next/server/chunks/ssr/\[turbopack]_browser_dev_hmr-client_hmr-client_ts_bb0a101f._.js.map
-frontend/admin/.next/server/chunks/ssr/\[turbopack]_runtime.js
-frontend/admin/.next/server/chunks/ssr/\[turbopack]_runtime.js.map
-frontend/admin/.next/server/chunks/ssr/app_(app)_layout_tsx_aa05e1fc._.js
-frontend/admin/.next/server/chunks/ssr/app_(app)_layout_tsx_aa05e1fc._.js.map
-frontend/admin/.next/server/chunks/ssr/app_(auth)_access-denied_page_tsx_9af4aa8a._.js
-frontend/admin/.next/server/chunks/ssr/app_(auth)_access-denied_page_tsx_9af4aa8a._.js.map
-frontend/admin/.next/server/chunks/ssr/app_(auth)_login_page_tsx_d9c5c956._.js
-frontend/admin/.next/server/chunks/ssr/app_(auth)_login_page_tsx_d9c5c956._.js.map
-frontend/admin/.next/server/chunks/ssr/app_error_tsx_08e9a9bb._.js
-frontend/admin/.next/server/chunks/ssr/app_error_tsx_08e9a9bb._.js.map
-frontend/admin/.next/server/chunks/ssr/app_error_tsx_e6755de5._.js
-frontend/admin/.next/server/chunks/ssr/app_error_tsx_e6755de5._.js.map
-frontend/admin/.next/server/chunks/ssr/app_loading_tsx_77844481._.js
-frontend/admin/.next/server/chunks/ssr/app_loading_tsx_77844481._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_@heroui_23f34c57._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_@heroui_23f34c57._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_@heroui_40727d30._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_@heroui_40727d30._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_@heroui_5777844e._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_@heroui_5777844e._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_@heroui_33417796._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_@heroui_33417796._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_@heroui_b0ff13a5._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_@heroui_b0ff13a5._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_@heroui_bf4a5cdb._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_@heroui_bf4a5cdb._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_@heroui_c142b1eb._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_@heroui_c142b1eb._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_@heroui_d9c3404c._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_@heroui_d9c3404c._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_@heroui_d97ae9a0._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_@heroui_d97ae9a0._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_@heroui_dom-animation_dist_index_mjs_2ab5e07d._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_@heroui_dom-animation_dist_index_mjs_2ab5e07d._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_@heroui_dom-animation_dist_index_mjs_2ece8fd1._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_@heroui_dom-animation_dist_index_mjs_2ece8fd1._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_@heroui_dom-animation_dist_index_mjs_26efefa2._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_@heroui_dom-animation_dist_index_mjs_26efefa2._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_@heroui_dom-animation_dist_index_mjs_bc9d3741._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_@heroui_dom-animation_dist_index_mjs_bc9d3741._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_@heroui_dom-animation_dist_index_mjs_e86d1b2d._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_@heroui_dom-animation_dist_index_mjs_e86d1b2d._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_@heroui_f0bb1752._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_@heroui_f0bb1752._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_@heroui_table_dist_4dd64541._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_@heroui_table_dist_4dd64541._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_@react-aria_47dbe3b7._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_@react-aria_47dbe3b7._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_@react-aria_42007d3f._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_@react-aria_42007d3f._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_@react-aria_d9aad362._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_@react-aria_d9aad362._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_0ae7b451._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_0ae7b451._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_1e0b5fb5._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_1e0b5fb5._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_5a33ada1._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_5a33ada1._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_6f6703af._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_6f6703af._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_9b34bb7e._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_9b34bb7e._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_12d716c1._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_12d716c1._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_16e1538b._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_16e1538b._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_40bc6f42._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_40bc6f42._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_50e83e49._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_50e83e49._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_91e09f5d._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_91e09f5d._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_097ab121._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_097ab121._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_221cd4ec._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_221cd4ec._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_622dfeeb._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_622dfeeb._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_946ef844._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_946ef844._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_6517f335._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_6517f335._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_9600734f._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_9600734f._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_af68584e._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_af68584e._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_b83cb0f6._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_b83cb0f6._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_c5a8b127._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_c5a8b127._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_c3186cb8._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_c3186cb8._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_cc3b95ba._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_cc3b95ba._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_cc4f9693._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_cc4f9693._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_ea233eb6._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_ea233eb6._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_ed631ef2._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_ed631ef2._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_ee0c96b7._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_ee0c96b7._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_f67bd0e9._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_f67bd0e9._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_framer-motion_dist_es_fec6067b._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_framer-motion_dist_es_fec6067b._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_next_0a83f2df._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_next_0a83f2df._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_next_53f6b2f3._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_next_53f6b2f3._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_next_dist_a17f26a9._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_next_dist_a17f26a9._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_next_dist_b60b9dc6._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_next_dist_b60b9dc6._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_next_dist_client_components_forbidden-error_ea7ea172.js
-frontend/admin/.next/server/chunks/ssr/node_modules_next_dist_client_components_forbidden-error_ea7ea172.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_next_dist_client_components_unauthorized-error_c8949b27.js
-frontend/admin/.next/server/chunks/ssr/node_modules_next_dist_client_components_unauthorized-error_c8949b27.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_next_dist_de82eb52._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_next_dist_de82eb52._.js.map
-frontend/admin/.next/server/chunks/ssr/node_modules_tailwind-merge_dist_bundle-mjs_mjs_6c53872a._.js
-frontend/admin/.next/server/chunks/ssr/node_modules_tailwind-merge_dist_bundle-mjs_mjs_6c53872a._.js.map
-frontend/admin/.next/static/chunks/_2ebd9417._.js
-frontend/admin/.next/static/chunks/_2ebd9417._.js.map
-frontend/admin/.next/static/chunks/_73b8efea._.js
-frontend/admin/.next/static/chunks/_73b8efea._.js.map
-frontend/admin/.next/static/chunks/_2649ec4d._.js
-frontend/admin/.next/static/chunks/_2649ec4d._.js.map
-frontend/admin/.next/static/chunks/_b581757f._.js
-frontend/admin/.next/static/chunks/_b581757f._.js.map
-frontend/admin/.next/static/chunks/_c03db13b._.js
-frontend/admin/.next/static/chunks/_c03db13b._.js.map
-frontend/admin/.next/static/chunks/_c831d340._.js
-frontend/admin/.next/static/chunks/_c831d340._.js.map
-frontend/admin/.next/static/chunks/_e69f0d32._.js
-frontend/admin/.next/static/chunks/_f2add417._.js
-frontend/admin/.next/static/chunks/_f2add417._.js.map
-frontend/admin/.next/static/chunks/\[next]_internal_font_google_fira_code_b79a8a20_module_css_f9ee138c._.single.css
-frontend/admin/.next/static/chunks/\[next]_internal_font_google_fira_code_b79a8a20_module_css_f9ee138c._.single.css.map
-frontend/admin/.next/static/chunks/\[next]_internal_font_google_inter_b35c0a41_module_css_f9ee138c._.single.css
-frontend/admin/.next/static/chunks/\[next]_internal_font_google_inter_b35c0a41_module_css_f9ee138c._.single.css.map
-frontend/admin/.next/static/chunks/\[next]_internal_font_google_noto_sans_thai_ce2b029d_module_css_f9ee138c._.single.css
-frontend/admin/.next/static/chunks/\[next]_internal_font_google_noto_sans_thai_ce2b029d_module_css_f9ee138c._.single.css.map
-frontend/admin/.next/static/chunks/\[root-of-the-server]__8ccf8721._.css
-frontend/admin/.next/static/chunks/\[root-of-the-server]__8ccf8721._.css.map
-frontend/admin/.next/static/chunks/\[turbopack]_browser_dev_hmr-client_hmr-client_ts_3cd0d838._.js
-frontend/admin/.next/static/chunks/\[turbopack]_browser_dev_hmr-client_hmr-client_ts_61dcf9ba._.js
-frontend/admin/.next/static/chunks/\[turbopack]_browser_dev_hmr-client_hmr-client_ts_61dcf9ba._.js.map
-frontend/admin/.next/static/chunks/\[turbopack]_browser_dev_hmr-client_hmr-client_ts_c20f642f._.js
-frontend/admin/.next/static/chunks/\[turbopack]_browser_dev_hmr-client_hmr-client_ts_c20f642f._.js.map
-frontend/admin/.next/static/chunks/app_(app)_dashboard_page_tsx_c1f246d0._.js
-frontend/admin/.next/static/chunks/app_(app)_departments_page_tsx_c1f246d0._.js
-frontend/admin/.next/static/chunks/app_(app)_layout_tsx_8cef6494._.js
-frontend/admin/.next/static/chunks/app_(app)_users_page_tsx_c1f246d0._.js
-frontend/admin/.next/static/chunks/app_(auth)_access-denied_page_tsx_6b3d7fd6._.js
-frontend/admin/.next/static/chunks/app_(auth)_access-denied_page_tsx_6b3d7fd6._.js.map
-frontend/admin/.next/static/chunks/app_(auth)_access-denied_page_tsx_8cef6494._.js
-frontend/admin/.next/static/chunks/app_(auth)_login_page_tsx_3ee6f707._.js
-frontend/admin/.next/static/chunks/app_(auth)_login_page_tsx_3ee6f707._.js.map
-frontend/admin/.next/static/chunks/app_(auth)_login_page_tsx_8cef6494._.js
-frontend/admin/.next/static/chunks/app_error_tsx_1c4448c8._.js
-frontend/admin/.next/static/chunks/app_error_tsx_1c4448c8._.js.map
-frontend/admin/.next/static/chunks/app_error_tsx_8cef6494._.js
-frontend/admin/.next/static/chunks/app_layout_tsx_ea9287a8._.js
-frontend/admin/.next/static/chunks/app_loading_tsx_8cef6494._.js
-frontend/admin/.next/static/chunks/ed0b0_@swc_helpers_cjs_d9e50ee1._.js
-frontend/admin/.next/static/chunks/ed0b0_@swc_helpers_cjs_d9e50ee1._.js.map
-frontend/admin/.next/static/chunks/node_modules_@heroui_1b1eca91._.js
-frontend/admin/.next/static/chunks/node_modules_@heroui_1b1eca91._.js.map
-frontend/admin/.next/static/chunks/node_modules_@heroui_2e604cd0._.js
-frontend/admin/.next/static/chunks/node_modules_@heroui_2e604cd0._.js.map
-frontend/admin/.next/static/chunks/node_modules_@heroui_5cdaabec._.js
-frontend/admin/.next/static/chunks/node_modules_@heroui_5cdaabec._.js.map
-frontend/admin/.next/static/chunks/node_modules_@heroui_780a200f._.js
-frontend/admin/.next/static/chunks/node_modules_@heroui_780a200f._.js.map
-frontend/admin/.next/static/chunks/node_modules_@heroui_1097c448._.js
-frontend/admin/.next/static/chunks/node_modules_@heroui_1097c448._.js.map
-frontend/admin/.next/static/chunks/node_modules_@heroui_b190d704._.js
-frontend/admin/.next/static/chunks/node_modules_@heroui_b190d704._.js.map
-frontend/admin/.next/static/chunks/node_modules_@heroui_cb16dbf1._.js
-frontend/admin/.next/static/chunks/node_modules_@heroui_cb16dbf1._.js.map
-frontend/admin/.next/static/chunks/node_modules_@heroui_d10312e7._.js
-frontend/admin/.next/static/chunks/node_modules_@heroui_d10312e7._.js.map
-frontend/admin/.next/static/chunks/node_modules_@heroui_d3750386._.js
-frontend/admin/.next/static/chunks/node_modules_@heroui_d3750386._.js.map
-frontend/admin/.next/static/chunks/node_modules_@heroui_dom-animation_dist_index_mjs_7f720b23._.js
-frontend/admin/.next/static/chunks/node_modules_@heroui_dom-animation_dist_index_mjs_13c2d90f._.js
-frontend/admin/.next/static/chunks/node_modules_@heroui_dom-animation_dist_index_mjs_19b4c240._.js
-frontend/admin/.next/static/chunks/node_modules_@heroui_dom-animation_dist_index_mjs_76e45672._.js
-frontend/admin/.next/static/chunks/node_modules_@heroui_dom-animation_dist_index_mjs_76e45672._.js.map
-frontend/admin/.next/static/chunks/node_modules_@heroui_dom-animation_dist_index_mjs_520e7654._.js
-frontend/admin/.next/static/chunks/node_modules_@heroui_dom-animation_dist_index_mjs_3429afe4._.js
-frontend/admin/.next/static/chunks/node_modules_@heroui_dom-animation_dist_index_mjs_3429afe4._.js.map
-frontend/admin/.next/static/chunks/node_modules_@heroui_dom-animation_dist_index_mjs_008832df._.js
-frontend/admin/.next/static/chunks/node_modules_@heroui_dom-animation_dist_index_mjs_008832df._.js.map
-frontend/admin/.next/static/chunks/node_modules_@heroui_dom-animation_dist_index_mjs_ab679a91._.js
-frontend/admin/.next/static/chunks/node_modules_@heroui_dom-animation_dist_index_mjs_b3ed28e7._.js
-frontend/admin/.next/static/chunks/node_modules_@heroui_dom-animation_dist_index_mjs_b3ed28e7._.js.map
-frontend/admin/.next/static/chunks/node_modules_@heroui_dom-animation_dist_index_mjs_d849f4cf._.js
-frontend/admin/.next/static/chunks/node_modules_@heroui_dom-animation_dist_index_mjs_d849f4cf._.js.map
-frontend/admin/.next/static/chunks/node_modules_@heroui_e56fb7c8._.js
-frontend/admin/.next/static/chunks/node_modules_@heroui_e56fb7c8._.js.map
-frontend/admin/.next/static/chunks/node_modules_@heroui_table_dist_5500bf05._.js
-frontend/admin/.next/static/chunks/node_modules_@heroui_table_dist_5500bf05._.js.map
-frontend/admin/.next/static/chunks/node_modules_@heroui_toast_dist_src-UW24ZMRV_mjs_4590b569._.js
-frontend/admin/.next/static/chunks/node_modules_@react-aria_1f7caefb._.js
-frontend/admin/.next/static/chunks/node_modules_@react-aria_1f7caefb._.js.map
-frontend/admin/.next/static/chunks/node_modules_@react-aria_6330846e._.js
-frontend/admin/.next/static/chunks/node_modules_@react-aria_6330846e._.js.map
-frontend/admin/.next/static/chunks/node_modules_@react-aria_77212310._.js
-frontend/admin/.next/static/chunks/node_modules_@react-aria_77212310._.js.map
-frontend/admin/.next/static/chunks/node_modules_3ad372ab._.js
-frontend/admin/.next/static/chunks/node_modules_3ad372ab._.js.map
-frontend/admin/.next/static/chunks/node_modules_04af8b3d._.js
-frontend/admin/.next/static/chunks/node_modules_04af8b3d._.js.map
-frontend/admin/.next/static/chunks/node_modules_5a802a15._.js
-frontend/admin/.next/static/chunks/node_modules_5a802a15._.js.map
-frontend/admin/.next/static/chunks/node_modules_5ce56123._.js
-frontend/admin/.next/static/chunks/node_modules_5ce56123._.js.map
-frontend/admin/.next/static/chunks/node_modules_5e474843._.js
-frontend/admin/.next/static/chunks/node_modules_5e474843._.js.map
-frontend/admin/.next/static/chunks/node_modules_33cbb787._.js
-frontend/admin/.next/static/chunks/node_modules_33cbb787._.js.map
-frontend/admin/.next/static/chunks/node_modules_81fcdf45._.js
-frontend/admin/.next/static/chunks/node_modules_81fcdf45._.js.map
-frontend/admin/.next/static/chunks/node_modules_93ba4938._.js
-frontend/admin/.next/static/chunks/node_modules_93ba4938._.js.map
-frontend/admin/.next/static/chunks/node_modules_500f8e2e._.js
-frontend/admin/.next/static/chunks/node_modules_500f8e2e._.js.map
-frontend/admin/.next/static/chunks/node_modules_2146d97c._.js
-frontend/admin/.next/static/chunks/node_modules_2146d97c._.js.map
-frontend/admin/.next/static/chunks/node_modules_5338b987._.js
-frontend/admin/.next/static/chunks/node_modules_5338b987._.js.map
-frontend/admin/.next/static/chunks/node_modules_05582d08._.js
-frontend/admin/.next/static/chunks/node_modules_05582d08._.js.map
-frontend/admin/.next/static/chunks/node_modules_8199f456._.js
-frontend/admin/.next/static/chunks/node_modules_8199f456._.js.map
-frontend/admin/.next/static/chunks/node_modules_33692c6f._.js
-frontend/admin/.next/static/chunks/node_modules_33692c6f._.js.map
-frontend/admin/.next/static/chunks/node_modules_a384df33._.js
-frontend/admin/.next/static/chunks/node_modules_a384df33._.js.map
-frontend/admin/.next/static/chunks/node_modules_aef35cbc._.js
-frontend/admin/.next/static/chunks/node_modules_aef35cbc._.js.map
-frontend/admin/.next/static/chunks/node_modules_c30e35f8._.js
-frontend/admin/.next/static/chunks/node_modules_c30e35f8._.js.map
-frontend/admin/.next/static/chunks/node_modules_d6cf6240._.js
-frontend/admin/.next/static/chunks/node_modules_d6cf6240._.js.map
-frontend/admin/.next/static/chunks/node_modules_dd1d72c6._.js
-frontend/admin/.next/static/chunks/node_modules_dd1d72c6._.js.map
-frontend/admin/.next/static/chunks/node_modules_dec3448e._.js
-frontend/admin/.next/static/chunks/node_modules_dec3448e._.js.map
-frontend/admin/.next/static/chunks/node_modules_f1ce680f._.js
-frontend/admin/.next/static/chunks/node_modules_f1ce680f._.js.map
-frontend/admin/.next/static/chunks/node_modules_fd582cd9._.js
-frontend/admin/.next/static/chunks/node_modules_fd582cd9._.js.map
-frontend/admin/.next/static/chunks/node_modules_framer-motion_dist_es_index_mjs_3daee57f._.js
-frontend/admin/.next/static/chunks/node_modules_next_dist_2ecbf5fa._.js
-frontend/admin/.next/static/chunks/node_modules_next_dist_2ecbf5fa._.js.map
-frontend/admin/.next/static/chunks/node_modules_next_dist_build_polyfills_polyfill-nomodule.js
-frontend/admin/.next/static/chunks/node_modules_next_dist_client_8f19e6fb._.js
-frontend/admin/.next/static/chunks/node_modules_next_dist_client_8f19e6fb._.js.map
-frontend/admin/.next/static/chunks/node_modules_next_dist_compiled_2ce9398a._.js
-frontend/admin/.next/static/chunks/node_modules_next_dist_compiled_2ce9398a._.js.map
-frontend/admin/.next/static/chunks/styles_globals_css_f9ee138c._.single.css
-frontend/admin/.next/static/chunks/styles_globals_css_f9ee138c._.single.css.map
-frontend/admin/.next/static/development/_buildManifest.js
-frontend/admin/.next/static/development/_clientMiddlewareManifest.json
-frontend/admin/.next/static/development/_ssgManifest.js
-frontend/admin/.next/static/media/iJWQBXeUZi_OHPqn4wq6hQ2_hbJ1xyN9wd43SofNWcdfKI2hTWsb_P2c-s.p.3b4ba9ea.woff2
-frontend/admin/.next/static/media/iJWQBXeUZi_OHPqn4wq6hQ2_hbJ1xyN9wd43SofNWcdfMo2hTWsb_P2c-s.ac438dbc.woff2
-frontend/admin/.next/static/media/iJWQBXeUZi_OHPqn4wq6hQ2_hbJ1xyN9wd43SofNWcdfPI2hTWsb_A-s.p.8e05982f.woff2
-frontend/admin/.next/static/media/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa0ZL7W0Q5n_wU-s.51d01951.woff2
-frontend/admin/.next/static/media/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1pL7W0Q5n_wU-s.1e9d3edc.woff2
-frontend/admin/.next/static/media/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7W0Q5nw-s.p.0faac26c.woff2
-frontend/admin/.next/static/media/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa2JL7W0Q5n_wU-s.7b98b85e.woff2
-frontend/admin/.next/static/media/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa2pL7W0Q5n_wU-s.569fab99.woff2
-frontend/admin/.next/static/media/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa2ZL7W0Q5n_wU-s.e91c5657.woff2
-frontend/admin/.next/static/media/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa25L7W0Q5n_wU-s.99c7dd4e.woff2
-frontend/admin/.next/static/media/uU9NCBsR6Z2vfE9aq3bh0dSDqFGedCMX-s.4d8f94f7.woff2
-frontend/admin/.next/static/media/uU9NCBsR6Z2vfE9aq3bh0NSDqFGedCMX-s.a23948ee.woff2
-frontend/admin/.next/static/media/uU9NCBsR6Z2vfE9aq3bh2dSDqFGedCMX-s.ba275574.woff2
-frontend/admin/.next/static/media/uU9NCBsR6Z2vfE9aq3bh3dSDqFGedA-s.p.28a63e83.woff2
-frontend/admin/.next/static/media/uU9NCBsR6Z2vfE9aq3bh3tSDqFGedCMX-s.ae6081a6.woff2
-frontend/admin/.next/static/media/uU9NCBsR6Z2vfE9aq3bh09SDqFGedCMX-s.9a91385d.woff2
-frontend/admin/.next/static/media/uU9NCBsR6Z2vfE9aq3bhZ_Wmh3mUfBsu_Q-s.dafc51b9.woff2
+# Old directories
+frontend/old-frontend/
+backend/old-backend/
+frontend/admin-example/
+
+# Cursor rules
+.cursor/
