@@ -275,8 +275,14 @@ export function QuestionsModal({
             value={formData.options && formData.options.length > 0 ? formData.options.map(o => o.text).join('\n') : ''}
             variant="bordered"
             onChange={e => {
-              // This is a simple text area for additional context
-              // In a real app, you might want to handle this differently
+              const text = e.target.value;
+              const lines = text.split('\n').filter(line => line.trim() !== '');
+              const options = lines.map((line, index) => ({
+                text: line.trim(),
+                value: line.trim(),
+                order: index + 1,
+              }));
+              setFormData({ ...formData, options });
             }}
           />
 
