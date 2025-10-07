@@ -45,14 +45,13 @@ export function QuestionsModal({
   question,
   mode,
 }: QuestionsModalProps) {
-  if (!isOpen) return null;
   
   const [formData, setFormData] = useState<CreateQuestionRequest>({
     text: question?.text || '',
     type: question?.type || 'TEXT',
     required: question?.required || false,
     order: question?.order || 1,
-    category: question?.category || 'general',
+    category: question?.category || 'GENERAL',
     options: question?.options || [],
   });
 
@@ -75,7 +74,7 @@ export function QuestionsModal({
         type: 'TEXT',
         required: false,
         order: 1,
-        category: 'general',
+        category: 'GENERAL',
         options: [],
       });
     }
@@ -204,6 +203,8 @@ export function QuestionsModal({
       return { ...prev, type: nextType, options: nextOptions };
     });
   };
+
+  if (!isOpen) return null;
 
   return (
     <Modal

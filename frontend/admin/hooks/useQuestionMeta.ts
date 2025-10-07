@@ -17,14 +17,14 @@ const DEFAULT_META: QuestionMeta = {
     { key: 'BOOLEAN', label: 'Boolean', color: '#a855f7' },
   ],
   categories: [
-    { key: 'project_satisfaction', label: 'Project Satisfaction' },
-    { key: 'technical_skills', label: 'Technical Skills' },
-    { key: 'communication', label: 'Communication' },
-    { key: 'leadership', label: 'Leadership' },
-    { key: 'work_environment', label: 'Work Environment' },
-    { key: 'work_life_balance', label: 'Work Life Balance' },
-    { key: 'team_collaboration', label: 'Team Collaboration' },
-    { key: 'general', label: 'General' },
+    { key: 'PROJECT_SATISFACTION', label: 'Project Satisfaction' },
+    { key: 'TECHNICAL_SKILLS', label: 'Technical Skills' },
+    { key: 'COMMUNICATION', label: 'Communication' },
+    { key: 'LEADERSHIP', label: 'Leadership' },
+    { key: 'WORK_ENVIRONMENT', label: 'Work Environment' },
+    { key: 'WORK_LIFE_BALANCE', label: 'Work Life Balance' },
+    { key: 'TEAM_COLLABORATION', label: 'Team Collaboration' },
+    { key: 'GENERAL', label: 'General' },
   ],
 };
 
