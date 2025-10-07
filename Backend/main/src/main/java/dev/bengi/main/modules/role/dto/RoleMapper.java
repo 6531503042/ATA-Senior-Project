@@ -8,9 +8,15 @@ public interface RoleMapper {
 
     // Create: DTO -> Entity
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
     Role toEntity(RoleRequestCreate req);
 
     // Update (partial)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "name", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
     void updateEntity(@MappingTarget Role target, RoleRequestUpdate req);
 
     // Entity -> Response

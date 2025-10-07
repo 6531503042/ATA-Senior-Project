@@ -6,7 +6,8 @@ import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring",
+        imports = {java.util.List.class, java.time.LocalDateTime.class})
 public interface ProjectFormMapper {
 
     @Mapping(target = "startDate", expression = "java(parseDate(form.getStartDate()))")

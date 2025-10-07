@@ -11,8 +11,13 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 public interface ProjectMapper {
 
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
     Project toEntity(ProjectRequestDto req);
 
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
     void updateEntity(@MappingTarget Project target, ProjectUpdateRequestDto req);
 
     @Mapping(target = "memberCount", constant = "0L")

@@ -10,9 +10,14 @@ public interface DepartmentMapper {
     // Create: DTO -> Entity
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "active", constant = "true")
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
     Department toEntity(DepartmentRequestDto req);
 
     // Update (partial)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
     void updateEntity(@MappingTarget Department target, DepartmentUpdateRequestDto req);
 
     // Entity -> Response

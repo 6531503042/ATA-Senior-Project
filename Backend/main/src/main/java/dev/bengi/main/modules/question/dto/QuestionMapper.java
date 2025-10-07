@@ -1,15 +1,14 @@
 package dev.bengi.main.modules.question.dto;
 
 import dev.bengi.main.modules.question.model.Question;
-import dev.bengi.main.modules.question.enums.QuestionCategory;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
-import org.mapstruct.AfterMapping;
 
 @Mapper(componentModel = "spring",
-        nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+        nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
+        imports = {java.util.List.class})
 public interface QuestionMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "categoryString", ignore = true)

@@ -4,7 +4,8 @@ import dev.bengi.main.modules.submit.model.Submit;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring",
+        imports = {java.util.List.class})
 public interface SubmitMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "userId", ignore = true)
