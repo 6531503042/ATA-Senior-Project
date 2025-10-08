@@ -1,15 +1,16 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { addToast } from '@heroui/react';
 
 import type { Department, DepartmentMember } from '@/types/department';
 import { apiRequest } from '@/utils/api';
+import { PERFORMANCE_CONFIG, shouldThrottleRequest } from '@/config/performance';
 
 export interface UseDepartmentReturn {
   departments: Department[];
   loading: boolean;
   error: string | null;
   fetchDepartments: () => Promise<void>;
-  createDepartment: (departmentData: { name: string; description: string; active: boolean }) => Promise<Department | void>;
+  createDepartment: (departmentData: { name: string; description: string; active: boolean; memberIds?: number[] }) => Promise<Department | void>;
   updateDepartment: (id: number, departmentData: { name: string; description: string; active: boolean }) => Promise<Department | void>;
   deleteDepartment: (id: number) => Promise<void>;
   getDepartmentMembers: (departmentId: number) => Promise<DepartmentMember[]>;
@@ -20,12 +21,17 @@ export function useDepartment(): UseDepartmentReturn {
   const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const lastFetchRef = useRef<number>(0);
 
   /**
    * Fetch all departments from the API
    * @returns Promise<void>
    */
-  const fetchDepartments = async (): Promise<void> => {
+  const fetchDepartments = useCallback(async (): Promise<void> => {
+    if (shouldThrottleRequest(lastFetchRef.current, PERFORMANCE_CONFIG.API_THROTTLE.DASHBOARD)) {
+      return;
+    }
+    lastFetchRef.current = Date.now();
     setLoading(true);
     setError(null);
     try {
@@ -50,14 +56,14 @@ export function useDepartment(): UseDepartmentReturn {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   /**
    * Create a new department
    * @param departmentData - Department data containing department information
    * @returns Promise<void>
    */
-  const createDepartment = async (departmentData: { name: string; description: string; active: boolean }): Promise<Department | void> => {
+  const createDepartment = async (departmentData: { name: string; description: string; active: boolean; memberIds?: number[] }): Promise<Department | void> => {
     setLoading(true);
     setError(null);
     try {
@@ -194,7 +200,7 @@ export function useDepartment(): UseDepartmentReturn {
 
   useEffect(() => {
     fetchDepartments();
-  }, []);
+  }, [fetchDepartments]);
 
   return {
     departments,

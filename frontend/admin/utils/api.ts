@@ -1,4 +1,5 @@
 import { getToken } from './storage';
+import { createApiError, logApiError, getUserFriendlyErrorMessage } from './errorHandler';
 
 export interface ApiResponse<T> {
   statusCode: number;
@@ -88,10 +89,17 @@ export async function apiRequest<T>(
     console.log("Response data:", data);
 
     if (!response.ok) {
-      const errorMessage = data?.message || `HTTP error! status: ${response.status}`;
+      const errorMessage = data?.message || data?.error || `HTTP error! status: ${response.status}`;
+      const errorDetails = createApiError(
+        response.status,
+        response.statusText,
+        url,
+        errorMessage,
+        data
+      );
 
-      console.error("API Error:", { status: response.status, message: errorMessage, data });
-      throw new Error(errorMessage);
+      logApiError(errorDetails);
+      throw new Error(getUserFriendlyErrorMessage(errorDetails));
     }
 
     return {
@@ -188,10 +196,17 @@ export async function apiGolangRequest<T>(
     console.log("Response data:", data);
 
     if (!response.ok) {
-      const errorMessage = data?.message || `HTTP error! status: ${response.status}`;
+      const errorMessage = data?.message || data?.error || `HTTP error! status: ${response.status}`;
+      const errorDetails = createApiError(
+        response.status,
+        response.statusText,
+        url,
+        errorMessage,
+        data
+      );
 
-      console.error("API Error:", { status: response.status, message: errorMessage, data });
-      throw new Error(errorMessage);
+      logApiError(errorDetails);
+      throw new Error(getUserFriendlyErrorMessage(errorDetails));
     }
 
     return {

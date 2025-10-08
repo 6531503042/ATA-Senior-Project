@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import { apiRequest } from '@/utils/api';
 
 export type QuestionTypeMeta = { key: string; label: string; color?: string };
@@ -32,10 +32,20 @@ export function useQuestionMeta() {
   const [meta, setMeta] = useState<QuestionMeta>(DEFAULT_META);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const lastFetchRef = useRef<number>(0);
+  const FETCH_THROTTLE_MS = 30000; // 30 seconds throttle for metadata
 
   const fetchMeta = useCallback(async () => {
+    // Throttle metadata fetching
+    if (Date.now() - lastFetchRef.current < FETCH_THROTTLE_MS) {
+      console.log('Question metadata fetch throttled');
+      return;
+    }
+    
+    lastFetchRef.current = Date.now();
     setLoading(true);
     setError(null);
+    
     try {
       // Try a combined endpoint first
       const combined = await apiRequest<any>('/api/questions/meta', 'GET').catch(() => null);
@@ -51,7 +61,8 @@ export function useQuestionMeta() {
           return;
         }
       }
-    } catch (_) {
+    } catch (err: any) {
+      console.warn('Combined metadata endpoint failed:', err.message);
       // ignore and try split endpoints below
     }
 
@@ -75,7 +86,9 @@ export function useQuestionMeta() {
         categories: categories.length ? categories : DEFAULT_META.categories,
       });
     } catch (e: any) {
-      setError(e?.message || 'Failed to load question metadata');
+      const errorMessage = e?.message || 'Failed to load question metadata';
+      console.warn('Using default metadata due to API error:', errorMessage);
+      setError(errorMessage);
       setMeta(DEFAULT_META);
     } finally {
       setLoading(false);
@@ -84,7 +97,7 @@ export function useQuestionMeta() {
 
   useEffect(() => {
     fetchMeta();
-  }, [fetchMeta]);
+  }, []); // Remove fetchMeta dependency to prevent infinite loop
 
   const typeLabel = useCallback(
     (key?: string) => meta.types.find(t => t.key === key)?.label || key || 'Unknown',

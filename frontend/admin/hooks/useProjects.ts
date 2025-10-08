@@ -1,16 +1,22 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { addToast } from '@heroui/react';
 
 import { Project } from '@/types/project';
 import { PageResponse } from '@/types/shared';
 import { apiRequest } from '@/utils/api';
+import { PERFORMANCE_CONFIG, shouldThrottleRequest } from '@/config/performance';
 
 export function useProjects() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const lastFetchRef = useRef<number>(0);
 
   const fetchProjects = useCallback(async () => {
+    if (shouldThrottleRequest(lastFetchRef.current, PERFORMANCE_CONFIG.API_THROTTLE.DASHBOARD)) {
+      return;
+    }
+    lastFetchRef.current = Date.now();
     setLoading(true);
     setError(null);
     try {
@@ -128,7 +134,7 @@ export function useProjects() {
 
   useEffect(() => {
     fetchProjects();
-  }, []); // Empty dependency array to run only once
+  }, [fetchProjects]);
 
   return {
     projects,

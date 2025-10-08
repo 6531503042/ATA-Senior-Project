@@ -2,7 +2,7 @@
 
 import type { AuthContextType } from '@/types/auth';
 
-import { createContext, useContext, useEffect, ReactNode, useRef } from 'react';
+import { createContext, useContext, useEffect, ReactNode, useRef, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 
 import useAuthStore from '@/stores/authStore';
@@ -19,6 +19,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const router = useRouter();
   const pathname = usePathname();
   const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [isHydrated, setIsHydrated] = useState(false);
 
   // Protected routes that require authentication
   const protectedRoutes = [
@@ -34,7 +35,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const authRoutes = ['/login', '/logout'];
 
   useEffect(() => {
+    // Mark as hydrated on first client render
+    setIsHydrated(true);
+  }, []);
+
+  useEffect(() => {
     const checkAuth = async () => {
+      // Gate redirects until client is hydrated and store finished initial load
+      if (!isHydrated || auth.loading) return;
+
       const isLoggedIn = auth.isLoggedIn();
       const isAuthRoute = authRoutes.some(route => pathname.startsWith(route));
       const isProtectedRoute = protectedRoutes.some(route =>
@@ -58,7 +67,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     };
 
     checkAuth();
-  }, [auth, router, pathname]);
+  }, [auth, router, pathname, isHydrated]);
 
   // Auto-refresh token with better scheduling
   useEffect(() => {
@@ -144,7 +153,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   return (
-    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
+    <AuthContext.Provider value={contextValue}>
+      {/* Hydration gate: avoid flashing Access Denied on refresh */}
+      {!isHydrated ? null : children}
+    </AuthContext.Provider>
   );
 }
 

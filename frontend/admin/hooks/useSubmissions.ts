@@ -2,7 +2,7 @@
 
 import type { SubmissionItem, SubmissionPrivacy, SubmissionStatus, SubmissionSentiment } from '@/types/submission';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { apiRequest } from '@/utils/api';
 
@@ -27,6 +27,7 @@ export function useSubmissions(initial?: Partial<SubmissionsFilters & Submission
   const [allItems, setAllItems] = useState<SubmissionItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const lastFetchRef = useRef<number>(0);
 
   const [filters, setFilters] = useState<SubmissionsFilters>({
     query: initial?.query ?? '',
@@ -40,6 +41,8 @@ export function useSubmissions(initial?: Partial<SubmissionsFilters & Submission
   });
 
   const refresh = useCallback(async () => {
+    if (Date.now() - lastFetchRef.current < 5000) return; // 5s throttle
+    lastFetchRef.current = Date.now();
     setLoading(true);
     try {
       // Fetch all submissions from backend for admin dashboard

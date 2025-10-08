@@ -63,7 +63,7 @@ export default function DashboardPage() {
     setLoading(true);
     refreshDashboard();
     // Reset loading after a short delay
-    setTimeout(() => setLoading(false), 900);
+    setTimeout(() => setLoading(false), 2000);
   };
 
   // Respect prefers-reduced-motion for spinners

@@ -1,16 +1,22 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { addToast } from '@heroui/react';
 
 import { User } from '@/types/user';
 import { apiRequest } from '@/utils/api';
+import { PERFORMANCE_CONFIG, shouldThrottleRequest } from '@/config/performance';
 
 export function useUsers() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const lastFetchRef = useRef<number>(0);
 
-  // Fetch all users
-  const fetchUsers = async () => {
+  // Fetch all users (throttled)
+  const fetchUsers = useCallback(async () => {
+    if (shouldThrottleRequest(lastFetchRef.current, PERFORMANCE_CONFIG.API_THROTTLE.DASHBOARD)) {
+      return;
+    }
+    lastFetchRef.current = Date.now();
     setLoading(true);
     setError(null);
     try {
@@ -31,7 +37,7 @@ export function useUsers() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   // Fetch user by username
   const fetchByUsername = async (username: string) => {
@@ -170,7 +176,7 @@ export function useUsers() {
 
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [fetchUsers]);
 
   return {
     users,

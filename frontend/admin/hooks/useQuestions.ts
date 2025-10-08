@@ -1,8 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { addToast } from '@heroui/react';
 
 import { Question, CreateQuestionRequest, UpdateQuestionRequest } from '@/types/question';
 import { apiRequest } from '@/utils/api';
+import { PERFORMANCE_CONFIG, shouldThrottleRequest } from '@/config/performance';
 
 function normalizeQuestion(raw: any): Question {
   const normalizedType = (raw?.questionType ?? raw?.type ?? '').toString().toUpperCase();
@@ -27,8 +28,13 @@ export function useQuestions() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const lastFetchRef = useRef<number>(0);
 
   const fetchQuestions = useCallback(async () => {
+    if (shouldThrottleRequest(lastFetchRef.current, PERFORMANCE_CONFIG.API_THROTTLE.DASHBOARD)) {
+      return;
+    }
+    lastFetchRef.current = Date.now();
     setLoading(true);
     setError(null);
     try {

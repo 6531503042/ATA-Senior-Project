@@ -1,6 +1,7 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { apiRequest } from '@/utils/api';
 import { DashboardStats, EnhancedDashboardStats, ActivityFeed } from '@/types/dashboard';
+import { PERFORMANCE_CONFIG, shouldThrottleRequest, getStaggeredDelay } from '@/config/performance';
 
 import { getToken } from '@/utils/storage';
 import useAuthStore from '@/stores/authStore';
@@ -183,15 +184,23 @@ const mockActivityFeed: ActivityFeed[] = [
   },
 ];
 
-// Basic dashboard hook
+// Basic dashboard hook with throttling
 export function useDashboard() {
   const [data, setData] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const lastFetchRef = useRef<number>(0);
 
   const fetchData = useCallback(async () => {
+    if (shouldThrottleRequest(lastFetchRef.current, PERFORMANCE_CONFIG.API_THROTTLE.DASHBOARD)) {
+      console.log('Dashboard fetch throttled');
+      return;
+    }
+    
+    lastFetchRef.current = Date.now();
     setLoading(true);
     setError(null);
+    
     try {
       const res = await apiRequest<DashboardStats>('/api/dashboard', 'GET');
       if (res.data) {
@@ -208,24 +217,35 @@ export function useDashboard() {
     }
   }, []);
 
-  const refetch = () => fetchData();
+  const refetch = useCallback(() => {
+    lastFetchRef.current = 0; // Reset throttle for manual refetch
+    fetchData();
+  }, [fetchData]);
 
   useEffect(() => {
     fetchData();
-  }, [fetchData]);
+  }, []); // Remove fetchData dependency to prevent infinite loop
 
   return { data, loading, error, refetch };
 }
 
-// Enhanced dashboard hook
+// Enhanced dashboard hook with throttling
 export function useEnhancedDashboard() {
   const [data, setData] = useState<EnhancedDashboardStats | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const lastFetchRef = useRef<number>(0);
 
   const fetchData = useCallback(async () => {
+    if (shouldThrottleRequest(lastFetchRef.current, PERFORMANCE_CONFIG.API_THROTTLE.ENHANCED_DASHBOARD)) {
+      console.log('Enhanced dashboard fetch throttled');
+      return;
+    }
+    
+    lastFetchRef.current = Date.now();
     setLoading(true);
     setError(null);
+    
     try {
       const res = await apiRequest<EnhancedDashboardStats>('/api/dashboard/advanced', 'GET');
       if (res.data) {
@@ -242,11 +262,14 @@ export function useEnhancedDashboard() {
     }
   }, []);
 
-  const refetch = () => fetchData();
+  const refetch = useCallback(() => {
+    lastFetchRef.current = 0; // Reset throttle for manual refetch
+    fetchData();
+  }, [fetchData]);
 
   useEffect(() => {
     fetchData();
-  }, [fetchData]);
+  }, []); // Remove fetchData dependency to prevent infinite loop
 
   return { data, loading, error, refetch };
 }
@@ -276,11 +299,11 @@ export function useActivityFeed(limit: number = 20) {
     }
   }, [limit]);
 
-  const refetch = () => fetchData();
+  const refetch = useCallback(() => fetchData(), [fetchData]);
 
   useEffect(() => {
     fetchData();
-  }, [fetchData]);
+  }, [limit]); // Only depend on limit, not fetchData
 
   return { data, loading, error, refetch };
 }
@@ -310,11 +333,11 @@ export function useQuickActions() {
     }
   }, []);
 
-  const refetch = () => fetchData();
+  const refetch = useCallback(() => fetchData(), [fetchData]);
 
   useEffect(() => {
     fetchData();
-  }, [fetchData]);
+  }, []); // Remove fetchData dependency to prevent infinite loop
 
   return { data, loading, error, refetch };
 }
@@ -344,11 +367,11 @@ export function useNotifications(limit: number = 10) {
     }
   }, [limit]);
 
-  const refetch = () => fetchData();
+  const refetch = useCallback(() => fetchData(), [fetchData]);
 
   useEffect(() => {
     fetchData();
-  }, [fetchData]);
+  }, [limit]); // Only depend on limit, not fetchData
 
   return { data, loading, error, refetch };
 }
@@ -432,11 +455,13 @@ export function useSystemHealth() {
 
   return { data, loading, error, refetch };
 }
-// Combined dashboard hook for comprehensive data
+// Optimized combined dashboard hook with throttling and error handling
 export function useDashboardData() {
   const auth = useAuthStore();
   const token = getToken('accessToken');
   const isEnabled = !!token && !!auth.user;
+  const lastRefreshRef = useRef<number>(0);
+  const REFRESH_THROTTLE_MS = 10000; // 10 seconds throttle for combined refresh
 
   const dashboard = useDashboard();
   const enhanced = useEnhancedDashboard();
@@ -448,13 +473,25 @@ export function useDashboardData() {
 
   const refresh = useCallback(() => {
     if (!isEnabled) return;
+    
+    const now = Date.now();
+    if (now - lastRefreshRef.current < REFRESH_THROTTLE_MS) {
+      console.log('Dashboard refresh throttled');
+      return;
+    }
+    
+    lastRefreshRef.current = now;
+    
+    // Only refresh essential data to reduce load
     dashboard.refetch();
     enhanced.refetch();
-    activityFeed.refetch();
-    quickActions.refetch();
-    notifications.refetch();
-    realTimeMetrics.refetch();
-    systemHealth.refetch();
+    
+    // Throttle non-essential data with staggered delays
+    setTimeout(() => activityFeed.refetch(), getStaggeredDelay(0));
+    setTimeout(() => quickActions.refetch(), getStaggeredDelay(1));
+    setTimeout(() => notifications.refetch(), getStaggeredDelay(2));
+    setTimeout(() => realTimeMetrics.refetch(), getStaggeredDelay(3));
+    setTimeout(() => systemHealth.refetch(), getStaggeredDelay(4));
   }, [dashboard, enhanced, activityFeed, quickActions, notifications, realTimeMetrics, systemHealth, isEnabled]);
 
   const loading = dashboard.loading || enhanced.loading;

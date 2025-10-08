@@ -5,7 +5,7 @@ import type {
 } from '../types/feedback';
 import type { PageResponse } from '../types/pagination';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { api } from '../libs/apiClient';
 
@@ -13,8 +13,11 @@ export function useFeedbacks(params?: Record<string, any>) {
   const [data, setData] = useState<PageResponse<Feedback> | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const lastFetchRef = useRef<number>(0);
 
   const fetchList = useCallback(async () => {
+    if (Date.now() - lastFetchRef.current < 5000) return; // 5s throttle
+    lastFetchRef.current = Date.now();
     setLoading(true);
     try {
       const res = await api.get<PageResponse<Feedback>>(

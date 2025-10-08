@@ -13,7 +13,7 @@ type DepartmentModalProps = {
   department?: Department;
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (departmentData: { name: string; description: string; active: boolean }, mode: 'create' | 'edit') => void;
+  onSubmit: (departmentData: { name: string; description: string; active: boolean; memberIds?: number[] }, mode: 'create' | 'edit') => any;
   mode: 'create' | 'edit';
   getDepartmentMembers?: (departmentId: number) => Promise<DepartmentMember[]>;
 };
@@ -82,7 +82,7 @@ export default function DepartmentModal({
 
     setLoading(true);
     try {
-      const departmentData = {
+      const departmentData: { name: string; description: string; active: boolean; memberIds?: number[] } = {
         name: name.trim(),
         description: description.trim(),
         active: active ?? true  // Default to true if active is null/undefined
@@ -106,19 +106,20 @@ export default function DepartmentModal({
         departmentData.active = true;
       }
       
+      // Attach selected member IDs for create flow
+      const selectedMemberIds = selectedMembers
+        .filter(user => user.id && user.id !== '__SELECT_ALL__' as any)
+        .map(user => user.id as number);
+
+      if (mode === 'create' && selectedMemberIds.length > 0) {
+        departmentData.memberIds = selectedMemberIds;
+      }
+
       console.log('DEBUG: Final department data:', departmentData);
 
 
-      // Submit department data first
-      const result = await onSubmit(departmentData, mode);
-      
-      // Handle member assignments separately
-      if (selectedMembers.length > 0) {
-        const deptId = mode === 'edit' ? departmentId : result?.id;
-        if (deptId) {
-          await handleMemberAssignments(deptId);
-        }
-      }
+      // Submit department data (with memberIds on create)
+      await onSubmit(departmentData, mode);
     } catch (error) {
       console.error('Failed to submit department:', error);
     } finally {

@@ -15,6 +15,7 @@ import DepartmentTable from './_components/DepartmentsTable';
 
 import { PageHeader } from '@/components/ui/page-header';
 import { useDepartment } from '@/hooks/useDepartment';
+import { ConfirmationModal } from '@/components/modal/ConfirmationModal';
 
 export default function DepartmentsPage() {
   const {
@@ -30,6 +31,8 @@ export default function DepartmentsPage() {
   const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
   const [selectedDepartment, setSelectedDepartment] = useState<Department | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [departmentToDelete, setDepartmentToDelete] = useState<Department | null>(null);
 
   // Calculate stats from departments data
   const stats = {
@@ -107,13 +110,27 @@ export default function DepartmentsPage() {
     }
   };
 
-  const handleDeleteDepartment = async (id: string) => {
+  const handleDeleteRequest = (id: string) => {
+    const dept = departments.find(d => d.id.toString() === id) || null;
+    setDepartmentToDelete(dept);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!departmentToDelete) return;
     try {
-      await deleteDepartment(parseInt(id));
+      await deleteDepartment(departmentToDelete.id);
     } catch (error) {
       console.error('Failed to delete department:', error);
-      // Error is already handled by the hook with toast notifications
+    } finally {
+      setIsDeleteModalOpen(false);
+      setDepartmentToDelete(null);
     }
+  };
+
+  const handleCancelDelete = () => {
+    setIsDeleteModalOpen(false);
+    setDepartmentToDelete(null);
   };
 
   return (
@@ -212,7 +229,7 @@ export default function DepartmentsPage() {
                   createdAt: dept.createdAt,
                   description: dept.description,
                 }))}
-                onDelete={handleDeleteDepartment}
+                onDelete={handleDeleteRequest}
                 onEdit={handleEditDepartment}
                 onRefresh={fetchDepartments}
               />
@@ -228,6 +245,18 @@ export default function DepartmentsPage() {
         onClose={handleModalClose}
         onSubmit={handleSubmit}
         getDepartmentMembers={getDepartmentMembers}
+      />
+
+      <ConfirmationModal
+        body={`Are you sure you want to delete "${departmentToDelete?.name}"? This action cannot be undone.`}
+        cancelColor="primary"
+        cancelText="Cancel"
+        confirmColor="danger"
+        confirmText="Delete"
+        isOpen={isDeleteModalOpen}
+        title="Delete Department"
+        onClose={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
       />
     </>
   );
