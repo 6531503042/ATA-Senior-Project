@@ -36,7 +36,8 @@ export function DepartmentMembersSelector({
 
   // Debounced search
   const handleSearch = useCallback((query: string) => {
-    console.log('Searching for users with query:', query);
+    console.group('[DeptMembers] handleSearch');
+    console.log('query =', query);
     setSearchQuery(query);
     
     // Clear existing timeout
@@ -46,35 +47,47 @@ export function DepartmentMembersSelector({
     
     if (query.trim()) {
       const timeout = setTimeout(() => {
-        console.log('Fetching users with query:', query);
-        fetchUsers(); // Just fetch all users for now
+        console.log('Fetching users (debounced). current query =', query);
+        fetchUsers().then(() => {
+          console.log('Users fetched. total =', users.length);
+          console.groupEnd();
+        });
       }, 300);
       setSearchTimeout(timeout);
     } else {
       // Clear users when search is empty
       setSearchQuery('');
+      console.log('Empty query, skip fetching');
+      console.groupEnd();
     }
-  }, [fetchUsers, searchTimeout]);
+  }, [fetchUsers, searchTimeout, users.length]);
 
   // Toggle member selection
   const handleUserSelect = useCallback((user: User) => {
-    console.log('Selecting/deselecting user:', user.username, 'ID:', user.id);
+    console.group('[DeptMembers] handleUserSelect');
+    console.log('click user:', { id: user.id, username: user.username });
     
     if (!user.id) {
       console.error('User has no ID:', user);
+      console.groupEnd();
       return;
     }
     
     setSelectedMembers(prev => {
       if (prev.some(u => u.id === user.id)) {
-        console.log('Removing user from selected members');
+        console.log('action: remove');
         return prev.filter(u => u.id !== user.id);
       } else {
-        console.log('Adding user to selected members');
+        console.log('action: add');
         return [...prev, user];
       }
     });
-  }, [setSelectedMembers]);
+    // Log the new list on the next tick (after state update)
+    setTimeout(() => {
+      console.log('selectedMembers (next tick):', selectedMembers.map(u => u.id));
+      console.groupEnd();
+    }, 0);
+  }, [setSelectedMembers, selectedMembers]);
 
   const handleClearAll = useCallback(() => {
     setSelectedMembers([]);

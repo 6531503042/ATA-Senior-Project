@@ -9,7 +9,7 @@ export interface UseDepartmentReturn {
   departments: Department[];
   loading: boolean;
   error: string | null;
-  fetchDepartments: () => Promise<void>;
+  fetchDepartments: (force?: boolean) => Promise<void>;
   createDepartment: (departmentData: { name: string; description: string; active: boolean; memberIds?: number[] }) => Promise<Department | void>;
   updateDepartment: (id: number, departmentData: { name: string; description: string; active: boolean }) => Promise<Department | void>;
   deleteDepartment: (id: number) => Promise<void>;
@@ -27,8 +27,8 @@ export function useDepartment(): UseDepartmentReturn {
    * Fetch all departments from the API
    * @returns Promise<void>
    */
-  const fetchDepartments = useCallback(async (): Promise<void> => {
-    if (shouldThrottleRequest(lastFetchRef.current, PERFORMANCE_CONFIG.API_THROTTLE.DASHBOARD)) {
+  const fetchDepartments = useCallback(async (force: boolean = false): Promise<void> => {
+    if (!force && shouldThrottleRequest(lastFetchRef.current, PERFORMANCE_CONFIG.API_THROTTLE.DASHBOARD)) {
       return;
     }
     lastFetchRef.current = Date.now();
@@ -76,7 +76,7 @@ export function useDepartment(): UseDepartmentReturn {
         });
         
         // Refresh departments list immediately
-        await fetchDepartments();
+        await fetchDepartments(true);
         return res.data;
       }
     } catch (err) {
@@ -114,7 +114,7 @@ export function useDepartment(): UseDepartmentReturn {
         });
         
         // Refresh departments list immediately
-        await fetchDepartments();
+        await fetchDepartments(true);
         return res.data;
       }
     } catch (err) {
@@ -150,18 +150,21 @@ export function useDepartment(): UseDepartmentReturn {
       });
 
       // Refresh departments list immediately
-      await fetchDepartments();
+      await fetchDepartments(true);
     } catch (err) {
-      const errorMessage = err && typeof err === 'object' && 'message' in err
-        ? (err as { message?: string }).message || 'Failed to delete department.'
-        : 'Failed to delete department.';
-
+      const message = err && typeof err === 'object' && 'message' in err
+        ? (err as { message?: string }).message || ''
+        : '';
+      // If the department was already deleted (404), treat as success for idempotency
+      if (message.includes('NOT_FOUND') || message.includes('404')) {
+        addToast({ title: 'Department already removed', color: 'warning' });
+        await fetchDepartments(true);
+        return;
+      }
+      const errorMessage = message || 'Failed to delete department.';
       setError(errorMessage);
-      addToast({
-        title: 'Failed to delete department. Please try again.',
-        color: 'danger',
-      });
-      throw err; // Re-throw to let component handle it
+      addToast({ title: 'Failed to delete department. Please try again.', color: 'danger' });
+      throw err; // Re-throw others
     } finally {
       setLoading(false);
     }

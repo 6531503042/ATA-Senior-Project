@@ -18,14 +18,23 @@ export const useRoles = () => {
       setLoading(true);
       setError(null);
       
-      // Try to fetch from backend first
-      const res = await apiRequest<Role[]>('/api/roles', 'GET');
-      
+      // Backend returns a PageResponse<RoleResponse> for GET /api/roles
+      const res = await apiRequest<any>('/api/roles?limit=0', 'GET');
+
+      let nextRoles: Role[] = [];
       if (res.data && Array.isArray(res.data)) {
-        setRoles(res.data);
-      } else {
-        setRoles([]);
+        // Direct array response (fallback/legacy)
+        nextRoles = res.data as Role[];
+      } else if (res.data && Array.isArray(res.data.content)) {
+        // PageResponse
+        nextRoles = res.data.content.map((r: any) => ({
+          id: String(r.id ?? r.name ?? ''),
+          name: String(r.name ?? r.role ?? ''),
+          description: r.description ?? undefined,
+        }));
       }
+
+      setRoles(nextRoles);
     } catch (err: any) {
       console.error('Failed to fetch roles from backend:', err.message);
       setError('Failed to load roles');

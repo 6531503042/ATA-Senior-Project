@@ -33,6 +33,7 @@ export default function DepartmentsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [departmentToDelete, setDepartmentToDelete] = useState<Department | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   // Calculate stats from departments data
   const stats = {
@@ -119,12 +120,15 @@ export default function DepartmentsPage() {
   const handleConfirmDelete = async () => {
     if (!departmentToDelete) return;
     try {
+      setDeleting(true);
       await deleteDepartment(departmentToDelete.id);
+      await fetchDepartments();
     } catch (error) {
       console.error('Failed to delete department:', error);
     } finally {
       setIsDeleteModalOpen(false);
       setDepartmentToDelete(null);
+      setDeleting(false);
     }
   };
 
@@ -231,7 +235,7 @@ export default function DepartmentsPage() {
                 }))}
                 onDelete={handleDeleteRequest}
                 onEdit={handleEditDepartment}
-                onRefresh={fetchDepartments}
+                onRefresh={() => fetchDepartments(true)}
               />
             )}
           </CardBody>
@@ -253,6 +257,8 @@ export default function DepartmentsPage() {
         cancelText="Cancel"
         confirmColor="danger"
         confirmText="Delete"
+        isLoading={deleting}
+        disableConfirm={!departmentToDelete}
         isOpen={isDeleteModalOpen}
         title="Delete Department"
         onClose={handleCancelDelete}

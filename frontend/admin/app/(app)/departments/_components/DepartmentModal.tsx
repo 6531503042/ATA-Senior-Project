@@ -8,6 +8,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Building2, Users } from 'lucide-react';
 
 import { DepartmentMembersSelector } from './DepartmentMembersSelector';
+import { apiRequest } from '@/utils/api';
 
 type DepartmentModalProps = {
   department?: Department;
@@ -82,6 +83,8 @@ export default function DepartmentModal({
 
     setLoading(true);
     try {
+      console.group('[DepartmentModal] submit');
+      console.log('selectedMembers:', selectedMembers.map(u => ({ id: u.id, username: u.username })));
       const departmentData: { name: string; description: string; active: boolean; memberIds?: number[] } = {
         name: name.trim(),
         description: description.trim(),
@@ -115,11 +118,30 @@ export default function DepartmentModal({
         departmentData.memberIds = selectedMemberIds;
       }
 
-      console.log('DEBUG: Final department data:', departmentData);
+      console.log('payload:', departmentData);
 
 
       // Submit department data (with memberIds on create)
-      await onSubmit(departmentData, mode);
+      const created = await onSubmit(departmentData, mode);
+      console.log('create result:', created);
+
+      // Verify members are attached; if not, run fallback assignments
+      if (mode === 'create' && selectedMembers.length > 0) {
+        const deptId = (created?.id as number) || departmentId;
+        if (deptId) {
+          try {
+            const membersRes = await apiRequest<{ content?: any[] }>(`/api/departments/${deptId}/members`, 'GET');
+            const count = Array.isArray(membersRes.data?.content) ? membersRes.data!.content!.length : 0;
+            console.log('server members count:', count);
+            if (count === 0) {
+              await handleMemberAssignments(deptId);
+            }
+          } catch {
+            await handleMemberAssignments(deptId);
+          }
+        }
+      }
+      console.groupEnd();
     } catch (error) {
       console.error('Failed to submit department:', error);
     } finally {
