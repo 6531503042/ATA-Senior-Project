@@ -36,46 +36,35 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   useEffect(() => {
     const checkAuth = async () => {
-      console.log('Auth check:', { 
-        loading: auth.loading, 
-        pathname, 
-        user: auth.user?.username,
-        isLoggedIn: auth.isLoggedIn() 
-      });
-
-      // Wait a bit for hydration to complete
-      await new Promise(resolve => setTimeout(resolve, 100));
-
       const isLoggedIn = auth.isLoggedIn();
       const isAuthRoute = authRoutes.some(route => pathname.startsWith(route));
       const isProtectedRoute = protectedRoutes.some(route =>
         pathname.startsWith(route),
       );
 
-      console.log('Route check:', { isLoggedIn, isAuthRoute, isProtectedRoute });
-
       if (!isLoggedIn && isProtectedRoute) {
         // Redirect to login if not authenticated and trying to access protected route
-        console.log('Not logged in, redirecting to login');
         router.push('/login');
       } else if (isLoggedIn && isAuthRoute && pathname !== '/logout') {
         // Redirect to dashboard if authenticated and trying to access auth routes
-        console.log('Logged in but on auth route, redirecting to dashboard');
         router.push('/');
-      } else if (isLoggedIn && isProtectedRoute) {
-        // Check if user has admin privileges for admin panel access
-        const hasAdminAccess = canAccessAdmin(auth.user?.roles);
-        console.log('Admin access check:', { hasAdminAccess, roles: auth.user?.roles });
+      } else if (isLoggedIn && isProtectedRoute && auth.user?.roles) {
+        // Only check admin access if user data is loaded and has roles
+        const hasAdminAccess = canAccessAdmin(auth.user.roles);
+        console.log('Admin access check:', { 
+          roles: auth.user.roles, 
+          hasAdminAccess,
+          pathname 
+        });
         if (!hasAdminAccess) {
           // Redirect non-admin users to a restricted access page
-          console.log('No admin access, redirecting to access denied');
           router.push('/access-denied');
         }
       }
     };
 
-    // Add a small delay to ensure everything is ready
-    const timer = setTimeout(checkAuth, 50);
+    // Immediate check with minimal delay
+    const timer = setTimeout(checkAuth, 10);
     return () => clearTimeout(timer);
   }, [auth, router, pathname]);
 

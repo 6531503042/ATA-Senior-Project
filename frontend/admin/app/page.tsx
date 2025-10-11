@@ -10,17 +10,14 @@ export default function RootPage() {
 
   useEffect(() => {
     const handleRoute = () => {
-      // Wait for hydration
-      setTimeout(() => {
-        const isLoggedIn = auth.isLoggedIn();
-        console.log('Root page routing:', { isLoggedIn, user: auth.user?.username });
+      // Immediate routing
+      const isLoggedIn = auth.isLoggedIn();
 
-        if (isLoggedIn) {
-          router.push('/dashboard');
-        } else {
-          router.push('/login');
-        }
-      }, 100);
+      if (isLoggedIn) {
+        router.push('/dashboard');
+      } else {
+        router.push('/login');
+      }
     };
 
     handleRoute();

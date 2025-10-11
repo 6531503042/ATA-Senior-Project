@@ -21,12 +21,8 @@ export function HydrationBoundary({
   const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
-    // Use setTimeout to ensure this runs after all other effects
-    const timer = setTimeout(() => {
-      setIsHydrated(true);
-    }, 0);
-
-    return () => clearTimeout(timer);
+    // Immediate hydration
+    setIsHydrated(true);
   }, []);
 
   // Always render children, but conditionally show loading
