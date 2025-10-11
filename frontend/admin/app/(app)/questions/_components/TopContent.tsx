@@ -14,6 +14,7 @@ import {
   EllipsisVertical,
   PlusIcon,
 } from 'lucide-react';
+import { useQuestionMeta } from '@/hooks/useQuestionMeta';
 
 interface TopContentProps {
   filterValue: string;
@@ -40,6 +41,8 @@ export default function TopContent({
   onAdd,
   onDeleteSelected,
 }: TopContentProps) {
+  const { meta } = useQuestionMeta();
+
   const questionTypes = [
     { key: 'TEXT', label: 'Text Input' },
     { key: 'MULTIPLE_CHOICE', label: 'Multiple Choice' },
@@ -47,13 +50,11 @@ export default function TopContent({
     { key: 'BOOLEAN', label: 'Yes/No' },
   ];
 
-  const categories = [
-    { key: 'general', label: 'General' },
-    { key: 'feedback', label: 'Feedback' },
-    { key: 'satisfaction', label: 'Satisfaction' },
-    { key: 'performance', label: 'Performance' },
-    { key: 'workplace', label: 'Workplace' },
-  ];
+  // Use categories from backend instead of hard-coded ones
+  const categories = meta.categories.map(cat => ({
+    key: cat.key,
+    label: cat.label,
+  }));
 
   return (
     <div className="flex flex-col gap-4">

@@ -2,17 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { Tooltip } from '@heroui/tooltip';
-import { ChevronLeftIcon, ChevronRightIcon, LogOut, User, Settings, Bell } from 'lucide-react';
+import { ChevronLeftIcon, ChevronRightIcon, LogOut } from 'lucide-react';
 import {
   Button,
-  Avatar,
-  Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownTrigger,
-  Chip,
-  Card,
-  CardBody,
 } from '@heroui/react';
 import clsx from 'clsx';
 import { usePathname, useRouter } from 'next/navigation';
@@ -146,97 +138,77 @@ export const Sidebar = () => {
           })}
         </div>
 
-        {/* Footer */}
+        {/* Footer - New Account Card Design */}
         {!collapsed && (
-          <div className="border-t border-default-200/50 dark:border-default-100/20 p-4 bg-gradient-to-t from-default-50/50 to-transparent">
-            <Card className="bg-white/80 dark:bg-default-50/80 border border-default-200/50 shadow-lg backdrop-blur-sm">
-              <CardBody className="p-4">
-                <div className="flex items-center gap-3 mb-3">
+          <div className="border-t border-default-200/50 dark:border-default-100/20 p-3 bg-gradient-to-t from-primary-50/30 to-transparent">
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-white via-white to-primary-50/20 border border-primary-200/30 shadow-xl backdrop-blur-sm">
+              {/* Background Pattern */}
+              <div className="absolute inset-0 bg-gradient-to-br from-primary-500/5 via-transparent to-secondary-500/5"></div>
+              
+              <div className="relative p-4">
+                {/* User Info Section */}
+                <div className="flex items-center gap-3 mb-4">
                   <div className="relative">
-                    <Avatar
-                      className="w-10 h-10 ring-2 ring-primary/20"
-                      name={user?.firstName || user?.username}
-                      size="sm"
-                    />
-                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full border-2 border-white"></div>
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center shadow-lg">
+                      <span className="text-white font-bold text-lg">
+                        {(user?.firstName || user?.username || 'G').charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-white shadow-sm"></div>
                   </div>
+                  
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold truncate text-default-900">
+                    <h3 className="text-sm font-bold text-default-900 truncate">
                       {user
                         ? `${user.firstName || ''} ${user.lastName || ''}`.trim() ||
                           user.username
-                        : 'Guest'}
-                    </p>
-                    <p className="text-xs text-default-500 truncate">
+                        : 'Guest User'}
+                    </h3>
+                    <p className="text-xs text-default-500 truncate mb-1">
                       {user?.email}
                     </p>
+                    
+                    {/* Role Badge */}
                     {user?.roles?.length ? (
-                      <div className="mt-1 flex flex-wrap gap-1">
-                        {user.roles
-                          .slice(0, 2)
-                          .map((role: string, idx: number) => (
-                            <Chip
-                              key={idx}
-                              className="text-[10px] font-medium"
-                              color="primary"
-                              size="sm"
-                              variant="flat"
-                            >
-                              {role}
-                            </Chip>
-                          ))}
+                      <div className="flex gap-1">
+                        {user.roles.slice(0, 1).map((role: string, idx: number) => (
+                          <span
+                            key={idx}
+                            className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-primary-100 text-primary-800 border border-primary-200"
+                          >
+                            {role}
+                          </span>
+                        ))}
                       </div>
                     ) : null}
                   </div>
                 </div>
+
+                {/* Status and Actions */}
                 <div className="flex items-center justify-between">
-                  <Chip
-                    color={user?.active ? 'success' : 'danger'}
-                    size="sm"
-                    variant="flat"
-                    className="font-medium"
+                  <div className="flex items-center gap-2">
+                    <div className={`w-2 h-2 rounded-full ${user?.active ? 'bg-emerald-500' : 'bg-red-500'}`}></div>
+                    <span className="text-xs font-medium text-default-600">
+                      {user?.active ? 'Online' : 'Offline'}
+                    </span>
+                  </div>
+                  
+                  <Button 
+                    size="sm" 
+                    variant="solid"
+                    color="danger"
+                    className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 font-medium px-3"
+                    startContent={<LogOut className="w-3.5 h-3.5" />}
+                    onPress={signOut}
                   >
-                    {user?.active ? 'Active' : 'Inactive'}
-                  </Chip>
-                  <Dropdown placement="top-end">
-                    <DropdownTrigger>
-                      <Button 
-                        size="sm" 
-                        variant="light"
-                        className="hover:bg-default-100 transition-colors"
-                      >
-                        Actions
-                      </Button>
-                    </DropdownTrigger>
-                    <DropdownMenu aria-label="User menu">
-                      <DropdownItem
-                        key="profile"
-                        startContent={<User className="w-4 h-4" />}
-                        onPress={() => router.push('/profile')}
-                      >
-                        Profile
-                      </DropdownItem>
-                      <DropdownItem
-                        key="settings"
-                        startContent={<Settings className="w-4 h-4" />}
-                        onPress={() => router.push('/settings')}
-                      >
-                        Settings
-                      </DropdownItem>
-                      <DropdownItem
-                        key="logout"
-                        className="text-danger"
-                        color="danger"
-                        startContent={<LogOut className="w-4 h-4" />}
-                        onPress={signOut}
-                      >
-                        Log Out
-                      </DropdownItem>
-                    </DropdownMenu>
-                  </Dropdown>
+                    Sign Out
+                  </Button>
                 </div>
-              </CardBody>
-            </Card>
+              </div>
+              
+              {/* Bottom Accent */}
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-primary-500 via-secondary-500 to-primary-500"></div>
+            </div>
           </div>
         )}
       </aside>

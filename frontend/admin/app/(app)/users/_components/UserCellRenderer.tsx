@@ -2,10 +2,6 @@ import { Key } from 'react';
 import {
   Chip,
   Button,
-  Dropdown,
-  DropdownTrigger,
-  DropdownMenu,
-  DropdownItem,
 } from '@heroui/react';
 import {
   EditIcon,
@@ -14,10 +10,6 @@ import {
   ShieldIcon,
   ClockIcon,
   BuildingIcon,
-  EyeIcon,
-  MoreVerticalIcon,
-  CopyIcon,
-  ArchiveIcon,
 } from 'lucide-react';
 
 import { User } from '@/types/user';
@@ -208,14 +200,14 @@ export default function UserCellRenderer({
 
     case 'actions':
       return (
-        <div className="flex items-center gap-2 justify-center">
+        <div className="flex items-center gap-1 justify-center">
           <Button
             isIconOnly
             size="sm"
             variant="light"
             color="primary"
             onPress={() => onEdit?.(user)}
-            className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200"
+            className="text-blue-600 hover:bg-blue-50 transition-colors"
             title="Edit user"
           >
             <EditIcon className="w-4 h-4" />
@@ -227,68 +219,11 @@ export default function UserCellRenderer({
             variant="light"
             color="danger"
             onPress={() => onDelete?.(user.id.toString())}
-            className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200"
+            className="text-red-600 hover:bg-red-50 transition-colors"
             title="Delete user"
           >
             <TrashIcon className="w-4 h-4" />
           </Button>
-          
-          <Dropdown>
-            <DropdownTrigger>
-              <Button
-                isIconOnly
-                size="sm"
-                variant="light"
-                className="text-default-600 dark:text-default-400 hover:text-default-700 dark:hover:text-default-300 hover:bg-default-50 dark:hover:bg-default-100 transition-all duration-200"
-                title="More options"
-              >
-                <MoreVerticalIcon className="w-4 h-4" />
-              </Button>
-            </DropdownTrigger>
-            <DropdownMenu aria-label="User actions">
-              <DropdownItem
-                key="view"
-                startContent={<EyeIcon className="w-4 h-4" />}
-                onPress={() => onView?.(user)}
-                className="text-default-600"
-              >
-                View Details
-              </DropdownItem>
-              <DropdownItem
-                key="edit"
-                startContent={<EditIcon className="w-4 h-4" />}
-                onPress={() => onEdit?.(user)}
-                className="text-blue-600"
-              >
-                Edit User
-              </DropdownItem>
-              <DropdownItem
-                key="duplicate"
-                startContent={<CopyIcon className="w-4 h-4" />}
-                onPress={() => {}}
-                className="text-purple-600"
-              >
-                Duplicate
-              </DropdownItem>
-              <DropdownItem
-                key="archive"
-                startContent={<ArchiveIcon className="w-4 h-4" />}
-                onPress={() => {}}
-                className="text-orange-600"
-              >
-                Archive
-              </DropdownItem>
-              <DropdownItem
-                key="delete"
-                className="text-danger"
-                color="danger"
-                startContent={<TrashIcon className="w-4 h-4" />}
-                onPress={() => onDelete?.(user.id.toString())}
-              >
-                Delete User
-              </DropdownItem>
-            </DropdownMenu>
-          </Dropdown>
         </div>
       );
 
