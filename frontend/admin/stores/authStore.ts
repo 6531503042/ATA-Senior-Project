@@ -243,6 +243,14 @@ const useAuthStore = create<AuthStore>()(
       partialize: state => ({
         user: state.user,
       }),
+      onRehydrateStorage: () => (state) => {
+        console.log('Auth store rehydrating:', { user: state?.user?.username, loading: state?.loading });
+        if (state) {
+          // Ensure loading is false after hydration
+          state.loading = false;
+          console.log('Auth store hydrated, loading set to false');
+        }
+      },
     },
   ),
 );

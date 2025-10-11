@@ -47,26 +47,6 @@ export function useQuestionMeta() {
     setError(null);
     
     try {
-      // Try a combined endpoint first
-      const combined = await apiRequest<any>('/api/questions/meta', 'GET').catch(() => null);
-      if (combined?.data) {
-        const types = normalizeTypes(combined.data.types);
-        const categories = normalizeCategories(combined.data.categories);
-        if (types.length || categories.length) {
-          setMeta({
-            types: types.length ? types : DEFAULT_META.types,
-            categories: categories.length ? categories : DEFAULT_META.categories,
-          });
-          setLoading(false);
-          return;
-        }
-      }
-    } catch (err: any) {
-      console.warn('Combined metadata endpoint failed:', err.message);
-      // ignore and try split endpoints below
-    }
-
-    try {
       const [typesRes, catsRes] = await Promise.allSettled([
         apiRequest<any>('/api/questions/types', 'GET'),
         apiRequest<any>('/api/questions/categories', 'GET'),

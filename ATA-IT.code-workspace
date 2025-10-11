@@ -34,6 +34,7 @@
             {
                 "file": "COMMIT_GUIDE.md"
             }
-        ]
+        ],
+        "java.compile.nullAnalysis.mode": "automatic"
     }
 }

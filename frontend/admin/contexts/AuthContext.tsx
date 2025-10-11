@@ -2,11 +2,12 @@
 
 import type { AuthContextType } from '@/types/auth';
 
-import { createContext, useContext, useEffect, ReactNode, useRef, useState } from 'react';
+import { createContext, useContext, useEffect, ReactNode, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 
 import useAuthStore from '@/stores/authStore';
 import { canAccessAdmin } from '@/utils/roleUtils';
+import { HydrationBoundary } from '@/components/HydrationBoundary';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -19,7 +20,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const router = useRouter();
   const pathname = usePathname();
   const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const [isHydrated, setIsHydrated] = useState(false);
 
   // Protected routes that require authentication
   const protectedRoutes = [
@@ -35,14 +35,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const authRoutes = ['/login', '/logout'];
 
   useEffect(() => {
-    // Mark as hydrated on first client render
-    setIsHydrated(true);
-  }, []);
-
-  useEffect(() => {
     const checkAuth = async () => {
-      // Gate redirects until client is hydrated and store finished initial load
-      if (!isHydrated || auth.loading) return;
+      console.log('Auth check:', { 
+        loading: auth.loading, 
+        pathname, 
+        user: auth.user?.username,
+        isLoggedIn: auth.isLoggedIn() 
+      });
+
+      // Wait a bit for hydration to complete
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       const isLoggedIn = auth.isLoggedIn();
       const isAuthRoute = authRoutes.some(route => pathname.startsWith(route));
@@ -50,24 +52,32 @@ export function AuthProvider({ children }: AuthProviderProps) {
         pathname.startsWith(route),
       );
 
+      console.log('Route check:', { isLoggedIn, isAuthRoute, isProtectedRoute });
+
       if (!isLoggedIn && isProtectedRoute) {
         // Redirect to login if not authenticated and trying to access protected route
+        console.log('Not logged in, redirecting to login');
         router.push('/login');
       } else if (isLoggedIn && isAuthRoute && pathname !== '/logout') {
         // Redirect to dashboard if authenticated and trying to access auth routes
+        console.log('Logged in but on auth route, redirecting to dashboard');
         router.push('/');
       } else if (isLoggedIn && isProtectedRoute) {
         // Check if user has admin privileges for admin panel access
         const hasAdminAccess = canAccessAdmin(auth.user?.roles);
+        console.log('Admin access check:', { hasAdminAccess, roles: auth.user?.roles });
         if (!hasAdminAccess) {
           // Redirect non-admin users to a restricted access page
+          console.log('No admin access, redirecting to access denied');
           router.push('/access-denied');
         }
       }
     };
 
-    checkAuth();
-  }, [auth, router, pathname, isHydrated]);
+    // Add a small delay to ensure everything is ready
+    const timer = setTimeout(checkAuth, 50);
+    return () => clearTimeout(timer);
+  }, [auth, router, pathname]);
 
   // Auto-refresh token with better scheduling
   useEffect(() => {
@@ -153,10 +163,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   return (
-    <AuthContext.Provider value={contextValue}>
-      {/* Hydration gate: avoid flashing Access Denied on refresh */}
-      {!isHydrated ? null : children}
-    </AuthContext.Provider>
+    <HydrationBoundary>
+      <AuthContext.Provider value={contextValue}>
+        {children}
+      </AuthContext.Provider>
+    </HydrationBoundary>
   );
 }
 
