@@ -70,7 +70,7 @@ export default function UsersPage() {
           phone: formData.get('phone') as string || undefined,
           roles: JSON.parse(formData.get('roles') as string),
           active: formData.get('active') === 'true',
-          departmentId: formData.get('departmentId') ? parseInt(formData.get('departmentId') as string) : undefined,
+          departmentId: formData.get('departmentId') && formData.get('departmentId') !== '' ? parseInt(formData.get('departmentId') as string) : null,
         };
         console.log('Creating user with data:', userData);
         await createUser(userData);
@@ -78,12 +78,13 @@ export default function UsersPage() {
         const userData = {
           username: formData.get('username') as string,
           email: formData.get('email') as string,
+          password: formData.get('password') as string,
           firstName: formData.get('firstName') as string,
           lastName: formData.get('lastName') as string,
           phone: formData.get('phone') as string || undefined,
           roles: JSON.parse(formData.get('roles') as string),
           active: formData.get('active') === 'true',
-          departmentId: formData.get('departmentId') ? parseInt(formData.get('departmentId') as string) : undefined,
+          departmentId: formData.get('departmentId') && formData.get('departmentId') !== '' ? parseInt(formData.get('departmentId') as string) : null,
         };
         console.log('Updating user with data:', userData);
         await updateUser(selectedUser.id, userData);

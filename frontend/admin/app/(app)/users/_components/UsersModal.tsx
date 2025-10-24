@@ -33,7 +33,7 @@ export function UsersModal({
   mode,
 }: UsersModalProps) {
   const { departments } = useDepartment();
-  const { roles } = useRoles();
+  const { roles, loading: rolesLoading, error: rolesError } = useRoles();
   
   const [formData, setFormData] = useState<{
     username: string;
@@ -54,7 +54,7 @@ export function UsersModal({
     active: user?.active || true,
     password: '',
     phone: user?.phone || '',
-    departmentId: user?.departments?.values().next().value?.id || null,
+    departmentId: null,
   });
 
   // Reset form when modal opens/closes or user changes
@@ -69,7 +69,7 @@ export function UsersModal({
         active: user?.active || true,
         password: '',
         phone: user?.phone || '',
-        departmentId: user?.departments?.values().next().value?.id || null,
+        departmentId: null,
       });
     }
   }, [isOpen, user]);
@@ -107,8 +107,11 @@ export function UsersModal({
     formDataObj.append('active', formData.active.toString());
     formDataObj.append('phone', formData.phone);
     
-    if (formData.departmentId && formData.departmentId > 0) {
+    // Always send departmentId, even if null/undefined
+    if (formData.departmentId !== null && formData.departmentId !== undefined) {
       formDataObj.append('departmentId', formData.departmentId.toString());
+    } else {
+      formDataObj.append('departmentId', '');
     }
 
     if (mode === 'create') {
@@ -145,8 +148,17 @@ export function UsersModal({
     }))
   ];
 
-  const roleOptions = roles.map(role => ({
-    key: role.id,
+  // Fallback roles if API fails
+  const fallbackRoles = [
+    { id: '1', name: 'USER', description: 'Regular user with basic access' },
+    { id: '2', name: 'ADMIN', description: 'Administrator role with full access' },
+    { id: '3', name: 'SUPER_ADMIN', description: 'Super administrator with full access' }
+  ];
+  
+  const availableRoles = roles.length > 0 ? roles : fallbackRoles;
+  
+  const roleOptions = availableRoles.map(role => ({
+    key: role.name,
     label: role.name
   }));
 
@@ -278,19 +290,25 @@ export function UsersModal({
             <Select
               isRequired
               className="w-full"
-              label="Roles"
-              placeholder="Select roles"
-              selectedKeys={new Set(formData.roles)}
-              selectionMode="multiple"
+              label="Role"
+              placeholder={rolesLoading ? "Loading roles..." : rolesError ? "Failed to load roles" : "Select role"}
+              selectedKeys={formData.roles.length > 0 ? [formData.roles[0]] : []}
               variant="bordered"
+              isDisabled={rolesLoading || !!rolesError}
+              isLoading={rolesLoading}
               onSelectionChange={keys => {
                 const selected = Array.from(keys) as string[];
-                setFormData({ ...formData, roles: selected });
+                setFormData({ ...formData, roles: selected.length > 0 ? [selected[0]] : [] });
               }}
             >
-              {roleOptions.map(role => (
-                <SelectItem key={role.key}>
-                  {role.label}
+              {availableRoles.map(role => (
+                <SelectItem key={role.name} textValue={role.name}>
+                  <div className="flex flex-col">
+                    <span className="font-medium">{role.name}</span>
+                    {role.description && (
+                      <span className="text-xs text-default-500">{role.description}</span>
+                    )}
+                  </div>
                 </SelectItem>
               ))}
             </Select>
@@ -334,7 +352,7 @@ export function UsersModal({
               className="w-full"
               label="Department"
               placeholder="Select department"
-              selectedKeys={formData.departmentId ? [formData.departmentId.toString()] : []}
+              selectedKeys={formData.departmentId ? [formData.departmentId.toString()] : ["0"]}
               variant="bordered"
               onSelectionChange={keys => {
                 const selected = Array.from(keys) as string[];

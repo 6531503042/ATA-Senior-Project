@@ -68,10 +68,21 @@ export function useUsers() {
   };
 
   // Create new user
-  const createUser = async (userData: Partial<User>) => {
+  const createUser = async (userData: any) => {
     try {
       setLoading(true);
-      const res = await apiRequest<User>('/api/users', 'POST', userData);
+      console.log('Sending user data to backend:', userData);
+      
+      // Ensure roles is an array for backend compatibility
+      const formattedData = {
+        ...userData,
+        roles: userData.roles || ['USER'],
+        // Handle departmentId properly
+        departmentId: userData.departmentId || null
+      };
+      
+      console.log('Formatted user data:', formattedData);
+      const res = await apiRequest<User>('/api/users', 'POST', formattedData);
 
       if (res.data) {
         await new Promise((resolve) => {

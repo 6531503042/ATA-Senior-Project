@@ -215,3 +215,34 @@ frontend/admin-example/
 
 # Cursor rules
 .cursor/
+
+# Generated files
+**/bin/
+**/build/
+**/target/
+**/out/
+
+# MapStruct generated files
+**/*MapperImpl.java
+**/*MapperImpl.class
+
+# Gradle wrapper (if regenerated)
+Backend/main/gradle/wrapper/gradle-wrapper.jar
+
+# Next.js build artifacts
+frontend/employee/.next/
+frontend/employee/.next/types/
+frontend/employee/.next/trace
+frontend/employee/.next/middleware-build-manifest.js
+
+# Bun lock files
+frontend/employee/bun.lock
+frontend/employee/bun.lockb
+
+# Application configs in bin directory
+Backend/main/bin/
+Backend/main/src/main/resources/application.yml
+
+# Gradle wrapper scripts (if regenerated)
+Backend/main/gradlew
+Backend/main/gradlew.bat

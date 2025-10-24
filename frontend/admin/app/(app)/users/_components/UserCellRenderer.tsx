@@ -122,6 +122,8 @@ export default function UserCellRenderer({
   // Department: return a readable string
   const getUserDepartment = (): string => {
     const deps = (user as any)?.departments;
+    console.log('🔍 User departments:', deps, 'for user:', user?.username);
+    
     if (Array.isArray(deps) && deps.length > 0) {
       // common shapes: [{ name: 'Engineering' }] or ['Engineering']
       const first = deps[0];
@@ -129,7 +131,7 @@ export default function UserCellRenderer({
       if (first && typeof first.name === 'string') return first.name;
     }
     if (typeof deps === 'string' && deps) return deps;
-    return 'N/A';
+    return 'No Department';
   };
 
   const getUserLastLogin = (): string | null => {
