@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import { LogOut, Moon, Sun } from 'lucide-react';
@@ -13,9 +14,7 @@ type NavbarProps = {
   onLogout?: () => Promise<void> | void;
 };
 
-const links = [
-  { label: 'Feedback Hub', href: '/feedback-center' }, // เปลี่ยนชื่อให้ modern
-];
+const links = [{ label: 'Feedback Hub', href: '/feedback-center' }];
 
 function isRouteActive(pathname: string, href: string) {
   if (href === '/') return pathname === '/';
@@ -70,14 +69,20 @@ export default function Navbar({
   }, [theme]);
 
   return (
-<nav className="fixed top-0 w-full z-50 h-16 bg-white/80 dark:bg-slate-900/80 backdrop-blur border-b border-slate-200 dark:border-slate-700 transition-colors">
-      <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 md:px-10 h-full">        {/* Left */}
+    <nav className="fixed top-0 w-full z-50 h-16 bg-white/80 backdrop-blur border-b border-slate-200 transition-colors">
+      <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 md:px-10 h-full">
+        {' '}
+        {/* Left */}
         <div className="flex items-center gap-6">
           <button
             onClick={() => router.push('/feedback-center')}
-            className="text-lg font-bold text-slate-800 dark:text-slate-100 hover:opacity-80 transition"
+            className="text-lg font-bold text-slate-800 hover:opacity-80 transition cursor-pointer"
           >
-            ATA Employee
+            <img
+              src="/ata-logo-bg-remove.png"
+              alt="ATA Logo"
+              className="h-8 w-auto object-contain"
+            />
           </button>
 
           <div className="hidden md:flex items-center gap-2">
@@ -92,7 +97,7 @@ export default function Navbar({
                     'px-3 py-2 rounded-lg text-sm font-medium transition-colors',
                     active
                       ? 'bg-indigo-600 text-white shadow'
-                      : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800',
+                      : 'text-slate-700 hover:bg-slate-100 ',
                   ].join(' ')}
                 >
                   {link.label}
@@ -101,23 +106,26 @@ export default function Navbar({
             })}
           </div>
         </div>
-
         {/* Right */}
         <div className="flex items-center gap-4">
           {/* Dark mode toggle */}
           <button
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-          title="Toggle Theme"
-          aria-label="Toggle Theme"
-        >
-          {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-        </button>
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            className="p-2 rounded-lg hover:bg-slate-100 transition"
+            title="Toggle Theme"
+            aria-label="Toggle Theme"
+          >
+            {theme === 'dark' ? (
+              <Sun className="w-5 h-5" />
+            ) : (
+              <Moon className="w-5 h-5" />
+            )}
+          </button>
 
           {/* User Greeting */}
-          <span className="hidden sm:inline text-sm text-slate-600 dark:text-slate-300">
+          <span className="hidden sm:inline text-sm text-slate-600 ">
             Hi,{' '}
-            <span className="font-medium text-slate-900 dark:text-white">
+            <span className="font-medium text-slate-900 ">
               {user ? `${user.firstName} ${user.lastName}` : userName}
             </span>
           </span>
@@ -138,8 +146,8 @@ export default function Navbar({
             role="menu"
             aria-hidden={!open}
             className={[
-              'absolute right-6 top-14 w-48 rounded-xl bg-white dark:bg-slate-800',
-              'border border-slate-200 dark:border-slate-700 shadow-lg',
+              'absolute right-6 top-14 w-48 rounded-xl bg-white',
+              'border border-slate-200 shadow-lg',
               'transition origin-top-right',
               open
                 ? 'scale-100 opacity-100'
@@ -150,7 +158,7 @@ export default function Navbar({
               <button
                 role="menuitem"
                 onClick={handleLogout}
-                className="flex w-full items-center gap-2 px-4 py-2 text-sm rounded-lg text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 transition"
+                className="flex w-full items-center gap-2 px-4 py-2 text-sm rounded-lg text-red-600 hover:bg-red-50 transition"
               >
                 <LogOut className="w-4 h-4" />
                 Log out

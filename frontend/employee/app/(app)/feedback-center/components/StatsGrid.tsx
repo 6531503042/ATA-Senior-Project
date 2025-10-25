@@ -16,11 +16,11 @@ export default function StatsGrid({ stats }: { stats: any }) {
       {data.map((item, i) => (
         <Card
           key={i}
-          className="bg-white/90 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow transition"
+          className="bg-white/90 /90 border border-gray-200  shadow-sm hover:shadow transition"
         >
           <CardBody className="p-5">
-            <p className="text-sm font-medium text-slate-600 dark:text-slate-400">{item.label}</p>
-            <p className="text-3xl font-bold text-slate-900 dark:text-slate-100 mt-1">{item.value}</p>
+            <p className="text-sm font-medium text-gray-600 ">{item.label}</p>
+            <p className="text-3xl font-bold text-gray-900  mt-1">{item.value}</p>
           </CardBody>
         </Card>
       ))}

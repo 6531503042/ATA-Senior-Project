@@ -29,14 +29,14 @@ export default function FeedbackCenter() {
 
   if (dErr) {
     return (
-      <Card className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+      <Card className="bg-white  border border-slate-200">
         <CardBody>Error: {dErr}</CardBody>
       </Card>
     );
   }
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 transition-colors">
+    <div className="w-full min-h-screen bg-white p-2 transition-colors border border-slate-100 rounded-lg shadow-2xl shadow-stone-100">
       <div className="px-6 py-8 space-y-8">
         <StatsGrid stats={dashboardData?.stats} />
         <PendingFeedbacks feedbacks={getPendingFeedbacks()} />
