@@ -157,44 +157,44 @@ export default function LoginPage() {
 
         {/* Main content */}
         <div className="relative z-10 max-w-lg">
-          <h2 className="text-5xl font-bold leading-tight text-gray-900 mb-6 tracking-tight bg-gradient-to-r from-gray-900 via-blue-900 to-indigo-900 bg-clip-text text-transparent">
-            Secure Admin Access
-          </h2>
-          <p className="text-gray-700 text-lg leading-relaxed mb-10 font-light">
-            Access your administrative dashboard with enterprise-grade security. 
-            Manage users, monitor systems, and configure settings with confidence.
-          </p>
+           <h2 className="text-5xl font-bold leading-tight text-gray-900 mb-6 tracking-tight bg-gradient-to-r from-gray-900 via-blue-900 to-indigo-900 bg-clip-text text-transparent">
+             Admin Dashboard
+           </h2>
+           <p className="text-gray-700 text-lg leading-relaxed mb-10 font-light">
+             Access your administrative dashboard to manage users, 
+             monitor systems, and configure settings.
+           </p>
           
           {/* Feature highlights - Enhanced with animations */}
-          <div className="space-y-6">
+            <div className="space-y-6">
              <div className="flex items-center gap-4 text-gray-800">
                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center shadow-lg shadow-green-200">
                  <CheckCircle className="w-6 h-6 text-green-600" />
                </div>
-              <div>
-                <p className="text-sm font-semibold">Bank-Grade Security</p>
-                <p className="text-xs text-gray-600">256-bit encryption & multi-factor authentication</p>
-              </div>
-            </div>
+               <div>
+                 <p className="text-sm font-semibold">Secure Access</p>
+                 <p className="text-xs text-gray-600">Protected admin dashboard with authentication</p>
+               </div>
+             </div>
              <div className="flex items-center gap-4 text-gray-800">
                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-100 to-cyan-100 flex items-center justify-center shadow-lg shadow-blue-200">
                  <Shield className="w-6 h-6 text-blue-600" />
                </div>
-              <div>
-                <p className="text-sm font-semibold">Role-Based Access</p>
-                <p className="text-xs text-gray-600">Granular permissions & audit trails</p>
-              </div>
-            </div>
+               <div>
+                 <p className="text-sm font-semibold">User Management</p>
+                 <p className="text-xs text-gray-600">Manage users and system permissions</p>
+               </div>
+             </div>
              <div className="flex items-center gap-4 text-gray-800">
                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center shadow-lg shadow-amber-200">
                  <AlertCircle className="w-6 h-6 text-amber-600" />
                </div>
-              <div>
-                <p className="text-sm font-semibold">Real-time Monitoring</p>
-                <p className="text-xs text-gray-600">24/7 system health & performance tracking</p>
-              </div>
-            </div>
-          </div>
+               <div>
+                 <p className="text-sm font-semibold">System Control</p>
+                 <p className="text-xs text-gray-600">Monitor and control system operations</p>
+               </div>
+             </div>
+           </div>
         </div>
 
         {/* Footer */}
