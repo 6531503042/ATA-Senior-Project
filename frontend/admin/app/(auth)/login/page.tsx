@@ -167,28 +167,28 @@ export default function LoginPage() {
           
           {/* Feature highlights - Enhanced with animations */}
           <div className="space-y-6">
-            <div className="flex items-center gap-4 text-gray-800 group hover:translate-x-2 transition-all duration-300">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-green-200">
-                <CheckCircle className="w-6 h-6 text-green-600" />
-              </div>
+             <div className="flex items-center gap-4 text-gray-800">
+               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center shadow-lg shadow-green-200">
+                 <CheckCircle className="w-6 h-6 text-green-600" />
+               </div>
               <div>
                 <p className="text-sm font-semibold">Bank-Grade Security</p>
                 <p className="text-xs text-gray-600">256-bit encryption & multi-factor authentication</p>
               </div>
             </div>
-            <div className="flex items-center gap-4 text-gray-800 group hover:translate-x-2 transition-all duration-300">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-100 to-cyan-100 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-blue-200">
-                <Shield className="w-6 h-6 text-blue-600" />
-              </div>
+             <div className="flex items-center gap-4 text-gray-800">
+               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-100 to-cyan-100 flex items-center justify-center shadow-lg shadow-blue-200">
+                 <Shield className="w-6 h-6 text-blue-600" />
+               </div>
               <div>
                 <p className="text-sm font-semibold">Role-Based Access</p>
                 <p className="text-xs text-gray-600">Granular permissions & audit trails</p>
               </div>
             </div>
-            <div className="flex items-center gap-4 text-gray-800 group hover:translate-x-2 transition-all duration-300">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-amber-200">
-                <AlertCircle className="w-6 h-6 text-amber-600" />
-              </div>
+             <div className="flex items-center gap-4 text-gray-800">
+               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center shadow-lg shadow-amber-200">
+                 <AlertCircle className="w-6 h-6 text-amber-600" />
+               </div>
               <div>
                 <p className="text-sm font-semibold">Real-time Monitoring</p>
                 <p className="text-xs text-gray-600">24/7 system health & performance tracking</p>
@@ -212,18 +212,18 @@ export default function LoginPage() {
 
       {/* Right side: Login form */}
       <div className="flex items-center justify-center p-6 md:p-10 bg-gradient-to-br from-gray-50 to-gray-100">
-        <Card className="w-full max-w-md bg-white backdrop-blur-2xl shadow-2xl border border-gray-200 rounded-3xl hover:shadow-3xl transition-all duration-500 hover:scale-[1.02] group">
-          <CardHeader className="text-center pb-6 pt-8">
-            <div className="flex flex-col items-center gap-6">
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 rounded-3xl shadow-2xl group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 group-hover:shadow-blue-500/50">
-                <Shield className="w-10 h-10 text-white group-hover:scale-110 transition-transform duration-300" />
+        <Card className="w-full max-w-md bg-white backdrop-blur-2xl shadow-2xl border border-gray-200 rounded-3xl">
+          <CardHeader className="flex flex-col items-center justify-center text-center pb-6 pt-8">
+            <div className="flex flex-col items-center justify-center gap-6 w-full">
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 rounded-3xl shadow-2xl">
+                <Shield className="w-10 h-10 text-white" />
               </div>
-              <div className="group-hover:translate-y-1 transition-transform duration-300">
-                <h2 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight bg-gradient-to-r from-gray-900 to-blue-900 dark:from-white dark:to-blue-100 bg-clip-text text-transparent">
-                  Administrator Login
+              <div className="flex flex-col items-center justify-center w-full">
+                <h2 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                  Welcome Back
                 </h2>
-                <p className="mt-3 text-gray-600 dark:text-gray-400 font-medium">
-                  Enter your credentials to access the system
+                <p className="mt-3 text-gray-600 font-medium">
+                  Sign in to your admin account
                 </p>
               </div>
             </div>
@@ -245,13 +245,13 @@ export default function LoginPage() {
                   data-field="username"
                   errorMessage={fieldErrors.username}
                   isInvalid={!!fieldErrors.username}
-                  startContent={<User className="text-xl text-gray-500 flex-shrink-0 group-hover:text-blue-500 transition-colors duration-300" />}
+                  startContent={<User className="text-xl text-gray-500 flex-shrink-0" />}
                   autoFocus
                   autoComplete="username"
                   classNames={{
-                    input: "text-gray-900 dark:text-white font-medium group-hover:text-blue-900 dark:group-hover:text-blue-100",
-                    inputWrapper: "border-gray-200 dark:border-gray-700 hover:border-blue-500 focus-within:border-blue-500 bg-gradient-to-r from-gray-50/80 to-white/80 dark:from-gray-900/50 dark:to-gray-800/50 group-hover:shadow-lg group-hover:shadow-blue-500/20 transition-all duration-300",
-                    label: "text-gray-700 dark:text-gray-300 font-medium group-hover:text-blue-700 dark:group-hover:text-blue-300"
+                    input: "text-gray-900 dark:text-white font-medium",
+                    inputWrapper: "border-gray-200 dark:border-gray-700 focus-within:border-blue-500 bg-gradient-to-r from-gray-50/80 to-white/80 dark:from-gray-900/50 dark:to-gray-800/50",
+                    label: "text-gray-700 dark:text-gray-300 font-medium"
                   }}
                 />
               </div>
@@ -268,24 +268,24 @@ export default function LoginPage() {
                   value={formData.password}
                   onChange={(e) => handleInputChange('password')(e.target.value)}
                   onKeyUp={handleKeyUp}
-                  startContent={<Lock className="text-xl text-gray-500 flex-shrink-0 group-hover:text-blue-500 transition-colors duration-300" />}
+                  startContent={<Lock className="text-xl text-gray-500 flex-shrink-0" />}
                   endContent={
                     <button
                       type="button"
                       onClick={toggleVisibility}
-                      className="focus:outline-none hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-md p-1 transition-all duration-300 hover:scale-110"
+                      className="focus:outline-none rounded-md p-1"
                       aria-label={isVisible ? 'Hide password' : 'Show password'}
                     >
-                      {isVisible ? <Eye className="text-xl text-gray-500 hover:text-blue-500 transition-colors duration-300" /> : <EyeClosed className="text-xl text-gray-500 hover:text-blue-500 transition-colors duration-300" />}
+                      {isVisible ? <Eye className="text-xl text-gray-500" /> : <EyeClosed className="text-xl text-gray-500" />}
                     </button>
                   }
                   errorMessage={fieldErrors.password}
                   isInvalid={!!fieldErrors.password}
                   autoComplete="current-password"
                   classNames={{
-                    input: "text-gray-900 dark:text-white font-medium group-hover:text-blue-900 dark:group-hover:text-blue-100",
-                    inputWrapper: "border-gray-200 dark:border-gray-700 hover:border-blue-500 focus-within:border-blue-500 bg-gradient-to-r from-gray-50/80 to-white/80 dark:from-gray-900/50 dark:to-gray-800/50 group-hover:shadow-lg group-hover:shadow-blue-500/20 transition-all duration-300",
-                    label: "text-gray-700 dark:text-gray-300 font-medium group-hover:text-blue-700 dark:group-hover:text-blue-300"
+                    input: "text-gray-900 dark:text-white font-medium",
+                    inputWrapper: "border-gray-200 dark:border-gray-700 focus-within:border-blue-500 bg-gradient-to-r from-gray-50/80 to-white/80 dark:from-gray-900/50 dark:to-gray-800/50",
+                    label: "text-gray-700 dark:text-gray-300 font-medium"
                   }}
                 />
                 
@@ -345,17 +345,16 @@ export default function LoginPage() {
 
               {/* Submit Button */}
               <Button
-                className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-700 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-800 text-white font-semibold shadow-2xl hover:shadow-3xl transition-all duration-500 rounded-xl hover:scale-105 hover:-translate-y-1 group relative overflow-hidden"
+                className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-700 text-white font-semibold shadow-2xl rounded-xl"
                 size="lg"
                 type="submit"
                 isLoading={loading}
                 isDisabled={!formData.username || !formData.password}
-                startContent={!loading && <Shield className="h-5 w-5 group-hover:scale-110 transition-transform duration-300" />}
+                startContent={!loading && <Shield className="h-5 w-5" />}
               >
-                <span className="relative z-10">
+                <span>
                   {loading ? 'Authenticating...' : 'Access Admin Dashboard'}
                 </span>
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
               </Button>
             </form>
           </CardBody>
