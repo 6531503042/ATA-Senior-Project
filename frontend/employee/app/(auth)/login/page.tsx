@@ -135,11 +135,11 @@ export default function LoginPage() {
         </Card>
 
         {/* Footer */}
-        <div className="text-center mt-8">
+        {/* <div className="text-center mt-8">
           <p className="text-white/50 text-xs">
             © 2024 ATA Employee Portal. All rights reserved.
           </p>
-        </div>
+        </div> */}
       </div>
     </div>
   );
