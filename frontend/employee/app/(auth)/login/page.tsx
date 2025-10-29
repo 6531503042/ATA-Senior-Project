@@ -115,7 +115,7 @@ export default function EmployeeLoginPage() {
         {/* Branding */}
         <div className="flex justify-center mb-10">
           <Image
-            src="/ata-it-icon (1).png"
+            src="/ata-icon-white.png"
             alt="ATA-IT Logo"
             width={300}
             height={150}
