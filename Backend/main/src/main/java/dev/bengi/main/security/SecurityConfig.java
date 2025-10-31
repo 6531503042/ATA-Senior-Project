@@ -154,8 +154,13 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         
-        // Set allowed origins from environment
-        configuration.setAllowedOrigins(java.util.List.of(allowedOrigins));
+        // Set allowed origins from environment. If wildcard is present, use patterns for credentials safety.
+        java.util.List<String> origins = java.util.List.of(allowedOrigins);
+        if (origins.stream().anyMatch(o -> "*".equals(o) || "*".equals(o.trim()))) {
+            configuration.setAllowedOriginPatterns(java.util.List.of("*"));
+        } else {
+            configuration.setAllowedOrigins(origins);
+        }
         
         // Allowed methods
         configuration.setAllowedMethods(java.util.List.of(

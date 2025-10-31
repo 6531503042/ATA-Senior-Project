@@ -1,0 +1,19 @@
+:8088
+
+handle_path /api/* {
+	rewrite * /{path}
+	reverse_proxy 127.0.0.1:8080
+}
+
+handle_path /admin/* {
+	rewrite * /{path}
+	reverse_proxy 127.0.0.1:3000
+}
+
+handle_path /employee/* {
+	rewrite * /{path}
+	reverse_proxy 127.0.0.1:3001
+}
+
+@root path /
+redir @root /admin
