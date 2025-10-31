@@ -145,11 +145,11 @@ export default function LoginPage() {
         
         {/* Logo and branding */}
         <div className="relative z-10 flex items-center justify-center">
-          <Image 
-            src="/ata-it-icon (1).png" 
-            alt="ATA-IT Logo" 
-            width={300} 
-            height={150} 
+          <Image
+            src="/ata-icon-white.png"
+            alt="ATA-IT Logo"
+            width={300}
+            height={150}
             className="object-contain drop-shadow-2xl"
             priority
           />
