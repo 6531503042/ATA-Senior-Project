@@ -111,13 +111,14 @@ export async function retryWithBackoff<T>(
       return await fn();
     } catch (error) {
       lastError = error;
+      const status = typeof (error as any)?.status === 'number' ? (error as any).status : undefined;
       
       if (attempt === maxRetries) {
         break;
       }
       
       // Don't retry on certain errors
-      if (error?.status === 401 || error?.status === 403 || error?.status === 404) {
+      if (status === 401 || status === 403 || status === 404) {
         break;
       }
       

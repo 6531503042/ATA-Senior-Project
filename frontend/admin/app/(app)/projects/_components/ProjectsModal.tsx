@@ -47,9 +47,9 @@ export function ProjectsModal({
   const [formData, setFormData] = useState<CreateProjectRequest>({
     name: project?.name || '',
     description: project?.description || '',
-    startDate: project?.timeline.startDate || '',
-    endDate: project?.timeline.endDate || '',
-    teamMembers: project?.team.map(member => member.id) || [],
+    startDate: project?.timeline?.startDate || project?.startDate || '',
+    endDate: project?.timeline?.endDate || project?.endDate || '',
+    teamMembers: project?.team?.map(member => member.id) || [],
     status: project?.status || 'pending',
     category: project?.category,
     tags: project?.tags,
@@ -63,10 +63,10 @@ export function ProjectsModal({
       setFormData({
         name: project.name,
         description: project.description,
-        startDate: project.timeline.startDate,
-        endDate: project.timeline.endDate,
-        teamMembers: project.team.map(member => member.id),
-        status: project.status,
+        startDate: project.timeline?.startDate || project.startDate || '',
+        endDate: project.timeline?.endDate || project.endDate || '',
+        teamMembers: project.team?.map(member => member.id) || [],
+        status: project.status || 'pending',
         category: project.category,
         tags: project.tags,
         client: project.client,
@@ -118,13 +118,11 @@ export function ProjectsModal({
   };
 
   const addTeamMember = () => {
-    // This would typically open another modal or dropdown to select users
-    // For now, we'll just add a placeholder
     setFormData(prev => ({
       ...prev,
       teamMembers: [
-        ...prev.teamMembers,
-        `member-${prev.teamMembers.length + 1}`,
+        ...((prev.teamMembers as Array<string | number>) || []),
+        `member-${(prev.teamMembers?.length || 0) + 1}`,
       ],
     }));
   };
@@ -132,7 +130,7 @@ export function ProjectsModal({
   const removeTeamMember = (index: number) => {
     setFormData(prev => ({
       ...prev,
-      teamMembers: prev.teamMembers.filter((_, i) => i !== index),
+      teamMembers: (prev.teamMembers || []).filter((_, i) => i !== index),
     }));
   };
 
@@ -303,7 +301,7 @@ export function ProjectsModal({
               isRequired
               className="w-full"
               placeholder="Select status"
-              selectedKeys={[formData.status]}
+              selectedKeys={formData.status ? [formData.status] : []}
               variant="bordered"
               onChange={e =>
                 setFormData({
@@ -435,14 +433,15 @@ export function ProjectsModal({
                 Team Members
               </label>
               <span className="text-xs text-default-500">
-                {formData.teamMembers.length} members selected
+                {(formData.teamMembers?.length || 0)} members selected
               </span>
             </div>
 
             {/* Team Members List */}
-            {formData.teamMembers.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-3">
-                {formData.teamMembers.map((member, index) => (
+            {formData.teamMembers && formData.teamMembers.length > 0 && (
+              <div className="rounded-large border border-default-200 bg-default-50/40 dark:border-default-100/20 dark:bg-default-100/10">
+                <div className="divide-y divide-default-200 dark:divide-default-100/20">
+                  {formData.teamMembers.map((member, index) => (
                   <Chip
                     key={index}
                     color="primary"
@@ -454,6 +453,7 @@ export function ProjectsModal({
                   </Chip>
                 ))}
               </div>
+            </div>
             )}
 
             {/* Add Team Member Button */}

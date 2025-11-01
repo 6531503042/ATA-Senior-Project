@@ -9,6 +9,16 @@ export type Project = {
   memberCount?: number;
   createdAt: string;
   updatedAt: string;
+  status?: ProjectStatus;
+  category?: string;
+  tags?: string[];
+  client?: string;
+  location?: string;
+  timeline?: {
+    startDate?: string;
+    endDate?: string;
+  };
+  team?: ProjectMember[];
 };
 
 export interface ProjectMember {
@@ -30,6 +40,11 @@ export interface CreateProjectRequest {
   endDate?: string;
   departmentId?: number;
   active?: boolean;
+  status?: ProjectStatus;
+  tags?: string[];
+  client?: string;
+  location?: string;
+  teamMembers?: Array<number | string>;
 }
 
 export interface UpdateProjectRequest {
@@ -41,6 +56,11 @@ export interface UpdateProjectRequest {
   endDate?: string;
   departmentId?: number;
   active?: boolean;
+  status?: ProjectStatus;
+  tags?: string[];
+  client?: string;
+  location?: string;
+  teamMembers?: Array<number | string>;
 }
 
 export interface ProjectStats {

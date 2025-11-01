@@ -4,7 +4,7 @@
 
 export type UserRole = 'admin' | 'super_admin' | 'user' | 'moderator';
 
-export const ADMIN_ROLES: UserRole[] = ['admin', 'super_admin', 'ADMIN', 'SUPER_ADMIN'];
+export const ADMIN_ROLES: UserRole[] = ['admin', 'super_admin'];
 export const USER_ROLES: UserRole[] = ['user', 'moderator'];
 
 /**

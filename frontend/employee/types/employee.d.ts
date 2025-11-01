@@ -42,6 +42,10 @@ export interface EmployeeDashboardData {
     completedFeedbacks: number;
     totalSubmissions: number;
   };
+  quickStats?: {
+    thisMonth?: number;
+    totalTimeSeconds?: number;
+  };
   recentFeedbacks: Array<{
     id: string;
     title: string;

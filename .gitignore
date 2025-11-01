@@ -246,3 +246,6 @@ Backend/main/src/main/resources/application.yml
 # Gradle wrapper scripts (if regenerated)
 Backend/main/gradlew
 Backend/main/gradlew.bat
+
+# Reverse proxy binaries
+caddy.exe

@@ -9,6 +9,8 @@ import { useAuthContext } from '../../contexts/AuthContext';
 import { useTheme } from 'next-themes';
 import React from 'react';
 
+import { withBasePath } from '../../utils/basePath';
+
 type NavbarProps = {
   userName?: string;
   onLogout?: () => Promise<void> | void;
@@ -79,7 +81,7 @@ export default function Navbar({
             className="text-lg font-bold text-slate-800 hover:opacity-80 transition cursor-pointer"
           >
             <img
-              src="/ata-logo-bg-remove.png"
+              src={withBasePath('/ata-logo-bg-remove.png')}
               alt="ATA Logo"
               className="h-8 w-auto object-contain"
             />

@@ -8,6 +8,10 @@ export interface EmployeeDashboardData {
     completedFeedbacks: number;
     totalSubmissions: number;
   };
+  quickStats?: {
+    thisMonth?: number;
+    totalTimeSeconds?: number;
+  };
   recentFeedbacks: Array<{
     id: string;
     title: string;
@@ -86,6 +90,11 @@ export function useEmployeeDashboard() {
           pendingFeedbacks: (summaryResponse as any)?.pendingFeedbacks || 0,
           completedFeedbacks: (summaryResponse as any)?.totalSubmissions || recentSubmissions.length || 0,
           totalSubmissions: (summaryResponse as any)?.totalSubmissions || recentSubmissions.length || 0,
+        },
+        quickStats: {
+          thisMonth: (summaryResponse as any)?.quickStats?.thisMonth ?? (summaryResponse as any)?.thisMonth ?? 0,
+          totalTimeSeconds:
+            (summaryResponse as any)?.quickStats?.totalTimeSeconds ?? (summaryResponse as any)?.totalTimeSeconds ?? 0,
         },
         recentFeedbacks: [],
         recentSubmissions,
