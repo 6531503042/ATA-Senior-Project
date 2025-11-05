@@ -25,7 +25,29 @@ export const useApi = () => {
       setLoading(true);
       setError(null);
 
-      const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}${endpoint}`;
+      const rawBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+      const isAbsolute = /^https?:\/\//i.test(rawBase);
+      const runtimeOrigin = typeof window !== 'undefined'
+        ? window.location.origin
+        : (process.env.NEXT_PUBLIC_SITE_URL || 'http://127.0.0.1:8088');
+      const baseResolved = isAbsolute ? rawBase.replace(/\/$/, '') : `${runtimeOrigin}${rawBase.replace(/\/$/, '')}`;
+
+      let normalizedEndpoint = endpoint || '/';
+      const baseWithoutTrailing = baseResolved.replace(/\/$/, '');
+      if (baseWithoutTrailing.endsWith('/api') && normalizedEndpoint.startsWith('/api')) {
+        normalizedEndpoint = normalizedEndpoint.replace(/^\/api/, '');
+        if (!normalizedEndpoint.startsWith('/')) normalizedEndpoint = `/${normalizedEndpoint}`;
+      }
+
+      // If path starts with /, it's absolute from origin, so we need to append properly
+      let url: string;
+      if (normalizedEndpoint.startsWith('/')) {
+        // Remove leading slash and append to base
+        const pathWithoutLeading = normalizedEndpoint.substring(1);
+        url = new URL(pathWithoutLeading, baseWithoutTrailing + '/').toString();
+      } else {
+        url = new URL(normalizedEndpoint, baseWithoutTrailing + '/').toString();
+      }
 
       console.log(`Making ${method} request to ${url}`, { body, options });
 

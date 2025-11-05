@@ -1,19 +1,19 @@
-http://127.0.0.1:8088
+:8088 {
+	@api path /api/*
+	handle @api {
+		reverse_proxy 127.0.0.1:8080
+	}
 
-handle_path /api/* {
-	rewrite * /{path}
-	reverse_proxy 127.0.0.1:8080
+	@admin path /admin*
+	handle @admin {
+		reverse_proxy 127.0.0.1:3000
+	}
+
+	@employee path /employee*
+	handle @employee {
+		reverse_proxy 127.0.0.1:3001
+	}
+
+	@root path /
+	redir @root /admin
 }
-
-handle_path /admin/* {
-	rewrite * /admin{path}
-	reverse_proxy 127.0.0.1:3000
-}
-
-handle_path /employee/* {
-	rewrite * /employee{path}
-	reverse_proxy 127.0.0.1:3001
-}
-
-@root path /
-redir @root /admin

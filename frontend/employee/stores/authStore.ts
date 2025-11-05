@@ -29,6 +29,9 @@ const useAuthStore = create<AuthStore>()(
           saveToken('accessToken', response.accessToken);
           saveToken('refreshToken', response.refreshToken);
 
+          // Ensure tokens are saved to localStorage before proceeding
+          await new Promise(resolve => setTimeout(resolve, 50));
+
           const user: User = {
             id: response.userId,
             username: response.username,
@@ -54,6 +57,10 @@ const useAuthStore = create<AuthStore>()(
           }
 
           set({ user, loading: false });
+
+          // Wait for zustand persist to sync to localStorage
+          await new Promise(resolve => setTimeout(resolve, 100));
+
           return true;
         } catch (err: any) {
           console.error('Login error details:', err);

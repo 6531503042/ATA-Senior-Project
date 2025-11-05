@@ -123,7 +123,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const success = await auth.signIn(username, password);
 
       if (success) {
-        router.push('/');
+        // Verify token is stored before redirecting
+        const token = localStorage.getItem('accessToken');
+        if (token) {
+          router.push('/');
+        } else {
+          console.error('Token not saved to localStorage');
+        }
       }
     },
     signOut: async () => {

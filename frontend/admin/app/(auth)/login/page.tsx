@@ -26,7 +26,6 @@ import {
 import Image from 'next/image';
 
 import useAuthStore from '@/stores/authStore';
-import { withBasePath } from '@/utils/basePath';
 
 export default function LoginPage() {
   const { signIn, loading, error, clearError } = useAuthStore();
@@ -101,7 +100,16 @@ export default function LoginPage() {
         } else {
           localStorage.removeItem('rememberMe');
         }
-        router.push(redirect);
+        
+        // Verify token is stored before redirecting
+        const token = localStorage.getItem('accessToken');
+        if (token) {
+          // Redirect to dashboard instead of root
+          const targetPath = redirect === '/' ? '/dashboard' : redirect;
+          router.push(targetPath);
+        } else {
+          console.error('Token not saved to localStorage');
+        }
       }
     } catch (err) {
       console.error('Login error:', err);
@@ -147,12 +155,13 @@ export default function LoginPage() {
         {/* Logo and branding */}
         <div className="relative z-10 flex items-center justify-center">
           <Image 
-            src={withBasePath('/ata-it-icon (1).png')} 
+            src="/ata-it-icon (1).png" 
             alt="ATA-IT Logo" 
             width={300} 
             height={150} 
             className="object-contain drop-shadow-2xl"
             priority
+            unoptimized
           />
         </div>
 

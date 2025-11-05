@@ -26,7 +26,7 @@ spring:
 app:
   # Seeder removed; rely solely on Flyway migrations
   # Security and CORS Configuration
-  allowed-origins: "http://localhost:3000,http://localhost:3001,http://localhost:8081,http://10.1.39.20:3000"
+  allowed-origins: "*"
   security:
     # Rate limiting configuration - COMPLETELY DISABLED
     rate-limit:

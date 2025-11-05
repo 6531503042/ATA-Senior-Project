@@ -11,7 +11,27 @@ class ApiClient {
   }
 
   private buildUrl(path: string, params?: Record<string, any>): string {
-    const url = new URL(`${this.baseUrl}${path}`);
+    const resolvedBase = this.baseUrl.startsWith('http')
+      ? this.baseUrl
+      : `${typeof window !== 'undefined' ? window.location.origin : (process.env.NEXT_PUBLIC_SITE_URL || 'http://127.0.0.1:8088')}${this.baseUrl}`;
+
+    // Avoid double "/api" when baseUrl already ends with "/api"
+    let normalizedPath = path || '/';
+    const baseWithoutTrailing = resolvedBase.replace(/\/$/, '');
+    if (baseWithoutTrailing.endsWith('/api') && normalizedPath.startsWith('/api')) {
+      normalizedPath = normalizedPath.replace(/^\/api/, '');
+      if (!normalizedPath.startsWith('/')) normalizedPath = `/${normalizedPath}`;
+    }
+
+    // If path starts with /, it's absolute from origin, so we need to append properly
+    let url: URL;
+    if (normalizedPath.startsWith('/')) {
+      // Remove leading slash and append to base
+      const pathWithoutLeading = normalizedPath.substring(1);
+      url = new URL(pathWithoutLeading, baseWithoutTrailing + '/');
+    } else {
+      url = new URL(normalizedPath, baseWithoutTrailing + '/');
+    }
 
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
