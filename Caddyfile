@@ -1,32 +1,17 @@
 :8088 {
 	@api path /api/*
 	handle @api {
-		reverse_proxy 127.0.0.1:8080 {
-			transport http {
-				dial_timeout 10s
-				response_header_timeout 60s
-			}
-		}
+		reverse_proxy 127.0.0.1:8080
 	}
 
 	@admin path /admin*
 	handle @admin {
-		reverse_proxy 127.0.0.1:3000 {
-			transport http {
-				dial_timeout 10s
-				response_header_timeout 120s
-			}
-		}
+		reverse_proxy 127.0.0.1:3000
 	}
 
 	@employee path /employee*
 	handle @employee {
-		reverse_proxy 127.0.0.1:3001 {
-			transport http {
-				dial_timeout 10s
-				response_header_timeout 120s
-			}
-		}
+		reverse_proxy 127.0.0.1:3001
 	}
 
 	@root path /
