@@ -46,8 +46,33 @@ if exist "%cd%\caddy.exe" (
   echo [ERROR] caddy.exe not found in repo root. Please place caddy.exe next to Caddyfile.
 )
 
-echo [6/7] Waiting a few seconds for services to bind to ports...
-timeout /t 8 >nul
+echo [6/7] Waiting for services to become ready...
+echo      - Backend : http://127.0.0.1:8080/actuator/health
+echo      - Admin   : http://127.0.0.1:3000/admin
+echo      - Employee: http://127.0.0.1:3001/employee
+
+REM Poll readiness (max ~180s)
+set READY_BACKEND=0
+set READY_ADMIN=0
+set READY_EMP=0
+for /L %%i in (1,1,90) do (
+  if !READY_BACKEND! EQU 0 (
+    powershell -NoProfile -Command "try { (Invoke-WebRequest -UseBasicParsing http://127.0.0.1:8080/actuator/health -TimeoutSec 3).StatusCode } catch { 0 }" | findstr /r /c:"200" >nul && set READY_BACKEND=1
+  )
+  if !READY_ADMIN! EQU 0 (
+    powershell -NoProfile -Command "try { (Invoke-WebRequest -UseBasicParsing http://127.0.0.1:3000/admin -TimeoutSec 3).StatusCode } catch { 0 }" | findstr /r /c:"200" /c:"301" /c:"302" >nul && set READY_ADMIN=1
+  )
+  if !READY_EMP! EQU 0 (
+    powershell -NoProfile -Command "try { (Invoke-WebRequest -UseBasicParsing http://127.0.0.1:3001/employee -TimeoutSec 3).StatusCode } catch { 0 }" | findstr /r /c:"200" /c:"301" /c:"302" >nul && set READY_EMP=1
+  )
+  if !READY_BACKEND! EQU 1 if !READY_ADMIN! EQU 1 if !READY_EMP! EQU 1 goto :ready
+  timeout /t 2 >nul
+)
+
+:ready
+if %READY_BACKEND% EQU 1 (echo     [OK] Backend ready) else (echo     [WARN] Backend not confirmed ready)
+if %READY_ADMIN%   EQU 1 (echo     [OK] Admin ready)   else (echo     [WARN] Admin not confirmed ready)
+if %READY_EMP%     EQU 1 (echo     [OK] Employee ready) else (echo     [WARN] Employee not confirmed ready)
 
 echo [7/7] Starting Cloudflare Tunnel to http://127.0.0.1:8088 ...
 if defined CF_CMD (
