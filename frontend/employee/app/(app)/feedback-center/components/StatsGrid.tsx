@@ -32,10 +32,10 @@ export default function StatsGrid({ stats }: { stats: any }) {
       {data.map((item, i) => (
         <Card
           key={i}
-          className="bg-white border border-slate-200/70 rounded-xl 
-                     shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)] 
-                     transition-all duration-200"
+          className="relative bg-white border border-slate-200/70 rounded-xl 
+             shadow-sm hover:shadow-md transition-transform duration-200 hover:scale-[1.02]"
         >
+          <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-indigo-400 to-purple-400 rounded-t-xl opacity-80" />
           <CardBody className="p-6 flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium text-slate-600">
@@ -43,7 +43,9 @@ export default function StatsGrid({ stats }: { stats: any }) {
               </span>
               {item.icon}
             </div>
-            <p className="text-3xl font-semibold text-slate-900">{item.value}</p>
+            <p className="text-3xl font-semibold text-slate-900">
+              {item.value}
+            </p>
           </CardBody>
         </Card>
       ))}

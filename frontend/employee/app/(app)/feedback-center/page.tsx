@@ -6,7 +6,7 @@ import { useEmployeeDashboard } from '../../../hooks/useEmployeeDashboard';
 import { useEmployeeFeedbacks } from '../../../hooks/useEmployeeFeedbacks';
 import StatsGrid from './components/StatsGrid';
 import PendingFeedbacks from './components/PendingFeedbacks';
-import QuickActions from './components/QuickActions';
+import QuickTip from './components/QuickTip';
 import ProgressOverview from './components/ProgressOverview';
 import RecentActivity from './components/RecentActivity';
 import RecentSubmissions from './components/RecentSubmissions';
@@ -42,7 +42,7 @@ export default function FeedbackCenter() {
         <PendingFeedbacks feedbacks={getPendingFeedbacks()} />
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
           <div className="xl:col-span-1 space-y-6">
-            <QuickActions />
+            <QuickTip />
             <ProgressOverview />
             <RecentActivity />
           </div>

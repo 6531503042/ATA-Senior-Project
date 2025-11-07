@@ -14,8 +14,8 @@ export default function TipCard() {
   const randomTip = tips[Math.floor(Math.random() * tips.length)];
 
   return (
-    <Card className="bg-gradient-to-br from-indigo-50/50 via-white to-slate-50 border border-slate-200/60 rounded-lg 
-                     shadow-[0_4px_16px_rgba(0,0,0,0.05)] transition-all duration-200">
+    <Card className="relative bg-gradient-to-br from-amber-50 via-white to-slate-50 rounded-lg shadow-[0_4px_16px_rgba(0,0,0,0.05)] transition-all duration-200">
+      <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-yellow-400 to-orange-400 rounded-t-xl opacity-80" />
       <CardBody className="p-7 space-y-3 flex flex-col items-start">
         <div className="flex items-center gap-2">
           <Lightbulb className="text-yellow-500 w-5 h-5" />
