@@ -50,18 +50,30 @@ export function useFeedback() {
 
   const createFeedback = async (formData: FormData) => {
     try {
-      const feedbackData: CreateFeedbackRequest = {
+      const status = formData.get('status') as 'ACTIVE' | 'DRAFT' | null;
+      const projectIdValue = formData.get('projectId');
+      const departmentIdValue = formData.get('departmentId');
+      
+      const feedbackData: CreateFeedbackRequest & { active?: boolean } = {
         title: formData.get('title') as string,
         description: formData.get('description') as string,
-        projectId: parseInt(formData.get('projectId') as string),
-        questionIds: formData.getAll('questionIds').map(id => parseInt(id as string)),
-        startDate: formData.get('startDate') as string,
-        endDate: formData.get('endDate') as string,
+        projectId: projectIdValue ? parseInt(projectIdValue as string) : 0,
+        questionIds: formData.getAll('questionIds')
+          .filter(id => id != null && id !== '')
+          .map(id => parseInt(id as string)),
+        startDate: formData.get('startDate') as string || '',
+        endDate: formData.get('endDate') as string || '',
         allowAnonymous: formData.get('allowAnonymous') === 'true',
         isDepartmentWide: formData.get('isDepartmentWide') === 'true',
-        departmentId: formData.get('departmentId') as string,
-        targetUserIds: formData.getAll('targetUserIds').map(id => parseInt(id as string)),
-        targetDepartmentIds: formData.getAll('targetDepartmentIds').map(id => id as string),
+        departmentId: departmentIdValue ? (departmentIdValue as string) : '',
+        targetUserIds: formData.getAll('targetUserIds')
+          .filter(id => id != null && id !== '')
+          .map(id => parseInt(id as string)),
+        targetDepartmentIds: formData.getAll('targetDepartmentIds')
+          .filter(id => id != null && id !== '')
+          .map(id => id as string),
+        // Map status to active for backend
+        active: status === 'ACTIVE' || status === null, // Default to true if not specified
       };
 
       const res = await apiRequest<Feedback>('/api/feedbacks', 'POST', feedbackData);
@@ -89,19 +101,30 @@ export function useFeedback() {
 
   const updateFeedback = async (id: number, formData: FormData) => {
     try {
-      const feedbackData: UpdateFeedbackRequest = {
+      const status = formData.get('status') as 'ACTIVE' | 'DRAFT' | null;
+      const projectIdValue = formData.get('projectId');
+      const departmentIdValue = formData.get('departmentId');
+      
+      const feedbackData: UpdateFeedbackRequest & { active?: boolean } = {
         title: formData.get('title') as string,
         description: formData.get('description') as string,
-        projectId: formData.get('projectId') ? parseInt(formData.get('projectId') as string) : undefined,
-        questionIds: formData.getAll('questionIds').map(id => parseInt(id as string)),
-        startDate: formData.get('startDate') as string,
-        endDate: formData.get('endDate') as string,
+        projectId: projectIdValue ? parseInt(projectIdValue as string) : undefined,
+        questionIds: formData.getAll('questionIds')
+          .filter(id => id != null && id !== '')
+          .map(id => parseInt(id as string)),
+        startDate: formData.get('startDate') as string || undefined,
+        endDate: formData.get('endDate') as string || undefined,
         allowAnonymous: formData.get('allowAnonymous') === 'true',
         isDepartmentWide: formData.get('isDepartmentWide') === 'true',
-        departmentId: formData.get('departmentId') as string,
-        targetUserIds: formData.getAll('targetUserIds').map(id => parseInt(id as string)),
-        targetDepartmentIds: formData.getAll('targetDepartmentIds').map(id => id as string),
-        status: formData.get('status') as 'ACTIVE' | 'COMPLETED' | 'PENDING' | 'DRAFT',
+        departmentId: departmentIdValue ? (departmentIdValue as string) : undefined,
+        targetUserIds: formData.getAll('targetUserIds')
+          .filter(id => id != null && id !== '')
+          .map(id => parseInt(id as string)),
+        targetDepartmentIds: formData.getAll('targetDepartmentIds')
+          .filter(id => id != null && id !== '')
+          .map(id => id as string),
+        // Map status to active for backend compatibility
+        active: status === 'ACTIVE',
       };
 
       const res = await apiRequest<Feedback>(`/api/feedbacks/${id}`, 'PUT', feedbackData);

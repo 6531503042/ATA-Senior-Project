@@ -47,22 +47,23 @@ export default function FeedbackModal({
   const [selectedDepartmentId, setSelectedDepartmentId] = useState<string>('');
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   const [selectedDepartmentIds, setSelectedDepartmentIds] = useState<string[]>([]);
-  const [statusChoice, setStatusChoice] = useState<'ACTIVE' | 'DRAFT'>('DRAFT');
+  const [statusChoice, setStatusChoice] = useState<'ACTIVE' | 'DRAFT'>('ACTIVE');
 
   useEffect(() => {
     if (feedback) {
-      setTitle(feedback.title);
-      setDescription(feedback.description);
-      setSelectedProjectId(feedback.projectId.toString());
+      setTitle(feedback.title || '');
+      setDescription(feedback.description || '');
+      setSelectedProjectId(feedback.projectId != null ? feedback.projectId.toString() : '');
       setSelectedQuestions(feedback.questionIds || []);
-      setStartDate(feedback.startDate);
-      setEndDate(feedback.endDate);
-      setAllowAnonymous(feedback.allowAnonymous);
-      setIsDepartmentWide(feedback.isDepartmentWide);
-      setSelectedDepartmentId(feedback.departmentId);
-      setSelectedUserIds(feedback.targetUserIds?.map(id => id.toString()) || []);
+      setStartDate(feedback.startDate || '');
+      setEndDate(feedback.endDate || '');
+      setAllowAnonymous(feedback.allowAnonymous ?? true);
+      setIsDepartmentWide(feedback.isDepartmentWide ?? false);
+      setSelectedDepartmentId(feedback.departmentId || '');
+      setSelectedUserIds(feedback.targetUserIds?.filter(id => id != null).map(id => id.toString()) || []);
       setSelectedDepartmentIds(feedback.targetDepartmentIds || []);
-      setStatusChoice((feedback.status as any) === 'ACTIVE' ? 'ACTIVE' : 'DRAFT');
+      // Map active boolean to status
+      setStatusChoice(feedback.active ? 'ACTIVE' : 'DRAFT');
     } else {
       setTitle('');
       setDescription('');
@@ -76,7 +77,7 @@ export default function FeedbackModal({
       setSelectedDepartmentId('');
       setSelectedUserIds([]);
       setSelectedDepartmentIds([]);
-      setStatusChoice('DRAFT');
+      setStatusChoice('ACTIVE'); // Default to ACTIVE instead of DRAFT
     }
   }, [isOpen, feedback]);
 
@@ -118,18 +119,36 @@ export default function FeedbackModal({
       const formData = new FormData();
       formData.append('title', title);
       formData.append('description', description);
-      formData.append('projectId', selectedProjectId);
+      if (selectedProjectId) {
+        formData.append('projectId', selectedProjectId);
+      }
       selectedQuestions.forEach(questionId => {
-        formData.append('questionIds', questionId.toString());
+        if (questionId != null) {
+          formData.append('questionIds', questionId.toString());
+        }
       });
-      formData.append('startDate', startDate);
-      formData.append('endDate', endDate);
+      if (startDate) {
+        formData.append('startDate', startDate);
+      }
+      if (endDate) {
+        formData.append('endDate', endDate);
+      }
       formData.append('allowAnonymous', allowAnonymous.toString());
       formData.append('isDepartmentWide', isDepartmentWide.toString());
-      formData.append('departmentId', selectedDepartmentId);
-      formData.append('active', (statusChoice === 'ACTIVE').toString());
-      selectedUserIds.forEach(userId => formData.append('targetUserIds', userId));
-      selectedDepartmentIds.forEach(deptId => formData.append('targetDepartmentIds', deptId));
+      if (selectedDepartmentId) {
+        formData.append('departmentId', selectedDepartmentId);
+      }
+      formData.append('status', statusChoice); // Send status instead of active
+      selectedUserIds.forEach(userId => {
+        if (userId) {
+          formData.append('targetUserIds', userId);
+        }
+      });
+      selectedDepartmentIds.forEach(deptId => {
+        if (deptId) {
+          formData.append('targetDepartmentIds', deptId);
+        }
+      });
       await onSubmit(formData, mode);
     } catch (error) {
       console.error('Failed to submit feedback:', error);
