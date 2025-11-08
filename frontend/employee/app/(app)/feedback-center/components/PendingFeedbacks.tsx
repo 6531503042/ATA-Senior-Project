@@ -13,7 +13,7 @@ export default function PendingFeedbacks({ feedbacks }: { feedbacks: any[] }) {
         return 'bg-yellow-50 border-yellow-200 hover:bg-yellow-100';
       case 'not_started':
       default:
-        return 'bg-red-50 border-red-200 hover:bg-red-100';
+        return 'bg-red-50/50 border-red-200 hover:bg-red-100';
     }
   };
 
@@ -31,10 +31,25 @@ export default function PendingFeedbacks({ feedbacks }: { feedbacks: any[] }) {
               <Link
                 key={f.id}
                 href={`/feedback/${f.id}`}
-                className={`block p-4 rounded-xl border transition-all duration-200 
-                            ${getStatusStyle(f.status)} hover:scale-[1.01]`}
+                className={`relative block p-4 rounded-xl border transition-all duration-200 
+              hover:scale-[1.01] overflow-hidden
+              ${getStatusStyle(f.status)}`}
               >
-                <div className="flex justify-between items-center">
+                <span
+                  className={`
+      absolute left-0 top-0 h-full w-[6px] rounded-l-xl 
+      ${
+        f.status === 'completed'
+          ? 'bg-green-500'
+          : f.status === 'in_progress'
+          ? 'bg-yellow-400'
+          : 'bg-red-400'
+      }
+    `}
+                />
+
+                {/* content */}
+                <div className="flex justify-between items-center ms-2">
                   <p className="font-medium text-slate-800">{f.title}</p>
                   <span
                     className={`text-xs font-medium px-2 py-1 rounded-full ${
@@ -42,7 +57,7 @@ export default function PendingFeedbacks({ feedbacks }: { feedbacks: any[] }) {
                         ? 'bg-green-100 text-green-700'
                         : f.status === 'in_progress'
                         ? 'bg-yellow-100 text-yellow-700'
-                        : 'bg-red-100 text-red-700'
+                        : 'bg-red-50 text-red-700'
                     }`}
                   >
                     {f.status === 'completed'
@@ -52,8 +67,9 @@ export default function PendingFeedbacks({ feedbacks }: { feedbacks: any[] }) {
                       : 'Not Started'}
                   </span>
                 </div>
-                <p className="text-sm text-slate-600 mt-1">
-                  Due: {new Date(f.endDate).toLocaleDateString()}
+
+                <p className="text-sm text-slate-600 mt-1 flex items-center gap-1 ms-2">
+                  🕦 Due: {new Date(f.endDate).toLocaleDateString()}
                 </p>
               </Link>
             ))}

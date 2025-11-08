@@ -186,151 +186,173 @@ export default function EmployeeLoginPage() {
       </div>
 
       {/* RIGHT SIDE: LOGIN FORM */}
-      <div className="flex items-center justify-center p-6 md:p-10 bg-gradient-to-br from-gray-50 to-gray-100">
-        <Card className="w-full max-w-md bg-white backdrop-blur-2xl shadow-2xl border border-gray-200 rounded-3xl">
-          <CardHeader className="flex flex-col items-center justify-center text-center pb-6 pt-8">
-            <div className="flex flex-col items-center justify-center gap-6 w-full">
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 rounded-3xl shadow-2xl">
-                <User className="w-10 h-10 text-white" />
-              </div>
-              <div className="flex flex-col items-center justify-center w-full">
-                <h2 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                  Welcome Back
-                </h2>
-                <p className="mt-3 text-gray-600 font-medium">
-                  Sign in to access your employee dashboard
-                </p>
-              </div>
+      <div className="flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 px-6 sm:px-8 md:px-12 py-10">
+        <Card className="w-full max-w-md bg-white shadow-xl rounded-3xl border border-gray-100">
+          <CardHeader className="flex flex-col items-center justify-center text-center pb-4 pt-8">
+            {/* Icon */}
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 rounded-2xl shadow-lg">
+              <User className="w-10 h-10 text-white" />
+            </div>
+
+            {/* Title */}
+            <div className="mt-6 flex flex-col items-center">
+              <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                Welcome Back
+              </h2>
+              <p className="mt-2 text-gray-600 text-sm">
+                Sign in to access your employee dashboard
+              </p>
             </div>
           </CardHeader>
 
-          <CardBody className="space-y-6 py-6">
-  <form onSubmit={handleSubmit} className="space-y-6">
-    {/* Username */}
-    <div className="flex flex-col gap-2">
-      <label
-        htmlFor="username"
-        className="text-sm font-medium text-gray-700 flex items-center gap-1"
-      >
-        Employee Username
-        <span className="text-red-500">*</span>
-      </label>
-      <Input
-        id="username"
-        placeholder="Enter your username"
-        variant="bordered"
-        size="lg"
-        required
-        value={formData.username}
-        onChange={(e) => handleInputChange("username")(e.target.value)}
-        startContent={<User className="text-gray-500" />}
-        classNames={{
-          inputWrapper:
-            "border-gray-200 bg-gray-50 hover:border-blue-400 focus-within:border-blue-500 transition-colors",
-          input: "text-gray-900 font-medium",
-        }}
-      />
-    </div>
+          <CardBody className="px-6 sm:px-8 pb-8 space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {/* Username */}
+              <div className="flex flex-col gap-1.5">
+                <label
+                  htmlFor="username"
+                  className="text-sm font-semibold text-gray-800"
+                >
+                  Employee Username <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <Input
+                    id="username"
+                    placeholder="Enter your username"
+                    size="lg"
+                    required
+                    value={formData.username}
+                    onChange={e =>
+                      handleInputChange('username')(e.target.value)
+                    }
+                    startContent={<User className="text-gray-500 me-2" />}
+                    classNames={{
+                      inputWrapper:
+                        'h-12 rounded-xl border-2 border-gray-200 bg-white transition-all duration-200 ' +
+                        'hover:border-blue-400 focus-within:border-indigo-500 ' +
+                        'focus-within:ring-0 focus-within:outline-none shadow-none',
+                      input:
+                        'text-gray-900 placeholder:text-gray-400 font-medium focus:ring-0 focus:outline-none',
+                    }}
+                  />
+                </div>
+              </div>
 
-    {/* Password */}
-    <div className="flex flex-col gap-2">
-      <label
-        htmlFor="password"
-        className="text-sm font-medium text-gray-700 flex items-center gap-1"
-      >
-        Employee Password
-        <span className="text-red-500">*</span>
-      </label>
-      <Input
-        id="password"
-        placeholder="Enter your password"
-        type={isVisible ? "text" : "password"}
-        variant="bordered"
-        size="lg"
-        required
-        value={formData.password}
-        onChange={(e) => handleInputChange("password")(e.target.value)}
-        onKeyUp={handleKeyUp}
-        startContent={<Lock className="text-gray-500" />}
-        endContent={
-          <button
-            type="button"
-            onClick={toggleVisibility}
-            className="focus:outline-none"
-          >
-            {isVisible ? (
-              <Eye className="text-gray-500" />
-            ) : (
-              <EyeClosed className="text-gray-500" />
-            )}
-          </button>
-        }
-        classNames={{
-          inputWrapper:
-            "border-gray-200 bg-gray-50 hover:border-blue-400 focus-within:border-blue-500 transition-colors",
-          input: "text-gray-900 font-medium",
-        }}
-      />
+              {/* Password */}
+              <div className="flex flex-col gap-1.5">
+                <label
+                  htmlFor="password"
+                  className="text-sm font-semibold text-gray-800"
+                >
+                  Employee Password <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    placeholder="Enter your password"
+                    type={isVisible ? 'text' : 'password'}
+                    size="lg"
+                    required
+                    value={formData.password}
+                    onChange={e =>
+                      handleInputChange('password')(e.target.value)
+                    }
+                    onKeyUp={handleKeyUp}
+                    startContent={<Lock className="text-gray-500 me-2" />}
+                    endContent={
+                      <button
+                        type="button"
+                        onClick={toggleVisibility}
+                        className="focus:outline-none"
+                      >
+                        {isVisible ? (
+                          <Eye className="text-gray-500" />
+                        ) : (
+                          <EyeClosed className="text-gray-500" />
+                        )}
+                      </button>
+                    }
+                    classNames={{
+                      inputWrapper:
+                        'h-12 rounded-xl border-2 border-gray-200 bg-white transition-all duration-200 ' +
+                        'hover:border-blue-400 focus-within:border-indigo-500 ' +
+                        'focus-within:ring-0 focus-within:outline-none shadow-none',
+                      input:
+                        'text-gray-900 placeholder:text-gray-400 font-medium focus:ring-0 focus:outline-none',
+                    }}
+                  />
+                </div>
 
-      {capsLock && (
-        <div className="flex items-center gap-1 text-xs text-amber-600">
-          <AlertCircle className="h-4 w-4" />
-          <span>Caps Lock is ON</span>
-        </div>
-      )}
+                {/* CapsLock + Password Strength */}
+                {capsLock && (
+                  <div className="flex items-center gap-1 text-xs text-amber-600 mt-1">
+                    <AlertCircle className="h-4 w-4" />
+                    <span>Caps Lock is ON</span>
+                  </div>
+                )}
 
-      {formData.password && (
-        <div className="flex items-center justify-between">
-          <Chip size="sm" variant="flat" color={passwordStrength.color}>
-            {passwordStrength.label || "Weak"}
-          </Chip>
-          <p className="text-xs text-gray-500">
-            Use 8+ characters with a mix of types
-          </p>
-        </div>
-      )}
-    </div>
+                {formData.password && (
+                  <div className="flex items-center justify-between mt-1">
+                    <Chip
+                      size="sm"
+                      variant="flat"
+                      color={passwordStrength.color}
+                    >
+                      {passwordStrength.label || 'Weak'}
+                    </Chip>
+                    <p className="text-xs text-gray-500">
+                      Use 8+ characters with a mix of types
+                    </p>
+                  </div>
+                )}
+              </div>
 
-    {/* Remember me + Forgot password */}
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-4">
-        <Checkbox
-          isSelected={formData.remember}
-          onValueChange={(v) => handleInputChange("remember")(v)}
-          size="sm"
-          className='h-4 w-4 rounded-4xl'
-        />
-        <span className="text-sm text-gray-700 select-none">Remember me</span>
-      </div>
-      <UiLink href="/forgot-password" className="text-sm text-indigo-600">
-        Forgot password?
-      </UiLink>
-    </div>
+              {/* Remember me + Forgot password */}
+              <div className="flex items-center justify-between mt-3">
+                <div className="flex items-center gap-4">
+                  <Checkbox
+                    isSelected={formData.remember}
+                    onValueChange={v => handleInputChange('remember')(v)}
+                    size="sm"
+                    className="accent-indigo-600 w-3 h-3 rounded-full"
+                  />
+                  <span className="text-sm text-gray-700 select-none">
+                    Remember me
+                  </span>
+                </div>
+                <UiLink
+                  href="/forgot-password"
+                  className="text-sm text-indigo-600 font-medium"
+                >
+                  Forgot password?
+                </UiLink>
+              </div>
 
-    {/* Error Message */}
-    {error && (
-      <div className="text-red-600 text-sm bg-red-50 p-4 rounded-xl flex items-center gap-3 border border-red-200">
-        <AlertCircle size={18} />
-        <div>
-          <p className="font-medium">Login Failed</p>
-          <p className="text-xs mt-1">{error}</p>
-        </div>
-      </div>
-    )}
+              {/* Error Message */}
+              {error && (
+                <div className="text-red-600 text-sm bg-red-50 p-4 rounded-xl flex items-center gap-3 border border-red-200">
+                  <AlertCircle size={18} />
+                  <div>
+                    <p className="font-medium">Login Failed</p>
+                    <p className="text-xs mt-1">{error}</p>
+                  </div>
+                </div>
+              )}
 
-    {/* Submit Button */}
-    <Button
-      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold shadow-lg rounded-xl"
-      size="lg"
-      type="submit"
-      isLoading={isLoading}
-      startContent={!isLoading && <Shield className="h-5 w-5" />}
-    >
-      {isLoading ? "Signing in..." : "Access Employee Portal"}
-    </Button>
-  </form>
-</CardBody>
-
+              {/* Submit Button */}
+              <Button
+                className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 
+                     text-white font-semibold rounded-xl shadow-md py-5 hover:opacity-90
+                     transition-all duration-300"
+                size="lg"
+                type="submit"
+                isLoading={isLoading}
+                startContent={!isLoading && <Shield className="h-5 w-5" />}
+              >
+                {isLoading ? 'Signing in...' : 'Access Employee Portal'}
+              </Button>
+            </form>
+          </CardBody>
         </Card>
       </div>
     </div>

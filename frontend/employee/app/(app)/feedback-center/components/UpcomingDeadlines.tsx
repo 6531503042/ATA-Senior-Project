@@ -22,8 +22,9 @@ export default function UpcomingDeadlines({ feedbacks }: { feedbacks: any[] }) {
                   : 'bg-orange-50 border-orange-100 hover:bg-orange-100'
               }`}
             >
-              <p className="text-slate-800 font-medium">{f.title}</p>
-              <p className="text-sm text-slate-600">
+              <p className="text-slate-800 font-bold text-sm">{f.title}</p>
+              <p className="text-xs text-slate-600">
+                🕦 Due : {" "}
                 {new Date(f.endDate).toLocaleDateString()}
               </p>
             </div>

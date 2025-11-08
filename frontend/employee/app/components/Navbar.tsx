@@ -77,27 +77,6 @@ export default function Navbar({
               className="h-8 w-auto object-contain"
             />
           </button>
-
-          <div className="hidden md:flex items-center gap-2">
-            {links.map(link => {
-              const active = isRouteActive(pathname, link.href);
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  aria-current={active ? 'page' : undefined}
-                  className={[
-                    'px-3 py-2 rounded-lg text-sm font-medium transition-colors',
-                    active
-                      ? 'bg-indigo-600 text-white shadow'
-                      : 'text-slate-700 hover:bg-slate-100',
-                  ].join(' ')}
-                >
-                  {link.label}
-                </Link>
-              );
-            })}
-          </div>
         </div>
 
         {/* Right */}

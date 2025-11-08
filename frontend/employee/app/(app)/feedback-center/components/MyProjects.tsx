@@ -29,10 +29,10 @@ export default function MyProjects({ projects }: { projects: any[] }) {
                 className={`p-4 rounded-xl border transition-all duration-200 
                             hover:shadow-sm hover:scale-[1.01] ${
                   p.status === 'completed'
-                    ? 'bg-green-50 border-green-200 hover:border-green-300'
+                    ? 'bg-green-50 border-green-200 hover:border-green-300 hover:bg-green-100'
                     : p.status === 'in_progress'
-                    ? 'bg-yellow-50 border-yellow-200 hover:border-yellow-300'
-                    : 'bg-slate-50 border-slate-100 hover:border-slate-200'
+                    ? 'bg-yellow-50 border-yellow-200 hover:border-yellow-300 hover:bg-yellow-100'
+                    : 'bg-violet-50/5 border-violet-200 hover:border-violet-200 hover:bg-violet-100'
                 }`}
               >
                 <div className="flex justify-between items-center">
