@@ -40,90 +40,109 @@ export default function LoginPage() {
   });
   const [isVisible, setIsVisible] = useState(false);
   const [capsLock, setCapsLock] = useState(false);
-  const [fieldErrors, setFieldErrors] = useState<{ username?: string; password?: string }>({});
+  const [fieldErrors, setFieldErrors] = useState<{
+    username?: string;
+    password?: string;
+  }>({});
 
   const redirect = searchParams?.get('redirect') || '/';
 
   // Auto-focus on error
   useEffect(() => {
     if (!loading && error) {
-      const el = document.querySelector<HTMLInputElement>('[data-field="username"]');
+      const el = document.querySelector<HTMLInputElement>(
+        '[data-field="username"]',
+      );
       el?.focus();
     }
   }, [loading, error]);
 
   // Memoized handlers
   const toggleVisibility = useCallback(() => setIsVisible(prev => !prev), []);
-  
-  const handleInputChange = useCallback((field: keyof typeof formData) => 
-    (value: string | boolean) => {
+
+  const handleInputChange = useCallback(
+    (field: keyof typeof formData) => (value: string | boolean) => {
       setFormData(prev => ({ ...prev, [field]: value }));
       // Clear field error when user starts typing
       if (fieldErrors[field as keyof typeof fieldErrors]) {
         setFieldErrors(prev => ({ ...prev, [field]: undefined }));
       }
-    }, [fieldErrors]
+    },
+    [fieldErrors],
   );
 
   const validateForm = useCallback(() => {
     const errors: { username?: string; password?: string } = {};
-    
+
     if (!formData.username.trim()) {
       errors.username = 'Username is required';
     }
-    
+
     if (!formData.password) {
       errors.password = 'Password is required';
     } else if (formData.password.length < 6) {
       errors.password = 'Password must be at least 6 characters';
     }
-    
+
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
   }, [formData]);
 
-  const handleKeyUp = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-    setCapsLock((e.nativeEvent as KeyboardEvent).getModifierState?.('CapsLock') ?? false);
-  }, []);
+  const handleKeyUp = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      setCapsLock(
+        (e.nativeEvent as KeyboardEvent).getModifierState?.('CapsLock') ??
+          false,
+      );
+    },
+    [],
+  );
 
-  const handleSubmit = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    clearError();
-    
-    if (!validateForm()) return;
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      clearError();
 
-    try {
-      const success = await signIn(formData.username.trim(), formData.password);
-      if (success) {
-        if (formData.remember) {
-          localStorage.setItem('rememberMe', '1');
-        } else {
-          localStorage.removeItem('rememberMe');
+      if (!validateForm()) return;
+
+      try {
+        const success = await signIn(
+          formData.username.trim(),
+          formData.password,
+        );
+        if (success) {
+          if (formData.remember) {
+            localStorage.setItem('rememberMe', '1');
+          } else {
+            localStorage.removeItem('rememberMe');
+          }
+          router.push(redirect);
         }
-        router.push(redirect);
+      } catch (err) {
+        console.error('Login error:', err);
       }
-    } catch (err) {
-      console.error('Login error:', err);
-    }
-  }, [formData, validateForm, signIn, clearError, router, redirect]);
+    },
+    [formData, validateForm, signIn, clearError, router, redirect],
+  );
 
   // Password strength calculation
   const passwordStrength = useMemo(() => {
-    if (!formData.password) return { score: 0, label: '', color: 'default' as const };
-    
+    if (!formData.password)
+      return { score: 0, label: '', color: 'default' as const };
+
     let score = 0;
     if (formData.password.length >= 8) score++;
     if (/[A-Z]/.test(formData.password)) score++;
     if (/[0-9]/.test(formData.password)) score++;
     if (/[^A-Za-z0-9]/.test(formData.password)) score++;
-    
+
     const labels = ['Weak', 'Fair', 'Good', 'Strong'];
     const colors = ['danger', 'warning', 'success', 'success'] as const;
-    
-    return { 
-      score, 
-      label: score ? labels[score - 1] : '', 
-      color: score ? colors[score - 1] : 'default' as const 
+
+    return {
+      score,
+      label: score ? labels[score - 1] : '',
+      color: score ? colors[score - 1] : ('default' as const),
     };
   }, [formData.password]);
 
@@ -135,14 +154,14 @@ export default function LoginPage() {
         <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-indigo-100/30 rounded-full blur-3xl animate-pulse delay-1000" />
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-cyan-100/20 rounded-full blur-2xl animate-pulse delay-500" />
       </div>
-      
+
       {/* Left side: Brand area with ATA-IT branding */}
       <div className="hidden lg:flex flex-col justify-between p-12 relative z-10">
         {/* Background decorations - Light theme */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_rgba(59,130,246,0.05),_transparent_60%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_rgba(168,85,247,0.08),_transparent_60%)]" />
         <div className="absolute inset-0 bg-[linear-gradient(45deg,_rgba(59,130,246,0.02)_0%,_transparent_50%,_rgba(168,85,247,0.03)_100%)]" />
-        
+
         {/* Logo and branding */}
         <div className="relative z-10 flex items-center justify-center">
           <Image
@@ -157,44 +176,50 @@ export default function LoginPage() {
 
         {/* Main content */}
         <div className="relative z-10 max-w-lg">
-           <h2 className="text-5xl font-bold leading-tight text-gray-900 mb-6 tracking-tight bg-gradient-to-r from-gray-900 via-blue-900 to-indigo-900 bg-clip-text text-transparent">
-             Admin Dashboard
-           </h2>
-           <p className="text-gray-700 text-lg leading-relaxed mb-10 font-light">
-             Access your administrative dashboard to manage users, 
-             monitor systems, and configure settings.
-           </p>
-          
+          <h2 className="text-5xl font-bold leading-tight text-gray-900 mb-6 tracking-tight bg-gradient-to-r from-gray-900 via-blue-900 to-indigo-900 bg-clip-text text-transparent">
+            Admin Dashboard
+          </h2>
+          <p className="text-gray-700 text-lg leading-relaxed mb-10 font-light">
+            Access your administrative dashboard to manage users, monitor
+            systems, and configure settings.
+          </p>
+
           {/* Feature highlights - Enhanced with animations */}
-            <div className="space-y-6">
-             <div className="flex items-center gap-4 text-gray-800">
-               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center shadow-lg shadow-green-200">
-                 <CheckCircle className="w-6 h-6 text-green-600" />
-               </div>
-               <div>
-                 <p className="text-sm font-semibold">Secure Access</p>
-                 <p className="text-xs text-gray-600">Protected admin dashboard with authentication</p>
-               </div>
-             </div>
-             <div className="flex items-center gap-4 text-gray-800">
-               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-100 to-cyan-100 flex items-center justify-center shadow-lg shadow-blue-200">
-                 <Shield className="w-6 h-6 text-blue-600" />
-               </div>
-               <div>
-                 <p className="text-sm font-semibold">User Management</p>
-                 <p className="text-xs text-gray-600">Manage users and system permissions</p>
-               </div>
-             </div>
-             <div className="flex items-center gap-4 text-gray-800">
-               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center shadow-lg shadow-amber-200">
-                 <AlertCircle className="w-6 h-6 text-amber-600" />
-               </div>
-               <div>
-                 <p className="text-sm font-semibold">System Control</p>
-                 <p className="text-xs text-gray-600">Monitor and control system operations</p>
-               </div>
-             </div>
-           </div>
+          <div className="space-y-6">
+            <div className="flex items-center gap-4 text-gray-800">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center shadow-lg shadow-green-200">
+                <CheckCircle className="w-6 h-6 text-green-600" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold">Secure Access</p>
+                <p className="text-xs text-gray-600">
+                  Protected admin dashboard with authentication
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4 text-gray-800">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-100 to-cyan-100 flex items-center justify-center shadow-lg shadow-blue-200">
+                <Shield className="w-6 h-6 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold">User Management</p>
+                <p className="text-xs text-gray-600">
+                  Manage users and system permissions
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4 text-gray-800">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center shadow-lg shadow-amber-200">
+                <AlertCircle className="w-6 h-6 text-amber-600" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold">System Control</p>
+                <p className="text-xs text-gray-600">
+                  Monitor and control system operations
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Footer */}
@@ -211,7 +236,18 @@ export default function LoginPage() {
       </div>
 
       {/* Right side: Login form */}
-      <div className="flex items-center justify-center p-6 md:p-10 bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 px-6 sm:px-8 md:px-12 py-10">
+        {/* Responsive Logo for mobile */}
+        <div className="lg:hidden mb-6 flex justify-center">
+          <Image
+            src="/ata-icon-white.png"
+            alt="ATA-IT Logo"
+            width={180}
+            height={90}
+            className="object-contain drop-shadow-lg"
+            priority
+          />
+        </div>{' '}
         <Card className="w-full max-w-md bg-white backdrop-blur-2xl shadow-2xl border border-gray-200 rounded-3xl">
           <CardHeader className="flex flex-col items-center justify-center text-center pb-6 pt-8">
             <div className="flex flex-col items-center justify-center gap-6 w-full">
@@ -228,10 +264,9 @@ export default function LoginPage() {
               </div>
             </div>
           </CardHeader>
-          
+
           <CardBody className="pt-0">
             <form onSubmit={handleSubmit} className="space-y-6">
-
               {/* Username Input */}
               <div className="group">
                 <Input
@@ -241,17 +276,20 @@ export default function LoginPage() {
                   size="lg"
                   variant="bordered"
                   value={formData.username}
-                  onChange={(e) => handleInputChange('username')(e.target.value)}
+                  onChange={e => handleInputChange('username')(e.target.value)}
                   data-field="username"
                   errorMessage={fieldErrors.username}
                   isInvalid={!!fieldErrors.username}
-                  startContent={<User className="text-xl text-gray-500 flex-shrink-0" />}
+                  startContent={
+                    <User className="text-xl text-gray-500 flex-shrink-0" />
+                  }
                   autoFocus
                   autoComplete="username"
                   classNames={{
-                    input: "text-gray-900 dark:text-white font-medium",
-                    inputWrapper: "border-gray-200 dark:border-gray-700 focus-within:border-blue-500 bg-gradient-to-r from-gray-50/80 to-white/80 dark:from-gray-900/50 dark:to-gray-800/50",
-                    label: "text-gray-700 dark:text-gray-300 font-medium"
+                    input: 'text-gray-900 dark:text-white font-medium',
+                    inputWrapper:
+                      'border-gray-200 dark:border-gray-700 focus-within:border-blue-500 bg-gradient-to-r from-gray-50/80 to-white/80 dark:from-gray-900/50 dark:to-gray-800/50',
+                    label: 'text-gray-700 dark:text-gray-300 font-medium',
                   }}
                 />
               </div>
@@ -266,9 +304,11 @@ export default function LoginPage() {
                   variant="bordered"
                   type={isVisible ? 'text' : 'password'}
                   value={formData.password}
-                  onChange={(e) => handleInputChange('password')(e.target.value)}
+                  onChange={e => handleInputChange('password')(e.target.value)}
                   onKeyUp={handleKeyUp}
-                  startContent={<Lock className="text-xl text-gray-500 flex-shrink-0" />}
+                  startContent={
+                    <Lock className="text-xl text-gray-500 flex-shrink-0" />
+                  }
                   endContent={
                     <button
                       type="button"
@@ -276,19 +316,24 @@ export default function LoginPage() {
                       className="focus:outline-none rounded-md p-1"
                       aria-label={isVisible ? 'Hide password' : 'Show password'}
                     >
-                      {isVisible ? <Eye className="text-xl text-gray-500" /> : <EyeClosed className="text-xl text-gray-500" />}
+                      {isVisible ? (
+                        <Eye className="text-xl text-gray-500" />
+                      ) : (
+                        <EyeClosed className="text-xl text-gray-500" />
+                      )}
                     </button>
                   }
                   errorMessage={fieldErrors.password}
                   isInvalid={!!fieldErrors.password}
                   autoComplete="current-password"
                   classNames={{
-                    input: "text-gray-900 dark:text-white font-medium",
-                    inputWrapper: "border-gray-200 dark:border-gray-700 focus-within:border-blue-500 bg-gradient-to-r from-gray-50/80 to-white/80 dark:from-gray-900/50 dark:to-gray-800/50",
-                    label: "text-gray-700 dark:text-gray-300 font-medium"
+                    input: 'text-gray-900 dark:text-white font-medium',
+                    inputWrapper:
+                      'border-gray-200 dark:border-gray-700 focus-within:border-blue-500 bg-gradient-to-r from-gray-50/80 to-white/80 dark:from-gray-900/50 dark:to-gray-800/50',
+                    label: 'text-gray-700 dark:text-gray-300 font-medium',
                   }}
                 />
-                
+
                 {/* Caps Lock Warning */}
                 {capsLock && (
                   <div className="flex items-center gap-1 text-xs text-amber-600">
@@ -300,9 +345,9 @@ export default function LoginPage() {
                 {/* Password Strength Indicator */}
                 {formData.password && (
                   <div className="flex items-center justify-between">
-                    <Chip 
-                      size="sm" 
-                      variant="flat" 
+                    <Chip
+                      size="sm"
+                      variant="flat"
                       color={passwordStrength.color}
                     >
                       {passwordStrength.label || 'Weak'}
@@ -316,26 +361,30 @@ export default function LoginPage() {
 
               {/* Remember me and Forgot password */}
               <div className="flex items-center justify-between">
-                <Checkbox 
-                  isSelected={formData.remember} 
-                  onValueChange={(value) => handleInputChange('remember')(value)} 
+                <Checkbox
+                  isSelected={formData.remember}
+                  onValueChange={value => handleInputChange('remember')(value)}
                   size="sm"
                 >
                   Remember me
                 </Checkbox>
-                <UiLink href="/forgot-password" size="sm" className="text-indigo-600">
+                <UiLink
+                  href="/forgot-password"
+                  size="sm"
+                  className="text-indigo-600"
+                >
                   Forgot password?
                 </UiLink>
               </div>
 
               {/* Error Message */}
               {error && (
-                <div 
-                  role="alert" 
-                  aria-live="assertive" 
+                <div
+                  role="alert"
+                  aria-live="assertive"
                   className="text-red-600 text-sm bg-red-50 dark:bg-red-950/40 dark:text-red-400 p-4 rounded-xl flex items-center gap-3 border border-red-200 dark:border-red-800"
                 >
-                  <AlertCircle size={18} /> 
+                  <AlertCircle size={18} />
                   <div>
                     <p className="font-medium">Authentication Failed</p>
                     <p className="text-xs mt-1">{error}</p>
