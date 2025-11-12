@@ -221,7 +221,18 @@ export default function LoginPage() {
       </div>
 
       {/* Right side: Login form */}
-      <div className="flex items-center justify-center p-6 md:p-10 bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 px-6 sm:px-8 md:px-12 py-10">
+        {/* Responsive Logo for mobile */}
+        <div className="lg:hidden mb-6 flex justify-center">
+          <Image
+            src="/ata-icon-white.png"
+            alt="ATA-IT Logo"
+            width={180}
+            height={90}
+            className="object-contain drop-shadow-lg"
+            priority
+          />
+        </div>{' '}
         <Card className="w-full max-w-md bg-white backdrop-blur-2xl shadow-2xl border border-gray-200 rounded-3xl">
           <CardHeader className="flex flex-col items-center justify-center text-center pb-6 pt-8">
             <div className="flex flex-col items-center justify-center gap-6 w-full">

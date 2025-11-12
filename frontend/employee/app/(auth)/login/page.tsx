@@ -186,7 +186,18 @@ export default function EmployeeLoginPage() {
       </div>
 
       {/* RIGHT SIDE: LOGIN FORM */}
-      <div className="flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 px-6 sm:px-8 md:px-12 py-10">
+      <div className="flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 px-6 sm:px-8 md:px-12 py-10">
+        {/* Responsive Logo for mobile */}
+        <div className="lg:hidden mb-6 flex justify-center">
+          <Image
+            src="/ata-icon-white.png"
+            alt="ATA-IT Logo"
+            width={180}
+            height={90}
+            className="object-contain drop-shadow-lg"
+            priority
+          />
+        </div>{' '}
         <Card className="w-full max-w-md bg-white shadow-xl rounded-3xl border border-gray-100">
           <CardHeader className="flex flex-col items-center justify-center text-center pb-4 pt-8">
             {/* Icon */}
