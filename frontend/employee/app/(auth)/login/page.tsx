@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import { useAuthContext } from '../../../contexts/AuthContext';
+import Logo from '@/app/assets/ata-icon-white.png';
 
 export default function EmployeeLoginPage() {
   const router = useRouter();
@@ -115,7 +116,7 @@ export default function EmployeeLoginPage() {
         {/* Branding */}
         <div className="flex justify-center mb-10">
           <Image
-            src="/ata-icon-white.png"
+            src={Logo}
             alt="ATA-IT Logo"
             width={300}
             height={150}
