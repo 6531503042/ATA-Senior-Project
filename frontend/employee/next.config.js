@@ -10,6 +10,11 @@ const nextConfig = {
   experimental: {
     trustHostHeader: true,
   },
+  allowedDevOrigins: [
+    'captain-oven-thumbs-memorabilia.trycloudflare.com',
+    // Allow all *.trycloudflare.com subdomains
+    /.*\.trycloudflare\.com$/,
+  ],
 };
 
 module.exports = nextConfig;

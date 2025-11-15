@@ -23,8 +23,6 @@ import {
   Shield,
   CheckCircle,
 } from 'lucide-react';
-import Image from 'next/image';
-
 import useAuthStore from '@/stores/authStore';
 
 export default function LoginPage() {
@@ -154,14 +152,10 @@ export default function LoginPage() {
         
         {/* Logo and branding */}
         <div className="relative z-10 flex items-center justify-center">
-          <Image 
-            src="/ata-icon-white.png" 
+          <img 
+            src={`${process.env.NEXT_PUBLIC_BASE_PATH || '/admin'}/ata-icon-white.png`}
             alt="ATA-IT Logo" 
-            width={300} 
-            height={150} 
-            className="object-contain drop-shadow-2xl"
-            priority
-            unoptimized
+            className="w-[300px] h-auto object-contain drop-shadow-2xl"
           />
         </div>
 
@@ -224,15 +218,12 @@ export default function LoginPage() {
       <div className="flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 px-6 sm:px-8 md:px-12 py-10">
         {/* Responsive Logo for mobile */}
         <div className="lg:hidden mb-6 flex justify-center">
-          <Image
-            src="/ata-icon-white.png"
+          <img
+            src={`${process.env.NEXT_PUBLIC_BASE_PATH || '/admin'}/ata-icon-white.png`}
             alt="ATA-IT Logo"
-            width={180}
-            height={90}
-            className="object-contain drop-shadow-lg"
-            priority
+            className="w-[180px] h-auto object-contain drop-shadow-lg"
           />
-        </div>{' '}
+        </div>
         <Card className="w-full max-w-md bg-white backdrop-blur-2xl shadow-2xl border border-gray-200 rounded-3xl">
           <CardHeader className="flex flex-col items-center justify-center text-center pb-6 pt-8">
             <div className="flex flex-col items-center justify-center gap-6 w-full">

@@ -72,7 +72,7 @@ export default function Navbar({
             className="text-lg font-bold text-slate-800 hover:opacity-80 transition cursor-pointer"
           >
             <img
-              src="/ata-icon-white.png"
+              src={`${process.env.NEXT_PUBLIC_BASE_PATH || '/employee'}/ata-icon-white.png`}
               alt="ATA Logo"
               className="h-8 w-auto object-contain"
             />

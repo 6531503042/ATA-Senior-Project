@@ -114,13 +114,10 @@ export default function EmployeeLoginPage() {
       <div className="hidden lg:flex flex-col justify-between p-12 relative z-10">
         {/* Branding */}
         <div className="flex justify-center mb-10">
-          <Image
-            src="/ata-icon-white.png"
+          <img
+            src={`${process.env.NEXT_PUBLIC_BASE_PATH || '/employee'}/ata-icon-white.png`}
             alt="ATA-IT Logo"
-            width={300}
-            height={150}
-            className="object-contain drop-shadow-2xl"
-            priority
+            className="w-[300px] h-auto object-contain drop-shadow-2xl"
           />
         </div>
 
@@ -189,13 +186,10 @@ export default function EmployeeLoginPage() {
       <div className="flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 px-6 sm:px-8 md:px-12 py-10">
         {/* Responsive Logo for mobile */}
         <div className="lg:hidden mb-6 flex justify-center">
-          <Image
-            src="/ata-icon-white.png"
+          <img
+            src={`${process.env.NEXT_PUBLIC_BASE_PATH || '/employee'}/ata-icon-white.png`}
             alt="ATA-IT Logo"
-            width={180}
-            height={90}
-            className="object-contain drop-shadow-lg"
-            priority
+            className="w-[180px] h-auto object-contain drop-shadow-lg"
           />
         </div>{' '}
         <Card className="w-full max-w-md bg-white shadow-xl rounded-3xl border border-gray-100">
