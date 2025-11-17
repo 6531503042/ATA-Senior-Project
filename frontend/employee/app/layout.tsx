@@ -3,6 +3,12 @@ import React from "react";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { AuthProvider } from "../contexts/AuthContext";
 import { Providers } from "./providers";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "ATA-IT Employee Portal",
+  description: "Secure portal for ATA employees to manage feedback and performance.",
+};
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
