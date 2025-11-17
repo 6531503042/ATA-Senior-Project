@@ -19,10 +19,10 @@ export default function MyProjects({ projects }: { projects: any[] }) {
 
         {projects?.length ? (
           <div
-            className={`space-y-3 ${
-              shouldScroll ? 'max-h-80 overflow-y-auto pr-2 scrollbar-thin' : ''
-            }`}
-          >
+  className={`space-y-3 ${
+    shouldScroll ? 'max-h-80 overflow-y-auto pr-2 scrollbar-white' : ''
+  }`}
+>
             {projects.map(p => (
               <div
                 key={p.id}
