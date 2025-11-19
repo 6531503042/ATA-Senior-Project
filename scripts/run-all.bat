@@ -49,9 +49,9 @@ if exist "%cd%\caddy.exe" (
 echo [6/7] Waiting a few seconds for services to bind to ports...
 timeout /t 8 >nul
 
-echo [7/7] Starting Cloudflare Tunnel to http://127.0.0.1:8088 ...
+echo [7/7] Starting Cloudflare Tunnel supervisor...
 if defined CF_CMD (
-  start "Cloudflare Tunnel" cmd /k %CF_CMD% tunnel --url http://127.0.0.1:8088
+  start "Cloudflare Tunnel" powershell -NoExit -ExecutionPolicy Bypass -File "scripts\start-cloudflared.ps1"
 ) else (
   echo [WARNING] cloudflared not found in PATH or repo root.
   echo           Install with: winget install -e --id Cloudflare.cloudflared

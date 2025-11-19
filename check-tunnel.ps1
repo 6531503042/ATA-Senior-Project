@@ -12,8 +12,8 @@ if ($cloudflared) {
 } else {
     Write-Host "[ERROR] Cloudflared is NOT running" -ForegroundColor Red
     Write-Host ""
-    Write-Host "Starting Cloudflared tunnel..." -ForegroundColor Yellow
-    Start-Process powershell -ArgumentList "-NoExit","-Command","cd C:/Users/Administrator/Desktop/ATA-Senior-Project; cloudflared tunnel --url http://127.0.0.1:8088"
+    Write-Host "Starting Cloudflared tunnel supervisor..." -ForegroundColor Yellow
+    Start-Process powershell -ArgumentList "-NoExit","-ExecutionPolicy","Bypass","-File","C:/Users/Administrator/Desktop/ATA-Senior-Project/scripts/start-cloudflared.ps1"
     Write-Host "Please wait 5-10 seconds for Cloudflared to establish connection..." -ForegroundColor Yellow
 }
 

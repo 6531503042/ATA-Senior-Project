@@ -216,6 +216,40 @@ export default function QuestionCard({
             ))}
           </div>
         )}
+
+        {question.type === "RATING" && (
+          <div className="flex flex-col items-center gap-6 py-6">
+            <div className="flex flex-row justify-center items-center gap-3 flex-wrap">
+              {question.answers?.map((answer: { text: string; value: string }, index: number) => (
+                <motion.button
+                  key={answer.value}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => onAnswerChange(answer.value)}
+                  className={cn(
+                    "flex items-center justify-center w-16 h-16 rounded-full text-2xl font-bold transition-all",
+                    "hover:shadow-lg border-2",
+                    currentAnswer === answer.value
+                      ? "bg-violet-500 text-white border-violet-600 shadow-md ring-2 ring-violet-300"
+                      : "bg-gray-100 text-gray-700 border-gray-300 hover:bg-violet-100 hover:border-violet-400",
+                  )}
+                  title={`Rate ${answer.text} out of ${question.answers?.length || 5}`}
+                >
+                  {answer.text}
+                </motion.button>
+              ))}
+            </div>
+            {currentAnswer && (
+              <div className="text-center">
+                <p className="text-sm text-gray-600">
+                  Selected: <span className="font-semibold text-violet-600">{currentAnswer}</span> out of {question.answers?.length || 5}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </motion.div>
   );

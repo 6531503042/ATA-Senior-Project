@@ -18,7 +18,7 @@ export interface EmployeeQuestion {
   id: number;
   text: string;
   description?: string;
-  type: 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'TEXT_BASED' | 'SENTIMENT';
+  type: 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'TEXT_BASED' | 'SENTIMENT' | 'RATING';
   required: boolean;
   answers?: { text: string; value: string }[];
   category: string;

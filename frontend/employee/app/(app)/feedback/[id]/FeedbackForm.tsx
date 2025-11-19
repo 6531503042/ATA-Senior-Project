@@ -24,7 +24,7 @@ import type { Privacy, FeedbackSubmissionPayload } from '../../../../types/emplo
 import employeeSvc from '../../../../services/employeeService';
 
 // ---------- Types ----------
-type QType = 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'TEXT_BASED' | 'SENTIMENT';
+type QType = 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'TEXT_BASED' | 'SENTIMENT' | 'RATING';
 type AnswersMap = Record<number, string | string[]>;
 
 const MAX_TEXT_LENGTH = 255;
@@ -40,6 +40,8 @@ function mapAnswerType(t: EmployeeQuestion['type']): string {
       return 'text';
     case 'SENTIMENT':
       return 'sentiment';
+    case 'RATING':
+      return 'rating';
   }
 }
 
@@ -95,13 +97,51 @@ export default function FeedbackForm({ id }: { id: string }) {
                 questionIds.map(async qid => {
                   try {
                     const q = await employeeService.getQuestionById(qid);
+                    // Map backend questionType to frontend type
+                    const backendType = (q.questionType || q.type || 'TEXT') as string;
+                    let frontendType: 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'TEXT_BASED' | 'SENTIMENT' | 'RATING';
+                    
+                    switch (backendType.toUpperCase()) {
+                      case 'TEXT':
+                        frontendType = 'TEXT_BASED';
+                        break;
+                      case 'MULTIPLE_CHOICE':
+                        // Check if it's single choice (2 options) or multiple choice
+                        const choices = q.choices || q.options || [];
+                        frontendType = choices.length === 2 ? 'SINGLE_CHOICE' : 'MULTIPLE_CHOICE';
+                        break;
+                      case 'RATING':
+                        frontendType = 'RATING';
+                        break;
+                      case 'BOOLEAN':
+                        frontendType = 'SINGLE_CHOICE';
+                        break;
+                      default:
+                        frontendType = 'TEXT_BASED';
+                    }
+                    
+                    // Map choices/options to answers format
+                    const choices = q.choices || q.options || [];
+                    const answers = choices.length > 0
+                      ? choices.map((choice: any, index: number) => {
+                          const text = typeof choice === 'string' ? choice : (choice.text || choice.value || String(choice));
+                          const value = typeof choice === 'string' ? choice : (choice.value || choice.text || String(choice));
+                          return { text: String(text), value: String(value) };
+                        })
+                      : frontendType === 'RATING'
+                        ? Array.from({ length: 5 }, (_, i) => ({
+                            text: String(i + 1),
+                            value: String(i + 1),
+                          }))
+                        : [];
+                    
                     return {
                       id: q.id,
                       text: q.text || q.title || '',
                       required: !!q.required,
-                      type: (q.type || 'TEXT_BASED') as any,
+                      type: frontendType,
                       category: (q.category || 'general') as any,
-                      answers: q.options?.map((o: any) => String(o.text ?? o.value ?? '')) || [],
+                      answers: answers,
                       description: q.description || '',
                     } as unknown as EmployeeQuestion;
                   } catch {
