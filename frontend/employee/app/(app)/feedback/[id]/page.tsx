@@ -2,7 +2,9 @@ import { Suspense } from 'react';
 import FeedbackForm from './FeedbackForm';
 import React from 'react';
 
-export default function FeedbackPage({ params }: { params: { id: string } }) {
+export default async function FeedbackPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+
   return (
     <Suspense
       fallback={
@@ -14,7 +16,7 @@ export default function FeedbackPage({ params }: { params: { id: string } }) {
         </div>
       }
     >
-      <FeedbackForm id={params.id} />
+      <FeedbackForm id={id} />
     </Suspense>
   );
 }
