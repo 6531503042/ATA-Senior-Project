@@ -18,6 +18,10 @@ public interface SubmitMapper {
     @Mapping(target = "analysisNotes", ignore = true)
     @Mapping(target = "analyzedAt", ignore = true)
     @Mapping(target = "analyzedBy", ignore = true)
+    @Mapping(target = "feedbackTitle", ignore = true)
+    @Mapping(target = "projectName", ignore = true)
+    @Mapping(target = "projectId", ignore = true)
+    @Mapping(target = "feedbackEndDate", ignore = true)
     Submit toEntity(SubmitRequestDto req);
 
     default SubmitResponseDto toResponse(Submit entity) {
@@ -36,7 +40,11 @@ public interface SubmitMapper {
                 entity.getAdminSentiment(),
                 entity.getAnalysisNotes(),
                 entity.getAnalyzedAt(),
-                entity.getAnalyzedBy()
+                entity.getAnalyzedBy(),
+                entity.getFeedbackTitle(),
+                entity.getProjectName(),
+                entity.getProjectId(),
+                entity.getFeedbackEndDate()
         );
     }
 }

@@ -208,6 +208,95 @@ public class FeedbackService {
                     feedbackMapper.updateEntity(existing, request);
                     return feedbackRepository.save(existing);
                 })
+                .flatMap(savedFeedback -> {
+                    // Handle projectId update if provided
+                    if (request.projectId() != null && !request.projectId().equals(savedFeedback.getProjectId())) {
+                        return projectRepository.findById(request.projectId())
+                                .switchIfEmpty(Mono.error(new GlobalServiceException(ErrorCode.NOT_FOUND, "Project not found")))
+                                .then(Mono.just(savedFeedback));
+                    }
+                    return Mono.just(savedFeedback);
+                })
+                .flatMap(savedFeedback -> {
+                    // Handle questions update if provided
+                    Mono<Void> questionsAction = Mono.empty();
+                    if (request.questionIds() != null) {
+                        // Get existing question IDs
+                        return feedbackQuestionRepository.findQuestionIdsByFeedbackId(savedFeedback.getId())
+                                .collectList()
+                                .flatMap(existingQuestionIds -> {
+                                    // Find questions to add and remove
+                                    java.util.Set<Long> existingSet = new java.util.HashSet<>(existingQuestionIds);
+                                    java.util.Set<Long> newSet = new java.util.HashSet<>(request.questionIds());
+                                    
+                                    java.util.List<Long> toAdd = request.questionIds().stream()
+                                            .filter(qid -> !existingSet.contains(qid))
+                                            .collect(java.util.stream.Collectors.toList());
+                                    
+                                    java.util.List<Long> toRemove = existingQuestionIds.stream()
+                                            .filter(qid -> !newSet.contains(qid))
+                                            .collect(java.util.stream.Collectors.toList());
+                                    
+                                    Mono<Void> addAction = toAdd.isEmpty() ? Mono.empty() : addQuestions(savedFeedback.getId(), toAdd);
+                                    Mono<Void> removeAction = toRemove.isEmpty() ? Mono.empty() : removeQuestions(savedFeedback.getId(), toRemove);
+                                    
+                                    return Mono.when(addAction, removeAction).thenReturn(savedFeedback);
+                                });
+                    }
+                    return Mono.just(savedFeedback);
+                })
+                .flatMap(savedFeedback -> {
+                    // Handle target users update if provided
+                    if (request.targetUserIds() != null) {
+                        // Get existing target user IDs
+                        return getTargetUserIds(savedFeedback.getId())
+                                .flatMap(existingUserIds -> {
+                                    // Find users to add and remove
+                                    java.util.Set<Long> existingSet = new java.util.HashSet<>(existingUserIds);
+                                    java.util.Set<Long> newSet = new java.util.HashSet<>(request.targetUserIds());
+                                    
+                                    java.util.List<Long> toAdd = request.targetUserIds().stream()
+                                            .filter(uid -> !existingSet.contains(uid))
+                                            .collect(java.util.stream.Collectors.toList());
+                                    
+                                    java.util.List<Long> toRemove = existingUserIds.stream()
+                                            .filter(uid -> !newSet.contains(uid))
+                                            .collect(java.util.stream.Collectors.toList());
+                                    
+                                    Mono<Void> addAction = toAdd.isEmpty() ? Mono.empty() : addTargetUsers(savedFeedback.getId(), toAdd);
+                                    Mono<Void> removeAction = toRemove.isEmpty() ? Mono.empty() : removeTargetUsers(savedFeedback.getId(), toRemove);
+                                    
+                                    return Mono.when(addAction, removeAction).thenReturn(savedFeedback);
+                                });
+                    }
+                    return Mono.just(savedFeedback);
+                })
+                .flatMap(savedFeedback -> {
+                    // Handle target departments update if provided
+                    if (request.targetDepartmentIds() != null && !request.targetDepartmentIds().isEmpty()) {
+                        // Get existing target department IDs
+                        return getTargetDepartmentIds(savedFeedback.getId())
+                                .flatMap(existingDeptIds -> {
+                                    // Find departments to add and remove
+                                    java.util.Set<Long> existingSet = new java.util.HashSet<>(existingDeptIds);
+                                    java.util.Set<Long> newSet = new java.util.HashSet<>(request.targetDepartmentIds());
+                                    
+                                    java.util.List<Long> toAdd = request.targetDepartmentIds().stream()
+                                            .filter(deptId -> !existingSet.contains(deptId))
+                                            .collect(java.util.stream.Collectors.toList());
+                                    
+                                    java.util.List<Long> toRemove = existingDeptIds.stream()
+                                            .filter(deptId -> !newSet.contains(deptId))
+                                            .collect(java.util.stream.Collectors.toList());
+                                    
+                                    Mono<Void> addAction = toAdd.isEmpty() ? Mono.empty() : addTargetDepartments(savedFeedback.getId(), toAdd);
+                                    Mono<Void> removeAction = toRemove.isEmpty() ? Mono.empty() : removeTargetDepartments(savedFeedback.getId(), toRemove);
+                                    
+                                    return Mono.when(addAction, removeAction).thenReturn(savedFeedback);
+                                });
+                    }
+                    return Mono.just(savedFeedback);
+                })
                 .flatMap(feedback -> enrichFeedbackWithDetails(feedback, null));
     }
 

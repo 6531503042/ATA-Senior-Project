@@ -1,6 +1,5 @@
 param(
-    [string]$TunnelUrl = "http://127.0.0.1:8088",
-    [AllowEmptyString()][string]$PreferredHostname = "",
+    [string]$ConfigFile = "cloudflare-config.yml",
     [int]$RestartDelaySeconds = 5
 )
 
@@ -30,17 +29,19 @@ if (-not (Test-Path $logDir)) {
     New-Item -Path $logDir -ItemType Directory | Out-Null
 }
 $logFile = Join-Path $logDir "cloudflared.log"
+$configPath = Join-Path $rootDir $ConfigFile
+
+if (-not (Test-Path $configPath)) {
+    Write-Host "[ERROR] Config file not found: $configPath" -ForegroundColor Red
+    Write-Host "Please create cloudflare-config.yml in the repo root. See CLOUDFLARE_NAMED_TUNNEL_SETUP.md for details." -ForegroundColor Yellow
+    exit 1
+}
 
 Write-Host "============================================"
-Write-Host "  Cloudflared Auto-Restart Wrapper"
+Write-Host "  Cloudflared Named Tunnel Wrapper"
 Write-Host "  Executable : $cloudflaredPath"
-Write-Host "  Tunnel URL : $TunnelUrl"
-if ($PreferredHostname) {
-    Write-Host "  Preferred Hostname : $PreferredHostname (requires a named tunnel with DNS access)"
-} else {
-    Write-Host "  Preferred Hostname : <not set - random *.trycloudflare.com will be used>"
-}
-Write-Host "  Log file  : $logFile"
+Write-Host "  Config     : $configPath"
+Write-Host "  Log file   : $logFile"
 Write-Host "============================================"
 Write-Host ""
 
@@ -58,45 +59,12 @@ function Start-Cloudflared {
 
 $baseArgs = @(
     "tunnel",
-    "--url", $TunnelUrl,
+    "--config", $configPath,
     "--no-autoupdate",
-    "--edge-ip-version", "auto",
-    "--protocol", "http2",
-    "--grace-period", "30s",
-    "--metrics", "127.0.0.1:20241",
     "--loglevel", "info",
-    "--logfile", $logFile
+    "--logfile", $logFile,
+    "run"
 )
-
-if ($PreferredHostname) {
-    $baseArgs += @("--hostname", $PreferredHostname)
-}
-
-# Function to extract and save URL from log
-function Save-CloudflareUrl {
-    $urlFile = Join-Path $rootDir "logs\current-cloudflare-url.txt"
-    if (Test-Path $logFile) {
-        $content = Get-Content $logFile -Raw
-        if ($content -match 'https://([a-z0-9-]+)\.trycloudflare\.com') {
-            $url = $matches[0]
-            $url | Out-File -FilePath $urlFile -Encoding utf8 -NoNewline
-            Write-Host "[INFO] Cloudflare URL saved: $url" -ForegroundColor Green
-            return $url
-        }
-    }
-    return $null
-}
-
-# Wait for initial URL and save it
-$initialWait = 0
-while ($initialWait -lt 30) {
-    Start-Sleep -Seconds 2
-    $url = Save-CloudflareUrl
-    if ($url) {
-        break
-    }
-    $initialWait += 2
-}
 
 while ($true) {
     $exitCode = Start-Cloudflared -Executable $cloudflaredPath -BaseArgs $baseArgs
@@ -106,10 +74,6 @@ while ($true) {
     } else {
         Write-Host "[WARN] cloudflared exited with code $exitCode. Restarting in $RestartDelaySeconds second(s)..." -ForegroundColor Yellow
     }
-    
-    # Try to save URL after restart
-    Start-Sleep -Seconds 3
-    Save-CloudflareUrl | Out-Null
 
     Start-Sleep -Seconds $RestartDelaySeconds
 }

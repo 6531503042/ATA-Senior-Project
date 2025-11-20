@@ -62,9 +62,11 @@ export function useEmployeeDashboard() {
             .slice(0, 5)
             .map((s: any) => ({
               id: String(s.id ?? s.submissionId ?? ''),
+              feedbackId: s.feedbackId ? String(s.feedbackId) : null,
               feedbackTitle: String(s.feedbackTitle ?? s.title ?? 'Feedback'),
               projectName: String(s.projectName ?? s.project ?? '—'),
               submittedAt: String(s.submittedAt ?? s.createdAt ?? new Date().toISOString()),
+              feedbackEndDate: s.feedbackEndDate ? String(s.feedbackEndDate) : null,
               status: (s.status as any) || 'pending',
               overallSentiment: s.overallSentiment as any,
             }))

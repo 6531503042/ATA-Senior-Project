@@ -17,7 +17,11 @@ public record SubmitResponseDto(
         String adminSentiment,
         String analysisNotes,
         LocalDateTime analyzedAt,
-        String analyzedBy
+        String analyzedBy,
+        String feedbackTitle,
+        String projectName,
+        Long projectId,
+        LocalDateTime feedbackEndDate
 ) {}
 
 

@@ -43,6 +43,19 @@ public class Submit {
 
     @Transient
     private Map<Long, String> responses = new HashMap<>();
+    
+    // Enriched fields for display (not persisted)
+    @Transient
+    private String feedbackTitle;
+    
+    @Transient
+    private String projectName;
+    
+    @Transient
+    private Long projectId;
+    
+    @Transient
+    private java.time.LocalDateTime feedbackEndDate;
 
     // Analysis fields
     @Column("admin_rating")

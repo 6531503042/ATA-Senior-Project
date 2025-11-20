@@ -20,6 +20,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import dev.bengi.main.modules.feedback.repository.FeedbackRepository;
 import dev.bengi.main.modules.feedback.repository.FeedbackTargetRepository;
+import dev.bengi.main.modules.projects.repository.ProjectRepository;
 
 @Service
 @Slf4j
@@ -30,6 +31,7 @@ public class SubmitService {
     private final SubmissionResponseRepository submissionResponseRepository;
     private final FeedbackRepository feedbackRepository;
     private final FeedbackTargetRepository feedbackTargetRepository;
+    private final ProjectRepository projectRepository;
     private final PaginationService paginationService;
 
     @Transactional
@@ -97,27 +99,40 @@ public class SubmitService {
         return submitRepository.findById(id)
                 .switchIfEmpty(Mono.error(new GlobalServiceException(ErrorCode.NOT_FOUND)))
                 .flatMap(this::loadResponses)
+                .flatMap(this::enrichSubmissionWithFeedback)
                 .map(mapper::toResponse);
     }
 
     public Flux<SubmitResponseDto> getByFeedback(Long feedbackId) {
-        return submitRepository.findByFeedbackId(feedbackId).map(mapper::toResponse);
+        return submitRepository.findByFeedbackId(feedbackId)
+                .flatMap(this::loadResponses)
+                .flatMap(this::enrichSubmissionWithFeedback)
+                .map(mapper::toResponse);
     }
 
     public Mono<PageResponse<SubmitResponseDto>> getByFeedback(Long feedbackId, PageRequest pageRequest) {
         return paginationService.paginateInMemory(
-            submitRepository.findByFeedbackId(feedbackId).flatMap(this::loadResponses).map(mapper::toResponse),
+            submitRepository.findByFeedbackId(feedbackId)
+                .flatMap(this::loadResponses)
+                .flatMap(this::enrichSubmissionWithFeedback)
+                .map(mapper::toResponse),
             pageRequest
         );
     }
 
     public Flux<SubmitResponseDto> getByUser(String userId) {
-        return submitRepository.findByUserId(userId).flatMap(this::loadResponses).map(mapper::toResponse);
+        return submitRepository.findByUserId(userId)
+                .flatMap(this::loadResponses)
+                .flatMap(this::enrichSubmissionWithFeedback)
+                .map(mapper::toResponse);
     }
 
     public Mono<PageResponse<SubmitResponseDto>> getByUser(String userId, PageRequest pageRequest) {
         return paginationService.paginateInMemory(
-            submitRepository.findByUserId(userId).flatMap(this::loadResponses).map(mapper::toResponse),
+            submitRepository.findByUserId(userId)
+                .flatMap(this::loadResponses)
+                .flatMap(this::enrichSubmissionWithFeedback)
+                .map(mapper::toResponse),
             pageRequest
         );
     }
@@ -140,6 +155,30 @@ public class SubmitService {
                     return submit;
                 })
                 .switchIfEmpty(Mono.just(submit)); // Return original if no responses
+    }
+    
+    private Mono<Submit> enrichSubmissionWithFeedback(Submit submit) {
+        if (submit.getFeedbackId() == null) {
+            return Mono.just(submit);
+        }
+        
+        return feedbackRepository.findById(submit.getFeedbackId())
+                .flatMap(feedback -> {
+                    submit.setFeedbackTitle(feedback.getTitle());
+                    submit.setFeedbackEndDate(feedback.getEndDate());
+                    
+                    if (feedback.getProjectId() != null) {
+                        return projectRepository.findById(feedback.getProjectId())
+                                .map(project -> {
+                                    submit.setProjectId(project.getId());
+                                    submit.setProjectName(project.getName());
+                                    return submit;
+                                })
+                                .defaultIfEmpty(submit);
+                    }
+                    return Mono.just(submit);
+                })
+                .defaultIfEmpty(submit);
     }
 
     // Additional methods for employee endpoints

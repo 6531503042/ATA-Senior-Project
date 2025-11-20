@@ -122,7 +122,7 @@ export function useFeedback() {
           .map(id => parseInt(id as string)),
         targetDepartmentIds: formData.getAll('targetDepartmentIds')
           .filter(id => id != null && id !== '')
-          .map(id => id as string),
+          .map(id => parseInt(id as string)),
         // Map status to active for backend compatibility
         active: status === 'ACTIVE',
       };

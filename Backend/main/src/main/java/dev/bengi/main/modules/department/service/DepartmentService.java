@@ -43,6 +43,8 @@ public class DepartmentService {
                     }
                     return Mono.just(savedDepartment);
                 })
+                // Delay member count calculation to ensure transaction is committed
+                .delayElement(java.time.Duration.ofMillis(100))
                 .flatMap(this::calculateMemberCount)
                 .doOnSuccess(d -> log.info("Department created with {} members: {}", d.memberCount(), d));
     }
