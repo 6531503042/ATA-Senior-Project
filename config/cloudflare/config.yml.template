@@ -1,0 +1,26 @@
+# Cloudflare Tunnel Configuration Template
+# Copy this file to config.yml and update with your values
+
+tunnel: YOUR_TUNNEL_NAME
+credentials-file: config/cloudflare/credentials.json
+
+ingress:
+  # API Backend
+  - hostname: api.yourdomain.com
+    service: http://127.0.0.1:8080
+  
+  # Admin Frontend
+  - hostname: admin.yourdomain.com
+    service: http://127.0.0.1:3000
+  
+  # Employee Frontend
+  - hostname: employee.yourdomain.com
+    service: http://127.0.0.1:3001
+  
+  # Or use single domain with path routing (via Caddy)
+  # - hostname: yourdomain.com
+  #   service: http://127.0.0.1:8088
+  
+  # Catch-all rule (must be last)
+  - service: http_status:404
+

@@ -1,109 +1,97 @@
-# Confidential Feedback System
+# ATA Senior Project
 
-This repository contains the **Confidential Feedback System**, designed to enhance employee engagement, streamline feedback processes, and improve workplace productivity. The system provides a secure and anonymous platform for employees to share feedback with their teams and HR, empowering organizations to act on insights and foster a healthy work environment.
+## 🚀 Quick Start
 
-![ATA IT Logo](./assets/readme.gif)
+### 1. Start Services
 
-## Table of Contents
+```powershell
+# Start all services (backend + frontends)
+.\scripts\start-all.ps1
 
-- [Overview](#overview)
-- [Features](#features)
-- [Mock-ups](#mock-ups)
-- [Technologies Used](#technologies-used)
-- [System Architecture](#system-architecture)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Contributors](#contributors)
-- [License](#license)
+# Start Caddy reverse proxy
+.\caddy.exe run --config .\Caddyfile
+```
 
-## Overview
+### 2. Start Cloudflare Tunnel
 
-The **Confidential Feedback System** aims to provide a safe and effective way for employees to share feedback anonymously or publicly. The system collects, analyzes, and visualizes feedback data to help companies like **ATA IT Limited** make data-driven decisions to improve team performance and workplace satisfaction.
+#### Option A: Named Tunnel (Static Domain) ⭐ **Recommended**
 
-### Key Objectives:
-- Protect anonymity and ensure confidentiality of employee feedback.
-- Utilize data-driven insights to improve employee satisfaction and productivity.
-- Streamline feedback processes through automation and AI-driven analysis.
+```powershell
+# First time setup (see docs/cloudflare/SETUP_NAMED_TUNNEL.md)
+.\scripts\cloudflare\start-named-tunnel.ps1
+```
 
-## Features
+#### Option B: Quick Tunnel (Temporary URL - Testing Only)
 
-- **Anonymous and Named Feedback**: Employees can choose to provide feedback anonymously or attach their name.
-- **Sentiment Analysis**: The system uses AI to categorize and analyze feedback sentiment.
-- **Feedback Categories and Privacy Levels**: Customizable categories and privacy levels for different feedback types.
-- **Real-Time Data Analytics**: View insights in real time via dashboards with key performance indicators (KPIs).
-- **Secure Communication with HR**: Ensures confidentiality and security of sensitive feedback.
-- **End-to-End Encryption**: Protects all feedback data in transit and at rest.
-- **Role-Based Access Control (RBAC)**: Secure access to feedback data based on user roles.
-- **Audit Logs**: Track feedback actions and ensure transparency.
-- **Critical Feedback Alerts**: Immediate notifications for feedback requiring urgent attention.
-- **Follow-Up Mechanism**: Allows HR to follow up with employees regarding critical feedback.
-- **Multi-Platform Access**: Accessible via web and mobile applications.
+```powershell
+.\scripts\cloudflare\start-quick-tunnel.ps1
+```
 
-## Mock-ups
+### 3. Get Tunnel URL
 
-Here are mock-ups of the **Confidential Feedback System**:
+```powershell
+.\scripts\cloudflare\get-url.ps1
+```
 
-![Cover 1](./assets/cover-2.png)
-*Cover 1: Dashboard Overview*
+---
 
-![Cover 2](./assets/emote.png)
-*Cover 2: Feedback Submission Form*
+## 📁 Project Structure
 
-![Cover 3](./assets/graph.png)
-*Cover 3: Sentiment Analysis*
+```
+ATA-Senior-Project/
+├── Backend/              # Spring Boot backend
+├── frontend/
+│   ├── admin/           # Admin frontend (Next.js)
+│   └── employee/        # Employee frontend (Next.js)
+├── config/
+│   └── cloudflare/     # Cloudflare tunnel configuration
+├── scripts/
+│   ├── cloudflare/     # Cloudflare tunnel scripts
+│   └── commands/       # Build/dev scripts
+├── docs/               # Documentation
+│   └── cloudflare/     # Cloudflare documentation
+└── logs/               # Log files
+```
 
-These mock-ups give a visual representation of the front-end design of the system.
+---
 
-## Technologies Used
+## 📚 Documentation
 
-- **Frontend**: 
-  - React.js
-  - Next.js
-  - Tailwind CSS
-  - NextUI
-- **Backend**: 
-  - Java Spring Boot (Microservices Architecture)
-- **Database**: 
-  - MongoDB
-- **Authentication & Authorization**: 
-  - JWT (JSON Web Token)
-  - OAuth
-  - Role-Based Access Control (RBAC)
-- **Others**:
-  - Docker (Containerization)
-  - Kubernetes (Orchestration)
+- **Cloudflare Tunnel Setup**: [docs/cloudflare/SETUP_NAMED_TUNNEL.md](docs/cloudflare/SETUP_NAMED_TUNNEL.md)
+- **Development Guide**: [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)
+- **API Documentation**: [docs/README-API.md](docs/README-API.md)
+- **Commit Guide**: [docs/COMMIT_GUIDE.MD](docs/COMMIT_GUIDE.MD)
 
-  ## System Architecture
+---
 
-![System Architecture](link-to-architecture-diagram) <!-- Replace this with your actual system architecture diagram link if you have one. -->
+## 🔧 Configuration
 
-The system is built using a microservices architecture to ensure scalability and flexibility. Below are the core components:
+### Cloudflare Tunnel
 
-1. **Feedback Service**: Handles feedback submission and retrieval, supports both anonymous and named feedback.
-2. **Analytics Service**: Runs sentiment analysis and processes feedback for insights.
-3. **Notification Service**: Sends reminders, alerts, and notifications for critical feedback.
-4. **UI/UX Layer**: Provides a seamless user experience for both employees and HR administrators.
-5. **Authentication & Authorization Service**: Manages secure access to the system with RBAC.
+- **Config Template**: `config/cloudflare/config.yml.template`
+- **Setup Guide**: `docs/cloudflare/SETUP_NAMED_TUNNEL.md`
+- **Scripts**: `scripts/cloudflare/`
 
-## Usage
-### For Employees:
-1. Submit feedback using the feedback form.
-2. Choose to submit feedback anonymously or under your name.
-3. View the progress of feedback submissions on your dashboard.
+### Caddy Reverse Proxy
 
+- **Config**: `Caddyfile`
+- **Port**: `8088`
+- **Routes**:
+  - `/api/*` → `127.0.0.1:8080` (Backend)
+  - `/admin/*` → `127.0.0.1:3000` (Admin Frontend)
+  - `/employee/*` → `127.0.0.1:3001` (Employee Frontend)
 
-### For HR/Admins:
-1. Log in using secure credentials.
-2. View categorized feedback and sentiment analysis.
-3. Generate reports and view insights to make data-driven decisions.
-4. Use the follow-up mechanism to respond to critical feedback.
+---
 
-# Contributors
-- Nimit - Backend Developer, Frontend Developer, DevOps Developer, Project Manager
-- Kritsakorn - Frontend Developer, UX/UI
-- Kongphop - Frontend Developer, UX/UI
+## 🛠️ Development
 
-# License
-This project is licensed under the MIT License. See the LICENSE file for details.
+See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for detailed development guide.
 
-Developed with ❤️ by the team at ATA IT Limited and [SEEZ's Team Dev].
+---
+
+## 📝 Notes
+
+- Cloudflare credentials (`config/cloudflare/credentials.json`) are gitignored
+- Logs are stored in `logs/` directory
+- Use Named Tunnel for production (static domain)
+- Use Quick Tunnel only for testing (temporary URL)
