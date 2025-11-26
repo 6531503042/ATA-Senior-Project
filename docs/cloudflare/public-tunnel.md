@@ -5,7 +5,7 @@
 - Linux/macOS: `./scripts/start-all.sh`
 
 2) Start Caddy at :8088
-- Windows: `./caddy.exe run --config ./Caddyfile`
+- Windows: `./ops/caddy/caddy.exe run --config ./ops/caddy/Caddyfile`
 - Linux: `./caddy run --config ./Caddyfile`
 
 3) Use one of the tunnels

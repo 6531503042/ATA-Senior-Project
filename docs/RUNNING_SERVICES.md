@@ -1,6 +1,7 @@
 # Running Services Guide
 
-คู่มือการรัน Services ทั้งหมดของ ATA Senior Project
+> **Note:** For a single, handoff-ready playbook covering services, proxy, and tunnel, use [DEPLOYMENT_RUNBOOK.md](DEPLOYMEN
+T_RUNBOOK.md). This guide focuses on service-level detail.
 
 ## 📋 สารบัญ
 
@@ -69,7 +70,7 @@ Script นี้จะ:
 ### วิธีที่ 2: PowerShell Script
 
 ```powershell
-.\scripts\start-all-services.ps1
+.\scripts\windows\start-all-services.ps1
 ```
 
 ---
@@ -152,8 +153,8 @@ Get-Process caddy -ErrorAction SilentlyContinue
 
 #### เริ่ม Caddy
 ```powershell
-# ถ้า caddy.exe อยู่ใน root directory
-.\caddy.exe run --config Caddyfile
+# ถ้า caddy.exe อยู่ในโฟลเดอร์ ops/caddy
+.\ops\caddy\caddy.exe run --config .\ops\caddy\Caddyfile
 
 # หรือใช้ PowerShell script
 Start-Process -FilePath ".\caddy.exe" -ArgumentList @("run", "--config", "Caddyfile", "--pidfile", "caddy.pid") -WindowStyle Minimized
@@ -336,7 +337,7 @@ netstat -ano | findstr ":8088"
 **แก้ไข:**
 ```powershell
 # เริ่ม Caddy
-.\caddy.exe run --config Caddyfile
+.\ops\caddy\caddy.exe run --config .\ops\caddy\Caddyfile
 
 # หรือใช้ script
 Start-Process -FilePath ".\caddy.exe" -ArgumentList @("run", "--config", "Caddyfile", "--pidfile", "caddy.pid") -WindowStyle Minimized

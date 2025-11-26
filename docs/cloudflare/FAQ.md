@@ -72,7 +72,7 @@
 **วิธีแก้:**
 ```powershell
 # เริ่ม Caddy
-.\caddy.exe run --config .\Caddyfile
+.\ops\caddy\caddy.exe run --config .\ops\caddy\Caddyfile
 
 # หรือใช้ script
 .\scripts\start-all-with-tunnel.ps1

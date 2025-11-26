@@ -2,11 +2,11 @@
 
 ## Windows
 1. Download caddy.exe: https://caddyserver.com/api/download?os=windows&arch=amd64
-2. Place `caddy.exe` in the repo root (same folder as `Caddyfile`).
+2. Place `caddy.exe` in `ops/caddy` (same folder as `Caddyfile`).
 3. Run:
 
 ```powershell
-./caddy.exe run --config ./Caddyfile
+./ops/caddy/caddy.exe run --config ./ops/caddy/Caddyfile
 ```
 
 ## Linux

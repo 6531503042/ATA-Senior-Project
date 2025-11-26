@@ -78,7 +78,7 @@ because the target machine actively refused it.
 **วิธีแก้:**
 1. เริ่ม Caddy ก่อน:
    ```powershell
-   .\caddy.exe run --config .\Caddyfile
+   .\ops\caddy\caddy.exe run --config .\ops\caddy\Caddyfile
    ```
 
 2. แล้วค่อยเริ่ม Cloudflare Tunnel
@@ -103,7 +103,7 @@ because the target machine actively refused it.
 
 1. **เริ่ม Caddy** (ถ้ายังไม่ทำงาน):
    ```powershell
-   .\caddy.exe run --config .\Caddyfile
+   .\ops\caddy\caddy.exe run --config .\ops\caddy\Caddyfile
    ```
 
 2. **Setup Named Tunnel** สำหรับ static domain:
