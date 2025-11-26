@@ -1,5 +1,8 @@
 # Troubleshooting Guide
 
+> **Note:** Quick run/recovery actions live in [DEPLOYMENT_RUNBOOK.md](DEPLOYMENT_RUNBOOK.md). Use this guide when you need add
+itional detail for specific issues.
+
 ## 504 Gateway Timeout Error
 
 ### สาเหตุ
@@ -27,7 +30,7 @@ Timeout ได้ถูกเพิ่มเป็น 60s แล้วใน Cad
 Stop-Process -Name caddy -Force
 
 # เริ่มใหม่
-.\caddy.exe run --config .\Caddyfile
+.\ops\caddy\caddy.exe run --config .\ops\caddy\Caddyfile
 ```
 
 #### 4. ตรวจสอบ Frontend Services

@@ -1,6 +1,7 @@
 # Cloudflare Tunnel Setup Guide
 
-คู่มือการตั้งค่าและใช้งาน Cloudflare Tunnel สำหรับ ATA Senior Project
+> **Note:** The consolidated deployment path (apps + Caddy + Cloudflare) lives in [DEPLOYMENT_RUNBOOK.md](DEPLOYMENT_RUNBOOK
+.md). Refer there first when handing off to operations.
 
 ## 📋 สารบัญ
 

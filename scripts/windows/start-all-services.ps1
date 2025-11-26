@@ -8,6 +8,11 @@ Write-Host ""
 
 $ErrorActionPreference = "Continue"
 
+$repoRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "..\.."))
+$caddyDir = Join-Path $repoRoot "ops\caddy"
+$caddyExe = Join-Path $caddyDir "caddy.exe"
+$caddyConfig = Join-Path $caddyDir "Caddyfile"
+
 # Function to check if port is in use
 function Test-Port {
     param([int]$Port)
@@ -50,9 +55,9 @@ Start-Sleep -Seconds 2
 # 1. Start Backend (Spring Boot)
 Write-Host ""
 Write-Host "1. Starting Backend (Spring Boot)..." -ForegroundColor Cyan
-$backendPath = "Backend\main"
+$backendPath = Join-Path $repoRoot "Backend\main"
 if (Test-Path $backendPath) {
-    $backendProcess = Start-Process powershell -ArgumentList "-NoExit","-Command","cd '$PWD\$backendPath'; Write-Host 'Starting Spring Boot Backend...' -ForegroundColor Cyan; .\gradlew.bat bootRun" -PassThru -WindowStyle Minimized
+    $backendProcess = Start-Process powershell -ArgumentList "-NoExit","-Command","cd '$backendPath'; Write-Host 'Starting Spring Boot Backend...' -ForegroundColor Cyan; .\gradlew.bat bootRun" -PassThru -WindowStyle Minimized
     Write-Host "[OK] Backend process started (PID: $($backendProcess.Id))" -ForegroundColor Green
     Write-Host "    Waiting for backend to be ready..." -ForegroundColor Yellow
     if (Wait-ForService -ServiceName "Backend" -Port 8080 -MaxWaitSeconds 90) {
@@ -65,9 +70,9 @@ if (Test-Path $backendPath) {
 # 2. Start Admin Frontend
 Write-Host ""
 Write-Host "2. Starting Admin Frontend (Next.js)..." -ForegroundColor Cyan
-$adminPath = "frontend\admin"
+$adminPath = Join-Path $repoRoot "frontend\admin"
 if (Test-Path $adminPath) {
-    $adminProcess = Start-Process powershell -ArgumentList "-NoExit","-Command","cd '$PWD\$adminPath'; Write-Host 'Starting Admin Frontend...' -ForegroundColor Cyan; `$env:NODE_OPTIONS='--max-old-space-size=2048'; npm run start" -PassThru -WindowStyle Minimized
+    $adminProcess = Start-Process powershell -ArgumentList "-NoExit","-Command","cd '$adminPath'; Write-Host 'Starting Admin Frontend...' -ForegroundColor Cyan; `$env:NODE_OPTIONS='--max-old-space-size=2048'; npm run start" -PassThru -WindowStyle Minimized
     Write-Host "[OK] Admin frontend process started (PID: $($adminProcess.Id))" -ForegroundColor Green
     Write-Host "    Waiting for admin frontend to be ready..." -ForegroundColor Yellow
     if (Wait-ForService -ServiceName "Admin Frontend" -Port 3000 -MaxWaitSeconds 60) {
@@ -80,9 +85,9 @@ if (Test-Path $adminPath) {
 # 3. Start Employee Frontend
 Write-Host ""
 Write-Host "3. Starting Employee Frontend (Next.js)..." -ForegroundColor Cyan
-$employeePath = "frontend\employee"
+$employeePath = Join-Path $repoRoot "frontend\employee"
 if (Test-Path $employeePath) {
-    $employeeProcess = Start-Process powershell -ArgumentList "-NoExit","-Command","cd '$PWD\$employeePath'; Write-Host 'Starting Employee Frontend...' -ForegroundColor Cyan; `$env:NODE_OPTIONS='--max-old-space-size=2048'; npm run start" -PassThru -WindowStyle Minimized
+    $employeeProcess = Start-Process powershell -ArgumentList "-NoExit","-Command","cd '$employeePath'; Write-Host 'Starting Employee Frontend...' -ForegroundColor Cyan; `$env:NODE_OPTIONS='--max-old-space-size=2048'; npm run start" -PassThru -WindowStyle Minimized
     Write-Host "[OK] Employee frontend process started (PID: $($employeeProcess.Id))" -ForegroundColor Green
     Write-Host "    Waiting for employee frontend to be ready..." -ForegroundColor Yellow
     if (Wait-ForService -ServiceName "Employee Frontend" -Port 3001 -MaxWaitSeconds 60) {
@@ -95,8 +100,8 @@ if (Test-Path $employeePath) {
 # 4. Start Caddy Reverse Proxy
 Write-Host ""
 Write-Host "4. Starting Caddy Reverse Proxy..." -ForegroundColor Cyan
-if (Test-Path ".\caddy.exe") {
-    $caddyProcess = Start-Process powershell -ArgumentList "-NoExit","-Command","cd '$PWD'; Write-Host 'Starting Caddy Reverse Proxy...' -ForegroundColor Cyan; .\caddy.exe run --config .\Caddyfile" -PassThru -WindowStyle Minimized
+if ((Test-Path $caddyExe) -and (Test-Path $caddyConfig)) {
+    $caddyProcess = Start-Process powershell -ArgumentList "-NoExit","-Command","cd '$caddyDir'; Write-Host 'Starting Caddy Reverse Proxy...' -ForegroundColor Cyan; .\caddy.exe run --config .\Caddyfile --pidfile .\caddy.pid" -PassThru -WindowStyle Minimized
     Write-Host "[OK] Caddy process started (PID: $($caddyProcess.Id))" -ForegroundColor Green
     Write-Host "    Waiting for Caddy to be ready..." -ForegroundColor Yellow
     if (Wait-ForService -ServiceName "Caddy" -Port 8088 -MaxWaitSeconds 30) {
@@ -106,7 +111,7 @@ if (Test-Path ".\caddy.exe") {
         Write-Host "    - API: http://127.0.0.1:8088/api" -ForegroundColor Gray
     }
 } else {
-    Write-Host "[ERROR] Caddy executable not found: .\caddy.exe" -ForegroundColor Red
+    Write-Host "[ERROR] Caddy executable or config missing in ops\caddy" -ForegroundColor Red
 }
 
 # 5. Start Cloudflare Tunnel
@@ -114,7 +119,7 @@ Write-Host ""
 Write-Host "5. Starting Cloudflare Tunnel..." -ForegroundColor Cyan
 $cloudflared = Get-Command cloudflared -ErrorAction SilentlyContinue
 if ($cloudflared) {
-    $tunnelProcess = Start-Process powershell -ArgumentList "-NoExit","-Command","cd '$PWD'; Write-Host '========================================' -ForegroundColor Cyan; Write-Host 'Cloudflare Tunnel Starting...' -ForegroundColor Cyan; Write-Host '========================================' -ForegroundColor Cyan; Write-Host ''; Write-Host 'Your public URL will appear below:' -ForegroundColor Yellow; Write-Host ''; cloudflared tunnel --url http://127.0.0.1:8088" -PassThru
+    $tunnelProcess = Start-Process powershell -ArgumentList "-NoExit","-Command","cd '$repoRoot'; Write-Host '========================================' -ForegroundColor Cyan; Write-Host 'Cloudflare Tunnel Starting...' -ForegroundColor Cyan; Write-Host '========================================' -ForegroundColor Cyan; Write-Host ''; Write-Host 'Your public URL will appear below:' -ForegroundColor Yellow; Write-Host ''; cloudflared tunnel --url http://127.0.0.1:8088" -PassThru
     Write-Host "[OK] Cloudflare tunnel process started (PID: $($tunnelProcess.Id))" -ForegroundColor Green
     Write-Host "    Waiting for tunnel to establish..." -ForegroundColor Yellow
     Start-Sleep -Seconds 8

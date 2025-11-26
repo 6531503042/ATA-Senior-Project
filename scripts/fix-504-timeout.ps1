@@ -50,7 +50,23 @@ if ($caddyProcess) {
     Stop-Process -Name caddy -Force -ErrorAction SilentlyContinue
     Start-Sleep -Seconds 2
 }
-Start-Process -FilePath "caddy.exe" -ArgumentList @("run", "--config", "Caddyfile", "--pidfile", "caddy.pid") -WindowStyle Minimized
+$repoRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot ".."))
+$caddyDir = Join-Path $repoRoot "ops\caddy"
+$caddyExe = Join-Path $caddyDir "caddy.exe"
+$caddyConfig = Join-Path $caddyDir "Caddyfile"
+$caddyPid = Join-Path $caddyDir "caddy.pid"
+
+if (-not (Test-Path $caddyExe)) {
+    Write-Host "caddy.exe not found at $caddyExe" -ForegroundColor Red
+    exit 1
+}
+
+if (-not (Test-Path $caddyConfig)) {
+    Write-Host "Caddyfile not found at $caddyConfig" -ForegroundColor Red
+    exit 1
+}
+
+Start-Process -FilePath $caddyExe -WorkingDirectory $caddyDir -ArgumentList @("run", "--config", $caddyConfig, "--pidfile", $caddyPid) -WindowStyle Minimized
 Start-Sleep -Seconds 3
 $caddyNew = Get-Process caddy -ErrorAction SilentlyContinue
 if ($caddyNew) {

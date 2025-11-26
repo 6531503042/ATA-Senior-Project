@@ -3,6 +3,12 @@
 
 $ErrorActionPreference = "Continue"
 
+$repoRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot ".."))
+$caddyDir = Join-Path $repoRoot "ops\caddy"
+$caddyExe = Join-Path $caddyDir "caddy.exe"
+$caddyConfig = Join-Path $caddyDir "Caddyfile"
+$caddyPid = Join-Path $caddyDir "caddy.pid"
+
 Write-Host "============================================" -ForegroundColor Cyan
 Write-Host "  Starting All Services + Tunnel" -ForegroundColor Cyan
 Write-Host "============================================" -ForegroundColor Cyan
@@ -11,10 +17,21 @@ Write-Host ""
 # Check if Caddy is running
 $caddyRunning = Get-Process caddy -ErrorAction SilentlyContinue
 if (-not $caddyRunning) {
+    if (-not (Test-Path $caddyExe)) {
+        Write-Host "[1/5] Caddy executable not found at $caddyExe" -ForegroundColor Red
+        Write-Host "      Please download caddy.exe into ops/caddy" -ForegroundColor Yellow
+        exit 1
+    }
+
+    if (-not (Test-Path $caddyConfig)) {
+        Write-Host "[1/5] Caddyfile not found at $caddyConfig" -ForegroundColor Red
+        exit 1
+    }
+
     Write-Host "[1/5] Starting Caddy reverse proxy..." -ForegroundColor Green
-    Start-Process -FilePath "caddy.exe" -ArgumentList @("run", "--config", "Caddyfile", "--pidfile", "caddy.pid") -WindowStyle Minimized
+    Start-Process -FilePath $caddyExe -WorkingDirectory $caddyDir -ArgumentList @("run", "--config", $caddyConfig, "--pidfile", $caddyPid) -WindowStyle Minimized
     Start-Sleep -Seconds 3
-    
+
     $caddy = Get-Process caddy -ErrorAction SilentlyContinue
     if ($caddy) {
         Write-Host "  ✓ Caddy started (PID: $($caddy.Id))" -ForegroundColor Green

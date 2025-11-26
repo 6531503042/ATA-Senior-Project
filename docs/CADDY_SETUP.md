@@ -1,6 +1,7 @@
 # Caddy Reverse Proxy Setup Guide
 
-คู่มือการตั้งค่าและใช้งาน Caddy Reverse Proxy สำหรับ ATA Senior Project
+> **Note:** The end-to-end deployment workflow (services + Caddy + Cloudflare) is now documented in [DEPLOYMENT_RUNBOOK.md](DE
+PLOYMENT_RUNBOOK.md). Use this file only for extra detail on the proxy itself.
 
 ## 📋 สารบัญ
 
@@ -38,7 +39,7 @@ Internet → Cloudflare Tunnel → Caddy (8088) → Services
 #### วิธีที่ 1: Download Binary
 1. ไปที่ https://caddyserver.com/download
 2. Download Windows binary
-3. วาง `caddy.exe` ใน root directory ของ project
+3. วาง `caddy.exe` ไว้ใน `ops/caddy` ของ project
 
 #### วิธีที่ 2: Winget
 ```powershell
@@ -62,7 +63,7 @@ choco install caddy
 
 ### Caddyfile Structure
 
-ไฟล์ `Caddyfile` อยู่ใน root directory:
+ไฟล์ `Caddyfile` และ `caddy.exe` อยู่ใน `ops/caddy`:
 
 ```caddyfile
 :8088 {
@@ -140,7 +141,7 @@ Get-Process caddy -ErrorAction SilentlyContinue
 
 #### วิธีที่ 1: รันโดยตรง
 ```powershell
-.\caddy.exe run --config Caddyfile
+.\ops\caddy\caddy.exe run --config .\ops\caddy\Caddyfile
 ```
 
 #### วิธีที่ 2: Background Process
@@ -232,7 +233,7 @@ netstat -ano | findstr ":8088"
 
 2. เริ่ม Caddy ใหม่:
    ```powershell
-   .\caddy.exe run --config Caddyfile
+   .\ops\caddy\caddy.exe run --config .\ops\caddy\Caddyfile
    ```
 
 ---

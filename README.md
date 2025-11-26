@@ -2,35 +2,20 @@
 
 ## 🚀 Quick Start
 
-### 1. Start Services
+For a single, handoff-ready guide to running the stack with Caddy and Cloudflare, start with the [Deployment Runbook](docs/DEPL
+OYMENT_RUNBOOK.md).
+
+If you only need the bare minimum commands:
 
 ```powershell
-# Start all services (backend + frontends)
-.\scripts\start-all.ps1
+# Start backend + frontends + proxy on Windows
+./scripts/windows/start-all-services.ps1
 
-# Start Caddy reverse proxy
-.\caddy.exe run --config .\Caddyfile
-```
+# Start Cloudflare tunnel (quick URL)
+./scripts/cloudflare/start-quick-tunnel.ps1
 
-### 2. Start Cloudflare Tunnel
-
-#### Option A: Named Tunnel (Static Domain) ⭐ **Recommended**
-
-```powershell
-# First time setup (see docs/cloudflare/SETUP_NAMED_TUNNEL.md)
-.\scripts\cloudflare\start-named-tunnel.ps1
-```
-
-#### Option B: Quick Tunnel (Temporary URL - Testing Only)
-
-```powershell
-.\scripts\cloudflare\start-quick-tunnel.ps1
-```
-
-### 3. Get Tunnel URL
-
-```powershell
-.\scripts\cloudflare\get-url.ps1
+# Get the current tunnel URL
+./scripts/cloudflare/get-url.ps1
 ```
 
 ---
@@ -43,11 +28,13 @@ ATA-Senior-Project/
 ├── frontend/
 │   ├── admin/           # Admin frontend (Next.js)
 │   └── employee/        # Employee frontend (Next.js)
-├── config/
-│   └── cloudflare/     # Cloudflare tunnel configuration
+├── ops/
+│   ├── caddy/          # Caddyfile + caddy.exe
+│   └── cloudflare/     # Cloudflare installers and helpers
 ├── scripts/
 │   ├── cloudflare/     # Cloudflare tunnel scripts
-│   └── commands/       # Build/dev scripts
+│   ├── commands/       # Build/dev scripts
+│   └── windows/        # Windows orchestration helpers
 ├── docs/               # Documentation
 │   └── cloudflare/     # Cloudflare documentation
 └── logs/               # Log files
@@ -57,7 +44,7 @@ ATA-Senior-Project/
 
 ## 📚 Documentation
 
-- **Cloudflare Tunnel Setup**: [docs/cloudflare/SETUP_NAMED_TUNNEL.md](docs/cloudflare/SETUP_NAMED_TUNNEL.md)
+- **Deployment Runbook (Caddy + Cloudflare)**: [docs/DEPLOYMENT_RUNBOOK.md](docs/DEPLOYMENT_RUNBOOK.md)
 - **Development Guide**: [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)
 - **API Documentation**: [docs/README-API.md](docs/README-API.md)
 - **Commit Guide**: [docs/COMMIT_GUIDE.MD](docs/COMMIT_GUIDE.MD)
