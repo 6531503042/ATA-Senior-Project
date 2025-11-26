@@ -103,8 +103,11 @@ export function useUsers() {
     } catch (err: any) {
       const errorMessage = err.message || 'Failed to create user.';
       setError(errorMessage);
+      
+      // Show user-friendly error message
       addToast({
-        title: 'Failed to create user. Please try again.',
+        title: 'Failed to create user',
+        description: errorMessage,
         color: 'danger',
       });
       throw err;

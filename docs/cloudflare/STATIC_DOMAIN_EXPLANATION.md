@@ -126,3 +126,8 @@ because the target machine actively refused it.
 - **Quick Tunnel** = Temporary domain (เปลี่ยนทุกครั้ง)
 - **Caddy ต้องทำงานก่อน** Tunnel ถึงจะเชื่อมต่อได้
 
+
+
+
+
+

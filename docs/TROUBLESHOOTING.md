@@ -68,3 +68,8 @@ npm run dev
 2. ตรวจสอบ services: `netstat -ano | findstr ":8080 :3000 :3001"`
 3. Restart Caddy และ services
 
+
+
+
+
+

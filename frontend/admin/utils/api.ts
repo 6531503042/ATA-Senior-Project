@@ -112,7 +112,23 @@ export async function apiRequest<T>(
     console.log("Response data:", data);
 
     if (!response.ok) {
-      const errorMessage = data?.message || data?.error || `HTTP error! status: ${response.status}`;
+      // Handle nested JSON in message field
+      let errorMessage = data?.message || data?.error || `HTTP error! status: ${response.status}`;
+      
+      // If message is a JSON string, try to parse it
+      if (typeof errorMessage === 'string' && (errorMessage.trim().startsWith('{') || errorMessage.trim().startsWith('['))) {
+        try {
+          const parsed = JSON.parse(errorMessage);
+          if (parsed.detail) {
+            errorMessage = parsed.detail;
+          } else if (parsed.message) {
+            errorMessage = parsed.message;
+          }
+        } catch (e) {
+          // Keep original message if parsing fails
+        }
+      }
+      
       const errorDetails = createApiError(
         response.status,
         response.statusText,
@@ -219,7 +235,23 @@ export async function apiGolangRequest<T>(
     console.log("Response data:", data);
 
     if (!response.ok) {
-      const errorMessage = data?.message || data?.error || `HTTP error! status: ${response.status}`;
+      // Handle nested JSON in message field
+      let errorMessage = data?.message || data?.error || `HTTP error! status: ${response.status}`;
+      
+      // If message is a JSON string, try to parse it
+      if (typeof errorMessage === 'string' && (errorMessage.trim().startsWith('{') || errorMessage.trim().startsWith('['))) {
+        try {
+          const parsed = JSON.parse(errorMessage);
+          if (parsed.detail) {
+            errorMessage = parsed.detail;
+          } else if (parsed.message) {
+            errorMessage = parsed.message;
+          }
+        } catch (e) {
+          // Keep original message if parsing fails
+        }
+      }
+      
       const errorDetails = createApiError(
         response.status,
         response.statusText,

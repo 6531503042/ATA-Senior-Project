@@ -66,6 +66,21 @@ export function isTimeoutError(error: any): boolean {
 }
 
 /**
+ * Parse nested JSON error message
+ */
+function parseNestedJsonMessage(message: string): any {
+  try {
+    // Try to parse if it's a JSON string
+    if (message.trim().startsWith('{') || message.trim().startsWith('[')) {
+      return JSON.parse(message);
+    }
+  } catch (e) {
+    // Not JSON, return original
+  }
+  return null;
+}
+
+/**
  * Get user-friendly error message
  */
 export function getUserFriendlyErrorMessage(error: any): string {
@@ -89,8 +104,72 @@ export function getUserFriendlyErrorMessage(error: any): string {
     return 'The requested resource was not found.';
   }
   
+  if (error?.status === 409) {
+    // Handle conflict errors (e.g., username already exists)
+    let detail = '';
+    
+    // Try to parse nested JSON in message
+    if (error?.message) {
+      const parsed = parseNestedJsonMessage(error.message);
+      if (parsed?.detail) {
+        detail = parsed.detail;
+      } else if (parsed?.message) {
+        detail = parsed.message;
+      }
+    }
+    
+    // Try to get detail from data
+    if (!detail && error?.data) {
+      if (typeof error.data === 'string') {
+        const parsed = parseNestedJsonMessage(error.data);
+        if (parsed?.detail) {
+          detail = parsed.detail;
+        } else if (parsed?.message) {
+          detail = parsed.message;
+        }
+      } else if (error.data?.detail) {
+        detail = error.data.detail;
+      } else if (error.data?.message) {
+        const parsed = parseNestedJsonMessage(error.data.message);
+        if (parsed?.detail) {
+          detail = parsed.detail;
+        }
+      }
+    }
+    
+    return detail || 'This resource already exists. Please use a different value.';
+  }
+  
   if (error?.status >= 500) {
     return 'Server error occurred. Please try again later.';
+  }
+  
+  // Try to extract detail from nested JSON
+  if (error?.message) {
+    const parsed = parseNestedJsonMessage(error.message);
+    if (parsed?.detail) {
+      return parsed.detail;
+    }
+    if (parsed?.message) {
+      return parsed.message;
+    }
+  }
+  
+  // Try to get detail from data
+  if (error?.data) {
+    if (typeof error.data === 'string') {
+      const parsed = parseNestedJsonMessage(error.data);
+      if (parsed?.detail) {
+        return parsed.detail;
+      }
+    } else if (error.data?.detail) {
+      return error.data.detail;
+    } else if (error.data?.message) {
+      const parsed = parseNestedJsonMessage(error.data.message);
+      if (parsed?.detail) {
+        return parsed.detail;
+      }
+    }
   }
   
   return error?.message || 'An unexpected error occurred.';

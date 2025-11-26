@@ -1,4 +1,121 @@
-# ... existing code ...
+# Dependencies
+node_modules/
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+bun.lock
+**/bun.lock
+
+# Next.js
+.next/
+**/.next/
+out/
+**/out/
+.vercel/
+**/.vercel/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+**/.env
+**/.env.local
+**/.env*.local
+
+# Build outputs
+build/
+**/build/
+dist/
+**/dist/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+
+# Gradle
+.gradle/
+**/.gradle/
+gradle-app.setting
+!gradle-wrapper.jar
+.gradletasknamecache
+
+# Java
+*.class
+*.log
+*.ctxt
+.mtj.tmp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.settings/
+.loadpath
+.recommenders
+bin/
+**/bin/
+
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+go.work
+vendor/
+**/vendor/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+*.iml
+*.ipr
+*.iws
+.project
+.classpath
+.settings/
+
+# Logs
+logs/
+**/logs/
+*.log
+*.log.*
+
+# Runtime & Process files
+*.pid
+*.seed
+*.pid.lock
+caddy.pid
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+*.cache
+.cache/
+**/.cache/
+tmp/
+**/tmp/
 
 # Cloudflare
 config/cloudflare/credentials.json
@@ -6,5 +123,26 @@ config/cloudflare/*.json
 !config/cloudflare/config.yml.template
 logs/cloudflared.log
 logs/current-cloudflare-url.txt
+logs/current-cloudflared.log
 
-# ... existing code ...
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# Package manager locks (optional - uncomment if you want to ignore)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# Coverage reports
+coverage/
+.nyc_output/
+*.lcov
+
+# Misc
+*.msi
+*.exe
+*.bat
+*.sh
+!gradlew
+!gradlew.bat
